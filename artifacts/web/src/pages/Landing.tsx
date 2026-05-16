@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
+import { Link, Redirect } from "wouter";
 import {
   Shield,
   Lock,
@@ -133,12 +133,14 @@ const emptyInviteProfile: InviteProfile = {
 };
 
 export default function Landing() {
+  const authenticated = isAuthenticated();
   const { data: stats } = useGetStatsOverview<StatsOverview>({
-    query: { queryKey: getGetStatsOverviewQueryKey(), enabled: isAuthenticated() },
+    query: { queryKey: getGetStatsOverviewQueryKey(), enabled: false },
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (authenticated) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -166,7 +168,11 @@ export default function Landing() {
 
     const interval = setInterval(draw, 50);
     return () => clearInterval(interval);
-  }, []);
+  }, [authenticated]);
+
+  if (authenticated) {
+    return <Redirect to="/app" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
