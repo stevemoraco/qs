@@ -31,9 +31,7 @@ type GenerationStep =
 
 export default function Register() {
   const [, setLocation] = useLocation();
-  const [primaryCode, setPrimaryCode] = useState("");
   const [passcode, setPasscode] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<GenerationStep>("idle");
@@ -44,8 +42,6 @@ export default function Register() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const email = params.get("email") ?? "";
-    const name = params.get("name") ?? "";
-    let savedName = "";
     let savedEmail = "";
 
     try {
@@ -53,18 +49,12 @@ export default function Register() {
       if (saved) {
         const parsed = JSON.parse(saved) as { name?: unknown; email?: unknown };
         if (typeof parsed.email === "string") savedEmail = parsed.email;
-        if (typeof parsed.name === "string") savedName = parsed.name;
       }
     } catch {
       // Ignore malformed local invite state.
     }
 
-    if (email) {
-      const candidate = email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
-      if (candidate && candidate.length >= 3) setPrimaryCode(candidate.toLowerCase());
-    }
     if (email || savedEmail) setLeadEmail(email || savedEmail);
-    if (name || savedName) setDisplayName(name || savedName);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,9 +75,7 @@ export default function Register() {
       setStep("submitting");
       const authData = await register.mutateAsync({
         data: {
-          primaryCode: primaryCode || undefined,
           passcode,
-          displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
           leadEmail: leadEmail || undefined,
@@ -99,7 +87,7 @@ export default function Register() {
       setAuthHandle(authData.authHandle);
     } catch (err: unknown) {
       setStep("idle");
-      setError(extractErrorMessage(err, "Could not create identity. Please try a different code or passcode."));
+      setError(extractErrorMessage(err, "Could not create passcode. Please try a different passcode."));
       return;
     }
 
@@ -127,7 +115,7 @@ export default function Register() {
   };
 
   const stepLabels: Record<GenerationStep, string> = {
-    idle: "CREATE IDENTITY",
+    idle: "CREATE PASSCODE",
     "generating-kem": "GENERATING ML-KEM-1024 KEYS...",
     "generating-dsa": "GENERATING ML-DSA-87 KEYS...",
     submitting: "REGISTERING IDENTITY...",
@@ -149,46 +137,13 @@ export default function Register() {
 
         <div className="border border-border/50 bg-card/50 p-8 backdrop-blur-sm">
           <div className="mb-8">
-            <h1 className="font-mono font-bold text-xl tracking-tight">REQUEST CLEARANCE</h1>
+            <h1 className="font-mono font-bold text-xl tracking-tight">CREATE PASSCODE</h1>
             <p className="font-mono text-xs text-muted-foreground mt-2">
               Post-quantum key pairs are generated locally — your private keys never leave this device
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                CLAIM CODE (OPTIONAL)
-              </label>
-              <input
-                type="text"
-                value={primaryCode}
-                onChange={(e) => setPrimaryCode(e.target.value)}
-                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="stv, team-alpha, invite-01"
-                autoComplete="off"
-                minLength={3}
-                maxLength={32}
-                disabled={isLoading}
-                data-testid="input-username"
-              />
-            </div>
-
-            <div>
-              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                DISPLAY NAME (OPTIONAL)
-              </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="Display name"
-                disabled={isLoading}
-                data-testid="input-display-name"
-              />
-            </div>
-
             <div>
               <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
                 PASSCODE
@@ -235,7 +190,7 @@ export default function Register() {
             <p className="font-mono text-xs text-muted-foreground text-center">
               Already have access?{" "}
               <Link href="/login" className="text-primary hover:underline">
-                AUTHENTICATE
+                USE PASSCODE
               </Link>
             </p>
           </div>

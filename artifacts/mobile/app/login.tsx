@@ -56,7 +56,7 @@ export default function LoginScreen() {
     setError("");
     const authHandle = await getAuthHandle();
     if (!authHandle) {
-      setError("No local identity found on this device. Request clearance first.");
+      setError("No local identity found on this device. Create a passcode first.");
       return;
     }
     login.mutate({ data: { authHandle, passcode } });
@@ -111,13 +111,13 @@ export default function LoginScreen() {
             {login.isPending ? (
               <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={[s.btnText, { color: colors.background }]}>AUTHENTICATE</Text>
+              <Text style={[s.btnText, { color: colors.background }]}>USE PASSCODE</Text>
             )}
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity onPress={() => router.push("/register")} style={s.link}>
-          <Text style={[s.linkText, { color: colors.mutedForeground }]}>No account? <Text style={{ color: colors.primary }}>REQUEST CLEARANCE</Text></Text>
+          <Text style={[s.linkText, { color: colors.mutedForeground }]}>No account? <Text style={{ color: colors.primary }}>CREATE PASSCODE</Text></Text>
         </TouchableOpacity>
 
         <View style={[s.securityNote, { borderColor: colors.border, backgroundColor: colors.card }]}> 

@@ -41,7 +41,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!authHandle) {
-      setError("No local identity found on this device. Request clearance first.");
+      setError("No local identity found on this device. Create a passcode first.");
       return;
     }
     login.mutate({ data: { authHandle, passcode } });
@@ -99,7 +99,7 @@ export default function Login() {
               className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50"
               data-testid="button-submit"
             >
-              {login.isPending ? "AUTHENTICATING..." : "AUTHENTICATE"}
+              {login.isPending ? "USING PASSCODE..." : "USE PASSCODE"}
             </button>
           </form>
 
@@ -107,7 +107,7 @@ export default function Login() {
             <p className="font-mono text-xs text-muted-foreground text-center">
               No account?{" "}
               <Link href="/register" className="text-primary hover:underline">
-                REQUEST CLEARANCE
+                CREATE PASSCODE
               </Link>
             </p>
           </div>

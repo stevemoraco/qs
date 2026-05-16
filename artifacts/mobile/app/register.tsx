@@ -20,7 +20,7 @@ import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-re
 type Step = "idle" | "keygen" | "register" | "upload" | "done";
 
 const STEP_LABELS: Record<Step, string> = {
-  idle: "CREATE IDENTITY",
+  idle: "CREATE PASSCODE",
   keygen: "GENERATING PQ KEYS...",
   register: "REGISTERING IDENTITY...",
   upload: "UPLOADING KEY BUNDLE...",
@@ -41,8 +41,6 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { setAuthHandle, setToken, storeKeyPair } = useAuth();
 
-  const [primaryCode, setPrimaryCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
@@ -67,9 +65,7 @@ export default function RegisterScreen() {
       setStep("register");
       const authData = await register.mutateAsync({
         data: {
-          primaryCode: primaryCode || undefined,
           passcode,
-          displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
         },
@@ -93,7 +89,7 @@ export default function RegisterScreen() {
       router.replace("/app");
     } catch {
       setStep("idle");
-      setError("Registration failed. Code or passcode may be invalid.");
+      setError("Registration failed. Passcode may be invalid.");
     }
   };
 
@@ -116,36 +112,13 @@ export default function RegisterScreen() {
           <Text style={[s.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
         </View>
 
-        <Text style={[s.title, { color: colors.foreground }]}>REQUEST CLEARANCE</Text>
+        <Text style={[s.title, { color: colors.foreground }]}>CREATE PASSCODE</Text>
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>
           Post-quantum key pairs are generated locally on this device
         </Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[s.label, { color: colors.mutedForeground }]}>CLAIM CODE (OPTIONAL)</Text>
-          <TextInput
-            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={primaryCode}
-            onChangeText={setPrimaryCode}
-            placeholder="stv, team-alpha, invite-01"
-            placeholderTextColor={colors.mutedForeground}
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={!isLoading}
-            testID="input-username"
-          />
-
-          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>DISPLAY NAME (OPTIONAL)</Text>
-          <TextInput
-            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={displayName}
-            onChangeText={setDisplayName}
-            placeholder="Display name"
-            placeholderTextColor={colors.mutedForeground}
-            editable={!isLoading}
-          />
-
-          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSCODE</Text>
+          <Text style={[s.label, { color: colors.mutedForeground }]}>PASSCODE</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
             value={passcode}
@@ -188,7 +161,7 @@ export default function RegisterScreen() {
         <TouchableOpacity onPress={() => router.push("/login")} style={s.link}>
           <Text style={[s.linkText, { color: colors.mutedForeground }]}>
             Already registered?{" "}
-            <Text style={{ color: colors.primary }}>AUTHENTICATE</Text>
+            <Text style={{ color: colors.primary }}>USE PASSCODE</Text>
           </Text>
         </TouchableOpacity>
 
