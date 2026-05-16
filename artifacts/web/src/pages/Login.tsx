@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
-import { getAuthHandle, isAuthenticated, setToken } from "@/lib/auth";
+import { getAuthHandle, getDevicePasscode, isAuthenticated, setToken, verifyDevice } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -20,8 +20,8 @@ const LOGIN_PRIVACY_FEATURES = [
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
+  const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
   const authHandle = getAuthHandle();
 
   const login = usePostAuthLogin({
@@ -32,20 +32,36 @@ export default function Login() {
         setLocation("/app", { replace: true });
       },
       onError: () => {
-        setError("Invalid passcode");
+        setError("Device passkey could not unlock this account");
       },
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const passcode = getDevicePasscode();
     if (!authHandle) {
-      setError("No local identity found on this device. Create a passcode first.");
+      setError("No local identity found on this device. Create a passkey first.");
       return;
+    }
+    if (!passcode) {
+      setError("No device passkey secret is linked here. Create one on this device first.");
+      return;
+    }
+    try {
+      setIsVerifyingDevice(true);
+      await verifyDevice();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Device verification was not completed.");
+      return;
+    } finally {
+      setIsVerifyingDevice(false);
     }
     login.mutate({ data: { authHandle, passcode } });
   };
+
+  const isLoading = isVerifyingDevice || login.isPending;
 
   if (isAuthenticated()) {
     return <Redirect to="/app" replace />;
@@ -70,22 +86,6 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                PASSCODE
-              </label>
-              <input
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="passcode"
-                autoComplete="current-password"
-                required
-                data-testid="input-password"
-              />
-            </div>
-
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -95,11 +95,11 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={login.isPending}
+              disabled={isLoading}
               className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50"
               data-testid="button-submit"
             >
-              {login.isPending ? "USING PASSCODE..." : "USE PASSCODE"}
+              {isLoading ? "VERIFYING DEVICE..." : "USE PASSCODE"}
             </button>
           </form>
 

@@ -4,6 +4,7 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 const TOKEN_KEY = "qs_token";
 const AUTH_HANDLE_KEY = "qs_auth_handle";
+const DEVICE_PASSCODE_KEY = "qs_device_passcode";
 const KEM_SK_KEY = "qs_kem_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_SK_KEY = "qs_dsa_sk";
@@ -16,6 +17,8 @@ type AuthContextType = {
   setToken: (t: string) => Promise<void>;
   getAuthHandle: () => Promise<string | null>;
   setAuthHandle: (h: string) => Promise<void>;
+  getDevicePasscode: () => Promise<string | null>;
+  setDevicePasscode: (p: string) => Promise<void>;
   clearAuth: () => Promise<void>;
   storeKeyPair: (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => Promise<void>;
   getKemPublicKey: () => Promise<string | null>;
@@ -52,8 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(AUTH_HANDLE_KEY, h);
   }, []);
 
+  const getDevicePasscode = useCallback(() => AsyncStorage.getItem(DEVICE_PASSCODE_KEY), []);
+
+  const setDevicePasscode = useCallback(async (p: string) => {
+    await AsyncStorage.setItem(DEVICE_PASSCODE_KEY, p);
+  }, []);
+
   const clearAuth = useCallback(async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, AUTH_HANDLE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY]);
+    await AsyncStorage.multiRemove([TOKEN_KEY, AUTH_HANDLE_KEY, DEVICE_PASSCODE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY]);
     setTokenState(null);
   }, []);
 
@@ -78,6 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken,
         getAuthHandle,
         setAuthHandle,
+        getDevicePasscode,
+        setDevicePasscode,
         clearAuth,
         storeKeyPair,
         getKemPublicKey,

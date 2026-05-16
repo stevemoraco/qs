@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -13,14 +12,16 @@ import {
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
 
-type Step = "idle" | "keygen" | "register" | "upload" | "done";
+type Step = "idle" | "verifying" | "keygen" | "register" | "upload" | "done";
 
 const STEP_LABELS: Record<Step, string> = {
   idle: "CREATE PASSCODE",
+  verifying: "CREATING DEVICE PASSKEY...",
   keygen: "GENERATING PQ KEYS...",
   register: "REGISTERING IDENTITY...",
   upload: "UPLOADING KEY BUNDLE...",
@@ -35,13 +36,35 @@ function uint8ToBase64(arr: Uint8Array): string {
   return btoa(binary);
 }
 
+function generateDevicePasscode(): string {
+  const bytes = new Uint8Array(32);
+  const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+  if (!getRandomValues) throw new Error("Secure random generator unavailable.");
+  getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifyDevice(promptMessage: string): Promise<void> {
+  const hasHardware = await LocalAuthentication.hasHardwareAsync();
+  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+  if (!hasHardware || !isEnrolled) {
+    throw new Error("Face ID or device biometrics are not set up.");
+  }
+
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage,
+    fallbackLabel: "Use device passcode",
+    disableDeviceFallback: false,
+  });
+  if (!result.success) throw new Error("Device verification was not completed.");
+}
+
 export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { setAuthHandle, setToken, storeKeyPair } = useAuth();
+  const { setAuthHandle, setDevicePasscode, setToken, storeKeyPair } = useAuth();
 
-  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
 
@@ -51,6 +74,10 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setError("");
     try {
+      setStep("verifying");
+      await verifyDevice("Create QuantumShield passcode");
+      const passcode = generateDevicePasscode();
+
       setStep("keygen");
       const { ml_kem1024 } = await import("@noble/post-quantum/ml-kem.js");
       const { ml_dsa87 } = await import("@noble/post-quantum/ml-dsa.js");
@@ -74,6 +101,7 @@ export default function RegisterScreen() {
       await storeKeyPair(kemSkB64, kemPkB64, dsaSkB64, dsaPkB64);
       await setToken(authData.token);
       await setAuthHandle(authData.authHandle);
+      await setDevicePasscode(passcode);
 
       setStep("upload");
       const kemSig = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
@@ -87,9 +115,9 @@ export default function RegisterScreen() {
 
       setStep("done");
       router.replace("/app");
-    } catch {
+    } catch (err: unknown) {
       setStep("idle");
-      setError("Registration failed. Passcode may be invalid.");
+      setError(err instanceof Error ? err.message : "Registration failed. Device passkey was not created.");
     }
   };
 
@@ -118,18 +146,6 @@ export default function RegisterScreen() {
         </Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[s.label, { color: colors.mutedForeground }]}>PASSCODE</Text>
-          <TextInput
-            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={passcode}
-            onChangeText={setPasscode}
-            placeholder="passcode (min 8 characters)"
-            placeholderTextColor={colors.mutedForeground}
-            secureTextEntry
-            editable={!isLoading}
-            testID="input-password"
-          />
-
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}>
               <Feather name="alert-circle" size={14} color={colors.destructive} />
@@ -192,14 +208,6 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     title: { fontFamily: "Inter_700Bold", fontSize: 24, letterSpacing: -0.5, marginBottom: 8 },
     subtitle: { fontFamily: "Inter_400Regular", fontSize: 13, marginBottom: 28, lineHeight: 20 },
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
-    label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
-    input: {
-      borderWidth: 1,
-      paddingHorizontal: 12,
-      paddingVertical: 12,
-      fontFamily: "Inter_400Regular",
-      fontSize: 14,
-    },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     infoBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },

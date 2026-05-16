@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
-import { setAuthHandle, setToken, storeKeyPair } from "@/lib/auth";
+import {
+  enrollDeviceVerification,
+  generateDevicePasscode,
+  setAuthHandle,
+  setDevicePasscode,
+  setToken,
+  storeKeyPair,
+} from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
@@ -23,6 +30,7 @@ function extractErrorMessage(err: unknown, fallback: string): string {
 
 type GenerationStep =
   | "idle"
+  | "verifying-device"
   | "generating-kem"
   | "generating-dsa"
   | "submitting"
@@ -31,7 +39,6 @@ type GenerationStep =
 
 export default function Register() {
   const [, setLocation] = useLocation();
-  const [passcode, setPasscode] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<GenerationStep>("idle");
@@ -61,6 +68,17 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    let passcode: string;
+    try {
+      setStep("verifying-device");
+      await enrollDeviceVerification();
+      passcode = generateDevicePasscode();
+    } catch (err: unknown) {
+      setStep("idle");
+      setError(extractErrorMessage(err, "Device passkey setup was not completed."));
+      return;
+    }
+
     setStep("generating-kem");
     const kem = ml_kem1024.keygen();
 
@@ -85,9 +103,10 @@ export default function Register() {
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
       setToken(token);
       setAuthHandle(authData.authHandle);
+      setDevicePasscode(passcode);
     } catch (err: unknown) {
       setStep("idle");
-      setError(extractErrorMessage(err, "Could not create passcode. Please try a different passcode."));
+      setError(extractErrorMessage(err, "Could not create device passkey. Please try again."));
       return;
     }
 
@@ -116,6 +135,7 @@ export default function Register() {
 
   const stepLabels: Record<GenerationStep, string> = {
     idle: "CREATE PASSCODE",
+    "verifying-device": "CREATING DEVICE PASSKEY...",
     "generating-kem": "GENERATING ML-KEM-1024 KEYS...",
     "generating-dsa": "GENERATING ML-DSA-87 KEYS...",
     submitting: "REGISTERING IDENTITY...",
@@ -144,24 +164,6 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                PASSCODE
-              </label>
-              <input
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="passcode (min 8 characters)"
-                autoComplete="new-password"
-                minLength={8}
-                required
-                disabled={isLoading}
-                data-testid="input-password"
-              />
-            </div>
-
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />

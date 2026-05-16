@@ -2,7 +2,6 @@ import { useState, type ComponentProps } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -14,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthLogin } from "@workspace/api-client-react";
@@ -31,14 +31,29 @@ const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; la
   { icon: "shield", label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
+async function verifyDevice(promptMessage: string): Promise<void> {
+  const hasHardware = await LocalAuthentication.hasHardwareAsync();
+  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+  if (!hasHardware || !isEnrolled) {
+    throw new Error("Face ID or device biometrics are not set up.");
+  }
+
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage,
+    fallbackLabel: "Use device passcode",
+    disableDeviceFallback: false,
+  });
+  if (!result.success) throw new Error("Device verification was not completed.");
+}
+
 export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getAuthHandle, setToken } = useAuth();
+  const { getAuthHandle, getDevicePasscode, setToken } = useAuth();
 
-  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
+  const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
 
   const login = usePostAuthLogin({
     mutation: {
@@ -47,7 +62,7 @@ export default function LoginScreen() {
         router.replace("/app");
       },
       onError: () => {
-        setError("Invalid passcode");
+        setError("Device passkey could not unlock this account");
       },
     },
   });
@@ -56,12 +71,27 @@ export default function LoginScreen() {
     setError("");
     const authHandle = await getAuthHandle();
     if (!authHandle) {
-      setError("No local identity found on this device. Create a passcode first.");
+      setError("No local identity found on this device. Create a passkey first.");
       return;
+    }
+    const passcode = await getDevicePasscode();
+    if (!passcode) {
+      setError("No device passkey secret is linked here. Create one on this device first.");
+      return;
+    }
+    try {
+      setIsVerifyingDevice(true);
+      await verifyDevice("Use QuantumShield passcode");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Device verification was not completed.");
+      return;
+    } finally {
+      setIsVerifyingDevice(false);
     }
     login.mutate({ data: { authHandle, passcode } });
   };
 
+  const isLoading = isVerifyingDevice || login.isPending;
   const s = makeStyles(colors);
 
   return (
@@ -84,17 +114,6 @@ export default function LoginScreen() {
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>Authenticate to access encrypted channels</Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[s.label, { color: colors.mutedForeground }]}>PASSCODE</Text>
-          <TextInput
-            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={passcode}
-            onChangeText={setPasscode}
-            placeholder="passcode"
-            placeholderTextColor={colors.mutedForeground}
-            secureTextEntry
-            testID="input-password"
-          />
-
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}> 
               <Feather name="alert-circle" size={14} color={colors.destructive} />
@@ -103,12 +122,12 @@ export default function LoginScreen() {
           )}
 
           <TouchableOpacity
-            style={[s.btn, { backgroundColor: colors.primary }, login.isPending && s.btnDisabled]}
+            style={[s.btn, { backgroundColor: colors.primary }, isLoading && s.btnDisabled]}
             onPress={handleLogin}
-            disabled={login.isPending}
+            disabled={isLoading}
             testID="button-submit"
           >
-            {login.isPending ? (
+            {isLoading ? (
               <ActivityIndicator color={colors.background} size="small" />
             ) : (
               <Text style={[s.btnText, { color: colors.background }]}>USE PASSCODE</Text>
@@ -163,8 +182,6 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     title: { fontFamily: "Inter_700Bold", fontSize: 24, letterSpacing: -0.5, marginBottom: 8 },
     subtitle: { fontFamily: "Inter_400Regular", fontSize: 13, marginBottom: 28, lineHeight: 20 },
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
-    label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
-    input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     btn: { paddingVertical: 14, alignItems: "center", justifyContent: "center", marginTop: 20, flexDirection: "row", gap: 8 },
