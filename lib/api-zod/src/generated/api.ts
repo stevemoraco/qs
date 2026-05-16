@@ -110,7 +110,6 @@ export const GetIdentityCodesResponseItem = zod.object({
   "maxUses": zod.number().nullish(),
   "useCount": zod.number(),
   "allowedCodes": zod.array(zod.string()).nullish(),
-  "confirmLastHandleDisable": zod.boolean().nullish().describe('Required only after triple confirmation and fresh re-authentication when disabling the last active handle.'),
   "expiresAt": zod.coerce.date().nullish(),
   "rolledAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),
@@ -170,7 +169,8 @@ export const PatchIdentityCodesCodeIdBody = zod.object({
   "visibilityScope": zod.enum(['public', 'invited_by_you', 'invited_you', 'mutuals', 'disabled']).nullish(),
   "ttlSeconds": zod.number().nullish(),
   "maxUses": zod.number().nullish(),
-  "allowedCodes": zod.array(zod.string()).nullish()
+  "allowedCodes": zod.array(zod.string()).nullish(),
+  "confirmLastHandleDisable": zod.boolean().nullish().describe('Required only after triple confirmation and fresh re-authentication when disabling the last active handle.')
 })
 
 export const PatchIdentityCodesCodeIdResponse = zod.object({
@@ -182,7 +182,6 @@ export const PatchIdentityCodesCodeIdResponse = zod.object({
   "maxUses": zod.number().nullish(),
   "useCount": zod.number(),
   "allowedCodes": zod.array(zod.string()).nullish(),
-  "confirmLastHandleDisable": zod.boolean().nullish().describe('Required only after triple confirmation and fresh re-authentication when disabling the last active handle.'),
   "expiresAt": zod.coerce.date().nullish(),
   "rolledAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date(),

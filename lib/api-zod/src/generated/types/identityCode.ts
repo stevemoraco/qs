@@ -17,8 +17,6 @@ export interface IdentityCode {
   maxUses?: number | null;
   useCount: number;
   allowedCodes?: string[] | null;
-  /** Required only after triple confirmation and fresh re-authentication when disabling the last active handle. */
-  confirmLastHandleDisable?: boolean | null;
   expiresAt?: Date | null;
   rolledAt?: Date | null;
   createdAt: Date;

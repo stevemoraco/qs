@@ -782,10 +782,6 @@ components:
           nullable: true
           items:
             type: string
-        confirmLastHandleDisable:
-          type: boolean
-          nullable: true
-          description: Required only after triple confirmation and fresh re-authentication when disabling the last active handle.
         expiresAt:
           type: string
           format: date-time
@@ -851,6 +847,10 @@ components:
           nullable: true
           items:
             type: string
+        confirmLastHandleDisable:
+          type: boolean
+          nullable: true
+          description: Required only after triple confirmation and fresh re-authentication when disabling the last active handle.
 
     Room:
       type: object

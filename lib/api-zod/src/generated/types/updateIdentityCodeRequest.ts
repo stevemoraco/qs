@@ -13,4 +13,6 @@ export interface UpdateIdentityCodeRequest {
   ttlSeconds?: number | null;
   maxUses?: number | null;
   allowedCodes?: string[] | null;
+  /** Required only after triple confirmation and fresh re-authentication when disabling the last active handle. */
+  confirmLastHandleDisable?: boolean | null;
 }

@@ -12,7 +12,6 @@ import {
   Platform,
   AppState,
   Linking,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -39,16 +38,33 @@ import {
   useGetIdentityCodes,
   usePatchIdentityCodesCodeId,
   usePostIdentityCodes,
+  type IdentityCode,
 } from "@workspace/api-client-react";
 import { gcm } from "@noble/ciphers/aes.js";
 import { randomBytes } from "@noble/hashes/utils.js";
 import * as ScreenCapture from "expo-screen-capture";
+import * as LocalAuthentication from "expo-local-authentication";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+async function verifyDevice(promptMessage: string): Promise<void> {
+  const hasHardware = await LocalAuthentication.hasHardwareAsync();
+  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+  if (!hasHardware || !isEnrolled) {
+    throw new Error("Face ID or device biometrics are not set up.");
+  }
+
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage,
+    fallbackLabel: "Use device passcode",
+    disableDeviceFallback: false,
+  });
+  if (!result.success) throw new Error("Device verification was not completed.");
 }
 
 type Room = {
@@ -602,13 +618,28 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   token: string | null;
 }) {
   const qc = useQueryClient();
+  const { getDevicePasscode, setAuthHandle, setToken } = useAuth();
   const [revealed, setRevealed] = useState(false);
   const [deviceCount, setDeviceCount] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
   const [newTtl, setNewTtl] = useState(315360000);
   const [error, setError] = useState("");
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    code: IdentityCode;
+    message: string;
+    data: {
+      active?: boolean | null;
+      visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
+      ttlSeconds?: number | null;
+      confirmLastHandleDisable?: boolean | null;
+    };
+    isLastActiveHandle: boolean;
+    stage: number;
+  } | null>(null);
   const { data: codes = [] } = useGetIdentityCodes({ query: { queryKey: getGetIdentityCodesQueryKey(), enabled: visible } });
+  const sortedCodes = [...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`));
+  const activeHandleCount = codes.filter((code) => code.kind === "alias" && code.active).length;
 
   useEffect(() => {
     if (!visible || !revealed || !token) return;
@@ -642,6 +673,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     mutation: {
       onSuccess: () => {
         setError("");
+        setPendingUpdate(null);
         qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
       },
       onError: () => setError("Could not update code"),
@@ -660,9 +692,9 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     });
   };
 
-  const confirmUpdate = (
+  const requestUpdate = (
     message: string,
-    codeId: string,
+    code: IdentityCode,
     data: {
       active?: boolean | null;
       visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
@@ -670,10 +702,39 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     }
   ) => {
     if (updateCode.isPending) return;
-    Alert.alert("Confirm change", message, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Confirm", style: "destructive", onPress: () => updateCode.mutate({ codeId, data }) },
-    ]);
+    const isLastActiveHandle = code.kind === "alias" && code.active && data.active === false && activeHandleCount <= 1;
+    setPendingUpdate({ code, message, data, isLastActiveHandle, stage: isLastActiveHandle ? 1 : 0 });
+  };
+
+  const confirmPendingUpdate = async () => {
+    if (!pendingUpdate || updateCode.isPending) return;
+    if (pendingUpdate.isLastActiveHandle && pendingUpdate.stage < 3) {
+      setPendingUpdate({ ...pendingUpdate, stage: pendingUpdate.stage + 1 });
+      return;
+    }
+    let data = pendingUpdate.data;
+    if (pendingUpdate.isLastActiveHandle) {
+      try {
+        await verifyDevice("Confirm last handle disable");
+        const passcode = await getDevicePasscode();
+        if (!passcode) throw new Error("No local device access key found.");
+        const url = Platform.OS === "web" ? "/api/auth/login" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/login`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ handle: pendingUpdate.code.code, passcode }),
+        });
+        const auth = await res.json();
+        if (!res.ok) throw new Error(auth?.error ?? "Fresh device verification failed.");
+        await setToken(auth.token);
+        await setAuthHandle(auth.authHandle);
+        data = { ...data, confirmLastHandleDisable: true };
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Fresh device verification failed.");
+        return;
+      }
+    }
+    updateCode.mutate({ codeId: pendingUpdate.code.id, data });
   };
 
   return (
@@ -732,7 +793,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 24 }]}>YOUR HANDLES / INVITES</Text>
           {codes.length === 0 && <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No handles or invite codes yet.</Text>}
-          {[...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`)).map((code) => (
+          {sortedCodes.map((code) => (
             <View key={code.id} style={[styles.codeCard, { borderColor: colors.border, backgroundColor: colors.card }]} testID={`identity-code-${code.id}`}>
               <View style={styles.codeHeader}>
                 <View style={{ flex: 1 }}>
@@ -740,30 +801,87 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses</Text>
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{formatExpiry(code.expiresAt)}</Text>
                 </View>
-                <TouchableOpacity disabled={updateCode.isPending} onPress={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.smallBtnText, { color: colors.primary }]}>{code.active ? "DISABLE" : "ENABLE"}</Text>
                 </TouchableOpacity>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_SCOPE_OPTIONS.map((scope) => (
-                  <TouchableOpacity key={scope.value} disabled={updateCode.isPending} onPress={() => confirmUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code.id, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                  <TouchableOpacity key={scope.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: code.visibilityScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_TTL_OPTIONS.map((ttl) => (
-                  <TouchableOpacity key={ttl.value} disabled={updateCode.isPending} onPress={() => confirmUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code.id, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                  <TouchableOpacity key={ttl.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: colors.mutedForeground }]}>{ttl.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity disabled={updateCode.isPending} onPress={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }, updateCode.isPending && { opacity: 0.5 }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.ttlBtnText, { color: colors.destructive }]}>Roll / expire</Text>
                 </TouchableOpacity>
               </ScrollView>
             </View>
           ))}
         </ScrollView>
+        {pendingUpdate && (
+          <ConfirmCodeUpdateModal
+            pendingUpdate={pendingUpdate}
+            updatePending={updateCode.isPending}
+            colors={colors}
+            onCancel={() => setPendingUpdate(null)}
+            onConfirm={() => void confirmPendingUpdate()}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
+
+function ConfirmCodeUpdateModal({
+  pendingUpdate,
+  updatePending,
+  colors,
+  onCancel,
+  onConfirm,
+}: {
+  pendingUpdate: { code: IdentityCode; message: string; isLastActiveHandle: boolean; stage: number };
+  updatePending: boolean;
+  colors: ReturnType<typeof useColors>;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Modal transparent animationType="fade" visible onRequestClose={onCancel}>
+      <View style={styles.confirmOverlay}>
+        <View style={[styles.confirmBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.confirmTitleRow}>
+            <Feather name="shield" size={16} color={pendingUpdate.isLastActiveHandle ? colors.destructive : colors.primary} />
+            <Text style={[styles.confirmKicker, { color: colors.mutedForeground }]}>
+              {pendingUpdate.isLastActiveHandle ? `LAST HANDLE CONFIRM ${pendingUpdate.stage}/3` : "CONFIRM CHANGE"}
+            </Text>
+          </View>
+          <Text style={[styles.confirmTitle, { color: colors.foreground }]}>
+            {pendingUpdate.isLastActiveHandle ? `Disable @${pendingUpdate.code.code}?` : "Apply this change?"}
+          </Text>
+          <Text style={[styles.confirmText, { color: colors.mutedForeground }]}>
+            {pendingUpdate.isLastActiveHandle
+              ? "This is your last active handle. If you disable it and then log out, you may not be able to recover this account. The final confirmation requires Face ID or device verification."
+              : pendingUpdate.message}
+          </Text>
+          {pendingUpdate.isLastActiveHandle && (
+            <Text style={[styles.confirmDanger, { color: colors.destructive }]}>Step {pendingUpdate.stage} of 3: confirm you understand this can lock you out.</Text>
+          )}
+          <View style={styles.confirmActions}>
+            <TouchableOpacity onPress={onCancel} style={[styles.confirmBtn, { borderColor: colors.border }]}>
+              <Text style={[styles.confirmBtnText, { color: colors.mutedForeground }]}>CANCEL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity disabled={updatePending} onPress={onConfirm} style={[styles.confirmBtn, { borderColor: colors.destructive, backgroundColor: `${colors.destructive}20` }, updatePending && { opacity: 0.5 }]}>
+              <Text style={[styles.confirmBtnText, { color: colors.destructive }]}>{pendingUpdate.isLastActiveHandle && pendingUpdate.stage === 3 ? "VERIFY DEVICE" : "CONFIRM"}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </Modal>
   );
@@ -944,4 +1062,14 @@ const styles = StyleSheet.create({
   codeMeta: { fontFamily: "Inter_400Regular", fontSize: 11, marginTop: 2 },
   smallBtn: { borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7 },
   smallBtnText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
+  confirmOverlay: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "rgba(0,0,0,0.72)" },
+  confirmBox: { width: "100%", borderWidth: 1, padding: 18 },
+  confirmTitleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  confirmKicker: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 2 },
+  confirmTitle: { fontFamily: "Inter_700Bold", fontSize: 18, marginBottom: 8 },
+  confirmText: { fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 19 },
+  confirmDanger: { fontFamily: "Inter_600SemiBold", fontSize: 12, marginTop: 12 },
+  confirmActions: { flexDirection: "row", gap: 8, marginTop: 18 },
+  confirmBtn: { flex: 1, borderWidth: 1, paddingVertical: 12, alignItems: "center" },
+  confirmBtnText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
 });

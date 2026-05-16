@@ -34,9 +34,10 @@ import {
   useGetIdentityCodes,
   usePatchIdentityCodesCodeId,
   usePostIdentityCodes,
+  type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getToken } from "@/lib/auth";
+import { clearToken, getToken, loginWithPasskey, setAuthHandle, setToken } from "@/lib/auth";
 import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 
@@ -437,8 +438,22 @@ function ProfilePanel({
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
   const [newTtl, setNewTtl] = useState<number>(315360000);
   const [error, setError] = useState("");
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    code: IdentityCode;
+    message: string;
+    data: {
+      active?: boolean | null;
+      visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
+      ttlSeconds?: number | null;
+      confirmLastHandleDisable?: boolean | null;
+    };
+    isLastActiveHandle: boolean;
+    stage: number;
+  } | null>(null);
   const deviceCount = useDeviceCount(revealed);
   const { data: codes = [] } = useGetIdentityCodes();
+  const sortedCodes = [...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`));
+  const activeHandleCount = codes.filter((code) => code.kind === "alias" && code.active).length;
 
   const createCode = usePostIdentityCodes({
     mutation: {
@@ -460,6 +475,7 @@ function ProfilePanel({
     mutation: {
       onSuccess: () => {
         setError("");
+        setPendingUpdate(null);
         qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
       },
       onError: () => setError("Could not update code"),
@@ -479,9 +495,9 @@ function ProfilePanel({
     });
   };
 
-  const confirmUpdate = (
+  const requestUpdate = (
     message: string,
-    codeId: string,
+    code: IdentityCode,
     data: {
       active?: boolean | null;
       visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
@@ -489,8 +505,29 @@ function ProfilePanel({
     }
   ) => {
     if (updateCode.isPending) return;
-    if (!window.confirm(message)) return;
-    updateCode.mutate({ codeId, data });
+    const isLastActiveHandle = code.kind === "alias" && code.active && data.active === false && activeHandleCount <= 1;
+    setPendingUpdate({ code, message, data, isLastActiveHandle, stage: isLastActiveHandle ? 1 : 0 });
+  };
+
+  const confirmPendingUpdate = async () => {
+    if (!pendingUpdate || updateCode.isPending) return;
+    if (pendingUpdate.isLastActiveHandle && pendingUpdate.stage < 3) {
+      setPendingUpdate({ ...pendingUpdate, stage: pendingUpdate.stage + 1 });
+      return;
+    }
+    let data = pendingUpdate.data;
+    if (pendingUpdate.isLastActiveHandle) {
+      try {
+        const auth = await loginWithPasskey(pendingUpdate.code.code);
+        setToken(auth.token);
+        setAuthHandle(auth.authHandle);
+        data = { ...data, confirmLastHandleDisable: true };
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Fresh passkey verification failed.");
+        return;
+      }
+    }
+    updateCode.mutate({ codeId: pendingUpdate.code.id, data });
   };
 
   return (
@@ -568,7 +605,7 @@ function ProfilePanel({
             {codes.length === 0 && (
               <div className="border border-border/50 bg-background/40 p-4 font-mono text-xs text-muted-foreground">No handles or invite codes yet.</div>
             )}
-            {[...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`)).map((code) => (
+            {sortedCodes.map((code) => (
               <div key={code.id} className="border border-border/50 bg-background/40 p-3 space-y-3" data-testid={`identity-code-${code.id}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -581,7 +618,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })}
+                    onClick={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code, { active: !code.active })}
                     className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50 disabled:opacity-50"
                   >
                     {code.active ? "DISABLE" : "ENABLE"}
@@ -591,7 +628,7 @@ function ProfilePanel({
                   <select
                     value={code.visibilityScope}
                     disabled={updateCode.isPending}
-                    onChange={(e) => confirmUpdate(`Change visibility for ${code.code} to ${e.target.value.replaceAll("_", " ")}?`, code.id, { visibilityScope: e.target.value as typeof code.visibilityScope })}
+                    onChange={(e) => requestUpdate(`Change visibility for ${code.code} to ${e.target.value.replaceAll("_", " ")}?`, code, { visibilityScope: e.target.value as typeof code.visibilityScope })}
                     className="bg-background border border-border px-2 py-2 font-mono text-xs disabled:opacity-50"
                   >
                     {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
@@ -602,7 +639,7 @@ function ProfilePanel({
                     onChange={(e) => {
                       if (e.target.value) {
                         const label = CODE_TTL_OPTIONS.find((ttl) => ttl.value === Number(e.target.value))?.label ?? e.target.value;
-                        confirmUpdate(`Change duration for ${code.code} to ${label}?`, code.id, { ttlSeconds: Number(e.target.value) });
+                        requestUpdate(`Change duration for ${code.code} to ${label}?`, code, { ttlSeconds: Number(e.target.value) });
                       }
                       e.currentTarget.value = "";
                     }}
@@ -614,7 +651,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })}
+                    onClick={() => requestUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })}
                     className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive disabled:opacity-50"
                   >
                     ROLL / EXPIRE
@@ -623,6 +660,70 @@ function ProfilePanel({
               </div>
             ))}
           </div>
+        </div>
+      </div>
+      {pendingUpdate && (
+        <ConfirmCodeUpdateModal
+          pendingUpdate={pendingUpdate}
+          updatePending={updateCode.isPending}
+          onCancel={() => setPendingUpdate(null)}
+          onConfirm={() => void confirmPendingUpdate()}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmCodeUpdateModal({
+  pendingUpdate,
+  updatePending,
+  onCancel,
+  onConfirm,
+}: {
+  pendingUpdate: {
+    code: IdentityCode;
+    message: string;
+    isLastActiveHandle: boolean;
+    stage: number;
+  };
+  updatePending: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] bg-background/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-md border border-border bg-card p-5 shadow-2xl">
+        <div className="flex items-center gap-2 mb-3">
+          <Shield className={pendingUpdate.isLastActiveHandle ? "w-4 h-4 text-destructive" : "w-4 h-4 text-primary"} />
+          <div className="font-mono text-xs tracking-widest text-muted-foreground">
+            {pendingUpdate.isLastActiveHandle ? `LAST HANDLE CONFIRM ${pendingUpdate.stage}/3` : "CONFIRM CHANGE"}
+          </div>
+        </div>
+        <h3 className="font-mono text-lg font-bold mb-2">
+          {pendingUpdate.isLastActiveHandle ? `Disable @${pendingUpdate.code.code}?` : "Apply this change?"}
+        </h3>
+        <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+          {pendingUpdate.isLastActiveHandle
+            ? "This is your last active handle. If you disable it and then log out, you may not be able to recover this account. The final confirmation requires Face ID, Touch ID, Windows Hello, or your passkey provider."
+            : pendingUpdate.message}
+        </p>
+        {pendingUpdate.isLastActiveHandle && (
+          <p className="font-mono text-xs text-destructive mt-3">
+            Step {pendingUpdate.stage} of 3: confirm you understand this can lock you out.
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-2 mt-5">
+          <button type="button" onClick={onCancel} className="border border-border px-3 py-2.5 font-mono text-xs hover:border-primary/50">
+            CANCEL
+          </button>
+          <button
+            type="button"
+            disabled={updatePending}
+            onClick={onConfirm}
+            className="bg-destructive text-destructive-foreground px-3 py-2.5 font-mono text-xs disabled:opacity-50"
+          >
+            {pendingUpdate.isLastActiveHandle && pendingUpdate.stage === 3 ? "VERIFY PASSKEY" : "CONFIRM"}
+          </button>
         </div>
       </div>
     </div>
