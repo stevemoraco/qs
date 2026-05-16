@@ -226,8 +226,8 @@ export default function Landing() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30" style={{ pointerEvents: "none" }} />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 pt-16 md:pt-14">
-          <div className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] text-primary mb-4 backdrop-blur-sm"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />NIST FIPS 203 + 204</div>
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 pt-8 md:pt-7">
+          <div className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] text-primary mb-4 backdrop-blur-sm"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />ML-KEM-1024 + ML-DSA-87 + AES-256-GCM - NIST FIPS 203/204/197</div>
           <h1 className="font-mono font-bold text-3xl md:text-5xl tracking-tight mb-3 leading-tight">Ask yourself:<br />Why don't "privacy focused" apps work this way?</h1>
           <p className="font-mono text-xs md:text-sm text-muted-foreground max-w-xl mx-auto mb-4 leading-snug">Encrypted. Hold-revealed. Expiring by design.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-w-2xl mx-auto mb-4 text-left">
