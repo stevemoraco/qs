@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,6 +17,8 @@ import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthLogin } from "@workspace/api-client-react";
+
+const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 export default function LoginScreen() {
   const colors = useColors();
@@ -125,6 +128,24 @@ export default function LoginScreen() {
             Your private keys never leave this device
           </Text>
         </View>
+
+        <View style={[s.ethosCard, { borderColor: `${colors.primary}40`, backgroundColor: colors.card }]}>
+          <Text style={[s.ethosLabel, { color: colors.primary }]}>ETHOS</Text>
+          <Text style={[s.ethosText, { color: colors.mutedForeground }]}>
+            What is the most secure ideal form of truly ephemeral digital communication?
+            QuantumShield is a working experiment to answer that with software communities can audit,
+            improve, and rely on.
+          </Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL(GITHUB_URL)}
+            style={[s.githubBtn, { borderColor: colors.border }]}
+            testID="button-github"
+          >
+            <Feather name="github" size={14} color={colors.primary} />
+            <Text style={[s.githubText, { color: colors.foreground }]}>VIEW GITHUB</Text>
+            <Feather name="external-link" size={12} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -164,4 +185,17 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     linkText: { fontFamily: "Inter_400Regular", fontSize: 13 },
     securityNote: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 12 },
     securityText: { fontFamily: "Inter_400Regular", fontSize: 11, flex: 1 },
+    ethosCard: { borderWidth: 1, padding: 16, marginTop: 14 },
+    ethosLabel: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
+    ethosText: { fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 19 },
+    githubBtn: {
+      marginTop: 14,
+      borderWidth: 1,
+      paddingVertical: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
+      gap: 8,
+    },
+    githubText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 2.5 },
   });

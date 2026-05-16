@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Shield, AlertCircle } from "lucide-react";
+import { Shield, AlertCircle, Github, ExternalLink } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
 import { setToken } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
+
+const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -31,7 +33,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 justify-center mb-10">
           <div className="w-8 h-8 bg-primary flex items-center justify-center">
@@ -113,6 +115,25 @@ export default function Login() {
             <span className="text-primary">// </span>
             Your private keys never leave your device
           </p>
+        </div>
+
+        <div className="mt-4 border border-primary/20 bg-primary/5 px-4 py-4">
+          <div className="font-mono text-xs text-primary tracking-widest mb-2">ETHOS</div>
+          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+            What is the most secure ideal form of truly ephemeral digital communication?
+            QuantumShield is a working experiment to answer that with software communities
+            can audit, improve, and rely on.
+          </p>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-border bg-card/60 text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all"
+          >
+            <Github className="w-4 h-4" />
+            VIEW GITHUB
+            <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
       </div>
     </div>

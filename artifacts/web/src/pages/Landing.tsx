@@ -136,6 +136,7 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             <div className="hidden md:flex items-center gap-4 mr-6">
               <a href="#features" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
+              <a href="#ethos" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">ETHOS</a>
               <a href="#security" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">SECURITY</a>
               <a href="#community" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">COMMUNITY</a>
               <a href="#open-source" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">OPEN SOURCE</a>
@@ -190,6 +191,10 @@ export default function Landing() {
             <a href="#community" className="inline-flex items-center gap-2 border border-primary/40 bg-primary/5 text-primary font-mono text-sm px-8 py-3 hover:border-primary/70 hover:bg-primary/10 transition-all tracking-widest uppercase">
               JOIN AUDIT
             </a>
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase">
+              <Github className="w-4 h-4" />
+              GITHUB
+            </a>
             <Link href="/login">
               <button className="inline-flex items-center gap-2 border border-border text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase" data-testid="button-login">
                 ACCESS TERMINAL
@@ -212,6 +217,40 @@ export default function Landing() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      <section id="ethos" className="py-24 px-6 border-y border-border/50 bg-card/20">
+        <div className="max-w-5xl mx-auto">
+          <div className="font-mono text-xs text-primary tracking-widest mb-4">ETHOS / EXPERIMENT</div>
+          <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-8">
+            What is the most secure ideal form of truly ephemeral digital communication?
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start">
+            <p className="font-mono text-sm md:text-base text-muted-foreground leading-relaxed">
+              QuantumShield is our working answer to that question. The mission is to build
+              communication software where messages can be encrypted for the quantum era,
+              revealed only with deliberate user intent, and made practically useless after
+              expiry. We are testing whether communities can rely on open, auditable software
+              for private coordination without asking anyone to trust a black box.
+            </p>
+            <div className="border border-border/50 bg-background/50 p-6">
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">
+                The experiment is public by design: inspect the code, challenge the threat model,
+                report weak assumptions, and help us move closer to dependable ephemeral messaging.
+              </p>
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-3">
+                <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-xs px-5 py-3 hover:border-primary/50 transition-all tracking-widest uppercase">
+                  <Github className="w-4 h-4" />
+                  SOURCE
+                </a>
+                <a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs px-5 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase">
+                  <Bug className="w-4 h-4" />
+                  AUDIT
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

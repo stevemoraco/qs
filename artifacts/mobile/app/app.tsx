@@ -11,11 +11,13 @@ import {
   ScrollView,
   Platform,
   AppState,
+  Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useQueryClient } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
@@ -38,6 +40,7 @@ import { randomBytes } from "@noble/hashes/utils.js";
 import * as ScreenCapture from "expo-screen-capture";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
+const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 type Room = {
   id: string;
@@ -67,6 +70,80 @@ function getRoomLabel(room: Room, myId?: string): string {
     return other?.displayName ?? other?.username ?? "Direct";
   }
   return `Group (${room.memberCount})`;
+}
+
+const CODE_NAMES = [
+  "Axiom", "Beacon", "Cipher", "Delta", "Echo", "Flux", "Grid", "Halo",
+  "Ion", "Junction", "Keystone", "Lumen", "Matrix", "Nova", "Obsidian", "Pulse",
+  "Quartz", "Relay", "Signal", "Trace", "Unit", "Vector", "Ward", "Zenith",
+];
+
+type CodenameFor = (id: string) => string;
+
+function createSessionCodenameFactory(): CodenameFor {
+  const names = [...CODE_NAMES];
+  const entropy = randomBytes(names.length);
+  for (let i = names.length - 1; i > 0; i--) {
+    const j = entropy[i] % (i + 1);
+    [names[i], names[j]] = [names[j], names[i]];
+  }
+
+  const assigned = new Map<string, string>();
+  let cursor = 0;
+
+  return (id: string) => {
+    const existing = assigned.get(id);
+    if (existing) return existing;
+    const label = `${names[cursor % names.length]}-${String(cursor + 1).padStart(2, "0")}`;
+    cursor += 1;
+    assigned.set(id, label);
+    return label;
+  };
+}
+
+function FrontCameraSentinel({
+  active,
+  onStatus,
+}: {
+  active: boolean;
+  onStatus: (status: "scanning" | "clear" | "unavailable", detail: string) => void;
+}) {
+  const [permission, requestPermission] = useCameraPermissions();
+
+  useEffect(() => {
+    let mounted = true;
+    onStatus("scanning", "REQUESTING FRONT CAMERA");
+    requestPermission()
+      .then((result) => {
+        if (!mounted) return;
+        onStatus(result.granted ? "scanning" : "unavailable", result.granted ? "STARTING FRONT CAMERA" : "CAMERA DENIED");
+      })
+      .catch(() => {
+        if (mounted) onStatus("unavailable", "CAMERA PERMISSION ERROR");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [onStatus, requestPermission]);
+
+  useEffect(() => {
+    if (!permission) return;
+    if (!permission.granted) onStatus("unavailable", "CAMERA DENIED");
+  }, [onStatus, permission]);
+
+  if (!permission?.granted) return null;
+
+  return (
+    <CameraView
+      style={styles.hiddenCamera}
+      facing="front"
+      active={active}
+      mode="video"
+      mute
+      onCameraReady={() => onStatus("clear", "FRONT CAMERA LIVE")}
+      onMountError={() => onStatus("unavailable", "CAMERA MOUNT ERROR")}
+    />
+  );
 }
 
 function formatTime(iso: string): string {
@@ -99,20 +176,25 @@ async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): P
   return new TextDecoder().decode(pt);
 }
 
-function RoomListItem({ room, myId, active, onPress, colors }: {
+function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: {
   room: Room;
   myId?: string;
   active: boolean;
   onPress: () => void;
   colors: ReturnType<typeof useColors>;
+  codenameForRoom: CodenameFor;
 }) {
-  const label = getRoomLabel(room, myId);
+  const [revealName, setRevealName] = useState(false);
+  const label = revealName ? getRoomLabel(room, myId) : codenameForRoom(room.id);
   const initial = label[0]?.toUpperCase() ?? "?";
   const avatarColor = room.members?.find((m) => m.id !== myId)?.avatarColor ?? colors.primary;
 
   return (
     <TouchableOpacity
       onPress={onPress}
+      delayLongPress={180}
+      onLongPress={() => setRevealName(true)}
+      onPressOut={() => setRevealName(false)}
       style={[styles.roomItem, active && { backgroundColor: colors.card, borderLeftWidth: 2, borderLeftColor: colors.primary }]}
       testID={`button-room-${room.id}`}
     >
@@ -140,11 +222,12 @@ function RoomListItem({ room, myId, active, onPress, colors }: {
   );
 }
 
-function MessageBubble({ msg, isOwn, colors, plaintext, onRevealStart, onRevealEnd }: {
+function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealStart, onRevealEnd }: {
   msg: Message;
   isOwn: boolean;
   colors: ReturnType<typeof useColors>;
   plaintext?: string;
+  senderLabel: string;
   onRevealStart: () => void;
   onRevealEnd: () => void;
 }) {
@@ -158,7 +241,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, onRevealStart, onRevealE
         isOwn ? { backgroundColor: `${colors.primary}20`, borderColor: `${colors.primary}40` } : { backgroundColor: colors.card },
       ]}>
         {!isOwn && (
-          <Text style={[styles.senderName, { color: colors.primary }]}>{msg.senderUsername}</Text>
+          <Text style={[styles.senderName, { color: colors.primary }]}>{senderLabel}</Text>
         )}
         {expired ? (
           <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>
@@ -188,11 +271,28 @@ function MessageBubble({ msg, isOwn, colors, plaintext, onRevealStart, onRevealE
   );
 }
 
-function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: string; colors: ReturnType<typeof useColors>; onBack: () => void; topPad: number }) {
+function ChatView({
+  room,
+  myId,
+  colors,
+  onBack,
+  topPad,
+  codenameForUser,
+  roomCodename,
+}: {
+  room: Room;
+  myId: string;
+  colors: ReturnType<typeof useColors>;
+  onBack: () => void;
+  topPad: number;
+  codenameForUser: CodenameFor;
+  roomCodename: string;
+}) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
+  const [revealRoomName, setRevealRoomName] = useState(false);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -283,9 +383,17 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
           <Feather name="chevron-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>
-            {getRoomLabel(room, myId)}
-          </Text>
+          <TouchableOpacity
+            delayLongPress={120}
+            onLongPress={() => setRevealRoomName(true)}
+            onPressOut={() => setRevealRoomName(false)}
+            activeOpacity={0.85}
+            testID="button-hold-reveal-room-name"
+          >
+            <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>
+              {revealRoomName ? getRoomLabel(room, myId) : roomCodename}
+            </Text>
+          </TouchableOpacity>
           <View style={styles.cipherRow}>
             <Feather name="shield" size={10} color={colors.primary} />
             <Text style={[styles.cipherText, { color: colors.primary }]} numberOfLines={1}>{CIPHER_SUITE}</Text>
@@ -295,12 +403,6 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
           <Feather name="users" size={12} color={colors.mutedForeground} />
           <Text style={[styles.memberCount, { color: colors.mutedForeground }]}>{members.length}</Text>
         </View>
-      </View>
-      <View style={[styles.cameraStatus, { borderBottomColor: colors.border }]} testID="camera-status">
-        <View style={[styles.cameraDot, { backgroundColor: colors.primary }]} />
-        <Text style={[styles.cameraStatusText, { color: colors.primary }]}>
-          NO CAMERA DETECTED — AREA CLEAR
-        </Text>
       </View>
       {screenshotAlert && (
         <View style={[styles.screenshotAlert, { backgroundColor: "#ef4444" }]} testID="screenshot-alert">
@@ -316,16 +418,20 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
         keyExtractor={(m) => m.id}
         inverted
         contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <MessageBubble
-            msg={item as Message}
-            isOwn={item.senderId === myId}
-            colors={colors}
-            plaintext={heldPlaintext?.id === item.id ? heldPlaintext.text : undefined}
-            onRevealStart={() => revealMessage(item as Message)}
-            onRevealEnd={hideRevealedMessage}
-          />
-        )}
+        renderItem={({ item }) => {
+          const plaintext = heldPlaintext?.id === item.id ? heldPlaintext.text : undefined;
+          return (
+            <MessageBubble
+              msg={item as Message}
+              isOwn={item.senderId === myId}
+              colors={colors}
+              plaintext={plaintext}
+              senderLabel={plaintext ? (item.senderUsername ?? codenameForUser(item.senderId)) : codenameForUser(item.senderId)}
+              onRevealStart={() => revealMessage(item as Message)}
+              onRevealEnd={hideRevealedMessage}
+            />
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.emptyChat}>
             <Feather name="lock" size={40} color={colors.border} />
@@ -367,11 +473,12 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
   );
 }
 
-function NewRoomModal({ visible, onClose, myId, colors }: {
+function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   visible: boolean;
   onClose: () => void;
   myId: string;
   colors: ReturnType<typeof useColors>;
+  codenameForUser: CodenameFor;
 }) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
@@ -477,24 +584,27 @@ function NewRoomModal({ visible, onClose, myId, colors }: {
             />
           </View>
 
-          {results.filter((u) => u.id !== myId).map((u) => (
-            <TouchableOpacity
-              key={u.id}
-              onPress={() => setSelected((s) => s.includes(u.id) ? s.filter((x) => x !== u.id) : [...s, u.id])}
-              style={[styles.userRow, selected.includes(u.id) && { backgroundColor: `${colors.primary}15` }]}
-              testID={`button-user-${u.id}`}
-            >
-              <View style={[styles.avatarSm, { backgroundColor: u.avatarColor ?? colors.primary }]}>
-                <Text style={styles.avatarText}>{u.username[0].toUpperCase()}</Text>
-              </View>
-              <Text style={[styles.userName, { color: colors.foreground }]}>
-                {u.displayName ?? u.username}
-              </Text>
-              {selected.includes(u.id) && (
-                <Feather name="check-circle" size={16} color={colors.primary} />
-              )}
-            </TouchableOpacity>
-          ))}
+          {results.filter((u) => u.id !== myId).map((u) => {
+            const label = codenameForUser(u.id);
+            return (
+              <TouchableOpacity
+                key={u.id}
+                onPress={() => setSelected((s) => s.includes(u.id) ? s.filter((x) => x !== u.id) : [...s, u.id])}
+                style={[styles.userRow, selected.includes(u.id) && { backgroundColor: `${colors.primary}15` }]}
+                testID={`button-user-${u.id}`}
+              >
+                <View style={[styles.avatarSm, { backgroundColor: u.avatarColor ?? colors.primary }]}>
+                  <Text style={styles.avatarText}>{label[0]}</Text>
+                </View>
+                <Text style={[styles.userName, { color: colors.foreground }]}>
+                  {label}
+                </Text>
+                {selected.includes(u.id) && (
+                  <Feather name="check-circle" size={16} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
 
           <TouchableOpacity
             style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]}
@@ -522,10 +632,17 @@ export default function AppScreen() {
   const router = useRouter();
   const qc = useQueryClient();
   const { clearAuth } = useAuth();
+  const codenameForRef = useRef<CodenameFor | null>(null);
+  if (!codenameForRef.current) codenameForRef.current = createSessionCodenameFactory();
+  const codenameFor = codenameForRef.current;
 
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showRooms, setShowRooms] = useState(true);
+  const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
+  const [appActive, setAppActive] = useState(true);
+  const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "unavailable">("scanning");
+  const [cameraDetail, setCameraDetail] = useState("REQUESTING FRONT CAMERA");
 
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({
@@ -542,11 +659,36 @@ export default function AppScreen() {
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
+  const codenameForUser = useCallback((id: string) => codenameFor(`user:${id}`), [codenameFor]);
+  const codenameForRoom = useCallback((id: string) => codenameFor(`room:${id}`), [codenameFor]);
+  const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => {
+    setCameraStatus(status);
+    setCameraDetail(detail);
+  }, []);
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => setAppActive(state === "active"));
+    return () => sub.remove();
+  }, []);
+
+  const topPad = Platform.OS === "web" ? 67 : 0;
+  const cameraColor = cameraStatus === "clear" ? colors.primary : colors.mutedForeground;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <FrontCameraSentinel active={appActive} onStatus={updateCameraStatus} />
+      <View
+        style={[
+          styles.cameraStatus,
+          { borderBottomColor: colors.border, paddingTop: (Platform.OS === "web" ? 6 : insets.top + 6) },
+        ]}
+        testID="camera-status"
+      >
+        <View style={[styles.cameraDot, { backgroundColor: cameraColor }]} />
+        <Text style={[styles.cameraStatusText, { color: cameraColor }]}>
+          {cameraStatus === "clear" ? "NO CAMERA DETECTED - AREA CLEAR" : cameraStatus === "scanning" ? "INITIALIZING FRONT CAMERA SCAN" : "CAMERA UNAVAILABLE - SCAN OFFLINE"} / {cameraDetail}
+        </Text>
+      </View>
       {showRooms || !activeRoom ? (
         <View style={[styles.sidebar, { borderRightColor: colors.border }]}>
           <View style={[styles.sidebarTop, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
@@ -556,21 +698,34 @@ export default function AppScreen() {
               </View>
               <Text style={[styles.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
             </View>
-            <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout">
-              <Feather name="log-out" size={18} color={colors.mutedForeground} />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} testID="button-github">
+                <Feather name="github" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout">
+                <Feather name="log-out" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {me && (
             <View style={[styles.meRow, { borderBottomColor: colors.border }]}>
               <View style={[styles.avatarSm, { backgroundColor: me.avatarColor ?? colors.primary }]}>
-                <Text style={styles.avatarText}>{me.username[0].toUpperCase()}</Text>
+                <Text style={styles.avatarText}>{codenameForUser(me.id)[0]}</Text>
               </View>
               <View>
-                <Text style={[styles.meUsername, { color: colors.foreground }]}>
-                  {me.displayName ?? me.username}
-                </Text>
-                <Text style={[styles.meHandle, { color: colors.mutedForeground }]}>@{me.username}</Text>
+                <TouchableOpacity
+                  delayLongPress={120}
+                  onLongPress={() => setRevealedNameId(`user:${me.id}`)}
+                  onPressOut={() => setRevealedNameId(null)}
+                  activeOpacity={0.85}
+                  testID="button-hold-reveal-account-name"
+                >
+                  <Text style={[styles.meUsername, { color: colors.foreground }]}>
+                    {revealedNameId === `user:${me.id}` ? (me.displayName ?? me.username) : codenameForUser(me.id)}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={[styles.meHandle, { color: colors.mutedForeground }]}>LOCAL DEVICE</Text>
               </View>
             </View>
           )}
@@ -591,6 +746,7 @@ export default function AppScreen() {
                 myId={me?.id}
                 active={item.id === activeRoomId}
                 colors={colors}
+                codenameForRoom={codenameForRoom}
                 onPress={() => {
                   setActiveRoomId(item.id);
                   setShowRooms(false);
@@ -615,6 +771,8 @@ export default function AppScreen() {
           myId={me.id}
           colors={colors}
           topPad={topPad}
+          codenameForUser={codenameForUser}
+          roomCodename={codenameForRoom(activeRoom.id)}
           onBack={() => { setShowRooms(true); setActiveRoomId(null); }}
         />
       ) : null}
@@ -625,6 +783,7 @@ export default function AppScreen() {
           onClose={() => setShowNewRoom(false)}
           myId={me.id}
           colors={colors}
+          codenameForUser={codenameForUser}
         />
       )}
     </View>
@@ -633,9 +792,11 @@ export default function AppScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  hiddenCamera: { position: "absolute", width: 1, height: 1, left: -1000, top: -1000, opacity: 0.01 },
   sidebar: { flex: 1, borderRightWidth: 1 },
   sidebarTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
   iconBox: { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
   brand: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 4 },
   meRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderBottomWidth: 1 },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import {
   Shield,
   Plus,
@@ -8,12 +8,11 @@ import {
   Users,
   Clock,
   Lock,
-  AlertTriangle,
   Send,
   X,
   Search,
-  ChevronRight,
   ArrowLeft,
+  Github,
 } from "lucide-react";
 import {
   useGetRooms,
@@ -27,13 +26,14 @@ import {
   useGetRoomsRoomIdMembers,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
-  usePostRoomsRoomIdMembers,
   getGetRoomsRoomIdMembersQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearAll } from "@/lib/auth";
 import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
+
+const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 type Room = {
   id: string;
@@ -388,14 +388,6 @@ function RoomView({
     },
   });
 
-  const addMember = usePostRoomsRoomIdMembers({
-    mutation: {
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) });
-      },
-    },
-  });
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -614,6 +606,12 @@ export default function ChatApp() {
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [privacyShield, setPrivacyShield] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
+  const [cameraStatusDetail, setCameraStatusDetail] = useState("");
+  const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
   const { data: me } = useGetAuthMe();
@@ -629,6 +627,8 @@ export default function ChatApp() {
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
+  const codenameForUser = (id: string) => codenameFor(`user:${id}`);
+  const codenameForRoom = (id: string) => codenameFor(`room:${id}`);
 
   useEffect(() => {
     let printScreenTimer: ReturnType<typeof setTimeout> | null = null;
@@ -662,12 +662,67 @@ export default function ChatApp() {
     };
   }, []);
 
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let mounted = true;
+
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        if (!mounted) return;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+
+        const detector = await getFrameThreatDetector();
+        if (!mounted) return;
+        if (!detector) {
+          setCameraStatus("unavailable");
+          setCameraStatusDetail("MODEL UNAVAILABLE");
+          return;
+        }
+        setCameraStatus("clear");
+        setCameraStatusDetail(detector.source.toUpperCase());
+
+        detectionIntervalRef.current = setInterval(async () => {
+          if (!videoRef.current) return;
+          try {
+            const threats = await detector.detect(videoRef.current);
+            const strongest = threats.sort((a, b) => b.score - a.score)[0];
+            setCameraStatus(strongest ? "threat" : "clear");
+            setCameraStatusDetail(
+              strongest
+                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}% / ${detector.source.toUpperCase()}`
+                : detector.source.toUpperCase(),
+            );
+          } catch {
+            setCameraStatus("unavailable");
+            setCameraStatusDetail("SCAN ERROR");
+          }
+        }, 2200);
+      } catch {
+        setCameraStatus("unavailable");
+        setCameraStatusDetail("CAMERA DENIED");
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      mounted = false;
+      if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
   return (
     <div
-      className="h-screen bg-background flex overflow-hidden select-none"
+      className="h-screen bg-background flex flex-col overflow-hidden select-none"
       onContextMenu={(event) => event.preventDefault()}
       data-testid="chat-privacy-surface"
     >
+      <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
       {privacyShield && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6">
           <Shield className="w-12 h-12 text-primary mb-4" />
@@ -677,11 +732,13 @@ export default function ChatApp() {
           </p>
         </div>
       )}
-      <div
-        className={`${
-          activeRoomId ? "hidden md:flex" : "flex"
-        } w-full md:w-72 border-r border-border/50 flex-col flex-shrink-0`}
-      >
+      <CameraScanStatus status={cameraStatus} detail={cameraStatusDetail} />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <div
+          className={`${
+            activeRoomId ? "hidden md:flex" : "flex"
+          } w-full md:w-72 border-r border-border/50 flex-col flex-shrink-0`}
+        >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-primary flex items-center justify-center">
@@ -690,6 +747,16 @@ export default function ChatApp() {
             <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
           </div>
           <div className="flex items-center gap-2">
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              title="View source on GitHub"
+              data-testid="button-github"
+            >
+              <Github className="w-4 h-4" />
+            </a>
             <button
               onClick={() => logout.mutate()}
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -708,11 +775,21 @@ export default function ChatApp() {
                 className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold font-mono"
                 style={{ backgroundColor: me.avatarColor ?? "#06b6d4" }}
               >
-                {me.username[0].toUpperCase()}
+                {codenameForUser(me.id)[0]}
               </div>
               <div>
-                <p className="font-mono text-xs font-semibold">{me.displayName ?? me.username}</p>
-                <p className="font-mono text-xs text-muted-foreground">@{me.username}</p>
+                <button
+                  type="button"
+                  onPointerDown={() => setRevealedNameId(`user:${me.id}`)}
+                  onPointerUp={() => setRevealedNameId(null)}
+                  onPointerCancel={() => setRevealedNameId(null)}
+                  onPointerLeave={() => setRevealedNameId(null)}
+                  className="block font-mono text-xs font-semibold text-left hover:text-primary"
+                  data-testid="button-hold-reveal-account-name"
+                >
+                  {revealedNameId === `user:${me.id}` ? (me.displayName ?? me.username) : codenameForUser(me.id)}
+                </button>
+                <p className="font-mono text-xs text-muted-foreground">LOCAL DEVICE</p>
               </div>
             </div>
           </div>
@@ -748,6 +825,10 @@ export default function ChatApp() {
             <button
               key={room.id}
               onClick={() => setActiveRoomId(room.id)}
+              onPointerDown={() => setRevealedNameId(`room:${room.id}`)}
+              onPointerUp={() => setRevealedNameId(null)}
+              onPointerCancel={() => setRevealedNameId(null)}
+              onPointerLeave={() => setRevealedNameId(null)}
               className={`w-full px-4 py-3 flex items-center gap-3 border-b border-border/30 hover:bg-accent/30 transition-colors text-left ${
                 activeRoomId === room.id ? "bg-accent/50 border-l-2 border-l-primary" : ""
               }`}
@@ -762,12 +843,12 @@ export default function ChatApp() {
               >
                 {room.type === "group"
                   ? <Users className="w-4 h-4" />
-                  : (room.members?.find((m) => m.id !== me?.id)?.username ?? "?")[0].toUpperCase()}
+                  : codenameForRoom(room.id)[0]}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-xs font-semibold truncate">
-                    {getRoomLabel(room as Room, me?.id)}
+                    {revealedNameId === `room:${room.id}` ? getRoomLabel(room as Room, me?.id) : codenameForRoom(room.id)}
                   </p>
                   {room.lastMessageAt && (
                     <span className="font-mono text-xs text-muted-foreground ml-2 flex-shrink-0">
@@ -784,14 +865,16 @@ export default function ChatApp() {
             </button>
           ))}
         </div>
-      </div>
+        </div>
 
-      <div className={`${activeRoomId ? "flex" : "hidden md:flex"} flex-1 flex-col min-w-0`}>
+        <div className={`${activeRoomId ? "flex" : "hidden md:flex"} flex-1 flex-col min-w-0`}>
         {activeRoom && me ? (
           <RoomView
             room={activeRoom as Room}
             currentUserId={me.id}
             onBack={() => setActiveRoomId(null)}
+            codenameForUser={codenameForUser}
+            roomCodename={codenameForRoom(activeRoom.id)}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
@@ -815,12 +898,14 @@ export default function ChatApp() {
             </button>
           </div>
         )}
+        </div>
       </div>
 
       {showNewRoom && me && (
         <NewRoomDialog
           onClose={() => setShowNewRoom(false)}
           currentUserId={me.id}
+          codenameForUser={codenameForUser}
         />
       )}
     </div>
