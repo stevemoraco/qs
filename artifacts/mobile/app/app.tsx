@@ -32,6 +32,8 @@ import {
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
 } from "@workspace/api-client-react";
+import { gcm } from "@noble/ciphers/aes.js";
+import { randomBytes } from "@noble/hashes/utils.js";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 
@@ -69,22 +71,30 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const messageKeyStore = new Map<string, CryptoKey>();
+const messageKeyStore = new Map<string, Uint8Array>();
 
-async function encryptMsg(text: string): Promise<{ ciphertext: string; nonce: string; key: CryptoKey }> {
-  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-  const nonce = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, key, new TextEncoder().encode(text));
-  const ciphertext = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-  const nonceB64 = btoa(String.fromCharCode(...nonce));
-  return { ciphertext, nonce: nonceB64, key };
+function bytesToB64(b: Uint8Array): string {
+  let s = "";
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+  return btoa(s);
+}
+function b64ToBytes(s: string): Uint8Array {
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
 }
 
-async function decryptMsg(ciphertext: string, nonce: string, key: CryptoKey): Promise<string> {
-  const ctBytes = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
-  const ivBytes = Uint8Array.from(atob(nonce), (c) => c.charCodeAt(0));
-  const dec = await crypto.subtle.decrypt({ name: "AES-GCM", iv: ivBytes }, key, ctBytes);
-  return new TextDecoder().decode(dec);
+async function encryptMsg(text: string): Promise<{ ciphertext: string; nonce: string; key: Uint8Array }> {
+  const key = randomBytes(32);
+  const nonce = randomBytes(12);
+  const ct = gcm(key, nonce).encrypt(new TextEncoder().encode(text));
+  return { ciphertext: bytesToB64(ct), nonce: bytesToB64(nonce), key };
+}
+
+async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): Promise<string> {
+  const pt = gcm(key, b64ToBytes(nonce)).decrypt(b64ToBytes(ciphertext));
+  return new TextDecoder().decode(pt);
 }
 
 function RoomListItem({ room, myId, active, onPress, colors }: {

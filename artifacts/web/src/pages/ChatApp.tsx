@@ -324,6 +324,11 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   useEffect(() => {
     let stream: MediaStream | null = null;
 
+    const isTouchDevice =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(pointer: coarse)").matches || (navigator.maxTouchPoints ?? 0) > 0);
+    if (isTouchDevice) return;
+
     const startCamera = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
@@ -442,10 +447,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
         </div>
       </div>
 
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-3"
-        style={{ filter: cameraWarning ? "blur(20px)" : "none" }}
-      >
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <Lock className="w-12 h-12 text-muted-foreground/30 mb-4" />
@@ -513,7 +515,6 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
       <form
         onSubmit={handleSend}
         className="flex items-center gap-2 px-4 py-4 border-t border-border/50 flex-shrink-0"
-        style={{ filter: cameraWarning ? "blur(20px)" : "none", pointerEvents: cameraWarning ? "none" : "auto" }}
       >
         <input
           value={input}
