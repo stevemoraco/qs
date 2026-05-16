@@ -226,23 +226,23 @@ export default function Landing() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30" style={{ pointerEvents: "none" }} />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-        <div className="relative z-10 text-center max-w-5xl mx-auto px-6 pt-14">
-          <div className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary mb-8 backdrop-blur-sm"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />NIST FIPS 203 + 204 COMPLIANT — POST-QUANTUM SECURE</div>
-          <h1 className="font-mono font-bold text-4xl md:text-7xl tracking-tight mb-6 leading-[1.05]">Ask yourself:<br />Why don't "privacy focused" apps work this way?</h1>
-          <p className="font-mono text-sm md:text-base text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">QuantumShield makes privacy intentional: encrypted by default, revealed only while held, and designed to become useless after expiry.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-3xl mx-auto mb-8 text-left">
+        <div className="relative z-10 text-center max-w-4xl mx-auto px-4 pt-16 md:pt-14">
+          <div className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[10px] text-primary mb-4 backdrop-blur-sm"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />NIST FIPS 203 + 204</div>
+          <h1 className="font-mono font-bold text-3xl md:text-5xl tracking-tight mb-3 leading-tight">Ask yourself:<br />Why don't "privacy focused" apps work this way?</h1>
+          <p className="font-mono text-xs md:text-sm text-muted-foreground max-w-xl mx-auto mb-4 leading-snug">Encrypted. Hold-revealed. Expiring by design.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-w-2xl mx-auto mb-4 text-left">
             {HERO_FEATURES.map((feature) => (
-              <div key={feature.label} className="flex items-center gap-3 border border-border/50 bg-card/35 px-4 py-3 backdrop-blur-sm">
+              <div key={feature.label} className="flex items-center gap-2 border border-border/50 bg-card/35 px-3 py-2 backdrop-blur-sm">
                 <span className="text-primary flex-shrink-0">{feature.icon}</span>
-                <span className="font-mono text-xs text-muted-foreground leading-snug">{feature.label}</span>
+                <span className="font-mono text-[11px] text-muted-foreground leading-tight">{feature.label}</span>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto mb-20">
-            <Link href="/register"><button className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-sm px-6 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase" data-testid="button-get-access">REQUEST CLEARANCE<ChevronRight className="w-4 h-4" /></button></Link>
-            <a href="#community" className="w-full inline-flex items-center justify-center gap-2 border border-primary/40 bg-primary/5 text-primary font-mono text-sm px-6 py-3 hover:border-primary/70 hover:bg-primary/10 transition-all tracking-widest uppercase"><Bug className="w-4 h-4" />JOIN AUDIT</a>
-            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-sm px-6 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Github className="w-4 h-4" />GITHUB</a>
-            <Link href="/login"><button className="w-full inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-sm px-6 py-3 hover:border-primary/50 transition-all tracking-widest uppercase" data-testid="button-login"><Lock className="w-4 h-4" />ACCESS TERMINAL</button></Link>
+          <div className="grid grid-cols-2 gap-2 max-w-xl mx-auto mb-10">
+            <Link href="/register"><button className="w-full min-h-14 inline-flex items-center gap-3 bg-primary text-primary-foreground px-4 py-2.5 hover:bg-primary/90 transition-all text-left" data-testid="button-get-access"><UserPlus className="w-4 h-4 flex-shrink-0" /><span><span className="block font-mono text-xs tracking-widest uppercase">Request Clearance</span><span className="block font-mono text-[10px] opacity-80 mt-0.5">Make account</span></span></button></Link>
+            <Link href="/login"><button className="w-full min-h-14 inline-flex items-center gap-3 border border-border text-foreground px-4 py-2.5 hover:border-primary/50 transition-all text-left" data-testid="button-login"><Lock className="w-4 h-4 flex-shrink-0" /><span><span className="block font-mono text-xs tracking-widest uppercase">Access Terminal</span><span className="block font-mono text-[10px] text-muted-foreground mt-0.5">Login</span></span></button></Link>
+            <a href="#community" className="w-full min-h-14 inline-flex items-center gap-3 border border-primary/40 bg-primary/5 text-primary px-4 py-2.5 hover:border-primary/70 hover:bg-primary/10 transition-all text-left"><Bug className="w-4 h-4 flex-shrink-0" /><span><span className="block font-mono text-xs tracking-widest uppercase">Join Audit</span><span className="block font-mono text-[10px] opacity-80 mt-0.5">Review security</span></span></a>
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="w-full min-h-14 inline-flex items-center gap-3 border border-border text-foreground px-4 py-2.5 hover:border-primary/50 transition-all text-left"><Github className="w-4 h-4 flex-shrink-0" /><span><span className="block font-mono text-xs tracking-widest uppercase">GitHub</span><span className="block font-mono text-[10px] text-muted-foreground mt-0.5">View source</span></span></a>
           </div>
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
