@@ -33,6 +33,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { clearAll } from "@/lib/auth";
 import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, CIPHER_SUITE } from "@/lib/crypto";
+import { getFrameThreatDetector } from "@/lib/on-device-vision";
 
 type Room = {
   id: string;
@@ -281,7 +282,8 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({});
-  const [cameraWarning, setCameraWarning] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
+  const [cameraStatusDetail, setCameraStatusDetail] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -324,11 +326,6 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   useEffect(() => {
     let stream: MediaStream | null = null;
 
-    const isTouchDevice =
-      typeof window !== "undefined" &&
-      (window.matchMedia?.("(pointer: coarse)").matches || (navigator.maxTouchPoints ?? 0) > 0);
-    if (isTouchDevice) return;
-
     const startCamera = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
@@ -337,23 +334,35 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
           await videoRef.current.play();
         }
 
-        const cocossd = await import("@tensorflow-models/coco-ssd" as any).catch(() => null);
-        const tf = await import("@tensorflow/tfjs" as any).catch(() => null);
-        if (!cocossd || !tf) return;
-
-        const model = await cocossd.load();
+        const detector = await getFrameThreatDetector();
+        if (!detector) {
+          setCameraStatus("unavailable");
+          setCameraStatusDetail("MODEL UNAVAILABLE");
+          return;
+        }
+        setCameraStatus("clear");
+        setCameraStatusDetail(detector.source.toUpperCase());
 
         detectionIntervalRef.current = setInterval(async () => {
           if (!videoRef.current) return;
           try {
-            const predictions = await model.detect(videoRef.current);
-            const hasCamera = predictions.some((p: any) =>
-              ["cell phone", "laptop", "tablet", "camera"].includes(p.class.toLowerCase())
+            const threats = await detector.detect(videoRef.current);
+            const strongest = threats.sort((a, b) => b.score - a.score)[0];
+            setCameraStatus(strongest ? "threat" : "clear");
+            setCameraStatusDetail(
+              strongest
+                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}% · ${detector.source.toUpperCase()}`
+                : detector.source.toUpperCase(),
             );
-            setCameraWarning(hasCamera);
-          } catch {}
-        }, 1500);
-      } catch {}
+          } catch {
+            setCameraStatus("unavailable");
+            setCameraStatusDetail("SCAN ERROR");
+          }
+        }, 2200);
+      } catch {
+        setCameraStatus("unavailable");
+        setCameraStatusDetail("CAMERA DENIED");
+      }
     };
 
     startCamera();
@@ -409,14 +418,22 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
     <div className="flex flex-col h-full relative">
       <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
 
-      {cameraWarning && (
-        <div className="bg-destructive/20 border-b border-destructive/50 px-4 py-2 flex items-center gap-2 z-10" data-testid="camera-warning">
-          <AlertTriangle className="w-4 h-4 text-destructive animate-pulse flex-shrink-0" />
-          <span className="font-mono text-xs text-destructive">
-            RECORDING DEVICE DETECTED — SCREEN PROTECTION ACTIVE
-          </span>
-        </div>
-      )}
+      {(() => {
+        const cfg = {
+          scanning:    { dot: "bg-muted-foreground/60",   text: "text-muted-foreground", label: "INITIALIZING CAMERA SCAN..." },
+          clear:       { dot: "bg-primary animate-pulse", text: "text-primary",          label: "NO CAMERA DETECTED — AREA CLEAR" },
+          threat:      { dot: "bg-destructive animate-pulse", text: "text-destructive",  label: "RECORDING DEVICE DETECTED" },
+          unavailable: { dot: "bg-muted-foreground/40",   text: "text-muted-foreground", label: "CAMERA UNAVAILABLE — SCAN OFFLINE" },
+        }[cameraStatus];
+        return (
+          <div className="border-b border-border/50 px-4 py-1.5 flex items-center gap-2 flex-shrink-0" data-testid="camera-status">
+            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} flex-shrink-0`} />
+            <span className={`font-mono text-[10px] tracking-widest ${cfg.text}`}>
+              {cfg.label}{cameraStatusDetail ? ` · ${cameraStatusDetail}` : ""}
+            </span>
+          </div>
+        );
+      })()}
 
       <div className="flex items-center justify-between gap-2 px-4 md:px-6 py-3 md:py-4 border-b border-border/50 flex-shrink-0">
         <button

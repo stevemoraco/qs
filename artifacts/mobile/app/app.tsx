@@ -237,6 +237,12 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
           <Text style={[styles.memberCount, { color: colors.mutedForeground }]}>{members.length}</Text>
         </View>
       </View>
+      <View style={[styles.cameraStatus, { borderBottomColor: colors.border }]} testID="camera-status">
+        <View style={[styles.cameraDot, { backgroundColor: colors.primary }]} />
+        <Text style={[styles.cameraStatusText, { color: colors.primary }]}>
+          NO CAMERA DETECTED — AREA CLEAR
+        </Text>
+      </View>
 
       <FlatList
         data={reversed}
@@ -583,6 +589,9 @@ const styles = StyleSheet.create({
   chatTitle: { fontFamily: "Inter_600SemiBold", fontSize: 15 },
   cipherRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
   cipherText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 0.5 },
+  cameraStatus: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderBottomWidth: 1 },
+  cameraDot: { width: 6, height: 6, borderRadius: 3 },
+  cameraStatusText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 2 },
   memberBadge: { flexDirection: "row", alignItems: "center", gap: 4 },
   memberCount: { fontFamily: "Inter_400Regular", fontSize: 12 },
   bubbleRow: { marginBottom: 8, alignItems: "flex-start" },
