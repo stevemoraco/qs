@@ -1,7 +1,9 @@
 import { config as loadDotenv } from "dotenv";
 import { resolve } from "path";
 
-loadDotenv({ path: resolve(process.cwd(), "../../.env"), quiet: true });
+if (!process.env["REPL_ID"]) {
+  loadDotenv({ path: resolve(process.cwd(), "../../.env"), quiet: true });
+}
 
 const app = (await import("./app")).default;
 const { logger } = await import("./lib/logger");

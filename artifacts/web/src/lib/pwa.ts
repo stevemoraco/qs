@@ -96,11 +96,10 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
     const reg = (await navigator.serviceWorker.ready) ?? (await registerServiceWorker());
     if (!reg) return false;
 
-    const apiVapidKey = await fetch("/api/push/vapid-public-key")
+    const vapidKey = await fetch("/api/push/vapid-public-key")
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => j?.publicKey)
       .catch(() => null);
-    const vapidKey = apiVapidKey ?? (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined);
 
     if (!vapidKey) return false;
 
