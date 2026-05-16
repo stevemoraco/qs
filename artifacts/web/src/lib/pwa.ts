@@ -62,12 +62,17 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const value = base64String.trim().replace(/^["']|["']$/g, "");
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
   const out = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
   return out;
+}
+
+function isLikelyP256PublicKey(bytes: Uint8Array): boolean {
+  return bytes.byteLength === 65 && bytes[0] === 0x04;
 }
 
 function arrayBufferEquals(a: ArrayBuffer | null, b: Uint8Array): boolean {
@@ -112,6 +117,9 @@ export async function ensurePushSubscription(authToken: string): Promise<PushSub
     if (permission !== "granted") return { ok: false, reason: permission === "denied" ? "Notifications are blocked for this site." : "Notification permission was not granted." };
 
     const keyBytes = urlBase64ToUint8Array(vapidKey);
+    if (!isLikelyP256PublicKey(keyBytes)) {
+      return { ok: false, reason: "Server push key is invalid. VAPID_PUBLIC_KEY must be a P-256 public key." };
+    }
     let sub = await reg.pushManager.getSubscription();
     if (sub && !arrayBufferEquals(sub.options.applicationServerKey, keyBytes)) {
       await sub.unsubscribe();

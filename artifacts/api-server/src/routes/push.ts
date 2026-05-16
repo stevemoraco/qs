@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, pushSubscriptionsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import webPush from "web-push";
+import { createECDH } from "crypto";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 
@@ -37,12 +38,36 @@ function isValidPushEndpoint(raw: string): boolean {
   return PUSH_HOST_PATTERNS.some((re) => re.test(host));
 }
 
+function normalizeVapidKey(value: string | undefined): string | null {
+  const key = value?.trim().replace(/^["']|["']$/g, "");
+  return key || null;
+}
+
+function isValidVapidPublicKey(key: string): boolean {
+  try {
+    const normalized = key.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const bytes = Buffer.from(padded, "base64");
+    if (bytes.length !== 65 || bytes[0] !== 0x04) return false;
+    const verifier = createECDH("prime256v1");
+    verifier.generateKeys();
+    verifier.computeSecret(bytes);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function configureWebPush(): boolean {
-  const publicKey = process.env["VAPID_PUBLIC_KEY"];
-  const privateKey = process.env["VAPID_PRIVATE_KEY"];
-  const subject = process.env["VAPID_SUBJECT"];
+  const publicKey = normalizeVapidKey(process.env["VAPID_PUBLIC_KEY"]);
+  const privateKey = normalizeVapidKey(process.env["VAPID_PRIVATE_KEY"]);
+  const subject = process.env["VAPID_SUBJECT"]?.trim();
 
   if (!publicKey || !privateKey || !subject) return false;
+  if (!isValidVapidPublicKey(publicKey)) {
+    logger.error({ length: publicKey.length }, "Push notification skipped: VAPID public key is not a valid P-256 public key");
+    return false;
+  }
 
   webPush.setVapidDetails(subject, publicKey, privateKey);
   return true;
@@ -93,9 +118,13 @@ export async function notifyUser(userId: string, payload: { title: string; body:
 }
 
 router.get("/push/vapid-public-key", (_req, res) => {
-  const key = process.env["VAPID_PUBLIC_KEY"];
+  const key = normalizeVapidKey(process.env["VAPID_PUBLIC_KEY"]);
   if (!key) {
     res.status(503).json({ error: "Push notifications not configured" });
+    return;
+  }
+  if (!isValidVapidPublicKey(key)) {
+    res.status(503).json({ error: "VAPID public key is not a valid P-256 public key" });
     return;
   }
   res.json({ publicKey: key });
