@@ -79,7 +79,7 @@ export default function RegisterScreen() {
       await setToken(authData.token);
 
       setStep("upload");
-      const kemSig = ml_dsa87.sign(dsa.secretKey, kem.publicKey);
+      const kemSig = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
       await uploadKeys.mutateAsync({
         data: {
           kemPublicKey: kemPkB64,
