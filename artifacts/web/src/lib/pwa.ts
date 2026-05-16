@@ -108,6 +108,37 @@ export type PushSubscriptionResult =
   | { ok: true; reason: "subscribed" }
   | { ok: false; reason: string };
 
+async function fetchVapidPublicKey(): Promise<PushSubscriptionResult & { publicKey?: string }> {
+  let res: Response;
+  try {
+    res = await fetch("/api/push/vapid-public-key", {
+      cache: "no-store",
+      headers: { accept: "application/json" },
+    });
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? `Could not reach push key endpoint: ${err.message}` : "Could not reach push key endpoint." };
+  }
+
+  const text = await res.text().catch(() => "");
+  let data: { publicKey?: unknown; error?: unknown } | null = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // Non-JSON response, include a short preview below.
+  }
+
+  if (!res.ok) {
+    const message = typeof data?.error === "string" ? data.error : text.slice(0, 120) || res.statusText;
+    return { ok: false, reason: `Push key endpoint returned ${res.status}: ${message}` };
+  }
+
+  if (typeof data?.publicKey !== "string" || data.publicKey.trim().length === 0) {
+    return { ok: false, reason: `Push key endpoint returned invalid JSON: ${text.slice(0, 120) || "empty response"}` };
+  }
+
+  return { ok: true, reason: "subscribed", publicKey: data.publicKey };
+}
+
 export async function ensurePushSubscription(authToken: string): Promise<PushSubscriptionResult> {
   if (!("serviceWorker" in navigator)) return { ok: false, reason: "Service workers are not supported in this browser." };
   if (!("PushManager" in window)) return { ok: false, reason: "Push notifications are not supported in this browser." };
@@ -115,12 +146,10 @@ export async function ensurePushSubscription(authToken: string): Promise<PushSub
     const reg = await readyServiceWorker();
     if (!reg) return { ok: false, reason: "Service worker registration is not ready." };
 
-    const vapidKey = await fetch("/api/push/vapid-public-key")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => j?.publicKey)
-      .catch(() => null);
-
-    if (!vapidKey) return { ok: false, reason: "Server push key is unavailable." };
+    const vapidKeyResult = await fetchVapidPublicKey();
+    if (!vapidKeyResult.ok) return vapidKeyResult;
+    const vapidKey = vapidKeyResult.publicKey;
+    if (!vapidKey) return { ok: false, reason: "Push key endpoint did not include a public key." };
 
     const permission = notificationPermission() === "granted" ? "granted" : await requestNotificationPermission();
     if (permission !== "granted") return { ok: false, reason: permission === "denied" ? "Notifications are blocked for this site." : "Notification permission was not granted." };
