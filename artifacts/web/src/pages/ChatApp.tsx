@@ -13,6 +13,7 @@ import {
   X,
   Search,
   ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import {
   useGetRooms,
@@ -276,7 +277,7 @@ function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; curren
   );
 }
 
-function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }) {
+function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: string; onBack: () => void }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({});
@@ -412,20 +413,28 @@ function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }
         </div>
       )}
 
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 flex-shrink-0">
-        <div>
+      <div className="flex items-center justify-between gap-2 px-4 md:px-6 py-3 md:py-4 border-b border-border/50 flex-shrink-0">
+        <button
+          onClick={onBack}
+          className="md:hidden text-muted-foreground hover:text-foreground flex-shrink-0"
+          aria-label="Back to channels"
+          data-testid="button-back-to-channels"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="font-mono font-bold text-sm tracking-tight">
+            <h2 className="font-mono font-bold text-sm tracking-tight truncate">
               {getRoomLabel(room, currentUserId)}
             </h2>
             <TTLLabel seconds={room.ttlSeconds} />
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <Shield className="w-3 h-3 text-primary" />
-            <span className="font-mono text-xs text-primary">{CIPHER_SUITE}</span>
+          <div className="flex items-center gap-2 mt-1 min-w-0">
+            <Shield className="w-3 h-3 text-primary flex-shrink-0" />
+            <span className="font-mono text-[10px] md:text-xs text-primary truncate">{CIPHER_SUITE}</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
             <Users className="w-3 h-3" />
             {members.length}
@@ -456,7 +465,7 @@ function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }
               className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
               data-testid={`message-${msg.id}`}
             >
-              <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
+              <div className={`max-w-[85%] md:max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
                 <div className="flex items-center gap-2">
                   {!isOwn && (
                     <span className="font-mono text-xs text-muted-foreground">
@@ -548,7 +557,11 @@ export default function ChatApp() {
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
-      <div className="w-72 border-r border-border/50 flex flex-col flex-shrink-0">
+      <div
+        className={`${
+          activeRoomId ? "hidden md:flex" : "flex"
+        } w-full md:w-72 border-r border-border/50 flex-col flex-shrink-0`}
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-primary flex items-center justify-center">
@@ -653,9 +666,13 @@ export default function ChatApp() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className={`${activeRoomId ? "flex" : "hidden md:flex"} flex-1 flex-col min-w-0`}>
         {activeRoom && me ? (
-          <RoomView room={activeRoom as Room} currentUserId={me.id} />
+          <RoomView
+            room={activeRoom as Room}
+            currentUserId={me.id}
+            onBack={() => setActiveRoomId(null)}
+          />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
             <div className="w-16 h-16 bg-primary/10 border border-primary/20 flex items-center justify-center mb-6">
