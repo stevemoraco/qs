@@ -3,7 +3,7 @@
  * Do not edit manually.
  * Api
  * QuantumShield — Post-quantum encrypted chat API (ML-KEM-1024 + ML-DSA-87)
- * OpenAPI spec version: 1.0.0
+ * OpenAPI spec version: 2026.5.16-1108mdt
  */
 
 export type CreateIdentityCodeRequestVisibilityScope = typeof CreateIdentityCodeRequestVisibilityScope[keyof typeof CreateIdentityCodeRequestVisibilityScope];
