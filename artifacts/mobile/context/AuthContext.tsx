@@ -21,6 +21,7 @@ type AuthContextType = {
   setDevicePasscode: (p: string) => Promise<void>;
   clearAuth: () => Promise<void>;
   storeKeyPair: (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => Promise<void>;
+  getKemSecretKey: () => Promise<string | null>;
   getKemPublicKey: () => Promise<string | null>;
   getDsaPublicKey: () => Promise<string | null>;
 };
@@ -75,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ]);
   }, []);
 
+  const getKemSecretKey = useCallback(() => AsyncStorage.getItem(KEM_SK_KEY), []);
   const getKemPublicKey = useCallback(() => AsyncStorage.getItem(KEM_PK_KEY), []);
   const getDsaPublicKey = useCallback(() => AsyncStorage.getItem(DSA_PK_KEY), []);
 
@@ -91,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setDevicePasscode,
         clearAuth,
         storeKeyPair,
+        getKemSecretKey,
         getKemPublicKey,
         getDsaPublicKey,
       }}

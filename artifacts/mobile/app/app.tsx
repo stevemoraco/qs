@@ -32,6 +32,7 @@ import {
   usePostRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
   getGetRoomsRoomIdMembersQueryKey,
+  getKeysUserId,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
   getGetIdentityCodesQueryKey,
@@ -42,6 +43,7 @@ import {
 } from "@workspace/api-client-react";
 import { gcm } from "@noble/ciphers/aes.js";
 import { randomBytes } from "@noble/hashes/utils.js";
+import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import * as ScreenCapture from "expo-screen-capture";
 import * as LocalAuthentication from "expo-local-authentication";
 
@@ -85,8 +87,15 @@ type Message = {
   ciphertext: string;
   nonce: string;
   algorithm: string;
+  recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
   createdAt: string;
+};
+
+type WrappedMessageKey = {
+  kemCiphertext: string;
+  nonce: string;
+  wrappedKey: string;
 };
 
 function getRoomLabel(room: Room, myId?: string): string {
@@ -202,6 +211,32 @@ async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): P
   return new TextDecoder().decode(pt);
 }
 
+async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
+  try {
+    const bundle = await getKeysUserId(userId);
+    const { cipherText, sharedSecret } = ml_kem1024.encapsulate(b64ToBytes(bundle.kemPublicKey));
+    const nonce = randomBytes(12);
+    const wrappedKey = gcm(sharedSecret, nonce).encrypt(rawMessageKey);
+    return JSON.stringify({
+      kemCiphertext: bytesToB64(cipherText),
+      nonce: bytesToB64(nonce),
+      wrappedKey: bytesToB64(wrappedKey),
+    } satisfies WrappedMessageKey);
+  } catch {
+    return null;
+  }
+}
+
+function unwrapMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8Array | null {
+  try {
+    const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
+    const sharedSecret = ml_kem1024.decapsulate(b64ToBytes(wrapped.kemCiphertext), b64ToBytes(kemSecretKeyB64));
+    return gcm(sharedSecret, b64ToBytes(wrapped.nonce)).decrypt(b64ToBytes(wrapped.wrappedKey));
+  } catch {
+    return null;
+  }
+}
+
 function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: {
   room: Room;
   myId?: string;
@@ -309,6 +344,7 @@ function ChatView({
   roomCodename: string;
 }) {
   const qc = useQueryClient();
+  const { getKemSecretKey } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
@@ -387,15 +423,29 @@ function ChatView({
     if (!text) return;
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
+    const recipientEncryptedKeys: Record<string, string> = {};
+    await Promise.all(
+      members.map(async (member) => {
+        const wrapped = await wrapMessageKeyForUser(member.id, key);
+        if (wrapped) recipientEncryptedKeys[member.id] = wrapped;
+      })
+    );
     sendMsg.mutate(
-      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, ttlSeconds: room.ttlSeconds } },
+      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
       { onSuccess: (msg) => { messageKeyStore.set(msg.id, key); } }
     );
   };
 
   const revealMessage = async (msg: Message) => {
     const revealToken = ++revealTokenRef.current;
-    const key = messageKeyStore.get(msg.id);
+    let key = messageKeyStore.get(msg.id);
+    if (!key && msg.recipientEncryptedKeys?.[myId]) {
+      const kemSecretKey = await getKemSecretKey();
+      if (kemSecretKey) {
+        key = unwrapMessageKey(msg.recipientEncryptedKeys[myId], kemSecretKey) ?? undefined;
+        if (key) messageKeyStore.set(msg.id, key);
+      }
+    }
     if (!key) return;
     try {
       const plaintext = await decryptMsg(msg.ciphertext, msg.nonce, key);

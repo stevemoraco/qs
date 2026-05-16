@@ -27,6 +27,7 @@ import {
   getGetRoomsRoomIdMessagesQueryKey,
   usePostRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
+  getKeysUserId,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
   getGetRoomsRoomIdMembersQueryKey,
@@ -37,14 +38,64 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getToken, loginWithPasskey, setAuthHandle, setToken } from "@/lib/auth";
-import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
+import { clearToken, getKemSecretKey, getToken, loginWithPasskey, setAuthHandle, setToken } from "@/lib/auth";
+import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
+import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let value = "";
+  for (const byte of bytes) value += String.fromCharCode(byte);
+  return btoa(value);
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+}
+
+async function aesGcmKeyFromBytes(bytes: Uint8Array): Promise<CryptoKey> {
+  return crypto.subtle.importKey("raw", new Uint8Array(bytes).buffer as ArrayBuffer, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
+  try {
+    const bundle = await getKeysUserId(userId);
+    const { cipherText, sharedSecret } = ml_kem1024.encapsulate(base64ToBytes(bundle.kemPublicKey));
+    const wrappingKey = await aesGcmKeyFromBytes(sharedSecret);
+    const nonce = crypto.getRandomValues(new Uint8Array(12));
+    const wrapped = await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce.buffer as ArrayBuffer }, wrappingKey, new Uint8Array(rawMessageKey).buffer as ArrayBuffer);
+    return JSON.stringify({
+      kemCiphertext: bytesToBase64(cipherText),
+      nonce: bytesToBase64(nonce),
+      wrappedKey: bytesToBase64(new Uint8Array(wrapped)),
+    } satisfies WrappedMessageKey);
+  } catch {
+    return null;
+  }
+}
+
+async function unwrapMessageKeyForMe(wrappedValue: string): Promise<CryptoKey | null> {
+  const kemSecretKey = getKemSecretKey();
+  if (!kemSecretKey) return null;
+  try {
+    const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
+    const sharedSecret = ml_kem1024.decapsulate(base64ToBytes(wrapped.kemCiphertext), kemSecretKey);
+    const wrappingKey = await aesGcmKeyFromBytes(sharedSecret);
+    const rawKey = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: base64ToBytes(wrapped.nonce).buffer as ArrayBuffer },
+      wrappingKey,
+      base64ToBytes(wrapped.wrappedKey).buffer as ArrayBuffer
+    );
+    return importMessageKey(new Uint8Array(rawKey));
+  } catch {
+    return null;
+  }
 }
 
 type Room = {
@@ -65,9 +116,16 @@ type Message = {
   ciphertext: string;
   nonce: string;
   algorithm: string;
+  recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
   createdAt: string;
   _plaintext?: string;
+};
+
+type WrappedMessageKey = {
+  kemCiphertext: string;
+  nonce: string;
+  wrappedKey: string;
 };
 
 function getRoomLabel(room: Room, currentUserId?: string): string {
@@ -875,7 +933,14 @@ function RoomView({
     const text = input;
     setInput("");
 
-    const { ciphertext, nonce, key } = await encryptMessage(text);
+    const { ciphertext, nonce, key, rawKey } = await encryptMessage(text);
+    const recipientEncryptedKeys: Record<string, string> = {};
+    await Promise.all(
+      members.map(async (member) => {
+        const wrapped = await wrapMessageKeyForUser(member.id, rawKey);
+        if (wrapped) recipientEncryptedKeys[member.id] = wrapped;
+      })
+    );
 
     sendMessage.mutate(
       {
@@ -884,6 +949,7 @@ function RoomView({
           ciphertext,
           nonce,
           algorithm: CIPHER_SUITE,
+          recipientEncryptedKeys,
           ttlSeconds: room.ttlSeconds,
         },
       },
@@ -897,7 +963,11 @@ function RoomView({
 
   const revealMsg = async (msg: Message, key?: CryptoKey) => {
     const revealToken = ++revealTokenRef.current;
-    const k = key ?? getMessageKey(msg.id);
+    let k = key ?? getMessageKey(msg.id);
+    if (!k && msg.recipientEncryptedKeys?.[currentUserId]) {
+      k = (await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])) ?? undefined;
+      if (k) storeMessageKey(msg.id, k);
+    }
     if (!k) return;
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
