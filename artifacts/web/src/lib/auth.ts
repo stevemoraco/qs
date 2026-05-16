@@ -1,35 +1,79 @@
 const TOKEN_KEY = "qs_token";
 const AUTH_HANDLE_KEY = "qs_auth_handle";
 const LAST_HANDLE_KEY = "qs_last_handle";
+const TOKEN_COOKIE = "qs_token";
+const AUTH_HANDLE_COOKIE = "qs_auth_handle";
+const LAST_HANDLE_COOKIE = "qs_last_handle";
 const DEVICE_PASSCODE_KEY = "qs_device_passcode";
 const WEBAUTHN_CREDENTIAL_KEY = "qs_webauthn_credential";
 const KEM_SK_KEY = "qs_kem_sk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_PK_KEY = "qs_dsa_pk";
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 400;
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const prefix = `${name}=`;
+  const value = document.cookie
+    .split("; ")
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+  return value ? decodeURIComponent(value) : null;
+}
+
+function setCookie(name: string, value: string): void {
+  if (typeof document === "undefined") return;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${COOKIE_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`;
+}
+
+function clearCookie(name: string): void {
+  if (typeof document === "undefined") return;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax${secure}`;
+}
+
+function getPersistentValue(key: string, cookieName: string): string | null {
+  const localValue = localStorage.getItem(key);
+  if (localValue) return localValue;
+  const cookieValue = getCookie(cookieName);
+  if (cookieValue) localStorage.setItem(key, cookieValue);
+  return cookieValue;
+}
+
+function setPersistentValue(key: string, cookieName: string, value: string): void {
+  localStorage.setItem(key, value);
+  setCookie(cookieName, value);
+}
+
+function clearPersistentValue(key: string, cookieName: string): void {
+  localStorage.removeItem(key);
+  clearCookie(cookieName);
+}
 
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  return getPersistentValue(TOKEN_KEY, TOKEN_COOKIE);
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
+  setPersistentValue(TOKEN_KEY, TOKEN_COOKIE, token);
 }
 
 export function getAuthHandle(): string | null {
-  return localStorage.getItem(AUTH_HANDLE_KEY);
+  return getPersistentValue(AUTH_HANDLE_KEY, AUTH_HANDLE_COOKIE);
 }
 
 export function setAuthHandle(authHandle: string): void {
-  localStorage.setItem(AUTH_HANDLE_KEY, authHandle);
+  setPersistentValue(AUTH_HANDLE_KEY, AUTH_HANDLE_COOKIE, authHandle);
 }
 
 export function getLastHandle(): string | null {
-  return localStorage.getItem(LAST_HANDLE_KEY);
+  return getPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE);
 }
 
 export function setLastHandle(handle: string): void {
-  localStorage.setItem(LAST_HANDLE_KEY, handle);
+  setPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE, handle);
 }
 
 export function getDevicePasscode(): string | null {
@@ -121,7 +165,7 @@ export async function verifyDevice(): Promise<void> {
 }
 
 export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
+  clearPersistentValue(TOKEN_KEY, TOKEN_COOKIE);
 }
 
 export function isAuthenticated(): boolean {
@@ -161,9 +205,9 @@ export function getDsaSecretKey(): Uint8Array | null {
 }
 
 export function clearAll(): void {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(AUTH_HANDLE_KEY);
-  localStorage.removeItem(LAST_HANDLE_KEY);
+  clearPersistentValue(TOKEN_KEY, TOKEN_COOKIE);
+  clearPersistentValue(AUTH_HANDLE_KEY, AUTH_HANDLE_COOKIE);
+  clearPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE);
   localStorage.removeItem(DEVICE_PASSCODE_KEY);
   localStorage.removeItem(WEBAUTHN_CREDENTIAL_KEY);
   localStorage.removeItem(KEM_SK_KEY);

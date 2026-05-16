@@ -1008,6 +1008,7 @@ export default function AppScreen() {
   const [appActive, setAppActive] = useState(true);
   const [privacyLock, setPrivacyLock] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
+  const privacyAutoUnlockAttemptedRef = useRef(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "unavailable">("scanning");
   const [cameraDetail, setCameraDetail] = useState("REQUESTING FRONT CAMERA");
 
@@ -1023,7 +1024,10 @@ export default function AppScreen() {
   const codenameForRoom = useCallback((id: string) => codenameFor(`room:${id}`), [codenameFor]);
   const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => { setCameraStatus(status); setCameraDetail(detail); }, []);
   const lockPrivacy = useCallback((reason: string) => {
-    setPrivacyLock((current) => ({ active: true, reason: current.active ? current.reason : reason }));
+    setPrivacyLock((current) => {
+      if (!current.active) privacyAutoUnlockAttemptedRef.current = false;
+      return { active: true, reason: current.active ? current.reason : reason };
+    });
   }, []);
 
   useEffect(() => {
@@ -1070,6 +1074,15 @@ export default function AppScreen() {
       setIsUnlockingPrivacy(false);
     }
   };
+
+  useEffect(() => {
+    if (!privacyLock.active || !appActive || isUnlockingPrivacy || privacyAutoUnlockAttemptedRef.current) return;
+    privacyAutoUnlockAttemptedRef.current = true;
+    const id = setTimeout(() => {
+      void unlockPrivacy();
+    }, 250);
+    return () => clearTimeout(id);
+  }, [privacyLock.active, privacyLock.reason, appActive, isUnlockingPrivacy]);
 
   const topPad = Platform.OS === "web" ? 67 : 0;
   const cameraColor = cameraStatus === "clear" ? colors.primary : colors.mutedForeground;

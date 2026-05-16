@@ -2,6 +2,9 @@ import { type Request, type Response, type NextFunction } from "express";
 import { db, sessionsTable, usersTable } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
 
+const SESSION_EXTENSION_DAYS = 30;
+const SESSION_REFRESH_WINDOW_DAYS = 7;
+
 export interface AuthRequest extends Request {
   userId?: string;
   sessionCreatedAt?: Date;
@@ -58,6 +61,16 @@ export async function requireAuth(
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
+  }
+
+  const refreshAt = Date.now() + SESSION_REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  if (session.expiresAt.getTime() < refreshAt) {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + SESSION_EXTENSION_DAYS);
+    await db
+      .update(sessionsTable)
+      .set({ expiresAt })
+      .where(eq(sessionsTable.token, token));
   }
 
   req.userId = user.id;

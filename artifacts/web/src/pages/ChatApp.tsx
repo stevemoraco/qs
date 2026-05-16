@@ -1163,12 +1163,14 @@ export default function ChatApp() {
   const [showProfile, setShowProfile] = useState(false);
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
+  const [privacyNeedsHandle, setPrivacyNeedsHandle] = useState(() => !getLastHandle());
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const privacyAutoUnlockAttemptedRef = useRef(false);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1193,35 +1195,60 @@ export default function ChatApp() {
   const codenameForUser = (id: string) => codenameFor(`user:${id}`);
   const codenameForRoom = (id: string) => codenameFor(`room:${id}`);
   const lockPrivacyShield = (reason: string) => {
-    setPrivacyShield((current) => ({ active: true, reason: current.active ? current.reason : reason }));
+    setPrivacyShield((current) => {
+      if (!current.active) privacyAutoUnlockAttemptedRef.current = false;
+      return { active: true, reason: current.active ? current.reason : reason };
+    });
   };
 
-  const unlockPrivacyShield = async () => {
+  const unlockPrivacyShield = async (source: "auto" | "manual" = "manual") => {
     setPrivacyShield((current) => ({ ...current, error: undefined }));
     setIsUnlockingPrivacy(true);
+    let attemptedHandle = "";
     try {
-      const handle = normalizeCodeInput(privacyHandle || getLastHandle() || "");
+      const handle = normalizeCodeInput(getLastHandle() || privacyHandle || "");
+      attemptedHandle = handle;
       if (handle) {
         const data = await loginWithPasskey(handle);
         setToken(data.token);
         setAuthHandle(data.authHandle);
         setLastHandle(handle);
+        setPrivacyHandle(handle);
+        setPrivacyNeedsHandle(false);
       } else {
+        setPrivacyNeedsHandle(true);
         await verifyDevice();
       }
       setPrivacyShield({ active: false, reason: "" });
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Device verification failed.";
+      const needsHandle = !attemptedHandle || message.toLowerCase().includes("handle");
+      setPrivacyNeedsHandle(needsHandle);
       setPrivacyShield((current) => ({
         ...current,
         active: true,
-        error: err instanceof Error && !err.message.includes("No device verification")
-          ? err.message
-          : "Enter your handle and verify with your passkey to unlock.",
+        error: source === "auto" && attemptedHandle
+          ? "Tap to verify your passkey and clear the privacy shield."
+          : needsHandle
+            ? "Enter your handle once and verify with your passkey to unlock."
+            : message,
       }));
     } finally {
       setIsUnlockingPrivacy(false);
     }
   };
+
+  useEffect(() => {
+    if (!privacyShield.active || isUnlockingPrivacy || privacyAutoUnlockAttemptedRef.current) return;
+    const handle = normalizeCodeInput(getLastHandle() || privacyHandle || "");
+    if (!handle) {
+      setPrivacyNeedsHandle(true);
+      return;
+    }
+    privacyAutoUnlockAttemptedRef.current = true;
+    const id = window.setTimeout(() => void unlockPrivacyShield("auto"), 250);
+    return () => window.clearTimeout(id);
+  }, [privacyShield.active, privacyShield.reason, isUnlockingPrivacy, privacyHandle]);
 
   useEffect(() => {
     const shield = () => lockPrivacyShield("App was backgrounded or unfocused.");
@@ -1310,7 +1337,12 @@ export default function ChatApp() {
     >
       <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
       {privacyShield.active && (
-        <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6">
+        <div
+          className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !isUnlockingPrivacy) void unlockPrivacyShield("manual");
+          }}
+        >
           <Shield className="w-12 h-12 text-primary mb-4" />
           <p className="font-mono text-sm tracking-widest text-primary">PRIVACY SHIELD ACTIVE</p>
           <p className="font-mono text-xs text-muted-foreground mt-2 max-w-sm">
@@ -1319,17 +1351,21 @@ export default function ChatApp() {
           {privacyShield.error && (
             <p className="font-mono text-xs text-destructive mt-3 max-w-sm">{privacyShield.error}</p>
           )}
-          <input
-            value={privacyHandle}
-            onChange={(event) => setPrivacyHandle(event.target.value)}
-            className="mt-5 w-full max-w-xs bg-background border border-border px-3 py-2.5 font-mono text-sm text-center focus:outline-none focus:border-primary/60"
-            placeholder="@marlin"
-            autoCapitalize="none"
-            data-testid="input-privacy-shield-handle"
-          />
+          {privacyNeedsHandle ? (
+            <input
+              value={privacyHandle}
+              onChange={(event) => setPrivacyHandle(event.target.value)}
+              className="mt-5 w-full max-w-xs bg-background border border-border px-3 py-2.5 font-mono text-sm text-center focus:outline-none focus:border-primary/60"
+              placeholder="@marlin"
+              autoCapitalize="none"
+              data-testid="input-privacy-shield-handle"
+            />
+          ) : (
+            <p className="font-mono text-[11px] tracking-widest text-muted-foreground mt-5">USING SAVED PASSKEY HANDLE</p>
+          )}
           <button
             type="button"
-            onClick={() => void unlockPrivacyShield()}
+            onClick={() => void unlockPrivacyShield("manual")}
             disabled={isUnlockingPrivacy}
             className="mt-6 bg-primary text-primary-foreground font-mono text-xs tracking-widest px-6 py-3 hover:bg-primary/90 disabled:opacity-50"
             data-testid="button-unlock-privacy-shield"
