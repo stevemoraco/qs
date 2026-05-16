@@ -1,0 +1,94 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.24"/>
+      <stop offset="48%" stop-color="#0ea5e9" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#050816" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="#050816"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <g opacity="0.26" font-family="DejaVu Sans Mono, monospace" font-size="16" fill="#38e8ff">
+    <text x="52" y="72">01 ABCDEF ML-KEM 1024 204 197 01 ABCDEF ML-DSA 87 AES-GCM</text>
+    <text x="725" y="570">PQ KEM + PQ signatures + AES-256-GCM</text>
+  </g>
+
+  <g transform="translate(72 122)" filter="url(#softGlow)">
+    <path d="M90 0C63 20 37 29 16 33V88C16 142 49 177 90 193C131 177 164 142 164 88V33C143 29 117 20 90 0Z" fill="#06111f" stroke="url(#cyan)" stroke-width="14"/>
+    <circle cx="90" cy="63" r="7" fill="#67e8f9"/>
+    <circle cx="58" cy="86" r="7" fill="#67e8f9"/>
+    <circle cx="122" cy="86" r="7" fill="#67e8f9"/>
+    <circle cx="70" cy="131" r="7" fill="#67e8f9"/>
+    <circle cx="110" cy="131" r="7" fill="#67e8f9"/>
+    <path d="M90 63L58 86L70 131L122 86L110 131L58 86M90 63L122 86" stroke="#67e8f9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g transform="translate(292 88)">
+    <rect x="0" y="0" width="650" height="34" fill="#071426" stroke="#12475c"/>
+    <circle cx="20" cy="17" r="5" fill="#38e8ff"/>
+    <text x="38" y="22" font-family="DejaVu Sans Mono, monospace" font-size="15" fill="#67e8f9">ML-KEM-1024 + ML-DSA-87 + AES-256-GCM - NIST FIPS 203/204/197</text>
+
+    <text x="0" y="110" font-family="DejaVu Sans Mono, monospace" font-size="58" font-weight="700" fill="#f8fafc">Ask yourself:</text>
+    <text x="0" y="168" font-family="DejaVu Sans Mono, monospace" font-size="38" font-style="italic" font-weight="700" fill="#38e8ff">Why don't "privacy focused" apps</text>
+    <text x="0" y="214" font-family="DejaVu Sans Mono, monospace" font-size="38" font-style="italic" font-weight="700" fill="#38e8ff">work this way?</text>
+    <text x="0" y="266" font-family="DejaVu Sans Mono, monospace" font-size="24" fill="#cbd5e1">PQ encrypted. Hold-revealed. Self-expiring.</text>
+  </g>
+
+  <g transform="translate(292 390)" font-family="DejaVu Sans Mono, monospace">
+    <g>
+      <rect x="0" y="0" width="256" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <circle cx="28" cy="29" r="11" fill="none" stroke="#38e8ff" stroke-width="3"/>
+      <path d="M22 29H34M28 23V35" stroke="#38e8ff" stroke-width="3"/>
+      <text x="54" y="25" font-size="16" font-weight="700" fill="#f8fafc">Camera detection</text>
+      <text x="54" y="43" font-size="12" fill="#94a3b8">screen blanks on watch</text>
+    </g>
+    <g transform="translate(276 0)">
+      <rect x="0" y="0" width="236" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <rect x="20" y="17" width="20" height="24" rx="5" fill="none" stroke="#38e8ff" stroke-width="3"/>
+      <text x="54" y="25" font-size="16" font-weight="700" fill="#f8fafc">Hold to reveal</text>
+      <text x="54" y="43" font-size="12" fill="#94a3b8">one item at a time</text>
+    </g>
+    <g transform="translate(532 0)">
+      <rect x="0" y="0" width="248" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <path d="M22 33V25C22 17 28 13 34 13C40 13 46 17 46 25V33" stroke="#38e8ff" stroke-width="3" fill="none"/>
+      <rect x="18" y="30" width="32" height="18" rx="3" fill="none" stroke="#38e8ff" stroke-width="3"/>
+      <text x="64" y="25" font-size="16" font-weight="700" fill="#f8fafc">Memory encrypted</text>
+      <text x="64" y="43" font-size="12" fill="#94a3b8">hidden until hover/tap</text>
+    </g>
+    <g transform="translate(0 76)">
+      <rect x="0" y="0" width="256" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <circle cx="30" cy="29" r="17" fill="none" stroke="#38e8ff" stroke-width="3"/>
+      <path d="M30 17V30L40 36" stroke="#38e8ff" stroke-width="3" stroke-linecap="round"/>
+      <text x="58" y="25" font-size="16" font-weight="700" fill="#f8fafc">View-based expiry</text>
+      <text x="58" y="43" font-size="12" fill="#94a3b8">timer starts after read</text>
+    </g>
+    <g transform="translate(276 76)">
+      <rect x="0" y="0" width="236" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <path d="M20 31L30 41L48 17" stroke="#38e8ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="62" y="25" font-size="16" font-weight="700" fill="#f8fafc">Passkey handles</text>
+      <text x="62" y="43" font-size="12" fill="#94a3b8">no typed passwords</text>
+    </g>
+    <g transform="translate(532 76)">
+      <rect x="0" y="0" width="248" height="58" fill="#071426" stroke="#1e3a4a"/>
+      <path d="M20 23H48M20 35H48M28 15L20 23L28 31M40 27L48 35L40 43" stroke="#38e8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="64" y="25" font-size="16" font-weight="700" fill="#f8fafc">Open audit</text>
+      <text x="64" y="43" font-size="12" fill="#94a3b8">GitHub + contributors</text>
+    </g>
+  </g>
+
+  <text x="72" y="572" font-family="DejaVu Sans Mono, monospace" font-size="24" font-weight="700" fill="#f8fafc">QuantumShield</text>
+  <text x="292" y="572" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#38e8ff">quantumshield.co</text>
+</svg>
