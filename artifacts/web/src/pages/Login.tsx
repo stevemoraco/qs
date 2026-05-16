@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
-import { setToken } from "@/lib/auth";
+import { isAuthenticated, setToken } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -18,7 +18,7 @@ export default function Login() {
       onSuccess: (data) => {
         setToken(data.token);
         void subscribeToPush(data.token);
-        setLocation("/app");
+        setLocation("/app", { replace: true });
       },
       onError: () => {
         setError("Invalid username or password");
@@ -31,6 +31,10 @@ export default function Login() {
     setError("");
     login.mutate({ data: { username, password } });
   };
+
+  if (isAuthenticated()) {
+    return <Redirect to="/app" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
