@@ -40,7 +40,7 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKey, getLastHandle, getLocalKeyPair, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
+import { clearToken, getKemSecretKeyAsync, getLastHandle, getLocalKeyPairAsync, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
@@ -89,7 +89,7 @@ async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array):
 }
 
 async function unwrapMessageKeyForMe(wrappedValue: string): Promise<CryptoKey | null> {
-  const kemSecretKey = getKemSecretKey();
+  const kemSecretKey = await getKemSecretKeyAsync();
   if (!kemSecretKey) return null;
   try {
     const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
@@ -1328,7 +1328,7 @@ export default function ChatApp() {
   }, []);
 
   const uploadLocalKeys = async () => {
-    const keys = getLocalKeyPair();
+    const keys = await getLocalKeyPairAsync();
     if (!keys.kemPublicKey || !keys.kemSecretKey || !keys.dsaPublicKey || !keys.dsaSecretKey) {
       setKeyRepairStatus({
         ok: false,
@@ -1372,24 +1372,27 @@ export default function ChatApp() {
 
   useEffect(() => {
     if (!me) return;
-    const keys = getLocalKeyPair();
-    const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
-    if (!localComplete) {
-      if (!autoKeyRepairAttemptedRef.current) {
-        autoKeyRepairAttemptedRef.current = true;
-        void rotateLocalKeys();
+    const repairKeys = async () => {
+      const keys = await getLocalKeyPairAsync();
+      const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
+      if (!localComplete) {
+        if (!autoKeyRepairAttemptedRef.current) {
+          autoKeyRepairAttemptedRef.current = true;
+          void rotateLocalKeys();
+        }
+        setKeyRepairStatus({
+          ok: false,
+          reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
+        });
+        return;
       }
-      setKeyRepairStatus({
-        ok: false,
-        reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
-      });
-      return;
-    }
-    if (!sameBase64Bytes(me.kemPublicKey, keys.kemPublicKey) || !sameBase64Bytes(me.dsaPublicKey, keys.dsaPublicKey)) {
-      void uploadLocalKeys().catch((err) => {
+      if (!sameBase64Bytes(me.kemPublicKey, keys.kemPublicKey) || !sameBase64Bytes(me.dsaPublicKey, keys.dsaPublicKey)) {
+        await uploadLocalKeys();
+      }
+    };
+    void repairKeys().catch((err) => {
         setKeyRepairStatus({ ok: false, reason: err instanceof Error ? err.message : "Could not relink local keys." });
-      });
-    }
+    });
   }, [me?.id, me?.kemPublicKey, me?.dsaPublicKey]);
 
   const logout = usePostAuthLogout({

@@ -11,6 +11,19 @@ const DSA_SK_KEY = "qs_dsa_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_PK_KEY = "qs_dsa_pk";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 400;
+const KEY_DB_NAME = "quantumshield-keyring";
+const KEY_DB_STORE = "keys";
+const KEY_DB_VERSION = 1;
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let value = "";
+  for (const byte of bytes) value += String.fromCharCode(byte);
+  return btoa(value);
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+}
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -178,10 +191,16 @@ export function storeKeyPair(
   dsaSk: Uint8Array,
   dsaPk: Uint8Array
 ): void {
-  localStorage.setItem(KEM_SK_KEY, btoa(String.fromCharCode(...kemSk)));
-  localStorage.setItem(KEM_PK_KEY, btoa(String.fromCharCode(...kemPk)));
-  localStorage.setItem(DSA_SK_KEY, btoa(String.fromCharCode(...dsaSk)));
-  localStorage.setItem(DSA_PK_KEY, btoa(String.fromCharCode(...dsaPk)));
+  localStorage.setItem(KEM_SK_KEY, bytesToBase64(kemSk));
+  localStorage.setItem(KEM_PK_KEY, bytesToBase64(kemPk));
+  localStorage.setItem(DSA_SK_KEY, bytesToBase64(dsaSk));
+  localStorage.setItem(DSA_PK_KEY, bytesToBase64(dsaPk));
+  void storeKeyPairInIndexedDb({
+    [KEM_SK_KEY]: bytesToBase64(kemSk),
+    [KEM_PK_KEY]: bytesToBase64(kemPk),
+    [DSA_SK_KEY]: bytesToBase64(dsaSk),
+    [DSA_PK_KEY]: bytesToBase64(dsaPk),
+  });
 }
 
 export function getKemPublicKey(): string | null {
@@ -206,8 +225,22 @@ export function getLocalKeyPair(): {
   };
 }
 
+export async function getLocalKeyPairAsync(): Promise<{
+  kemSecretKey: Uint8Array | null;
+  kemPublicKey: Uint8Array | null;
+  dsaSecretKey: Uint8Array | null;
+  dsaPublicKey: Uint8Array | null;
+}> {
+  await hydrateKeyPairFromIndexedDb();
+  return getLocalKeyPair();
+}
+
 export function getKemSecretKey(): Uint8Array | null {
   return getStoredBytes(KEM_SK_KEY);
+}
+
+export async function getKemSecretKeyAsync(): Promise<Uint8Array | null> {
+  return getKemSecretKey() ?? (await getStoredBytesAsync(KEM_SK_KEY));
 }
 
 export function getDsaSecretKey(): Uint8Array | null {
@@ -217,7 +250,67 @@ export function getDsaSecretKey(): Uint8Array | null {
 function getStoredBytes(key: string): Uint8Array | null {
   const v = localStorage.getItem(key);
   if (!v) return null;
-  return Uint8Array.from(atob(v), (c) => c.charCodeAt(0));
+  return base64ToBytes(v);
+}
+
+async function getStoredBytesAsync(key: string): Promise<Uint8Array | null> {
+  await hydrateKeyPairFromIndexedDb();
+  return getStoredBytes(key);
+}
+
+function openKeyDb(): Promise<IDBDatabase | null> {
+  if (typeof indexedDB === "undefined") return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const req = indexedDB.open(KEY_DB_NAME, KEY_DB_VERSION);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(KEY_DB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function storeKeyPairInIndexedDb(values: Record<string, string>): Promise<void> {
+  const db = await openKeyDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(KEY_DB_STORE, "readwrite");
+    for (const [key, value] of Object.entries(values)) tx.objectStore(KEY_DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.onabort = () => resolve();
+  });
+  db.close();
+}
+
+export async function hydrateKeyPairFromIndexedDb(): Promise<boolean> {
+  const db = await openKeyDb();
+  if (!db) return false;
+  const keys = [KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY];
+  const values = await new Promise<Record<string, string>>((resolve) => {
+    const tx = db.transaction(KEY_DB_STORE, "readonly");
+    const store = tx.objectStore(KEY_DB_STORE);
+    const found: Record<string, string> = {};
+    for (const key of keys) {
+      const req = store.get(key);
+      req.onsuccess = () => {
+        if (typeof req.result === "string" && req.result.length > 0) found[key] = req.result;
+      };
+    }
+    tx.oncomplete = () => resolve(found);
+    tx.onerror = () => resolve(found);
+    tx.onabort = () => resolve(found);
+  });
+  db.close();
+
+  let hydrated = false;
+  for (const key of keys) {
+    if (!localStorage.getItem(key) && values[key]) {
+      localStorage.setItem(key, values[key]);
+      hydrated = true;
+    }
+  }
+  return hydrated;
 }
 
 export function clearAll(): void {
@@ -230,6 +323,7 @@ export function clearAll(): void {
   localStorage.removeItem(KEM_PK_KEY);
   localStorage.removeItem(DSA_SK_KEY);
   localStorage.removeItem(DSA_PK_KEY);
+  if (typeof indexedDB !== "undefined") indexedDB.deleteDatabase(KEY_DB_NAME);
 }
 
 export async function linkDeviceWithInvite(code: string, passcode: string): Promise<{ token: string; authHandle: string }> {
