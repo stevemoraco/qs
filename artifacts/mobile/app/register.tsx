@@ -8,11 +8,11 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import * as LocalAuthentication from "expo-local-authentication";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
@@ -20,8 +20,8 @@ import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-re
 type Step = "idle" | "verifying" | "keygen" | "register" | "upload" | "done";
 
 const STEP_LABELS: Record<Step, string> = {
-  idle: "CREATE PASSCODE",
-  verifying: "CREATING DEVICE PASSKEY...",
+  idle: "CREATE HANDLE",
+  verifying: "VERIFYING...",
   keygen: "GENERATING PQ KEYS...",
   register: "REGISTERING IDENTITY...",
   upload: "UPLOADING KEY BUNDLE...",
@@ -36,6 +36,10 @@ function uint8ToBase64(arr: Uint8Array): string {
   return btoa(binary);
 }
 
+function normalizeHandle(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
 function generateDevicePasscode(): string {
   const bytes = new Uint8Array(32);
   const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
@@ -44,27 +48,14 @@ function generateDevicePasscode(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function verifyDevice(promptMessage: string): Promise<void> {
-  const hasHardware = await LocalAuthentication.hasHardwareAsync();
-  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-  if (!hasHardware || !isEnrolled) {
-    throw new Error("Face ID or device biometrics are not set up.");
-  }
-
-  const result = await LocalAuthentication.authenticateAsync({
-    promptMessage,
-    fallbackLabel: "Use device passcode",
-    disableDeviceFallback: false,
-  });
-  if (!result.success) throw new Error("Device verification was not completed.");
-}
-
 export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setDevicePasscode, setToken, storeKeyPair } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setToken, storeKeyPair } = useAuth();
 
+  const [handle, setHandle] = useState("");
+  const [passcode] = useState(() => generateDevicePasscode());
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
 
@@ -80,10 +71,10 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setError("");
     try {
-      setStep("verifying");
-      await verifyDevice("Create QuantumShield passcode");
-      const passcode = generateDevicePasscode();
-
+      const normalizedHandle = normalizeHandle(handle);
+      if (!/^[a-z0-9][a-z0-9_-]{1,31}$/.test(normalizedHandle)) {
+        throw new Error("Handle must be 2-32 letters, numbers, underscores, or dashes.");
+      }
       setStep("keygen");
       const { ml_kem1024 } = await import("@noble/post-quantum/ml-kem.js");
       const { ml_dsa87 } = await import("@noble/post-quantum/ml-dsa.js");
@@ -98,6 +89,7 @@ export default function RegisterScreen() {
       setStep("register");
       const authData = await register.mutateAsync({
         data: {
+          primaryCode: normalizedHandle,
           passcode,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -107,7 +99,6 @@ export default function RegisterScreen() {
       await storeKeyPair(kemSkB64, kemPkB64, dsaSkB64, dsaPkB64);
       await setToken(authData.token);
       await setAuthHandle(authData.authHandle);
-      await setDevicePasscode(passcode);
 
       setStep("upload");
       const kemSig = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
@@ -123,7 +114,7 @@ export default function RegisterScreen() {
       router.replace("/app");
     } catch (err: unknown) {
       setStep("idle");
-      setError(err instanceof Error ? err.message : "Registration failed. Device passkey was not created.");
+      setError(err instanceof Error ? err.message : "Registration failed. Account handle was not created.");
     }
   };
 
@@ -146,12 +137,35 @@ export default function RegisterScreen() {
           <Text style={[s.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
         </View>
 
-        <Text style={[s.title, { color: colors.foreground }]}>CREATE PASSCODE</Text>
+        <Text style={[s.title, { color: colors.foreground }]}>CREATE HANDLE</Text>
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>
-          Post-quantum key pairs are generated locally on this device
+          Choose a durable handle. A strong passcode is created for your password manager.
         </Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[s.label, { color: colors.mutedForeground }]}>HANDLE</Text>
+          <TextInput
+            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
+            value={handle}
+            onChangeText={setHandle}
+            placeholder="@your-handle"
+            placeholderTextColor={colors.mutedForeground}
+            autoCapitalize="none"
+            autoComplete="username"
+            testID="input-handle"
+          />
+
+          <TextInput
+            style={s.savedPasscodeInput}
+            value={passcode}
+            secureTextEntry
+            autoComplete="password-new"
+            textContentType="newPassword"
+            importantForAutofill="yes"
+            editable={false}
+            testID="input-passcode"
+          />
+
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}>
               <Feather name="alert-circle" size={14} color={colors.destructive} />
@@ -183,7 +197,7 @@ export default function RegisterScreen() {
         <TouchableOpacity onPress={() => router.push("/login")} style={s.link}>
           <Text style={[s.linkText, { color: colors.mutedForeground }]}>
             Already registered?{" "}
-            <Text style={{ color: colors.primary }}>USE PASSCODE</Text>
+            <Text style={{ color: colors.primary }}>LOG IN</Text>
           </Text>
         </TouchableOpacity>
 
@@ -191,7 +205,7 @@ export default function RegisterScreen() {
           {[
             "ML-KEM-1024 keys generated on-device",
             "ML-DSA-87 identity keys generated locally",
-            "Private keys stored only in secure storage",
+            "Handle plus password-manager passcode can recover access if app storage clears",
           ].map((note) => (
             <View key={note} style={s.checkRow}>
               <Feather name="check-circle" size={12} color={colors.primary} />
@@ -214,6 +228,9 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     title: { fontFamily: "Inter_700Bold", fontSize: 24, letterSpacing: -0.5, marginBottom: 8 },
     subtitle: { fontFamily: "Inter_400Regular", fontSize: 13, marginBottom: 28, lineHeight: 20 },
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
+    label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
+    input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
+    savedPasscodeInput: { position: "absolute", width: 1, height: 1, opacity: 0 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     infoBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },

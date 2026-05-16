@@ -8,11 +8,11 @@
 
 export interface RegisterRequest {
   /**
-     * Optional globally unique alias code to claim at registration.
-     * @minLength 3
+     * Globally unique durable account handle. It can be disabled or rolled, but cannot be reused by another account.
+     * @minLength 2
      * @maxLength 32
      */
-  primaryCode?: string | null;
+  primaryCode: string;
   /** @minLength 8 */
   passcode: string;
   displayName?: string | null;

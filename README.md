@@ -17,9 +17,9 @@ The privacy features this project combines:
 | Shield | Blur and tab awareness | Secure content is covered or blurred when the web app loses focus, the tab is hidden, printing starts, or the mobile app backgrounds. |
 | Screen | Screenshot and print friction | The web client reacts to PrintScreen and print lifecycle events. Expo requests platform screen-capture prevention and warns on screenshot events where supported. |
 | Key | Device-local identity keys | Post-quantum identity keys are generated locally during account creation. Private keys are not uploaded to the API. |
-| Code | Alias and invite codes | Users can claim a public alias code and mint invite codes with visibility scopes, use limits, allow lists, expirations, and roll/disable controls. |
-| Passcode | Device-bound passcode login | Login uses a device-local auth handle plus passcode. The server stores only an auth-handle hash and argon2 passcode hash, not a reusable username/password pair. |
-| Session | Rotating device sessions | Each successful login issues a fresh bearer session, and logout deletes it. Losing the local auth handle means requesting clearance again on that device. |
+| Code | Rollable handles and invite codes | Users claim a globally unique handle and can mint invite codes with visibility scopes, use limits, allow lists, expirations, and roll/disable controls. |
+| Passcode | Durable handle plus saved passcode login | Login shows only the user-created handle. A strong passcode is generated for the password manager and verified server-side as an argon2 hash. |
+| Session | Rotating device sessions | Each successful login issues a fresh bearer session, and logout deletes only that session. Handles can be disabled or rolled without reusing old names. |
 
 ## Start Here
 
@@ -44,10 +44,10 @@ All clients talk to the same API and use the same account system. Messages are e
 
 Account access works the same way across web, PWA, and Expo:
 
-- Request clearance to generate post-quantum identity keys locally and create a device-local auth handle.
-- Optionally claim a primary alias code during registration, then use invite codes to control who can discover or join you.
-- Return from the same device with your passcode. The API verifies the hash of the local auth handle plus an argon2 passcode hash before issuing a session.
-- Log out to invalidate the current session while keeping that device's local passkey credential available for the next login.
+- Create a permanent handle while a strong passcode is generated for the password manager and post-quantum identity keys are generated locally.
+- Use the same handle as your primary alias, then roll or disable it if it should stop working for login/discovery.
+- Return from any browser or device with the handle plus the saved password-manager passcode. The API verifies the active handle and argon2 passcode hash before issuing a session.
+- Use invite codes to link trusted devices or control who can discover and join you.
 
 ## PWA Install
 
@@ -57,7 +57,7 @@ Chrome or Edge on desktop:
 2. Use the install icon in the address bar, or open the browser menu and choose `Install app`.
 3. Launch QuantumShield from the installed app window.
 4. Allow notifications when prompted so encrypted push alerts can be registered.
-5. Request clearance; post-quantum identity keys and the auth handle are generated locally on that device.
+5. Create a handle; a strong passcode is saved through the password manager and post-quantum identity keys are generated locally on that device.
 
 Chrome on Android:
 
@@ -96,7 +96,7 @@ Mobile behavior to know:
 - Backgrounding the app clears any currently revealed plaintext.
 - `expo-screen-capture` attempts to prevent screen capture for the chat screen where the platform supports it.
 - If a screenshot event is reported, the app shows a warning banner.
-- Login requires the same device-local auth handle created during clearance plus the hidden device passcode.
+- Login requires the account handle plus the saved password-manager passcode, so cleared app storage does not prevent sign-in.
 - Alias and invite code behavior matches the web/PWA API: codes can be scoped, limited, expired, and rolled.
 
 ## Privacy Behavior
@@ -123,10 +123,10 @@ These features are implemented primarily in `artifacts/web/src/pages/ChatApp.tsx
 
 Identity and access behavior:
 
-- Registration creates an internal opaque account identifier; public identity is expressed through optional alias or invite codes.
-- Alias and invite codes support visibility scopes, max-use limits, allow lists, expirations, active/inactive state, and roll timestamps.
+- Registration creates an internal opaque account identifier and a required user-created handle stored as an alias code.
+- Handles, aliases, and invite codes support visibility scopes, max-use limits, allow lists, expirations, active/inactive state, and roll timestamps.
 - Search only returns active, public, non-expired identity codes.
-- Passcodes are verified with argon2, and auth handles are stored server-side only as SHA-256 hashes.
+- Passcodes are verified with argon2. Login is rate-limited by handle and client address.
 - Session records are created on login and removed on logout.
 
 ## Status

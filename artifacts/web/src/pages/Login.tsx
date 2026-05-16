@@ -5,14 +5,11 @@ import { usePostAuthLogin } from "@workspace/api-client-react";
 import {
   enrollDeviceVerification,
   generateDevicePasscode,
-  getAuthHandle,
-  getDevicePasscode,
   isAuthenticated,
   linkDeviceWithInvite,
   setAuthHandle,
   setDevicePasscode,
   setToken,
-  verifyDevice,
 } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
@@ -30,27 +27,28 @@ const LOGIN_PRIVACY_FEATURES = [
   { icon: EyeOff, label: "Blur and background shields hide secure content" },
   { icon: MonitorOff, label: "Screenshot, screen-capture, and print friction" },
   { icon: Key, label: "Alias and invite codes scope discovery and access" },
-  { icon: Lock, label: "Passcode login requires this device's local auth handle" },
+  { icon: Lock, label: "Only the handle is typed; the passcode comes from the password manager" },
   { icon: Shield, label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const [handle, setHandle] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
-  const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
   const [linkCode, setLinkCode] = useState("");
   const [isLinking, setIsLinking] = useState(false);
-  const authHandle = getAuthHandle();
 
   const login = usePostAuthLogin({
     mutation: {
       onSuccess: (data) => {
         setToken(data.token);
+        setAuthHandle(data.authHandle);
         void subscribeToPush(data.token);
         setLocation("/app", { replace: true });
       },
       onError: () => {
-        setError("Device passkey could not unlock this account");
+        setError("Invalid handle or passcode");
       },
     },
   });
@@ -58,28 +56,19 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const passcode = getDevicePasscode();
-    if (!authHandle) {
-      setError("No local identity found on this device. Create a passkey or link this device with an invite.");
+    const normalizedHandle = normalizeCodeInput(handle);
+    if (!normalizedHandle) {
+      setError("Enter your handle.");
       return;
     }
     if (!passcode) {
-      setError("No device passkey secret is linked here. Create a passkey or link this device with an invite.");
+      setError("Select the saved QuantumShield passcode from your password manager.");
       return;
     }
-    try {
-      setIsVerifyingDevice(true);
-      await verifyDevice();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Device verification was not completed.");
-      return;
-    } finally {
-      setIsVerifyingDevice(false);
-    }
-    login.mutate({ data: { authHandle, passcode } });
+    login.mutate({ data: { handle: normalizedHandle, passcode } });
   };
 
-  const isLoading = isVerifyingDevice || login.isPending;
+  const isLoading = login.isPending;
 
   const handleLinkDevice = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,6 +118,36 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
+                HANDLE
+              </label>
+              <input
+                type="text"
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
+                placeholder="@your-handle"
+                name="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                required
+                data-testid="input-handle"
+              />
+            </div>
+
+            <input
+              type="password"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              className="sr-only"
+              tabIndex={-1}
+              name="password"
+              autoComplete="current-password"
+              aria-label="Saved passcode from password manager"
+              data-testid="input-passcode"
+            />
+
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -142,7 +161,7 @@ export default function Login() {
               className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50"
               data-testid="button-submit"
             >
-              {isLoading ? "VERIFYING DEVICE..." : "USE PASSCODE"}
+              {isLoading ? "AUTHENTICATING..." : "LOG IN"}
             </button>
           </form>
 
@@ -150,7 +169,7 @@ export default function Login() {
             <p className="font-mono text-xs text-muted-foreground text-center">
               No account?{" "}
               <Link href="/register" className="text-primary hover:underline">
-                CREATE PASSCODE
+                CREATE HANDLE
               </Link>
             </p>
           </div>

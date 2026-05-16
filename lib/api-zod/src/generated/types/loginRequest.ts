@@ -7,7 +7,11 @@
  */
 
 export interface LoginRequest {
-  /** Opaque device-local account handle issued at registration. */
-  authHandle: string;
+  /**
+     * Globally unique account handle.
+     * @minLength 2
+     * @maxLength 32
+     */
+  handle: string;
   passcode: string;
 }

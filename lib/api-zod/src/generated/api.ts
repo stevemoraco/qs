@@ -20,7 +20,7 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Register with post-quantum key bundle
  */
-export const postAuthRegisterBodyPrimaryCodeMin = 3;
+export const postAuthRegisterBodyPrimaryCodeMin = 2;
 export const postAuthRegisterBodyPrimaryCodeMax = 32;
 
 export const postAuthRegisterBodyPasscodeMin = 8;
@@ -28,7 +28,7 @@ export const postAuthRegisterBodyPasscodeMin = 8;
 
 
 export const PostAuthRegisterBody = zod.object({
-  "primaryCode": zod.string().min(postAuthRegisterBodyPrimaryCodeMin).max(postAuthRegisterBodyPrimaryCodeMax).nullish().describe('Optional globally unique alias code to claim at registration.'),
+  "primaryCode": zod.string().min(postAuthRegisterBodyPrimaryCodeMin).max(postAuthRegisterBodyPrimaryCodeMax).describe('Globally unique durable account handle. It can be disabled or rolled, but cannot be reused by another account.'),
   "passcode": zod.string().min(postAuthRegisterBodyPasscodeMin),
   "displayName": zod.string().nullish(),
   "kemPublicKey": zod.string().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -72,8 +72,13 @@ export const PostLeadsResponse = zod.object({
 /**
  * @summary Login and receive a session token
  */
+export const postAuthLoginBodyHandleMin = 2;
+export const postAuthLoginBodyHandleMax = 32;
+
+
+
 export const PostAuthLoginBody = zod.object({
-  "authHandle": zod.string().describe('Opaque device-local account handle issued at registration.'),
+  "handle": zod.string().min(postAuthLoginBodyHandleMin).max(postAuthLoginBodyHandleMax).describe('Globally unique account handle.'),
   "passcode": zod.string()
 })
 

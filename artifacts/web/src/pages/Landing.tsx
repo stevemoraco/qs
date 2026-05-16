@@ -114,13 +114,13 @@ const PRIVACY_FEATURES = [
   },
   {
     icon: <Lock className="w-5 h-5" />,
-    title: "Passcode plus local device handle",
-    desc: "Return access requires the passcode and a device-local auth handle. The API stores only an auth-handle hash and argon2 passcode hash.",
+    title: "Handle plus saved passcode login",
+    desc: "Return access shows only the globally unique handle. The passcode is generated for the password manager and verified server-side as an argon2 hash.",
   },
   {
     icon: <Shield className="w-5 h-5" />,
     title: "Rotating device sessions",
-    desc: "Each successful login issues a fresh bearer session, and logout invalidates only that session while keeping the device passkey available.",
+    desc: "Each successful login issues a fresh bearer session, and logout invalidates only that session while the handle remains rollable or disableable.",
   },
 ];
 

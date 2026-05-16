@@ -647,14 +647,13 @@ components:
 
     RegisterRequest:
       type: object
-      required: [passcode, kemPublicKey, dsaPublicKey]
+      required: [primaryCode, passcode, kemPublicKey, dsaPublicKey]
       properties:
         primaryCode:
           type: string
-          minLength: 3
+          minLength: 2
           maxLength: 32
-          nullable: true
-          description: Optional globally unique alias code to claim at registration.
+          description: Globally unique durable account handle. It can be disabled or rolled, but cannot be reused by another account.
         passcode:
           type: string
           minLength: 8
@@ -736,11 +735,13 @@ components:
 
     LoginRequest:
       type: object
-      required: [authHandle, passcode]
+      required: [handle, passcode]
       properties:
-        authHandle:
+        handle:
           type: string
-          description: Opaque device-local account handle issued at registration.
+          minLength: 2
+          maxLength: 32
+          description: Globally unique account handle.
         passcode:
           type: string
 

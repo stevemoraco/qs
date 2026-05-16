@@ -33,7 +33,7 @@ const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; la
   { icon: "eye-off", label: "Blur and background shields hide secure content" },
   { icon: "monitor", label: "Screenshot, screen-capture, and print friction" },
   { icon: "key", label: "Alias and invite codes scope discovery and access" },
-  { icon: "lock", label: "Passcode login requires this device's local auth handle" },
+  { icon: "lock", label: "Only the handle is typed; the passcode comes from the password manager" },
   { icon: "shield", label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
@@ -56,10 +56,11 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getAuthHandle, getDevicePasscode, setAuthHandle, setDevicePasscode, setToken } = useAuth();
+  const { setAuthHandle, setDevicePasscode, setToken } = useAuth();
 
+  const [handle, setHandle] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
-  const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
   const [linkCode, setLinkCode] = useState("");
   const [isLinking, setIsLinking] = useState(false);
 
@@ -67,39 +68,30 @@ export default function LoginScreen() {
     mutation: {
       onSuccess: async (data) => {
         await setToken(data.token);
+        await setAuthHandle(data.authHandle);
         router.replace("/app");
       },
       onError: () => {
-        setError("Device passkey could not unlock this account");
+        setError("Invalid handle or passcode");
       },
     },
   });
 
   const handleLogin = async () => {
     setError("");
-    const authHandle = await getAuthHandle();
-    if (!authHandle) {
-      setError("No local identity found on this device. Create a passkey or link this device with an invite.");
+    const normalizedHandle = normalizeCodeInput(handle);
+    if (!normalizedHandle) {
+      setError("Enter your handle.");
       return;
     }
-    const passcode = await getDevicePasscode();
     if (!passcode) {
-      setError("No device passkey secret is linked here. Create a passkey or link this device with an invite.");
+      setError("Select the saved QuantumShield passcode from your password manager.");
       return;
     }
-    try {
-      setIsVerifyingDevice(true);
-      await verifyDevice("Use QuantumShield passcode");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Device verification was not completed.");
-      return;
-    } finally {
-      setIsVerifyingDevice(false);
-    }
-    login.mutate({ data: { authHandle, passcode } });
+    login.mutate({ data: { handle: normalizedHandle, passcode } });
   };
 
-  const isLoading = isVerifyingDevice || login.isPending;
+  const isLoading = login.isPending;
   const s = makeStyles(colors);
 
   const generateDevicePasscode = () => {
@@ -160,6 +152,29 @@ export default function LoginScreen() {
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>Authenticate to access encrypted channels</Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[s.label, { color: colors.mutedForeground }]}>HANDLE</Text>
+          <TextInput
+            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
+            value={handle}
+            onChangeText={setHandle}
+            placeholder="@your-handle"
+            placeholderTextColor={colors.mutedForeground}
+            autoCapitalize="none"
+            autoComplete="username"
+            testID="input-handle"
+          />
+
+          <TextInput
+            style={s.savedPasscodeInput}
+            value={passcode}
+            onChangeText={setPasscode}
+            secureTextEntry
+            autoComplete="password"
+            textContentType="password"
+            importantForAutofill="yes"
+            testID="input-passcode"
+          />
+
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}> 
               <Feather name="alert-circle" size={14} color={colors.destructive} />
@@ -176,13 +191,13 @@ export default function LoginScreen() {
             {isLoading ? (
               <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={[s.btnText, { color: colors.background }]}>USE PASSCODE</Text>
+              <Text style={[s.btnText, { color: colors.background }]}>LOG IN</Text>
             )}
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity onPress={() => router.push("/register")} style={s.link}>
-          <Text style={[s.linkText, { color: colors.mutedForeground }]}>No account? <Text style={{ color: colors.primary }}>CREATE PASSCODE</Text></Text>
+          <Text style={[s.linkText, { color: colors.mutedForeground }]}>No account? <Text style={{ color: colors.primary }}>CREATE HANDLE</Text></Text>
         </TouchableOpacity>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -250,7 +265,9 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     title: { fontFamily: "Inter_700Bold", fontSize: 24, letterSpacing: -0.5, marginBottom: 8 },
     subtitle: { fontFamily: "Inter_400Regular", fontSize: 13, marginBottom: 28, lineHeight: 20 },
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
+    label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
     input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
+    savedPasscodeInput: { position: "absolute", width: 1, height: 1, opacity: 0 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     btn: { paddingVertical: 14, alignItems: "center", justifyContent: "center", marginTop: 20, flexDirection: "row", gap: 8 },

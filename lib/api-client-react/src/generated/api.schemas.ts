@@ -33,11 +33,11 @@ export interface User {
 
 export interface RegisterRequest {
   /**
-     * Optional globally unique alias code to claim at registration.
-     * @minLength 3
+     * Globally unique durable account handle. It can be disabled or rolled, but cannot be reused by another account.
+     * @minLength 2
      * @maxLength 32
      */
-  primaryCode?: string | null;
+  primaryCode: string;
   /** @minLength 8 */
   passcode: string;
   displayName?: string | null;
@@ -77,8 +77,12 @@ export interface Lead {
 }
 
 export interface LoginRequest {
-  /** Opaque device-local account handle issued at registration. */
-  authHandle: string;
+  /**
+     * Globally unique account handle.
+     * @minLength 2
+     * @maxLength 32
+     */
+  handle: string;
   passcode: string;
 }
 

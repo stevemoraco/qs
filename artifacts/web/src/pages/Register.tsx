@@ -3,11 +3,9 @@ import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
 import {
-  enrollDeviceVerification,
   generateDevicePasscode,
   isAuthenticated,
   setAuthHandle,
-  setDevicePasscode,
   setToken,
   storeKeyPair,
 } from "@/lib/auth";
@@ -41,6 +39,8 @@ type GenerationStep =
 export default function Register() {
   const [, setLocation] = useLocation();
   const [leadEmail, setLeadEmail] = useState("");
+  const [handle, setHandle] = useState("");
+  const [passcode] = useState(() => generateDevicePasscode());
   const [error, setError] = useState("");
   const [step, setStep] = useState<GenerationStep>("idle");
 
@@ -68,15 +68,10 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const normalizedHandle = handle.trim().replace(/^[@#]+/, "").toLowerCase();
 
-    let passcode: string;
-    try {
-      setStep("verifying-device");
-      await enrollDeviceVerification();
-      passcode = generateDevicePasscode();
-    } catch (err: unknown) {
-      setStep("idle");
-      setError(extractErrorMessage(err, "Device passkey setup was not completed."));
+    if (!/^[a-z0-9][a-z0-9_-]{1,31}$/.test(normalizedHandle)) {
+      setError("Handle must be 2-32 letters, numbers, underscores, or dashes.");
       return;
     }
 
@@ -94,6 +89,7 @@ export default function Register() {
       setStep("submitting");
       const authData = await register.mutateAsync({
         data: {
+          primaryCode: normalizedHandle,
           passcode,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -104,10 +100,9 @@ export default function Register() {
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
       setToken(token);
       setAuthHandle(authData.authHandle);
-      setDevicePasscode(passcode);
     } catch (err: unknown) {
       setStep("idle");
-      setError(extractErrorMessage(err, "Could not create device passkey. Please try again."));
+      setError(extractErrorMessage(err, "Could not create account handle. Please try again."));
       return;
     }
 
@@ -135,8 +130,8 @@ export default function Register() {
   };
 
   const stepLabels: Record<GenerationStep, string> = {
-    idle: "CREATE PASSCODE",
-    "verifying-device": "CREATING DEVICE PASSKEY...",
+    idle: "CREATE HANDLE",
+    "verifying-device": "VERIFYING DEVICE...",
     "generating-kem": "GENERATING ML-KEM-1024 KEYS...",
     "generating-dsa": "GENERATING ML-DSA-87 KEYS...",
     submitting: "REGISTERING IDENTITY...",
@@ -162,13 +157,42 @@ export default function Register() {
 
         <div className="border border-border/50 bg-card/50 p-8 backdrop-blur-sm">
           <div className="mb-8">
-            <h1 className="font-mono font-bold text-xl tracking-tight">CREATE PASSCODE</h1>
+            <h1 className="font-mono font-bold text-xl tracking-tight">CREATE HANDLE</h1>
             <p className="font-mono text-xs text-muted-foreground mt-2">
-              Post-quantum key pairs are generated locally — your private keys never leave this device
+              Choose a permanent account handle. A strong passcode is created for your password manager.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
+                HANDLE
+              </label>
+              <input
+                type="text"
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
+                placeholder="@your-handle"
+                name="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                required
+                data-testid="input-handle"
+              />
+            </div>
+
+            <input
+              type="password"
+              defaultValue={passcode}
+              className="sr-only"
+              tabIndex={-1}
+              name="password"
+              autoComplete="new-password"
+              aria-label="Generated passcode for password manager"
+              data-testid="input-passcode"
+            />
+
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -197,7 +221,7 @@ export default function Register() {
             <p className="font-mono text-xs text-muted-foreground text-center">
               Already have access?{" "}
               <Link href="/login" className="text-primary hover:underline">
-                USE PASSCODE
+                LOG IN
               </Link>
             </p>
           </div>
@@ -207,7 +231,7 @@ export default function Register() {
           {[
             "ML-KEM-1024 keys generated in your browser",
             "ML-DSA-87 identity keys generated locally",
-            "Private keys stored only in your device",
+            "Handle plus password-manager passcode can recover access if browser storage clears",
           ].map((note) => (
             <div key={note} className="flex items-center gap-2">
               <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />

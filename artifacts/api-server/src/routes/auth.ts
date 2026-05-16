@@ -17,6 +17,8 @@ const AVATAR_COLORS = [
   "#ec4899","#6366f1","#14b8a6","#f97316","#84cc16",
 ];
 
+const loginFailures = new Map<string, { count: number; lockedUntil: number }>();
+
 function randomColor() {
   return AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
 }
@@ -66,6 +68,27 @@ async function createSession(userId: string): Promise<string> {
   return token;
 }
 
+function loginKey(reqIp: string | undefined, handle: string): string {
+  return `${reqIp ?? "unknown"}:${handle}`;
+}
+
+function isLoginThrottled(key: string): boolean {
+  const entry = loginFailures.get(key);
+  if (!entry) return false;
+  if (entry.lockedUntil <= Date.now()) {
+    loginFailures.delete(key);
+    return false;
+  }
+  return entry.count >= 5;
+}
+
+function recordLoginFailure(key: string): void {
+  const entry = loginFailures.get(key);
+  const count = (entry?.count ?? 0) + 1;
+  const lockedUntil = count >= 5 ? Date.now() + Math.min(15 * 60 * 1000, count * 60 * 1000) : Date.now() + 60 * 1000;
+  loginFailures.set(key, { count, lockedUntil });
+}
+
 function authUser(user: typeof usersTable.$inferSelect, authHandle: string, token: string, username = "sealed", primaryCode: string | null = null) {
   return {
     token,
@@ -91,24 +114,22 @@ router.post("/auth/register", async (req, res) => {
   }
 
   const { passcode, primaryCode, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
-  const normalizedPrimaryCode = primaryCode ? normalizeIdentityCode(primaryCode) : null;
+  const normalizedPrimaryCode = primaryCode ? normalizeIdentityCode(primaryCode) : "";
 
-  if (normalizedPrimaryCode && !isValidIdentityCode(normalizedPrimaryCode)) {
-    res.status(400).json({ error: "Code must be 2-32 letters, numbers, underscores, or dashes" });
+  if (!isValidIdentityCode(normalizedPrimaryCode)) {
+    res.status(400).json({ error: "Handle must be 2-32 letters, numbers, underscores, or dashes" });
     return;
   }
 
-  if (normalizedPrimaryCode) {
-    const existing = await db
-      .select({ id: identityCodesTable.id })
-      .from(identityCodesTable)
-      .where(eq(identityCodesTable.code, normalizedPrimaryCode))
-      .limit(1);
+  const existing = await db
+    .select({ id: identityCodesTable.id })
+    .from(identityCodesTable)
+    .where(eq(identityCodesTable.code, normalizedPrimaryCode))
+    .limit(1);
 
-    if (existing.length > 0) {
-      res.status(409).json({ error: "Code already claimed" });
-      return;
-    }
+  if (existing.length > 0) {
+    res.status(409).json({ error: "Handle already claimed" });
+    return;
   }
 
   const authHandle = generateAuthHandle();
@@ -134,16 +155,11 @@ router.post("/auth/register", async (req, res) => {
     label: "First device",
   });
 
-  if (normalizedPrimaryCode) {
-    const expiresAt = new Date();
-    expiresAt.setFullYear(expiresAt.getFullYear() + 10);
-    await db.insert(identityCodesTable).values({
-      ownerUserId: user.id,
-      code: normalizedPrimaryCode,
-      kind: "alias",
-      expiresAt,
-    });
-  }
+  await db.insert(identityCodesTable).values({
+    ownerUserId: user.id,
+    code: normalizedPrimaryCode,
+    kind: "alias",
+  });
 
   const token = await createSession(user.id);
 
@@ -169,7 +185,7 @@ router.post("/auth/register", async (req, res) => {
       });
   }
 
-  res.status(201).json(authUser(user, authHandle, token, normalizedPrimaryCode ?? "sealed", normalizedPrimaryCode));
+  res.status(201).json(authUser(user, authHandle, token, normalizedPrimaryCode, normalizedPrimaryCode));
 });
 
 router.post("/auth/login", async (req, res) => {
@@ -179,41 +195,48 @@ router.post("/auth/login", async (req, res) => {
     return;
   }
 
-  const { authHandle, passcode } = parse.data;
+  const { handle, passcode } = parse.data;
+  const normalizedHandle = normalizeIdentityCode(handle);
+  const throttleKey = loginKey(req.ip, normalizedHandle);
 
-  let [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.authHandleHash, hashAuthHandle(authHandle)))
-    .limit(1);
-  let passwordHash = user?.passwordHash;
-
-  if (!user) {
-    const [linked] = await db
-      .select({ credential: deviceCredentialsTable, user: usersTable })
-      .from(deviceCredentialsTable)
-      .innerJoin(usersTable, eq(deviceCredentialsTable.userId, usersTable.id))
-      .where(and(eq(deviceCredentialsTable.authHandleHash, hashAuthHandle(authHandle)), isNull(deviceCredentialsTable.revokedAt)))
-      .limit(1);
-    if (linked) {
-      user = linked.user;
-      passwordHash = linked.credential.passwordHash;
-    }
+  if (isLoginThrottled(throttleKey)) {
+    res.status(429).json({ error: "Too many login attempts. Try again later." });
+    return;
   }
 
+  const [row] = await db
+    .select({ code: identityCodesTable, user: usersTable })
+    .from(identityCodesTable)
+    .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
+    .where(
+      and(
+        eq(identityCodesTable.code, normalizedHandle),
+        eq(identityCodesTable.kind, "alias"),
+        eq(identityCodesTable.active, true),
+        or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
+      )
+    )
+    .limit(1);
+
+  const user = row?.user;
+  const passwordHash = user?.passwordHash;
+
   if (!user || !passwordHash) {
-    res.status(401).json({ error: "Invalid passcode" });
+    recordLoginFailure(throttleKey);
+    res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
 
   const valid = await argon2.verify(passwordHash, passcode);
   if (!valid) {
-    res.status(401).json({ error: "Invalid passcode" });
+    recordLoginFailure(throttleKey);
+    res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
 
+  loginFailures.delete(throttleKey);
   const token = await createSession(user.id);
-  res.json(authUser(user, authHandle, token));
+  res.json(authUser(user, generateAuthHandle(), token, normalizedHandle, normalizedHandle));
 });
 
 router.post("/auth/link-device", async (req, res) => {
@@ -288,12 +311,18 @@ router.post("/auth/link-device", async (req, res) => {
   res.status(201).json(authUser(row.user, authHandle, token, row.code.code, row.code.code));
 });
 
-router.get("/auth/me", requireAuth, (req: AuthRequest, res) => {
+router.get("/auth/me", requireAuth, async (req: AuthRequest, res) => {
   const u = req.user!;
+  const [primary] = await db
+    .select({ code: identityCodesTable.code })
+    .from(identityCodesTable)
+    .where(and(eq(identityCodesTable.ownerUserId, u.id), eq(identityCodesTable.kind, "alias"), eq(identityCodesTable.active, true)))
+    .limit(1);
+
   res.json({
     id: u.id,
-    username: "sealed",
-    primaryCode: null,
+    username: primary?.code ?? "sealed",
+    primaryCode: primary?.code ?? null,
     displayName: u.displayName,
     avatarColor: u.avatarColor,
     kemPublicKey: u.kemPublicKey,
