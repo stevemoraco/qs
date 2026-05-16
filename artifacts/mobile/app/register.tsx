@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -63,13 +63,19 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { setAuthHandle, setDevicePasscode, setToken, storeKeyPair } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setDevicePasscode, setToken, storeKeyPair } = useAuth();
 
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
 
   const register = usePostAuthRegister();
   const uploadKeys = usePostKeysUpload();
+
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      router.replace("/app");
+    }
+  }, [isAuthenticated, isAuthLoading, router]);
 
   const handleRegister = async () => {
     setError("");

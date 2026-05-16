@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
 import {
   enrollDeviceVerification,
   generateDevicePasscode,
+  isAuthenticated,
   setAuthHandle,
   setDevicePasscode,
   setToken,
@@ -144,6 +145,10 @@ export default function Register() {
   };
 
   const isLoading = step !== "idle";
+
+  if (isAuthenticated()) {
+    return <Redirect to="/app" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
