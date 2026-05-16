@@ -32,6 +32,7 @@ import {
   usePostRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
   getGetRoomsRoomIdMembersQueryKey,
+  getRoomsRoomIdMembers,
   getKeysUserId,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
@@ -423,11 +424,13 @@ function ChatView({
     if (!text) return;
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
+    const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
+    const recipientIds = Array.from(new Set([myId, ...freshMembers.map((member) => member.id)]));
     const recipientEncryptedKeys: Record<string, string> = {};
     await Promise.all(
-      members.map(async (member) => {
-        const wrapped = await wrapMessageKeyForUser(member.id, key);
-        if (wrapped) recipientEncryptedKeys[member.id] = wrapped;
+      recipientIds.map(async (userId) => {
+        const wrapped = await wrapMessageKeyForUser(userId, key);
+        if (wrapped) recipientEncryptedKeys[userId] = wrapped;
       })
     );
     sendMsg.mutate(

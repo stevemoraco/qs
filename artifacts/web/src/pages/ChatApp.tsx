@@ -27,6 +27,7 @@ import {
   getGetRoomsRoomIdMessagesQueryKey,
   usePostRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
+  getRoomsRoomIdMembers,
   getKeysUserId,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
@@ -934,11 +935,13 @@ function RoomView({
     setInput("");
 
     const { ciphertext, nonce, key, rawKey } = await encryptMessage(text);
+    const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
+    const recipientIds = Array.from(new Set([currentUserId, ...freshMembers.map((member) => member.id)]));
     const recipientEncryptedKeys: Record<string, string> = {};
     await Promise.all(
-      members.map(async (member) => {
-        const wrapped = await wrapMessageKeyForUser(member.id, rawKey);
-        if (wrapped) recipientEncryptedKeys[member.id] = wrapped;
+      recipientIds.map(async (userId) => {
+        const wrapped = await wrapMessageKeyForUser(userId, rawKey);
+        if (wrapped) recipientEncryptedKeys[userId] = wrapped;
       })
     );
 
