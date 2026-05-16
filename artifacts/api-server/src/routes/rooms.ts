@@ -5,6 +5,8 @@ import { PostRoomsBody, PostRoomsRoomIdMembersBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router = Router();
+const DEFAULT_ROOM_TTL_SECONDS = 300;
+const DEFAULT_ROOM_TTL_MODE = "after_view";
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
@@ -63,6 +65,7 @@ router.get("/rooms", requireAuth, async (req: AuthRequest, res) => {
       type: room.type,
       memberCount: Number(memberCount),
       ttlSeconds: room.ttlSeconds,
+      ttlMode: room.ttlMode,
       lastMessageAt: room.lastMessageAt,
       createdAt: room.createdAt,
       members: members.map((m) => publicUser(m.user)),
@@ -79,12 +82,17 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
 
-  const { name, type, memberIds, ttlSeconds } = parse.data;
+  const { name, type, memberIds, ttlSeconds, ttlMode } = parse.data;
   const allMemberIds = Array.from(new Set([req.userId!, ...(memberIds ?? [])]));
 
   const [room] = await db
     .insert(roomsTable)
-    .values({ name: name ?? null, type, ttlSeconds: ttlSeconds ?? null })
+    .values({
+      name: name ?? null,
+      type,
+      ttlSeconds: ttlSeconds ?? DEFAULT_ROOM_TTL_SECONDS,
+      ttlMode: ttlMode ?? DEFAULT_ROOM_TTL_MODE,
+    })
     .returning();
 
   for (const userId of allMemberIds) {
@@ -102,6 +110,7 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
     type: room.type,
     memberCount: Number(memberCount),
     ttlSeconds: room.ttlSeconds,
+    ttlMode: room.ttlMode,
     lastMessageAt: room.lastMessageAt,
     createdAt: room.createdAt,
     members: null,
@@ -150,6 +159,7 @@ router.get("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
     type: room.type,
     memberCount: Number(memberCount),
     ttlSeconds: room.ttlSeconds,
+    ttlMode: room.ttlMode,
     lastMessageAt: room.lastMessageAt,
     createdAt: room.createdAt,
     members: members.map((m) => publicUser(m.user)),

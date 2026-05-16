@@ -188,6 +188,17 @@ export const RoomType = {
   group: 'group',
 } as const;
 
+/**
+ * Whether TTL starts when a message is first viewed or when it is sent.
+ */
+export type RoomTtlMode = typeof RoomTtlMode[keyof typeof RoomTtlMode];
+
+
+export const RoomTtlMode = {
+  after_view: 'after_view',
+  after_send: 'after_send',
+} as const;
+
 export interface Room {
   id: string;
   name?: string | null;
@@ -196,6 +207,8 @@ export interface Room {
   lastMessageAt?: string | null;
   /** Message TTL — keys destroyed after this period */
   ttlSeconds?: number | null;
+  /** Whether TTL starts when a message is first viewed or when it is sent. */
+  ttlMode?: RoomTtlMode;
   createdAt: string;
   members?: User[] | null;
 }
@@ -208,12 +221,25 @@ export const CreateRoomRequestType = {
   group: 'group',
 } as const;
 
+/**
+ * Whether TTL starts when a message is first viewed or when it is sent.
+ */
+export type CreateRoomRequestTtlMode = typeof CreateRoomRequestTtlMode[keyof typeof CreateRoomRequestTtlMode];
+
+
+export const CreateRoomRequestTtlMode = {
+  after_view: 'after_view',
+  after_send: 'after_send',
+} as const;
+
 export interface CreateRoomRequest {
   name?: string | null;
   type: CreateRoomRequestType;
   memberIds: string[];
   /** Message TTL in seconds. Keys are destroyed after this period. */
   ttlSeconds?: number | null;
+  /** Whether TTL starts when a message is first viewed or when it is sent. */
+  ttlMode?: CreateRoomRequestTtlMode;
 }
 
 /**

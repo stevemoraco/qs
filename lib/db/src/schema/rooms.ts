@@ -5,6 +5,7 @@ export const roomsTable = pgTable("rooms", {
   name: text("name"),
   type: text("type", { enum: ["direct", "group"] }).notNull().default("direct"),
   ttlSeconds: integer("ttl_seconds"),
+  ttlMode: text("ttl_mode", { enum: ["after_view", "after_send"] }).notNull().default("after_view"),
   lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

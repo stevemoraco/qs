@@ -74,6 +74,7 @@ type Room = {
   memberCount: number;
   lastMessageAt?: string | null;
   ttlSeconds?: number | null;
+  ttlMode?: "after_view" | "after_send";
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -232,7 +233,7 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
           <Feather name="lock" size={10} color={colors.primary} />
           <Text style={[styles.roomSub, { color: colors.mutedForeground }]}>E2E Encrypted</Text>
           {room.ttlSeconds && (
-            <Text style={[styles.roomSub, { color: colors.primary }]}>· TTL</Text>
+            <Text style={[styles.roomSub, { color: colors.primary }]}>· {room.ttlMode === "after_send" ? "TTL after send" : "TTL after view"}</Text>
           )}
         </View>
       </View>
@@ -497,7 +498,9 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [type, setType] = useState<"direct" | "group">("direct");
-  const [ttl, setTtl] = useState<number | null>(null);
+  const [ttl, setTtl] = useState<number | null>(300);
+  const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
+  const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -512,7 +515,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
         onClose();
-        setName(""); setSearch(""); setSelected([]);
+        setName(""); setSearch(""); setSelected([]); setTtl(300); setTtlMode("after_view");
       },
     },
   });
@@ -555,6 +558,18 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             ))}
           </ScrollView>
 
+          <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>TTL STARTS</Text>
+          <View style={styles.typeRow}>
+            {[
+              { label: "AFTER VIEW", v: "after_view" as const },
+              { label: "AFTER SEND", v: "after_send" as const },
+            ].map((o) => (
+              <TouchableOpacity key={o.v} onPress={() => o.v !== ttlMode && setPendingTtlMode(o.v)} style={[styles.typeBtn, { borderColor: ttlMode === o.v ? colors.primary : colors.border }, ttlMode === o.v && { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={[styles.typeBtnText, { color: ttlMode === o.v ? colors.primary : colors.mutedForeground }]}>{o.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>ADD MEMBERS</Text>
           <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <Feather name="search" size={14} color={colors.mutedForeground} />
@@ -574,10 +589,35 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             );
           })}
 
-          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl } })} disabled={createRoom.isPending} testID="button-create-room">
+          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl, ttlMode } })} disabled={createRoom.isPending} testID="button-create-room">
             {createRoom.isPending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.createBtnText, { color: colors.background }]}>CREATE ENCRYPTED CHANNEL</Text>}
           </TouchableOpacity>
         </ScrollView>
+        {pendingTtlMode && (
+          <Modal transparent animationType="fade" visible onRequestClose={() => setPendingTtlMode(null)}>
+            <View style={styles.confirmOverlay}>
+              <View style={[styles.confirmBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.confirmKicker, { color: colors.primary }]}>EXPIRY MODE</Text>
+                <Text style={[styles.confirmTitle, { color: colors.foreground }]}>
+                  {pendingTtlMode === "after_view" ? "Start TTL after first view?" : "Start TTL after send?"}
+                </Text>
+                <Text style={[styles.confirmText, { color: colors.mutedForeground }]}>
+                  {pendingTtlMode === "after_view"
+                    ? "Messages stay available until the room is opened and fetched, then the countdown starts. This is the default for ephemeral conversations."
+                    : "Messages begin expiring immediately when sent, even if nobody has viewed them yet."}
+                </Text>
+                <View style={styles.confirmActions}>
+                  <TouchableOpacity onPress={() => setPendingTtlMode(null)} style={[styles.confirmBtn, { borderColor: colors.border }]}>
+                    <Text style={[styles.confirmBtnText, { color: colors.mutedForeground }]}>CANCEL</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => { setTtlMode(pendingTtlMode); setPendingTtlMode(null); }} style={[styles.confirmBtn, { borderColor: colors.primary, backgroundColor: `${colors.primary}20` }]}>
+                    <Text style={[styles.confirmBtnText, { color: colors.primary }]}>USE MODE</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
       </View>
     </Modal>
   );

@@ -5,6 +5,7 @@
  * QuantumShield — Post-quantum encrypted chat API (ML-KEM-1024 + ML-DSA-87)
  * OpenAPI spec version: 2026.5.16-1108mdt
  */
+import type { CreateRoomRequestTtlMode } from './createRoomRequestTtlMode';
 import type { CreateRoomRequestType } from './createRoomRequestType';
 
 export interface CreateRoomRequest {
@@ -13,4 +14,6 @@ export interface CreateRoomRequest {
   memberIds: string[];
   /** Message TTL in seconds. Keys are destroyed after this period. */
   ttlSeconds?: number | null;
+  /** Whether TTL starts when a message is first viewed or when it is sent. */
+  ttlMode?: CreateRoomRequestTtlMode;
 }

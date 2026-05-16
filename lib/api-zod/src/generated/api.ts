@@ -254,6 +254,8 @@ export const GetUsersUserIdResponse = zod.object({
 /**
  * @summary List rooms for the current user
  */
+export const getRoomsResponseTtlModeDefault = `after_view`;
+
 export const GetRoomsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string().nullish(),
@@ -261,6 +263,7 @@ export const GetRoomsResponseItem = zod.object({
   "memberCount": zod.number(),
   "lastMessageAt": zod.coerce.date().nullish(),
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
+  "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
@@ -279,11 +282,14 @@ export const GetRoomsResponse = zod.array(GetRoomsResponseItem)
 /**
  * @summary Create a new room
  */
+export const postRoomsBodyTtlModeDefault = `after_view`;
+
 export const PostRoomsBody = zod.object({
   "name": zod.string().nullish(),
   "type": zod.enum(['direct', 'group']),
   "memberIds": zod.array(zod.string()),
-  "ttlSeconds": zod.number().nullish().describe('Message TTL in seconds. Keys are destroyed after this period.')
+  "ttlSeconds": zod.number().nullish().describe('Message TTL in seconds. Keys are destroyed after this period.'),
+  "ttlMode": zod.enum(['after_view', 'after_send']).default(postRoomsBodyTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.')
 })
 
 
@@ -294,6 +300,8 @@ export const GetRoomsRoomIdParams = zod.object({
   "roomId": zod.coerce.string()
 })
 
+export const getRoomsRoomIdResponseTtlModeDefault = `after_view`;
+
 export const GetRoomsRoomIdResponse = zod.object({
   "id": zod.string(),
   "name": zod.string().nullish(),
@@ -301,6 +309,7 @@ export const GetRoomsRoomIdResponse = zod.object({
   "memberCount": zod.number(),
   "lastMessageAt": zod.coerce.date().nullish(),
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
+  "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsRoomIdResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),

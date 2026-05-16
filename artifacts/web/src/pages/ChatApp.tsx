@@ -54,6 +54,7 @@ type Room = {
   memberCount: number;
   lastMessageAt?: string | null;
   ttlSeconds?: number | null;
+  ttlMode?: "after_view" | "after_send";
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -142,11 +143,11 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
-function TTLLabel({ seconds }: { seconds?: number | null }) {
+function TTLLabel({ seconds, mode }: { seconds?: number | null; mode?: "after_view" | "after_send" }) {
   if (!seconds) return null;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const label = h > 0 ? `${h}h TTL` : `${m}m TTL`;
+  const label = `${h > 0 ? `${h}h` : `${m}m`} ${mode === "after_send" ? "after send" : "after view"}`;
   return (
     <span className="font-mono text-xs text-primary/60 flex items-center gap-1">
       <Clock className="w-3 h-3" />
@@ -196,7 +197,9 @@ function NewRoomDialog({
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [type, setType] = useState<"direct" | "group">("direct");
-  const [ttl, setTtl] = useState<number | null>(null);
+  const [ttl, setTtl] = useState<number | null>(300);
+  const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
+  const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [revealedUserId, setRevealedUserId] = useState<string | null>(null);
@@ -227,6 +230,7 @@ function NewRoomDialog({
         type,
         memberIds: selectedIds,
         ttlSeconds: ttl,
+        ttlMode,
       },
     });
   };
@@ -294,6 +298,25 @@ function NewRoomDialog({
           </div>
 
           <div>
+            <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">TTL STARTS</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: "after_view" as const, label: "AFTER VIEW" },
+                { value: "after_send" as const, label: "AFTER SEND" },
+              ].map((mode) => (
+                <button
+                  key={mode.value}
+                  type="button"
+                  onClick={() => mode.value !== ttlMode && setPendingTtlMode(mode.value)}
+                  className={`border px-3 py-2 font-mono text-xs ${ttlMode === mode.value ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
             <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">ADD MEMBERS</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
@@ -354,6 +377,36 @@ function NewRoomDialog({
           </button>
         </div>
       </div>
+      {pendingTtlMode && (
+        <div className="fixed inset-0 z-[60] bg-background/90 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md border border-border bg-card p-5 shadow-2xl">
+            <div className="font-mono text-xs tracking-widest text-primary mb-3">EXPIRY MODE</div>
+            <h3 className="font-mono text-lg font-bold mb-2">
+              {pendingTtlMode === "after_view" ? "Start TTL after first view?" : "Start TTL after send?"}
+            </h3>
+            <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+              {pendingTtlMode === "after_view"
+                ? "Messages stay available until the room is opened and fetched, then the countdown starts. This is the default for ephemeral conversations."
+                : "Messages begin expiring immediately when sent, even if nobody has viewed them yet."}
+            </p>
+            <div className="grid grid-cols-2 gap-2 mt-5">
+              <button type="button" onClick={() => setPendingTtlMode(null)} className="border border-border px-3 py-2.5 font-mono text-xs hover:border-primary/50">
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTtlMode(pendingTtlMode);
+                  setPendingTtlMode(null);
+                }}
+                className="bg-primary text-primary-foreground px-3 py-2.5 font-mono text-xs"
+              >
+                USE MODE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -898,7 +951,7 @@ function RoomView({
                 {revealRoomName ? getRoomLabel(room, currentUserId) : roomCodename}
               </button>
             </h2>
-            <TTLLabel seconds={room.ttlSeconds} />
+            <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />
           </div>
           <div className="flex items-center gap-2 mt-1 min-w-0">
             <Shield className="w-3 h-3 text-primary flex-shrink-0" />
@@ -1288,7 +1341,7 @@ export default function ChatApp() {
                 <div className="flex items-center gap-1 mt-0.5">
                   <Lock className="w-2.5 h-2.5 text-primary/50" />
                   <span className="font-mono text-xs text-muted-foreground">Encrypted</span>
-                  {room.ttlSeconds && <TTLLabel seconds={room.ttlSeconds} />}
+                  {room.ttlSeconds && <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />}
                 </div>
               </div>
             </button>

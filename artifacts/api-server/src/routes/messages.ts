@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, messagesTable, roomMembersTable, roomsTable } from "@workspace/db";
-import { eq, and, lt, desc, ne } from "drizzle-orm";
+import { eq, and, lt, desc, ne, inArray, isNull } from "drizzle-orm";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
@@ -27,6 +27,12 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
 
   const limit = Math.min(Number(req.query.limit ?? 50), 100);
   const before = req.query.before as string | undefined;
+
+  const [room] = await db
+    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode })
+    .from(roomsTable)
+    .where(eq(roomsTable.id, roomId))
+    .limit(1);
 
   let query = db
     .select({
@@ -58,8 +64,20 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
   const rows = await query;
 
   const now = new Date();
-  const messages = rows
-    .filter((r) => !r.message.expiresAt || r.message.expiresAt > now)
+  const visibleRows = rows.filter((r) => !r.message.expiresAt || r.message.expiresAt > now);
+  const viewedExpiresAt = room?.ttlSeconds && room.ttlMode === "after_view" ? new Date(now.getTime() + room.ttlSeconds * 1000) : null;
+  const firstViewedIds = viewedExpiresAt
+    ? visibleRows.filter((r) => !r.message.expiresAt && r.message.senderId !== req.userId).map((r) => r.message.id)
+    : [];
+
+  if (firstViewedIds.length > 0) {
+    await db
+      .update(messagesTable)
+      .set({ expiresAt: viewedExpiresAt })
+      .where(and(inArray(messagesTable.id, firstViewedIds), isNull(messagesTable.expiresAt)));
+  }
+
+  const messages = visibleRows
     .map((r) => ({
       id: r.message.id,
       roomId: r.message.roomId,
@@ -70,7 +88,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       algorithm: r.message.algorithm,
       signature: r.message.signature,
       recipientEncryptedKeys: r.message.recipientEncryptedKeys,
-      expiresAt: r.message.expiresAt,
+      expiresAt: r.message.expiresAt ?? (firstViewedIds.includes(r.message.id) ? viewedExpiresAt : null),
       createdAt: r.message.createdAt,
     }));
 
@@ -100,16 +118,13 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   const { ciphertext, nonce, algorithm, signature, recipientEncryptedKeys, ttlSeconds } = parse.data;
 
   const [room] = await db
-    .select({ ttlSeconds: roomsTable.ttlSeconds })
+    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode })
     .from(roomsTable)
     .where(eq(roomsTable.id, roomId))
     .limit(1);
 
   const effectiveTtl = ttlSeconds ?? room?.ttlSeconds ?? null;
-  let expiresAt: Date | null = null;
-  if (effectiveTtl) {
-    expiresAt = new Date(Date.now() + effectiveTtl * 1000);
-  }
+  const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(Date.now() + effectiveTtl * 1000) : null;
 
   const [message] = await db
     .insert(messagesTable)
