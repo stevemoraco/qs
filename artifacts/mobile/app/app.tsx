@@ -1006,6 +1006,8 @@ export default function AppScreen() {
   const [showRooms, setShowRooms] = useState(true);
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
   const [appActive, setAppActive] = useState(true);
+  const [privacyLock, setPrivacyLock] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
+  const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "unavailable">("scanning");
   const [cameraDetail, setCameraDetail] = useState("REQUESTING FRONT CAMERA");
 
@@ -1020,11 +1022,54 @@ export default function AppScreen() {
   const codenameForUser = useCallback((id: string) => codenameFor(`user:${id}`), [codenameFor]);
   const codenameForRoom = useCallback((id: string) => codenameFor(`room:${id}`), [codenameFor]);
   const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => { setCameraStatus(status); setCameraDetail(detail); }, []);
+  const lockPrivacy = useCallback((reason: string) => {
+    setPrivacyLock((current) => ({ active: true, reason: current.active ? current.reason : reason }));
+  }, []);
 
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (state) => setAppActive(state === "active"));
+    const sub = AppState.addEventListener("change", (state) => {
+      const active = state === "active";
+      setAppActive(active);
+      if (!active) lockPrivacy("App left the foreground.");
+    });
     return () => sub.remove();
-  }, []);
+  }, [lockPrivacy]);
+
+  useEffect(() => {
+    let mounted = true;
+    let sub: { remove: () => void } | undefined;
+    (async () => {
+      try {
+        await ScreenCapture.preventScreenCaptureAsync("quantumshield-app");
+        if (!mounted) return;
+        sub = ScreenCapture.addScreenshotListener(() => {
+          if (mounted) lockPrivacy("Screenshot was detected.");
+        });
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+      sub?.remove();
+      ScreenCapture.allowScreenCaptureAsync("quantumshield-app").catch(() => {});
+    };
+  }, [lockPrivacy]);
+
+  const unlockPrivacy = async () => {
+    setPrivacyLock((current) => ({ ...current, error: undefined }));
+    setIsUnlockingPrivacy(true);
+    try {
+      await verifyDevice("Unlock QuantumShield");
+      setPrivacyLock({ active: false, reason: "" });
+    } catch (err: unknown) {
+      setPrivacyLock((current) => ({
+        ...current,
+        active: true,
+        error: err instanceof Error ? err.message : "Device verification failed.",
+      }));
+    } finally {
+      setIsUnlockingPrivacy(false);
+    }
+  };
 
   const topPad = Platform.OS === "web" ? 67 : 0;
   const cameraColor = cameraStatus === "clear" ? colors.primary : colors.mutedForeground;
@@ -1036,6 +1081,22 @@ export default function AppScreen() {
         <View style={[styles.cameraDot, { backgroundColor: cameraColor }]} />
         <Text style={[styles.cameraStatusText, { color: cameraColor }]}>{cameraStatus === "clear" ? "NO CAMERA DETECTED - AREA CLEAR" : cameraStatus === "scanning" ? "INITIALIZING FRONT CAMERA SCAN" : "CAMERA UNAVAILABLE - SCAN OFFLINE"} / {cameraDetail}</Text>
       </View>
+      {privacyLock.active && (
+        <View style={[styles.privacyLock, { backgroundColor: colors.background }]} testID="privacy-lock">
+          <Feather name="shield" size={44} color={colors.primary} />
+          <Text style={[styles.privacyLockTitle, { color: colors.primary }]}>PRIVACY SHIELD ACTIVE</Text>
+          <Text style={[styles.privacyLockText, { color: colors.mutedForeground }]}>{privacyLock.reason || "Secure content is locked until device verification succeeds."}</Text>
+          {!!privacyLock.error && <Text style={[styles.privacyLockText, { color: colors.destructive }]}>{privacyLock.error}</Text>}
+          <TouchableOpacity
+            onPress={unlockPrivacy}
+            disabled={isUnlockingPrivacy}
+            style={[styles.privacyUnlockButton, { backgroundColor: colors.primary }, isUnlockingPrivacy && { opacity: 0.5 }]}
+            testID="button-unlock-privacy-shield"
+          >
+            {isUnlockingPrivacy ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.privacyUnlockText, { color: colors.background }]}>VERIFY DEVICE</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
       {showRooms || !activeRoom ? (
         <View style={[styles.sidebar, { borderRightColor: colors.border }]}> 
           <View style={[styles.sidebarTop, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}> 
@@ -1175,4 +1236,9 @@ const styles = StyleSheet.create({
   confirmActions: { flexDirection: "row", gap: 8, marginTop: 18 },
   confirmBtn: { flex: 1, borderWidth: 1, paddingVertical: 12, alignItems: "center" },
   confirmBtnText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
+  privacyLock: { ...StyleSheet.absoluteFillObject, zIndex: 1000, alignItems: "center", justifyContent: "center", padding: 28 },
+  privacyLockTitle: { fontFamily: "Inter_700Bold", fontSize: 13, letterSpacing: 3, marginTop: 18 },
+  privacyLockText: { fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 19, textAlign: "center", marginTop: 10 },
+  privacyUnlockButton: { marginTop: 24, paddingHorizontal: 22, paddingVertical: 14 },
+  privacyUnlockText: { fontFamily: "Inter_700Bold", fontSize: 11, letterSpacing: 2 },
 });

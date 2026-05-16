@@ -6,6 +6,7 @@ import {
   isAuthenticated,
   registerWithPasskey,
   setAuthHandle,
+  setLastHandle,
   setToken,
   storeKeyPair,
 } from "@/lib/auth";
@@ -95,6 +96,7 @@ export default function Register() {
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
       setToken(token);
       setAuthHandle(authData.authHandle);
+      setLastHandle(normalizedHandle);
     } catch (err: unknown) {
       setStep("idle");
       setError(extractErrorMessage(err, "Could not create account handle. Please try again."));

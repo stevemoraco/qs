@@ -9,6 +9,7 @@ import {
   linkDeviceWithInvite,
   setAuthHandle,
   setDevicePasscode,
+  setLastHandle,
   setToken,
 } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
@@ -52,6 +53,7 @@ export default function Login() {
       const data = await loginWithPasskey(normalizedHandle);
       setToken(data.token);
       setAuthHandle(data.authHandle);
+      setLastHandle(normalizedHandle);
       void subscribeToPush(data.token);
       setLocation("/app", { replace: true });
     } catch (err: unknown) {

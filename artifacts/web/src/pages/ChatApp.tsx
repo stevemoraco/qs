@@ -39,7 +39,7 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKey, getToken, loginWithPasskey, setAuthHandle, setToken } from "@/lib/auth";
+import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey, setAuthHandle, setToken, verifyDevice } from "@/lib/auth";
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
@@ -1150,7 +1150,8 @@ export default function ChatApp() {
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [privacyShield, setPrivacyShield] = useState(false);
+  const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
+  const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
@@ -1174,34 +1175,53 @@ export default function ChatApp() {
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
   const codenameForUser = (id: string) => codenameFor(`user:${id}`);
   const codenameForRoom = (id: string) => codenameFor(`room:${id}`);
+  const lockPrivacyShield = (reason: string) => {
+    setPrivacyShield((current) => ({ active: true, reason: current.active ? current.reason : reason }));
+  };
+
+  const unlockPrivacyShield = async () => {
+    setPrivacyShield((current) => ({ ...current, error: undefined }));
+    setIsUnlockingPrivacy(true);
+    try {
+      const handle = getLastHandle();
+      if (handle) {
+        const data = await loginWithPasskey(handle);
+        setToken(data.token);
+        setAuthHandle(data.authHandle);
+      } else {
+        await verifyDevice();
+      }
+      setPrivacyShield({ active: false, reason: "" });
+    } catch (err: unknown) {
+      setPrivacyShield((current) => ({
+        ...current,
+        active: true,
+        error: err instanceof Error ? err.message : "Device verification failed.",
+      }));
+    } finally {
+      setIsUnlockingPrivacy(false);
+    }
+  };
 
   useEffect(() => {
-    let printScreenTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const shield = () => setPrivacyShield(true);
-    const unshield = () => setPrivacyShield(false);
-    const handleVisibility = () => setPrivacyShield(document.hidden);
+    const shield = () => lockPrivacyShield("App was backgrounded or unfocused.");
+    const handleVisibility = () => {
+      if (document.hidden) lockPrivacyShield("App was backgrounded.");
+    };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "PrintScreen") {
-        setPrivacyShield(true);
-        if (printScreenTimer) clearTimeout(printScreenTimer);
-        printScreenTimer = setTimeout(() => setPrivacyShield(document.hidden), 2500);
+        lockPrivacyShield("Screenshot key was detected.");
       }
     };
 
     window.addEventListener("blur", shield);
-    window.addEventListener("focus", unshield);
     window.addEventListener("beforeprint", shield);
-    window.addEventListener("afterprint", unshield);
     window.addEventListener("keydown", handleKeyDown);
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      if (printScreenTimer) clearTimeout(printScreenTimer);
       window.removeEventListener("blur", shield);
-      window.removeEventListener("focus", unshield);
       window.removeEventListener("beforeprint", shield);
-      window.removeEventListener("afterprint", unshield);
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
@@ -1236,6 +1256,7 @@ export default function ChatApp() {
             const threats = await detector.detect(videoRef.current);
             const strongest = threats.sort((a, b) => b.score - a.score)[0];
             setCameraStatus(strongest ? "threat" : "clear");
+            if (strongest) lockPrivacyShield(`Recording device detected: ${strongest.label}.`);
             setCameraStatusDetail(
               strongest
                 ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}% / ${detector.source.toUpperCase()}`
@@ -1268,13 +1289,25 @@ export default function ChatApp() {
       data-testid="chat-privacy-surface"
     >
       <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
-      {privacyShield && (
+      {privacyShield.active && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6">
           <Shield className="w-12 h-12 text-primary mb-4" />
           <p className="font-mono text-sm tracking-widest text-primary">PRIVACY SHIELD ACTIVE</p>
           <p className="font-mono text-xs text-muted-foreground mt-2 max-w-sm">
-            Secure content is hidden while the app is backgrounded, unfocused, printing, or screenshot keys are detected.
+            {privacyShield.reason || "Secure content is locked until device verification succeeds."}
           </p>
+          {privacyShield.error && (
+            <p className="font-mono text-xs text-destructive mt-3 max-w-sm">{privacyShield.error}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => void unlockPrivacyShield()}
+            disabled={isUnlockingPrivacy}
+            className="mt-6 bg-primary text-primary-foreground font-mono text-xs tracking-widest px-6 py-3 hover:bg-primary/90 disabled:opacity-50"
+            data-testid="button-unlock-privacy-shield"
+          >
+            {isUnlockingPrivacy ? "VERIFYING..." : "VERIFY PASSKEY"}
+          </button>
         </div>
       )}
       <CameraScanStatus status={cameraStatus} detail={cameraStatusDetail} />

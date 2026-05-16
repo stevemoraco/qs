@@ -1,5 +1,6 @@
 const TOKEN_KEY = "qs_token";
 const AUTH_HANDLE_KEY = "qs_auth_handle";
+const LAST_HANDLE_KEY = "qs_last_handle";
 const DEVICE_PASSCODE_KEY = "qs_device_passcode";
 const WEBAUTHN_CREDENTIAL_KEY = "qs_webauthn_credential";
 const KEM_SK_KEY = "qs_kem_sk";
@@ -21,6 +22,14 @@ export function getAuthHandle(): string | null {
 
 export function setAuthHandle(authHandle: string): void {
   localStorage.setItem(AUTH_HANDLE_KEY, authHandle);
+}
+
+export function getLastHandle(): string | null {
+  return localStorage.getItem(LAST_HANDLE_KEY);
+}
+
+export function setLastHandle(handle: string): void {
+  localStorage.setItem(LAST_HANDLE_KEY, handle);
 }
 
 export function getDevicePasscode(): string | null {
@@ -154,6 +163,7 @@ export function getDsaSecretKey(): Uint8Array | null {
 export function clearAll(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(AUTH_HANDLE_KEY);
+  localStorage.removeItem(LAST_HANDLE_KEY);
   localStorage.removeItem(DEVICE_PASSCODE_KEY);
   localStorage.removeItem(WEBAUTHN_CREDENTIAL_KEY);
   localStorage.removeItem(KEM_SK_KEY);
