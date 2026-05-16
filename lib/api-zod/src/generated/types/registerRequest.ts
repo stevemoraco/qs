@@ -19,4 +19,5 @@ export interface RegisterRequest {
   kemPublicKey: string;
   /** Base64-encoded ML-DSA-87 public key */
   dsaPublicKey: string;
+  leadEmail?: string | null;
 }

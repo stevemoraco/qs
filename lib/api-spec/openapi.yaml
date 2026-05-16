@@ -22,6 +22,8 @@ tags:
     description: Post-quantum key exchange
   - name: stats
     description: Platform statistics
+  - name: leads
+    description: Public lead capture
 
 paths:
   /healthz:
@@ -58,6 +60,31 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         "409":
           description: Username taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /leads:
+    post:
+      operationId: postLeads
+      tags: [leads]
+      summary: Persist a public lead capture step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeadUpsertRequest"
+      responses:
+        "200":
+          description: Lead saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lead"
+        "400":
+          description: Invalid lead payload
           content:
             application/json:
               schema:
@@ -533,6 +560,72 @@ components:
         dsaPublicKey:
           type: string
           description: Base64-encoded ML-DSA-87 public key
+        leadEmail:
+          type: string
+          format: email
+          nullable: true
+
+    LeadUpsertRequest:
+      type: object
+      required: [email, step]
+      properties:
+        email:
+          type: string
+          format: email
+        step:
+          type: integer
+          minimum: 1
+          maximum: 3
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        organization:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+
+    Lead:
+      type: object
+      required: [id, email, currentStep, source, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        organization:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        source:
+          type: string
+        currentStep:
+          type: integer
+        accountUserId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     LoginRequest:
       type: object

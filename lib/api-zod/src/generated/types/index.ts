@@ -14,6 +14,8 @@ export * from './errorResponse';
 export * from './getRoomsRoomIdMessagesParams';
 export * from './getUsersSearchParams';
 export * from './healthStatus';
+export * from './lead';
+export * from './leadUpsertRequest';
 export * from './loginRequest';
 export * from './message';
 export * from './messageRecipientEncryptedKeys';

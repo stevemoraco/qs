@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import {
   getGetStatsOverviewQueryKey,
+  usePostLeads,
   useGetStatsOverview,
   type StatsOverview,
 } from "@workspace/api-client-react";
@@ -422,28 +423,79 @@ export default function Landing() {
 function MailingListSignup() {
   const [step, setStep] = useState<InviteStep>(1);
   const [profile, setProfile] = useState<InviteProfile>(emptyInviteProfile);
+  const [error, setError] = useState("");
+  const postLead = usePostLeads();
 
   const updateProfile = (field: keyof InviteProfile, value: string) => {
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
-  const saveProfile = () => {
-    localStorage.setItem("qs_invite_profile", JSON.stringify(profile));
+  const saveProfile = (nextProfile = profile) => {
+    if (!nextProfile.email) return;
+    localStorage.setItem("qs_invite_profile", JSON.stringify(nextProfile));
   };
 
-  const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    saveProfile();
-    setStep(2);
+  const persistLead = async (nextStep: InviteStep, nextProfile = profile) => {
+    setError("");
+    saveProfile(nextProfile);
+    try {
+      await postLead.mutateAsync({
+        data: {
+          email: nextProfile.email,
+          step: nextStep,
+          name: nextProfile.name || null,
+          phone: nextProfile.phone || null,
+          organization: nextProfile.organization || null,
+          title: nextProfile.title || null,
+          source: "homepage",
+        },
+      });
+    } catch {
+      setError("Could not save this step. Please try again.");
+      throw new Error("lead-persist-failed");
+    }
   };
 
-  const handleProfileSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    saveProfile();
-    setStep(3);
+    try {
+      await persistLead(1);
+      setStep(2);
+    } catch {
+      // Error state is set by persistLead.
+    }
+  };
+
+  const handleProfileSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      await persistLead(2);
+      setStep(3);
+    } catch {
+      // Error state is set by persistLead.
+    }
+  };
+
+  const handleSkipProfile = async () => {
+    try {
+      await persistLead(2);
+      setStep(3);
+    } catch {
+      // Error state is set by persistLead.
+    }
+  };
+
+  const handleCreateAccount = async () => {
+    try {
+      await persistLead(3);
+      window.location.href = createAccountHref;
+    } catch {
+      // Error state is set by persistLead.
+    }
   };
 
   const createAccountHref = `/register?email=${encodeURIComponent(profile.email)}&name=${encodeURIComponent(profile.name)}`;
+  const isSaving = postLead.isPending;
 
   return (
     <div className="border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
@@ -495,8 +547,8 @@ function MailingListSignup() {
               required
             />
           </div>
-          <button type="submit" className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
-            CONTINUE
+          <button type="submit" disabled={isSaving} className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50">
+            {isSaving ? "SAVING..." : "CONTINUE"}
           </button>
         </form>
       )}
@@ -510,11 +562,11 @@ function MailingListSignup() {
             <LabeledInput label="TITLE" value={profile.title} onChange={(value) => updateProfile("title", value)} autoComplete="organization-title" placeholder="Optional" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => setStep(3)} className="border border-border text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all">
-              SKIP
+            <button type="button" disabled={isSaving} onClick={handleSkipProfile} className="border border-border text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all disabled:opacity-50">
+              {isSaving ? "SAVING..." : "SKIP"}
             </button>
-            <button type="submit" className="bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
-              SAVE PROFILE
+            <button type="submit" disabled={isSaving} className="bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50">
+              {isSaving ? "SAVING..." : "SAVE PROFILE"}
             </button>
           </div>
         </form>
@@ -528,18 +580,22 @@ function MailingListSignup() {
             </p>
           </div>
           <div className="flex flex-col gap-3">
-            <Link href={createAccountHref}>
-              <button onClick={saveProfile} className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
-                <UserPlus className="w-4 h-4" />
-                CREATE ACCOUNT
-              </button>
-            </Link>
+            <button onClick={handleCreateAccount} disabled={isSaving} className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all disabled:opacity-50">
+              <UserPlus className="w-4 h-4" />
+              {isSaving ? "SAVING..." : "CREATE ACCOUNT"}
+            </button>
             <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all">
               <Github className="w-4 h-4" />
               REVIEW SOURCE FIRST
             </a>
           </div>
         </div>
+      )}
+
+      {error && (
+        <p className="font-mono text-xs text-destructive mt-4" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

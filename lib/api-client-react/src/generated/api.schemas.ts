@@ -42,6 +42,35 @@ export interface RegisterRequest {
   kemPublicKey: string;
   /** Base64-encoded ML-DSA-87 public key */
   dsaPublicKey: string;
+  leadEmail?: string | null;
+}
+
+export interface LeadUpsertRequest {
+  email: string;
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  step: number;
+  name?: string | null;
+  phone?: string | null;
+  organization?: string | null;
+  title?: string | null;
+  source?: string | null;
+}
+
+export interface Lead {
+  id: string;
+  email: string;
+  name?: string | null;
+  phone?: string | null;
+  organization?: string | null;
+  title?: string | null;
+  source: string;
+  currentStep: number;
+  accountUserId?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LoginRequest {

@@ -7,6 +7,7 @@ import messagesRouter from "./messages";
 import keysRouter from "./keys";
 import statsRouter from "./stats";
 import pushRouter from "./push";
+import leadsRouter from "./leads";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(messagesRouter);
 router.use(keysRouter);
 router.use(statsRouter);
 router.use(pushRouter);
+router.use(leadsRouter);
 
 export default router;

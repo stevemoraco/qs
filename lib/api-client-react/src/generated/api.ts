@@ -27,6 +27,8 @@ import type {
   GetRoomsRoomIdMessagesParams,
   GetUsersSearchParams,
   HealthStatus,
+  Lead,
+  LeadUpsertRequest,
   LoginRequest,
   Message,
   PreKeyBundle,
@@ -197,6 +199,77 @@ export const usePostAuthRegister = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getPostAuthRegisterMutationOptions(options));
+    }
+
+export const getPostLeadsUrl = () => {
+
+
+
+
+  return `/api/leads`
+}
+
+/**
+ * @summary Persist a public lead capture step
+ */
+export const postLeads = async (leadUpsertRequest: LeadUpsertRequest, options?: RequestInit): Promise<Lead> => {
+
+  return customFetch<Lead>(getPostLeadsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      leadUpsertRequest,)
+  }
+);}
+
+
+
+
+export const getPostLeadsMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLeads>>, TError,{data: BodyType<LeadUpsertRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof postLeads>>, TError,{data: BodyType<LeadUpsertRequest>}, TContext> => {
+
+const mutationKey = ['postLeads'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLeads>>, {data: BodyType<LeadUpsertRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postLeads(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostLeadsMutationResult = NonNullable<Awaited<ReturnType<typeof postLeads>>>
+    export type PostLeadsMutationBody = BodyType<LeadUpsertRequest>
+    export type PostLeadsMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Persist a public lead capture step
+ */
+export const usePostLeads = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLeads>>, TError,{data: BodyType<LeadUpsertRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof postLeads>>,
+        TError,
+        {data: BodyType<LeadUpsertRequest>},
+        TContext
+      > => {
+      return useMutation(getPostLeadsMutationOptions(options));
     }
 
 export const getPostAuthLoginUrl = () => {

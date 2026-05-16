@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, usersTable, sessionsTable } from "@workspace/db";
+import { db, usersTable, sessionsTable, leadsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import argon2 from "argon2";
 import { randomBytes } from "crypto";
@@ -37,7 +37,7 @@ router.post("/auth/register", async (req, res) => {
     return;
   }
 
-  const { username, password, displayName, kemPublicKey, dsaPublicKey } = parse.data;
+  const { username, password, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
 
   const existing = await db
     .select({ id: usersTable.id })
@@ -70,6 +70,28 @@ router.post("/auth/register", async (req, res) => {
     token,
     expiresAt: sessionExpiresAt(),
   });
+
+  if (leadEmail) {
+    await db
+      .insert(leadsTable)
+      .values({
+        email: leadEmail.trim().toLowerCase(),
+        name: displayName ?? null,
+        currentStep: 3,
+        accountUserId: user.id,
+        source: "homepage",
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: leadsTable.email,
+        set: {
+          currentStep: 3,
+          accountUserId: user.id,
+          name: displayName ?? null,
+          updatedAt: new Date(),
+        },
+      });
+  }
 
   res.status(201).json({
     token,

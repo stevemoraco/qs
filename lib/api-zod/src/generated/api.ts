@@ -32,7 +32,40 @@ export const PostAuthRegisterBody = zod.object({
   "password": zod.string().min(postAuthRegisterBodyPasswordMin),
   "displayName": zod.string().nullish(),
   "kemPublicKey": zod.string().describe('Base64-encoded ML-KEM-1024 public key'),
-  "dsaPublicKey": zod.string().describe('Base64-encoded ML-DSA-87 public key')
+  "dsaPublicKey": zod.string().describe('Base64-encoded ML-DSA-87 public key'),
+  "leadEmail": zod.string().email().nullish()
+})
+
+
+/**
+ * @summary Persist a public lead capture step
+ */
+export const postLeadsBodyStepMax = 3;
+
+
+
+export const PostLeadsBody = zod.object({
+  "email": zod.string().email(),
+  "step": zod.number().min(1).max(postLeadsBodyStepMax),
+  "name": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "organization": zod.string().nullish(),
+  "title": zod.string().nullish(),
+  "source": zod.string().nullish()
+})
+
+export const PostLeadsResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string().email(),
+  "name": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "organization": zod.string().nullish(),
+  "title": zod.string().nullish(),
+  "source": zod.string(),
+  "currentStep": zod.number(),
+  "accountUserId": zod.string().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
 })
 
 

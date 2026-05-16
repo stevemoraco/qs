@@ -34,6 +34,7 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [leadEmail, setLeadEmail] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<GenerationStep>("idle");
 
@@ -45,13 +46,15 @@ export default function Register() {
     const email = params.get("email") ?? "";
     const name = params.get("name") ?? "";
     let savedName = "";
+    let savedEmail = "";
 
     try {
       const saved = localStorage.getItem("qs_invite_profile");
       if (saved) {
         const parsed = JSON.parse(saved) as { name?: unknown; email?: unknown };
-        if (!email && typeof parsed.email === "string") {
-          const candidate = parsed.email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
+        if (typeof parsed.email === "string") savedEmail = parsed.email;
+        if (!email && savedEmail) {
+          const candidate = savedEmail.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
           if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
         }
         if (typeof parsed.name === "string") savedName = parsed.name;
@@ -64,6 +67,7 @@ export default function Register() {
       const candidate = email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
       if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
     }
+    if (email || savedEmail) setLeadEmail(email || savedEmail);
     if (name || savedName) setDisplayName(name || savedName);
   }, []);
 
@@ -90,6 +94,7 @@ export default function Register() {
           displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
+          leadEmail: leadEmail || undefined,
         },
       });
       token = authData.token;
