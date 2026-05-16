@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
-import { Shield, AlertCircle, Github, ExternalLink } from "lucide-react";
+import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
 import { isAuthenticated, setToken } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+const LOGIN_PRIVACY_FEATURES = [
+  { icon: Camera, label: "Front-camera detection for nearby recording devices" },
+  { icon: MousePointerClick, label: "Messages decrypt only while held, one at a time" },
+  { icon: UserX, label: "Usernames and rooms stay codenamed until reveal" },
+  { icon: TimerOff, label: "TTL keys are purged so old ciphertext becomes noise" },
+  { icon: EyeOff, label: "Blur and background shields hide secure content" },
+  { icon: MonitorOff, label: "Screenshot, screen-capture, and print friction" },
+];
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -138,6 +146,18 @@ export default function Login() {
             VIEW GITHUB
             <ExternalLink className="w-3 h-3" />
           </a>
+        </div>
+
+        <div className="mt-4 border border-border/40 bg-card/20 px-4 py-4">
+          <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY FEATURES</div>
+          <div className="space-y-3">
+            {LOGIN_PRIVACY_FEATURES.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-start gap-3">
+                <Icon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <span className="font-mono text-xs text-muted-foreground leading-relaxed">{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

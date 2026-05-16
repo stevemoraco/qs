@@ -30,7 +30,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearAll } from "@/lib/auth";
-import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, CIPHER_SUITE } from "@/lib/crypto";
+import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -391,6 +391,21 @@ function RoomView({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const purgeExpiredKeys = () => {
+      const now = Date.now();
+      for (const msg of messages as Message[]) {
+        if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= now) {
+          deleteMessageKey(msg.id);
+          if (heldPlaintext?.id === msg.id) hideRevealedMsg();
+        }
+      }
+    };
+    purgeExpiredKeys();
+    const interval = setInterval(purgeExpiredKeys, 1000);
+    return () => clearInterval(interval);
+  }, [heldPlaintext?.id, messages]);
 
   useEffect(() => {
     const onVis = () => {

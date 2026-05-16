@@ -198,7 +198,7 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
       style={[styles.roomItem, active && { backgroundColor: colors.card, borderLeftWidth: 2, borderLeftColor: colors.primary }]}
       testID={`button-room-${room.id}`}
     >
-      <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+      <View style={[styles.avatar, { backgroundColor: avatarColor }]}> 
         <Text style={[styles.avatarText, { color: "#fff" }]}>{initial}</Text>
       </View>
       <View style={{ flex: 1 }}>
@@ -207,16 +207,12 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
           <Feather name="lock" size={10} color={colors.primary} />
           <Text style={[styles.roomSub, { color: colors.mutedForeground }]}>E2E Encrypted</Text>
           {room.ttlSeconds && (
-            <Text style={[styles.roomSub, { color: colors.primary }]}>
-              · TTL
-            </Text>
+            <Text style={[styles.roomSub, { color: colors.primary }]}>· TTL</Text>
           )}
         </View>
       </View>
       {room.lastMessageAt && (
-        <Text style={[styles.roomTime, { color: colors.mutedForeground }]}>
-          {formatTime(room.lastMessageAt)}
-        </Text>
+        <Text style={[styles.roomTime, { color: colors.mutedForeground }]}>{formatTime(room.lastMessageAt)}</Text>
       )}
     </TouchableOpacity>
   );
@@ -240,13 +236,9 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
         { borderColor: colors.border },
         isOwn ? { backgroundColor: `${colors.primary}20`, borderColor: `${colors.primary}40` } : { backgroundColor: colors.card },
       ]}>
-        {!isOwn && (
-          <Text style={[styles.senderName, { color: colors.primary }]}>{senderLabel}</Text>
-        )}
+        {!isOwn && <Text style={[styles.senderName, { color: colors.primary }]}>{senderLabel}</Text>}
         {expired ? (
-          <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>
-            Message expired — key destroyed
-          </Text>
+          <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>Message expired — key destroyed</Text>
         ) : plaintext ? (
           <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
         ) : (
@@ -263,9 +255,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
             <Text style={[styles.msgText, { color: colors.mutedForeground }]}>Encrypted — hold to reveal</Text>
           </TouchableOpacity>
         )}
-        <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>
-          {formatTime(msg.createdAt)}
-        </Text>
+        <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{formatTime(msg.createdAt)}</Text>
       </View>
     </View>
   );
@@ -338,14 +328,27 @@ function ChatView({
     { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: 3000 } }
   );
 
+  useEffect(() => {
+    const purgeExpiredKeys = () => {
+      const now = Date.now();
+      for (const msg of messages as Message[]) {
+        if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= now) {
+          messageKeyStore.delete(msg.id);
+          if (heldPlaintext?.id === msg.id) hideRevealedMessage();
+        }
+      }
+    };
+    purgeExpiredKeys();
+    const interval = setInterval(purgeExpiredKeys, 1000);
+    return () => clearInterval(interval);
+  }, [heldPlaintext?.id, messages]);
+
   const { data: members = [] } = useGetRoomsRoomIdMembers(room.id, {
     query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) },
   });
 
   const sendMsg = usePostRoomsRoomIdMessages({
-    mutation: {
-      onSuccess: () => qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) }),
-    },
+    mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) }) },
   });
 
   const handleSend = async () => {
@@ -355,11 +358,7 @@ function ChatView({
     const { ciphertext, nonce, key } = await encryptMsg(text);
     sendMsg.mutate(
       { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, ttlSeconds: room.ttlSeconds } },
-      {
-        onSuccess: (msg) => {
-          messageKeyStore.set(msg.id, key);
-        },
-      }
+      { onSuccess: (msg) => { messageKeyStore.set(msg.id, key); } }
     );
   };
 
@@ -373,26 +372,17 @@ function ChatView({
   };
 
   const hideRevealedMessage = () => setHeldPlaintext(null);
-
   const reversed = [...messages].reverse();
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={0}>
-      <View style={[styles.chatHeader, { paddingTop: topPad + 10, borderBottomColor: colors.border }]}>
+      <View style={[styles.chatHeader, { paddingTop: topPad + 10, borderBottomColor: colors.border }]}> 
         <TouchableOpacity onPress={onBack} style={styles.backBtn} testID="button-back-to-channels">
           <Feather name="chevron-left" size={24} color={colors.primary} />
         </TouchableOpacity>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <TouchableOpacity
-            delayLongPress={120}
-            onLongPress={() => setRevealRoomName(true)}
-            onPressOut={() => setRevealRoomName(false)}
-            activeOpacity={0.85}
-            testID="button-hold-reveal-room-name"
-          >
-            <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>
-              {revealRoomName ? getRoomLabel(room, myId) : roomCodename}
-            </Text>
+          <TouchableOpacity delayLongPress={120} onLongPress={() => setRevealRoomName(true)} onPressOut={() => setRevealRoomName(false)} activeOpacity={0.85} testID="button-hold-reveal-room-name">
+            <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>{revealRoomName ? getRoomLabel(room, myId) : roomCodename}</Text>
           </TouchableOpacity>
           <View style={styles.cipherRow}>
             <Feather name="shield" size={10} color={colors.primary} />
@@ -407,9 +397,7 @@ function ChatView({
       {screenshotAlert && (
         <View style={[styles.screenshotAlert, { backgroundColor: "#ef4444" }]} testID="screenshot-alert">
           <Feather name="alert-triangle" size={12} color="#fff" />
-          <Text style={styles.screenshotAlertText}>
-            SCREENSHOT DETECTED — ROOM PRIVACY MAY BE COMPROMISED
-          </Text>
+          <Text style={styles.screenshotAlertText}>SCREENSHOT DETECTED — ROOM PRIVACY MAY BE COMPROMISED</Text>
         </View>
       )}
 
@@ -435,12 +423,8 @@ function ChatView({
         ListEmptyComponent={
           <View style={styles.emptyChat}>
             <Feather name="lock" size={40} color={colors.border} />
-            <Text style={[styles.emptyChatText, { color: colors.mutedForeground }]}>
-              No messages yet
-            </Text>
-            <Text style={[styles.emptyChatSub, { color: colors.mutedForeground }]}>
-              All messages are end-to-end encrypted
-            </Text>
+            <Text style={[styles.emptyChatText, { color: colors.mutedForeground }]}>No messages yet</Text>
+            <Text style={[styles.emptyChatSub, { color: colors.mutedForeground }]}>All messages are end-to-end encrypted</Text>
           </View>
         }
         keyboardShouldPersistTaps="handled"
@@ -450,7 +434,7 @@ function ChatView({
         scrollEnabled={!!messages.length}
       />
 
-      <View style={[styles.inputBar, { borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+      <View style={[styles.inputBar, { borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}> 
         <TextInput
           style={[styles.msgInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
           value={input}
@@ -460,12 +444,7 @@ function ChatView({
           multiline
           testID="input-message"
         />
-        <TouchableOpacity
-          onPress={handleSend}
-          disabled={!input.trim() || sendMsg.isPending}
-          style={[styles.sendBtn, { backgroundColor: colors.primary }, (!input.trim() || sendMsg.isPending) && { opacity: 0.4 }]}
-          testID="button-send"
-        >
+        <TouchableOpacity onPress={handleSend} disabled={!input.trim() || sendMsg.isPending} style={[styles.sendBtn, { backgroundColor: colors.primary }, (!input.trim() || sendMsg.isPending) && { opacity: 0.4 }]} testID="button-send">
           <Feather name="send" size={16} color={colors.background} />
         </TouchableOpacity>
       </View>
@@ -512,41 +491,21 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={[styles.modal, { backgroundColor: colors.background }]}>
-        <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+      <View style={[styles.modal, { backgroundColor: colors.background }]}> 
+        <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}> 
           <Text style={[styles.modalTitle, { color: colors.foreground }]}>NEW CHANNEL</Text>
-          <TouchableOpacity onPress={onClose} testID="button-close-dialog">
-            <Feather name="x" size={20} color={colors.mutedForeground} />
-          </TouchableOpacity>
+          <TouchableOpacity onPress={onClose} testID="button-close-dialog"><Feather name="x" size={20} color={colors.mutedForeground} /></TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
           <Text style={[styles.label, { color: colors.mutedForeground }]}>CHANNEL NAME</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
-            value={name}
-            onChangeText={setName}
-            placeholder="Optional name..."
-            placeholderTextColor={colors.mutedForeground}
-            testID="input-room-name"
-          />
+          <TextInput style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]} value={name} onChangeText={setName} placeholder="Optional name..." placeholderTextColor={colors.mutedForeground} testID="input-room-name" />
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>TYPE</Text>
           <View style={styles.typeRow}>
             {(["direct", "group"] as const).map((t) => (
-              <TouchableOpacity
-                key={t}
-                onPress={() => setType(t)}
-                style={[
-                  styles.typeBtn,
-                  { borderColor: type === t ? colors.primary : colors.border },
-                  type === t && { backgroundColor: `${colors.primary}20` },
-                ]}
-                testID={`button-type-${t}`}
-              >
-                <Text style={[styles.typeBtnText, { color: type === t ? colors.primary : colors.mutedForeground }]}>
-                  {t.toUpperCase()}
-                </Text>
+              <TouchableOpacity key={t} onPress={() => setType(t)} style={[styles.typeBtn, { borderColor: type === t ? colors.primary : colors.border }, type === t && { backgroundColor: `${colors.primary}20` }]} testID={`button-type-${t}`}>
+                <Text style={[styles.typeBtnText, { color: type === t ? colors.primary : colors.mutedForeground }]}>{t.toUpperCase()}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -554,71 +513,33 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>MESSAGE EXPIRY (TTL)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
             {TTL_OPTIONS.map((o) => (
-              <TouchableOpacity
-                key={String(o.v)}
-                onPress={() => setTtl(o.v)}
-                style={[
-                  styles.ttlBtn,
-                  { borderColor: ttl === o.v ? colors.primary : colors.border },
-                  ttl === o.v && { backgroundColor: `${colors.primary}20` },
-                ]}
-              >
-                <Text style={[styles.ttlBtnText, { color: ttl === o.v ? colors.primary : colors.mutedForeground }]}>
-                  {o.label}
-                </Text>
+              <TouchableOpacity key={String(o.v)} onPress={() => setTtl(o.v)} style={[styles.ttlBtn, { borderColor: ttl === o.v ? colors.primary : colors.border }, ttl === o.v && { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={[styles.ttlBtnText, { color: ttl === o.v ? colors.primary : colors.mutedForeground }]}>{o.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>ADD MEMBERS</Text>
-          <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <Feather name="search" size={14} color={colors.mutedForeground} />
-            <TextInput
-              style={[styles.searchInput, { color: colors.foreground }]}
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search username..."
-              placeholderTextColor={colors.mutedForeground}
-              autoCapitalize="none"
-              testID="input-search-users"
-            />
+            <TextInput style={[styles.searchInput, { color: colors.foreground }]} value={search} onChangeText={setSearch} placeholder="Search username..." placeholderTextColor={colors.mutedForeground} autoCapitalize="none" testID="input-search-users" />
           </View>
 
           {results.filter((u) => u.id !== myId).map((u) => {
             const label = codenameForUser(u.id);
             return (
-              <TouchableOpacity
-                key={u.id}
-                onPress={() => setSelected((s) => s.includes(u.id) ? s.filter((x) => x !== u.id) : [...s, u.id])}
-                style={[styles.userRow, selected.includes(u.id) && { backgroundColor: `${colors.primary}15` }]}
-                testID={`button-user-${u.id}`}
-              >
-                <View style={[styles.avatarSm, { backgroundColor: u.avatarColor ?? colors.primary }]}>
+              <TouchableOpacity key={u.id} onPress={() => setSelected((s) => s.includes(u.id) ? s.filter((x) => x !== u.id) : [...s, u.id])} style={[styles.userRow, selected.includes(u.id) && { backgroundColor: `${colors.primary}15` }]} testID={`button-user-${u.id}`}>
+                <View style={[styles.avatarSm, { backgroundColor: u.avatarColor ?? colors.primary }]}> 
                   <Text style={styles.avatarText}>{label[0]}</Text>
                 </View>
-                <Text style={[styles.userName, { color: colors.foreground }]}>
-                  {label}
-                </Text>
-                {selected.includes(u.id) && (
-                  <Feather name="check-circle" size={16} color={colors.primary} />
-                )}
+                <Text style={[styles.userName, { color: colors.foreground }]}>{label}</Text>
+                {selected.includes(u.id) && <Feather name="check-circle" size={16} color={colors.primary} />}
               </TouchableOpacity>
             );
           })}
 
-          <TouchableOpacity
-            style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]}
-            onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl } })}
-            disabled={createRoom.isPending}
-            testID="button-create-room"
-          >
-            {createRoom.isPending ? (
-              <ActivityIndicator color={colors.background} size="small" />
-            ) : (
-              <Text style={[styles.createBtnText, { color: colors.background }]}>
-                CREATE ENCRYPTED CHANNEL
-              </Text>
-            )}
+          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl } })} disabled={createRoom.isPending} testID="button-create-room">
+            {createRoom.isPending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.createBtnText, { color: colors.background }]}>CREATE ENCRYPTED CHANNEL</Text>}
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -645,26 +566,16 @@ export default function AppScreen() {
   const [cameraDetail, setCameraDetail] = useState("REQUESTING FRONT CAMERA");
 
   const { data: me } = useGetAuthMe();
-  const { data: rooms = [] } = useGetRooms({
-    query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 },
-  });
+  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
 
   const logout = usePostAuthLogout({
-    mutation: {
-      onSuccess: async () => {
-        await clearAuth();
-        router.replace("/login");
-      },
-    },
+    mutation: { onSuccess: async () => { await clearAuth(); router.replace("/login"); } },
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
   const codenameForUser = useCallback((id: string) => codenameFor(`user:${id}`), [codenameFor]);
   const codenameForRoom = useCallback((id: string) => codenameFor(`room:${id}`), [codenameFor]);
-  const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => {
-    setCameraStatus(status);
-    setCameraDetail(detail);
-  }, []);
+  const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => { setCameraStatus(status); setCameraDetail(detail); }, []);
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => setAppActive(state === "active"));
@@ -675,117 +586,57 @@ export default function AppScreen() {
   const cameraColor = cameraStatus === "clear" ? colors.primary : colors.mutedForeground;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.background }]}> 
       <FrontCameraSentinel active={appActive} onStatus={updateCameraStatus} />
-      <View
-        style={[
-          styles.cameraStatus,
-          { borderBottomColor: colors.border, paddingTop: (Platform.OS === "web" ? 6 : insets.top + 6) },
-        ]}
-        testID="camera-status"
-      >
+      <View style={[styles.cameraStatus, { borderBottomColor: colors.border, paddingTop: (Platform.OS === "web" ? 6 : insets.top + 6) }]} testID="camera-status">
         <View style={[styles.cameraDot, { backgroundColor: cameraColor }]} />
-        <Text style={[styles.cameraStatusText, { color: cameraColor }]}>
-          {cameraStatus === "clear" ? "NO CAMERA DETECTED - AREA CLEAR" : cameraStatus === "scanning" ? "INITIALIZING FRONT CAMERA SCAN" : "CAMERA UNAVAILABLE - SCAN OFFLINE"} / {cameraDetail}
-        </Text>
+        <Text style={[styles.cameraStatusText, { color: cameraColor }]}>{cameraStatus === "clear" ? "NO CAMERA DETECTED - AREA CLEAR" : cameraStatus === "scanning" ? "INITIALIZING FRONT CAMERA SCAN" : "CAMERA UNAVAILABLE - SCAN OFFLINE"} / {cameraDetail}</Text>
       </View>
       {showRooms || !activeRoom ? (
-        <View style={[styles.sidebar, { borderRightColor: colors.border }]}>
-          <View style={[styles.sidebarTop, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
+        <View style={[styles.sidebar, { borderRightColor: colors.border }]}> 
+          <View style={[styles.sidebarTop, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}> 
             <View style={styles.brandRow}>
-              <View style={[styles.iconBox, { backgroundColor: colors.primary }]}>
-                <Feather name="shield" size={14} color={colors.background} />
-              </View>
+              <View style={[styles.iconBox, { backgroundColor: colors.primary }]}><Feather name="shield" size={14} color={colors.background} /></View>
               <Text style={[styles.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
             </View>
             <View style={styles.headerActions}>
-              <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} testID="button-github">
-                <Feather name="github" size={18} color={colors.mutedForeground} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout">
-                <Feather name="log-out" size={18} color={colors.mutedForeground} />
-              </TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} testID="button-github"><Feather name="github" size={18} color={colors.mutedForeground} /></TouchableOpacity>
+              <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout"><Feather name="log-out" size={18} color={colors.mutedForeground} /></TouchableOpacity>
             </View>
           </View>
 
           {me && (
-            <View style={[styles.meRow, { borderBottomColor: colors.border }]}>
-              <View style={[styles.avatarSm, { backgroundColor: me.avatarColor ?? colors.primary }]}>
-                <Text style={styles.avatarText}>{codenameForUser(me.id)[0]}</Text>
-              </View>
+            <View style={[styles.meRow, { borderBottomColor: colors.border }]}> 
+              <View style={[styles.avatarSm, { backgroundColor: me.avatarColor ?? colors.primary }]}><Text style={styles.avatarText}>{codenameForUser(me.id)[0]}</Text></View>
               <View>
-                <TouchableOpacity
-                  delayLongPress={120}
-                  onLongPress={() => setRevealedNameId(`user:${me.id}`)}
-                  onPressOut={() => setRevealedNameId(null)}
-                  activeOpacity={0.85}
-                  testID="button-hold-reveal-account-name"
-                >
-                  <Text style={[styles.meUsername, { color: colors.foreground }]}>
-                    {revealedNameId === `user:${me.id}` ? (me.displayName ?? me.username) : codenameForUser(me.id)}
-                  </Text>
+                <TouchableOpacity delayLongPress={120} onLongPress={() => setRevealedNameId(`user:${me.id}`)} onPressOut={() => setRevealedNameId(null)} activeOpacity={0.85} testID="button-hold-reveal-account-name">
+                  <Text style={[styles.meUsername, { color: colors.foreground }]}>{revealedNameId === `user:${me.id}` ? (me.displayName ?? me.username) : codenameForUser(me.id)}</Text>
                 </TouchableOpacity>
                 <Text style={[styles.meHandle, { color: colors.mutedForeground }]}>LOCAL DEVICE</Text>
               </View>
             </View>
           )}
 
-          <View style={[styles.channelsHeader, { borderBottomColor: colors.border }]}>
+          <View style={[styles.channelsHeader, { borderBottomColor: colors.border }]}> 
             <Text style={[styles.channelsLabel, { color: colors.mutedForeground }]}>CHANNELS</Text>
-            <TouchableOpacity onPress={() => setShowNewRoom(true)} testID="button-new-room">
-              <Feather name="plus" size={18} color={colors.primary} />
-            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowNewRoom(true)} testID="button-new-room"><Feather name="plus" size={18} color={colors.primary} /></TouchableOpacity>
           </View>
 
           <FlatList
             data={rooms as Room[]}
             keyExtractor={(r) => r.id}
             renderItem={({ item }) => (
-              <RoomListItem
-                room={item}
-                myId={me?.id}
-                active={item.id === activeRoomId}
-                colors={colors}
-                codenameForRoom={codenameForRoom}
-                onPress={() => {
-                  setActiveRoomId(item.id);
-                  setShowRooms(false);
-                }}
-              />
+              <RoomListItem room={item} myId={me?.id} active={item.id === activeRoomId} colors={colors} codenameForRoom={codenameForRoom} onPress={() => { setActiveRoomId(item.id); setShowRooms(false); }} />
             )}
-            ListEmptyComponent={
-              <View style={styles.emptyRooms}>
-                <Feather name="message-square" size={32} color={colors.border} />
-                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No channels yet</Text>
-                <TouchableOpacity onPress={() => setShowNewRoom(true)} testID="button-create-first-room">
-                  <Text style={[styles.emptyLink, { color: colors.primary }]}>Create one</Text>
-                </TouchableOpacity>
-              </View>
-            }
+            ListEmptyComponent={<View style={styles.emptyRooms}><Feather name="message-square" size={32} color={colors.border} /><Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No channels yet</Text><TouchableOpacity onPress={() => setShowNewRoom(true)} testID="button-create-first-room"><Text style={[styles.emptyLink, { color: colors.primary }]}>Create one</Text></TouchableOpacity></View>}
             showsVerticalScrollIndicator={false}
           />
         </View>
       ) : activeRoom && me ? (
-        <ChatView
-          room={activeRoom}
-          myId={me.id}
-          colors={colors}
-          topPad={topPad}
-          codenameForUser={codenameForUser}
-          roomCodename={codenameForRoom(activeRoom.id)}
-          onBack={() => { setShowRooms(true); setActiveRoomId(null); }}
-        />
+        <ChatView room={activeRoom} myId={me.id} colors={colors} topPad={topPad} codenameForUser={codenameForUser} roomCodename={codenameForRoom(activeRoom.id)} onBack={() => { setShowRooms(true); setActiveRoomId(null); }} />
       ) : null}
 
-      {me && (
-        <NewRoomModal
-          visible={showNewRoom}
-          onClose={() => setShowNewRoom(false)}
-          myId={me.id}
-          colors={colors}
-          codenameForUser={codenameForUser}
-        />
-      )}
+      {me && <NewRoomModal visible={showNewRoom} onClose={() => setShowNewRoom(false)} myId={me.id} colors={colors} codenameForUser={codenameForUser} />}
     </View>
   );
 }
