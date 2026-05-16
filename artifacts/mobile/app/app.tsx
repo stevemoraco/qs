@@ -34,6 +34,10 @@ import {
   getGetRoomsRoomIdMembersQueryKey,
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
+  getGetIdentityCodesQueryKey,
+  useGetIdentityCodes,
+  usePatchIdentityCodesCodeId,
+  usePostIdentityCodes,
 } from "@workspace/api-client-react";
 import { gcm } from "@noble/ciphers/aes.js";
 import { randomBytes } from "@noble/hashes/utils.js";
@@ -547,18 +551,200 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   );
 }
 
+const CODE_TTL_OPTIONS = [
+  { label: "5 min", value: 300 },
+  { label: "1 hour", value: 3600 },
+  { label: "1 day", value: 86400 },
+  { label: "1 month", value: 2592000 },
+  { label: "1 year", value: 31536000 },
+  { label: "10 years", value: 315360000 },
+];
+
+const CODE_SCOPE_OPTIONS = [
+  { label: "Public", value: "public" },
+  { label: "Invited by you", value: "invited_by_you" },
+  { label: "Invited you", value: "invited_you" },
+  { label: "Mutuals", value: "mutuals" },
+  { label: "Disabled", value: "disabled" },
+] as const;
+
+function ProfileModal({ visible, onClose, me, colors, codename, token }: {
+  visible: boolean;
+  onClose: () => void;
+  me: { id: string; username: string; displayName?: string | null; avatarColor?: string | null };
+  colors: ReturnType<typeof useColors>;
+  codename: string;
+  token: string | null;
+}) {
+  const qc = useQueryClient();
+  const [revealed, setRevealed] = useState(false);
+  const [deviceCount, setDeviceCount] = useState<number | null>(null);
+  const [newCode, setNewCode] = useState("");
+  const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
+  const [newScope, setNewScope] = useState<"public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled">("public");
+  const [newTtl, setNewTtl] = useState(315360000);
+  const [error, setError] = useState("");
+  const { data: codes = [] } = useGetIdentityCodes({ query: { queryKey: getGetIdentityCodesQueryKey(), enabled: visible } });
+
+  useEffect(() => {
+    if (!visible || !revealed || !token) return;
+    let mounted = true;
+    const url = Platform.OS === "web" ? "/api/auth/devices" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/devices`;
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (mounted && data && typeof data.activeDeviceCount === "number") setDeviceCount(data.activeDeviceCount);
+      })
+      .catch(() => {
+        if (mounted) setDeviceCount(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [revealed, token, visible]);
+
+  const createCode = usePostIdentityCodes({
+    mutation: {
+      onSuccess: () => {
+        setNewCode("");
+        setError("");
+        qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
+      },
+      onError: () => setError("Could not create code"),
+    },
+  });
+
+  const updateCode = usePatchIdentityCodesCodeId({
+    mutation: {
+      onSuccess: () => {
+        setError("");
+        qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
+      },
+      onError: () => setError("Could not update code"),
+    },
+  });
+
+  const submitCode = () => {
+    createCode.mutate({
+      data: {
+        code: newCode.trim() || null,
+        kind: newKind,
+        visibilityScope: newScope,
+        ttlSeconds: newTtl,
+      },
+    });
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={[styles.modal, { backgroundColor: colors.background }]}> 
+        <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}> 
+          <Text style={[styles.modalTitle, { color: colors.foreground }]}>PROFILE / IDS</Text>
+          <TouchableOpacity onPress={onClose} testID="button-close-profile"><Feather name="x" size={20} color={colors.mutedForeground} /></TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
+          <View style={[styles.profileBlock, { borderColor: colors.border, backgroundColor: colors.card }]}> 
+            <View style={[styles.avatarSm, { backgroundColor: me.avatarColor ?? colors.primary }]}> 
+              <Text style={styles.avatarText}>{codename[0]}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity delayLongPress={120} onLongPress={() => setRevealed(true)} onPressOut={() => setRevealed(false)} activeOpacity={0.85} testID="button-hold-reveal-profile">
+                <Text style={[styles.meUsername, { color: colors.foreground }]}>{revealed ? (me.displayName ?? me.username) : codename}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.meHandle, { color: colors.mutedForeground }]}>
+                {revealed ? `${deviceCount ?? "..."} active linked device session${deviceCount === 1 ? "" : "s"}` : "Hold to reveal device links"}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.label, { color: colors.mutedForeground }]}>CREATE HANDLE / INVITE</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
+            value={newCode}
+            onChangeText={setNewCode}
+            placeholder="stv or blank for random"
+            placeholderTextColor={colors.mutedForeground}
+            autoCapitalize="none"
+            testID="input-new-identity-code"
+          />
+          <View style={[styles.typeRow, { marginTop: 10 }]}>
+            {(["alias", "invite"] as const).map((kind) => (
+              <TouchableOpacity key={kind} onPress={() => setNewKind(kind)} style={[styles.typeBtn, { borderColor: newKind === kind ? colors.primary : colors.border }, newKind === kind && { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={[styles.typeBtnText, { color: newKind === kind ? colors.primary : colors.mutedForeground }]}>{kind === "alias" ? "HANDLE" : "INVITE"}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
+            {CODE_SCOPE_OPTIONS.map((scope) => (
+              <TouchableOpacity key={scope.value} onPress={() => setNewScope(scope.value)} style={[styles.ttlBtn, { borderColor: newScope === scope.value ? colors.primary : colors.border }, newScope === scope.value && { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={[styles.ttlBtnText, { color: newScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
+            {CODE_TTL_OPTIONS.map((ttl) => (
+              <TouchableOpacity key={ttl.value} onPress={() => setNewTtl(ttl.value)} style={[styles.ttlBtn, { borderColor: newTtl === ttl.value ? colors.primary : colors.border }, newTtl === ttl.value && { backgroundColor: `${colors.primary}20` }]}>
+                <Text style={[styles.ttlBtnText, { color: newTtl === ttl.value ? colors.primary : colors.mutedForeground }]}>{ttl.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {!!error && <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>}
+          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createCode.isPending && { opacity: 0.5 }]} onPress={submitCode} disabled={createCode.isPending} testID="button-create-identity-code">
+            {createCode.isPending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.createBtnText, { color: colors.background }]}>CREATE CODE</Text>}
+          </TouchableOpacity>
+
+          <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 24 }]}>YOUR HANDLES / INVITES</Text>
+          {codes.length === 0 && <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No handles or invite codes yet.</Text>}
+          {codes.map((code) => (
+            <View key={code.id} style={[styles.codeCard, { borderColor: colors.border, backgroundColor: colors.card }]} testID={`identity-code-${code.id}`}>
+              <View style={styles.codeHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.codeTitle, { color: colors.foreground }]}>{code.kind === "alias" ? "@" : "#"}{code.code}</Text>
+                  <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses</Text>
+                </View>
+                <TouchableOpacity onPress={() => updateCode.mutate({ codeId: code.id, data: { active: !code.active } })} style={[styles.smallBtn, { borderColor: colors.border }]}>
+                  <Text style={[styles.smallBtnText, { color: colors.primary }]}>{code.active ? "DISABLE" : "ENABLE"}</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
+                {CODE_SCOPE_OPTIONS.map((scope) => (
+                  <TouchableOpacity key={scope.value} onPress={() => updateCode.mutate({ codeId: code.id, data: { visibilityScope: scope.value } })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }]}>
+                    <Text style={[styles.ttlBtnText, { color: code.visibilityScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
+                {CODE_TTL_OPTIONS.map((ttl) => (
+                  <TouchableOpacity key={ttl.value} onPress={() => updateCode.mutate({ codeId: code.id, data: { ttlSeconds: ttl.value } })} style={[styles.ttlBtn, { borderColor: colors.border }]}>
+                    <Text style={[styles.ttlBtnText, { color: colors.mutedForeground }]}>{ttl.label}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => updateCode.mutate({ codeId: code.id, data: { active: false, visibilityScope: "disabled" } })} style={[styles.ttlBtn, { borderColor: colors.destructive }]}>
+                  <Text style={[styles.ttlBtnText, { color: colors.destructive }]}>Roll / expire</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
 export default function AppScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const qc = useQueryClient();
-  const { clearAuth } = useAuth();
+  const { clearAuth, token } = useAuth();
   const codenameForRef = useRef<CodenameFor | null>(null);
   if (!codenameForRef.current) codenameForRef.current = createSessionCodenameFactory();
   const codenameFor = codenameForRef.current;
 
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [showRooms, setShowRooms] = useState(true);
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
   const [appActive, setAppActive] = useState(true);
@@ -600,6 +786,7 @@ export default function AppScreen() {
               <Text style={[styles.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
             </View>
             <View style={styles.headerActions}>
+              <TouchableOpacity onPress={() => setShowProfile(true)} testID="button-profile-settings"><Feather name="settings" size={18} color={colors.mutedForeground} /></TouchableOpacity>
               <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} testID="button-github"><Feather name="github" size={18} color={colors.mutedForeground} /></TouchableOpacity>
               <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout"><Feather name="log-out" size={18} color={colors.mutedForeground} /></TouchableOpacity>
             </View>
@@ -637,6 +824,7 @@ export default function AppScreen() {
       ) : null}
 
       {me && <NewRoomModal visible={showNewRoom} onClose={() => setShowNewRoom(false)} myId={me.id} colors={colors} codenameForUser={codenameForUser} />}
+      {me && <ProfileModal visible={showProfile} onClose={() => setShowProfile(false)} me={me} colors={colors} codename={codenameForUser(me.id)} token={token} />}
     </View>
   );
 }
@@ -695,7 +883,9 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1 },
   modalTitle: { fontFamily: "Inter_700Bold", fontSize: 14, letterSpacing: 2 },
   modalBody: { padding: 16 },
+  profileBlock: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, padding: 12, marginBottom: 18 },
   label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
+  errorText: { fontFamily: "Inter_400Regular", fontSize: 12, marginTop: 8 },
   input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10, fontFamily: "Inter_400Regular", fontSize: 14 },
   typeRow: { flexDirection: "row", gap: 8 },
   typeBtn: { flex: 1, borderWidth: 1, paddingVertical: 10, alignItems: "center" },
@@ -709,4 +899,10 @@ const styles = StyleSheet.create({
   userName: { fontFamily: "Inter_400Regular", fontSize: 14, flex: 1 },
   createBtn: { marginTop: 24, paddingVertical: 14, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 },
   createBtnText: { fontFamily: "Inter_700Bold", fontSize: 11, letterSpacing: 2 },
+  codeCard: { borderWidth: 1, padding: 12, marginBottom: 12 },
+  codeHeader: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginBottom: 8 },
+  codeTitle: { fontFamily: "Inter_700Bold", fontSize: 14 },
+  codeMeta: { fontFamily: "Inter_400Regular", fontSize: 11, marginTop: 2 },
+  smallBtn: { borderWidth: 1, paddingHorizontal: 10, paddingVertical: 7 },
+  smallBtnText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
 });

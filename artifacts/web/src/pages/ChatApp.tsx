@@ -13,6 +13,9 @@ import {
   Search,
   ArrowLeft,
   Github,
+  Fingerprint,
+  KeyRound,
+  Settings,
 } from "lucide-react";
 import {
   useGetRooms,
@@ -27,9 +30,13 @@ import {
   useGetUsersSearch,
   getGetUsersSearchQueryKey,
   getGetRoomsRoomIdMembersQueryKey,
+  getGetIdentityCodesQueryKey,
+  useGetIdentityCodes,
+  usePatchIdentityCodesCodeId,
+  usePostIdentityCodes,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearAll } from "@/lib/auth";
+import { clearAll, getToken } from "@/lib/auth";
 import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 
@@ -345,6 +352,237 @@ function NewRoomDialog({
   );
 }
 
+const CODE_TTL_OPTIONS = [
+  { label: "5 minutes", value: 300 },
+  { label: "1 hour", value: 3600 },
+  { label: "1 day", value: 86400 },
+  { label: "1 month", value: 2592000 },
+  { label: "1 year", value: 31536000 },
+  { label: "10 years", value: 315360000 },
+];
+
+const CODE_SCOPE_OPTIONS = [
+  { label: "Public", value: "public" },
+  { label: "People I invited", value: "invited_by_you" },
+  { label: "People who invited me", value: "invited_you" },
+  { label: "Mutuals", value: "mutuals" },
+  { label: "Disabled", value: "disabled" },
+] as const;
+
+function useDeviceCount(enabled: boolean) {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let mounted = true;
+    const token = getToken();
+    if (!token) return;
+    fetch("/api/auth/devices", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (mounted && data && typeof data.activeDeviceCount === "number") {
+          setCount(data.activeDeviceCount);
+        }
+      })
+      .catch(() => {
+        if (mounted) setCount(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [enabled]);
+
+  return count;
+}
+
+function ProfilePanel({
+  onClose,
+  me,
+  codename,
+}: {
+  onClose: () => void;
+  me: { id: string; username: string; displayName?: string | null; avatarColor?: string | null };
+  codename: string;
+}) {
+  const qc = useQueryClient();
+  const [revealed, setRevealed] = useState(false);
+  const [newCode, setNewCode] = useState("");
+  const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
+  const [newScope, setNewScope] = useState<"public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled">("public");
+  const [newTtl, setNewTtl] = useState<number>(315360000);
+  const [error, setError] = useState("");
+  const deviceCount = useDeviceCount(revealed);
+  const { data: codes = [] } = useGetIdentityCodes();
+
+  const createCode = usePostIdentityCodes({
+    mutation: {
+      onSuccess: () => {
+        setNewCode("");
+        setError("");
+        qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
+      },
+      onError: (err) => {
+        const msg = err && typeof err === "object" && "response" in err
+          ? ((err as { response?: { data?: { error?: string } } }).response?.data?.error ?? "Could not create code")
+          : "Could not create code";
+        setError(msg);
+      },
+    },
+  });
+
+  const updateCode = usePatchIdentityCodesCodeId({
+    mutation: {
+      onSuccess: () => {
+        setError("");
+        qc.invalidateQueries({ queryKey: getGetIdentityCodesQueryKey() });
+      },
+      onError: () => setError("Could not update code"),
+    },
+  });
+
+  const submitCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    createCode.mutate({
+      data: {
+        code: newCode.trim() || null,
+        kind: newKind,
+        visibilityScope: newScope,
+        ttlSeconds: newTtl,
+      },
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card">
+        <div className="flex items-center justify-between p-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <Fingerprint className="w-4 h-4 text-primary" />
+            <h2 className="font-mono font-bold text-sm tracking-widest">PROFILE / IDS</h2>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" data-testid="button-close-profile">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-4">
+          <div className="border border-border/50 bg-background/50 p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-mono text-xs font-bold" style={{ backgroundColor: me.avatarColor ?? "#06b6d4" }}>
+                {codename[0]}
+              </div>
+              <div className="min-w-0">
+                <button
+                  type="button"
+                  onPointerDown={() => setRevealed(true)}
+                  onPointerUp={() => setRevealed(false)}
+                  onPointerCancel={() => setRevealed(false)}
+                  onPointerLeave={() => setRevealed(false)}
+                  className="font-mono text-sm font-semibold hover:text-primary"
+                  data-testid="button-hold-reveal-profile"
+                >
+                  {revealed ? (me.displayName ?? me.username) : codename}
+                </button>
+                <p className="font-mono text-xs text-muted-foreground mt-1">
+                  {revealed ? `${deviceCount ?? "..."} active linked device session${deviceCount === 1 ? "" : "s"}` : "Hold to reveal device links"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <form onSubmit={submitCode} className="border border-border/50 bg-background/50 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-4 h-4 text-primary" />
+              <h3 className="font-mono text-xs font-bold tracking-widest">CREATE HANDLE / INVITE CODE</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-2">
+              <input
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value)}
+                className="bg-background border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:border-primary/60"
+                placeholder="stv or leave blank for random code"
+                autoCapitalize="none"
+                data-testid="input-new-identity-code"
+              />
+              <select value={newKind} onChange={(e) => setNewKind(e.target.value as "alias" | "invite")} className="bg-background border border-border px-3 py-2 font-mono text-xs">
+                <option value="alias">HANDLE</option>
+                <option value="invite">INVITE</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <select value={newScope} onChange={(e) => setNewScope(e.target.value as typeof newScope)} className="bg-background border border-border px-3 py-2 font-mono text-xs">
+                {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
+              </select>
+              <select value={newTtl} onChange={(e) => setNewTtl(Number(e.target.value))} className="bg-background border border-border px-3 py-2 font-mono text-xs">
+                {CODE_TTL_OPTIONS.map((ttl) => <option key={ttl.value} value={ttl.value}>{ttl.label}</option>)}
+              </select>
+            </div>
+            {error && <p className="font-mono text-xs text-destructive">{error}</p>}
+            <button type="submit" disabled={createCode.isPending} className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-2.5 disabled:opacity-50" data-testid="button-create-identity-code">
+              {createCode.isPending ? "CREATING..." : "CREATE CODE"}
+            </button>
+          </form>
+
+          <div className="space-y-2">
+            <div className="font-mono text-xs text-muted-foreground tracking-widest">YOUR HANDLES / INVITES</div>
+            {codes.length === 0 && (
+              <div className="border border-border/50 bg-background/40 p-4 font-mono text-xs text-muted-foreground">No handles or invite codes yet.</div>
+            )}
+            {codes.map((code) => (
+              <div key={code.id} className="border border-border/50 bg-background/40 p-3 space-y-3" data-testid={`identity-code-${code.id}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-mono text-sm font-semibold">{code.kind === "alias" ? "@" : "#"}{code.code}</div>
+                    <div className="font-mono text-xs text-muted-foreground">
+                      {code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateCode.mutate({ codeId: code.id, data: { active: !code.active } })}
+                    className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50"
+                  >
+                    {code.active ? "DISABLE" : "ENABLE"}
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <select
+                    value={code.visibilityScope}
+                    onChange={(e) => updateCode.mutate({ codeId: code.id, data: { visibilityScope: e.target.value as typeof code.visibilityScope } })}
+                    className="bg-background border border-border px-2 py-2 font-mono text-xs"
+                  >
+                    {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
+                  </select>
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) updateCode.mutate({ codeId: code.id, data: { ttlSeconds: Number(e.target.value) } });
+                      e.currentTarget.value = "";
+                    }}
+                    className="bg-background border border-border px-2 py-2 font-mono text-xs"
+                  >
+                    <option value="">RETIMING...</option>
+                    {CODE_TTL_OPTIONS.map((ttl) => <option key={ttl.value} value={ttl.value}>{ttl.label}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => updateCode.mutate({ codeId: code.id, data: { active: false, visibilityScope: "disabled" } })}
+                    className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive"
+                  >
+                    ROLL / EXPIRE
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RoomView({
   room,
   currentUserId,
@@ -627,6 +865,7 @@ export default function ChatApp() {
   const [, setLocation] = useLocation();
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [privacyShield, setPrivacyShield] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
@@ -799,7 +1038,7 @@ export default function ChatApp() {
               >
                 {codenameForUser(me.id)[0]}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <button
                   type="button"
                   onPointerDown={() => setRevealedNameId(`user:${me.id}`)}
@@ -813,6 +1052,15 @@ export default function ChatApp() {
                 </button>
                 <p className="font-mono text-xs text-muted-foreground">LOCAL DEVICE</p>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowProfile(true)}
+                className="text-muted-foreground hover:text-primary transition-colors"
+                title="Manage profile, devices, handles, and invites"
+                data-testid="button-profile-settings"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
             </div>
           </div>
         )}
@@ -928,6 +1176,13 @@ export default function ChatApp() {
           onClose={() => setShowNewRoom(false)}
           currentUserId={me.id}
           codenameForUser={codenameForUser}
+        />
+      )}
+      {showProfile && me && (
+        <ProfilePanel
+          onClose={() => setShowProfile(false)}
+          me={me}
+          codename={codenameForUser(me.id)}
         />
       )}
     </div>

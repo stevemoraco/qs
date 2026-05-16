@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, usersTable, sessionsTable, leadsTable, identityCodesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { and, count, eq, gt } from "drizzle-orm";
 import argon2 from "argon2";
 import { createHash, randomBytes } from "crypto";
 import {
@@ -210,6 +210,17 @@ router.get("/auth/me", requireAuth, (req: AuthRequest, res) => {
     kemPublicKey: u.kemPublicKey,
     dsaPublicKey: u.dsaPublicKey,
     createdAt: u.createdAt,
+  });
+});
+
+router.get("/auth/devices", requireAuth, async (req: AuthRequest, res) => {
+  const [row] = await db
+    .select({ count: count() })
+    .from(sessionsTable)
+    .where(and(eq(sessionsTable.userId, req.userId!), gt(sessionsTable.expiresAt, new Date())));
+
+  res.json({
+    activeDeviceCount: row?.count ?? 0,
   });
 });
 
