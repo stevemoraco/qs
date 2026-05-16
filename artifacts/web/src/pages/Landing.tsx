@@ -1,6 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Shield, Lock, Eye, Clock, Github, Zap, Key, Cpu, ChevronRight } from "lucide-react";
+import {
+  Shield,
+  Lock,
+  Eye,
+  Clock,
+  Github,
+  Zap,
+  Key,
+  Cpu,
+  ChevronRight,
+  Bug,
+  ExternalLink,
+  Mail,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import {
   getGetStatsOverviewQueryKey,
   useGetStatsOverview,
@@ -47,6 +62,29 @@ const ALGORITHMS = [
   { name: "AES-256-GCM", spec: "NIST FIPS 197", type: "Symmetric", status: "Active" },
   { name: "Argon2id", spec: "RFC 9106", type: "Key Derivation", status: "Active" },
 ];
+
+const GITHUB_URL = "https://github.com/stevemoraco/qs";
+const SECURITY_URL = `${GITHUB_URL}/security`;
+const ISSUES_URL = `${GITHUB_URL}/issues`;
+const PULLS_URL = `${GITHUB_URL}/pulls`;
+
+type InviteStep = 1 | 2 | 3;
+
+type InviteProfile = {
+  email: string;
+  name: string;
+  phone: string;
+  organization: string;
+  title: string;
+};
+
+const emptyInviteProfile: InviteProfile = {
+  email: "",
+  name: "",
+  phone: "",
+  organization: "",
+  title: "",
+};
 
 export default function Landing() {
   const { data: stats } = useGetStatsOverview<StatsOverview>({
@@ -98,6 +136,7 @@ export default function Landing() {
             <div className="hidden md:flex items-center gap-4 mr-6">
               <a href="#features" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
               <a href="#security" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">SECURITY</a>
+              <a href="#community" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">COMMUNITY</a>
               <a href="#open-source" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">OPEN SOURCE</a>
             </div>
             <Link href="/login">
@@ -147,6 +186,9 @@ export default function Landing() {
                 <ChevronRight className="w-4 h-4" />
               </button>
             </Link>
+            <a href="#community" className="inline-flex items-center gap-2 border border-primary/40 bg-primary/5 text-primary font-mono text-sm px-8 py-3 hover:border-primary/70 hover:bg-primary/10 transition-all tracking-widest uppercase">
+              JOIN AUDIT
+            </a>
             <Link href="/login">
               <button className="inline-flex items-center gap-2 border border-border text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase" data-testid="button-login">
                 ACCESS TERMINAL
@@ -280,9 +322,13 @@ export default function Landing() {
             Security through transparency — the only kind that matters.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="https://github.com" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase">
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase">
               <Github className="w-4 h-4" />
               VIEW SOURCE
+            </a>
+            <a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase">
+              <Bug className="w-4 h-4" />
+              SECURITY
             </a>
             <Link href="/register">
               <button className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-mono text-sm px-8 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase">
@@ -290,6 +336,68 @@ export default function Landing() {
                 TRY NOW
               </button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" className="py-24 px-6 border-y border-border/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-start">
+            <div>
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">CALL FOR REVIEW</div>
+              <h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">
+                Auditors, builders, and privacy engineers wanted.
+              </h2>
+              <p className="font-mono text-sm text-muted-foreground mb-10 leading-relaxed max-w-2xl">
+                QuantumShield needs independent review, reproducible builds, threat-model pressure,
+                protocol critique, and careful implementation work. If you can break assumptions,
+                harden defaults, document risk, or improve the client experience, start here.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    icon: <Bug className="w-5 h-5" />,
+                    title: "Security auditors",
+                    copy: "Review auth, crypto boundaries, key storage, API validation, and build provenance.",
+                    href: SECURITY_URL,
+                    label: "Disclosure",
+                  },
+                  {
+                    icon: <Users className="w-5 h-5" />,
+                    title: "Contributors",
+                    copy: "Open focused issues, send small PRs, improve tests, and help keep the workspace maintainable.",
+                    href: ISSUES_URL,
+                    label: "Issues",
+                  },
+                  {
+                    icon: <Github className="w-5 h-5" />,
+                    title: "Maintainers",
+                    copy: "Review pull requests, tighten docs, triage dependency updates, and expand CI coverage.",
+                    href: PULLS_URL,
+                    label: "Pull requests",
+                  },
+                ].map((item) => (
+                  <a
+                    key={item.title}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="border border-border/50 bg-card/30 p-5 hover:border-primary/40 hover:bg-card/60 transition-all"
+                  >
+                    <div className="text-primary mb-4">{item.icon}</div>
+                    <h3 className="font-mono font-semibold text-sm mb-3">{item.title}</h3>
+                    <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">{item.copy}</p>
+                    <span className="inline-flex items-center gap-2 font-mono text-xs text-primary uppercase tracking-widest">
+                      {item.label}
+                      <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <MailingListSignup />
           </div>
         </div>
       </section>
@@ -307,6 +415,162 @@ export default function Landing() {
           </p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function MailingListSignup() {
+  const [step, setStep] = useState<InviteStep>(1);
+  const [profile, setProfile] = useState<InviteProfile>(emptyInviteProfile);
+
+  const updateProfile = (field: keyof InviteProfile, value: string) => {
+    setProfile((current) => ({ ...current, [field]: value }));
+  };
+
+  const saveProfile = () => {
+    localStorage.setItem("qs_invite_profile", JSON.stringify(profile));
+  };
+
+  const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    saveProfile();
+    setStep(2);
+  };
+
+  const handleProfileSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    saveProfile();
+    setStep(3);
+  };
+
+  const createAccountHref = `/register?email=${encodeURIComponent(profile.email)}&name=${encodeURIComponent(profile.name)}`;
+
+  return (
+    <div className="border border-border/50 bg-card/40 p-6 backdrop-blur-sm">
+      <div className="flex items-center gap-2 mb-6">
+        <Mail className="w-5 h-5 text-primary" />
+        <div>
+          <h3 className="font-mono font-bold text-lg">Join the project list</h3>
+          <p className="font-mono text-xs text-muted-foreground mt-1">
+            Get audit windows, release notes, and contributor calls.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        {[
+          { n: 1, label: "Email" },
+          { n: 2, label: "Profile" },
+          { n: 3, label: "Account" },
+        ].map((s) => (
+          <button
+            key={s.n}
+            type="button"
+            onClick={() => {
+              if (s.n === 1 || profile.email) setStep(s.n as InviteStep);
+            }}
+            className={`border px-3 py-2 text-left transition-colors ${
+              step === s.n ? "border-primary bg-primary/10" : "border-border/60 bg-background/40"
+            }`}
+          >
+            <span className="font-mono text-[10px] text-muted-foreground block">STEP {s.n}</span>
+            <span className="font-mono text-xs text-foreground">{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {step === 1 && (
+        <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <div>
+            <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
+              EMAIL
+            </label>
+            <input
+              type="email"
+              value={profile.email}
+              onChange={(e) => updateProfile("email", e.target.value)}
+              className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+          <button type="submit" className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
+            CONTINUE
+          </button>
+        </form>
+      )}
+
+      {step === 2 && (
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabeledInput label="NAME" value={profile.name} onChange={(value) => updateProfile("name", value)} autoComplete="name" placeholder="Optional" />
+            <LabeledInput label="PHONE" value={profile.phone} onChange={(value) => updateProfile("phone", value)} autoComplete="tel" placeholder="Optional" />
+            <LabeledInput label="ORGANIZATION" value={profile.organization} onChange={(value) => updateProfile("organization", value)} autoComplete="organization" placeholder="Optional" />
+            <LabeledInput label="TITLE" value={profile.title} onChange={(value) => updateProfile("title", value)} autoComplete="organization-title" placeholder="Optional" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setStep(3)} className="border border-border text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all">
+              SKIP
+            </button>
+            <button type="submit" className="bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
+              SAVE PROFILE
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === 3 && (
+        <div className="space-y-5">
+          <div className="border border-primary/25 bg-primary/5 p-4">
+            <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+              {profile.email} is queued for project updates in this browser. Create a secure account next to generate your post-quantum identity keys locally.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Link href={createAccountHref}>
+              <button onClick={saveProfile} className="w-full inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs tracking-widest py-3 hover:bg-primary/90 transition-all">
+                <UserPlus className="w-4 h-4" />
+                CREATE ACCOUNT
+              </button>
+            </Link>
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="w-full inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-xs tracking-widest py-3 hover:border-primary/50 transition-all">
+              <Github className="w-4 h-4" />
+              REVIEW SOURCE FIRST
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LabeledInput({
+  label,
+  value,
+  onChange,
+  autoComplete,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  autoComplete: string;
+  placeholder: string;
+}) {
+  return (
+    <div>
+      <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
+        {label}
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+      />
     </div>
   );
 }

@@ -34,6 +34,7 @@ import {
 } from "@workspace/api-client-react";
 import { gcm } from "@noble/ciphers/aes.js";
 import { randomBytes } from "@noble/hashes/utils.js";
+import * as ScreenCapture from "expo-screen-capture";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 
@@ -180,7 +181,39 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [decrypted, setDecrypted] = useState<Record<string, string>>({});
+  const [screenshotAlert, setScreenshotAlert] = useState(false);
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    let mounted = true;
+    let sub: { remove: () => void } | undefined;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    (async () => {
+      try {
+        await ScreenCapture.preventScreenCaptureAsync("quantumshield-chat");
+      } catch {}
+      if (!mounted) {
+        ScreenCapture.allowScreenCaptureAsync("quantumshield-chat").catch(() => {});
+        return;
+      }
+      try {
+        sub = ScreenCapture.addScreenshotListener(() => {
+          if (!mounted) return;
+          setScreenshotAlert(true);
+          if (hideTimer) clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            if (mounted) setScreenshotAlert(false);
+          }, 4000);
+        });
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+      if (hideTimer) clearTimeout(hideTimer);
+      sub?.remove();
+      ScreenCapture.allowScreenCaptureAsync("quantumshield-chat").catch(() => {});
+    };
+  }, []);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id, {},
@@ -243,6 +276,14 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
           NO CAMERA DETECTED — AREA CLEAR
         </Text>
       </View>
+      {screenshotAlert && (
+        <View style={[styles.screenshotAlert, { backgroundColor: "#ef4444" }]} testID="screenshot-alert">
+          <Feather name="alert-triangle" size={12} color="#fff" />
+          <Text style={styles.screenshotAlertText}>
+            SCREENSHOT DETECTED — ROOM PRIVACY MAY BE COMPROMISED
+          </Text>
+        </View>
+      )}
 
       <FlatList
         data={reversed}
@@ -589,6 +630,8 @@ const styles = StyleSheet.create({
   chatTitle: { fontFamily: "Inter_600SemiBold", fontSize: 15 },
   cipherRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
   cipherText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 0.5 },
+  screenshotAlert: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8 },
+  screenshotAlertText: { fontFamily: "Inter_600SemiBold", fontSize: 10, letterSpacing: 1.5, color: "#fff" },
   cameraStatus: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 6, borderBottomWidth: 1 },
   cameraDot: { width: 6, height: 6, borderRadius: 3 },
   cameraStatusText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 2 },

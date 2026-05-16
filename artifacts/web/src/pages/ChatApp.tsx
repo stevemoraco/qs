@@ -283,6 +283,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   const [input, setInput] = useState("");
   const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({});
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
+  const [hidden, setHidden] = useState(false);
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -370,6 +371,23 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
     return () => {
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
       if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  useEffect(() => {
+    const onVis = () => setHidden(document.visibilityState === "hidden");
+    const onBlur = () => setHidden(true);
+    const onFocus = () => setHidden(document.visibilityState === "hidden");
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+    const block = (e: Event) => e.preventDefault();
+    document.addEventListener("contextmenu", block);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("contextmenu", block);
     };
   }, []);
 
@@ -464,7 +482,10 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-3 select-none"
+        style={{ filter: hidden ? "blur(24px)" : "none", WebkitUserSelect: "none" }}
+      >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <Lock className="w-12 h-12 text-muted-foreground/30 mb-4" />
@@ -557,6 +578,7 @@ export default function ChatApp() {
   const [, setLocation] = useLocation();
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
+  const [privacyShield, setPrivacyShield] = useState(false);
   const qc = useQueryClient();
 
   const { data: me } = useGetAuthMe();
@@ -573,8 +595,53 @@ export default function ChatApp() {
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
 
+  useEffect(() => {
+    let printScreenTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const shield = () => setPrivacyShield(true);
+    const unshield = () => setPrivacyShield(false);
+    const handleVisibility = () => setPrivacyShield(document.hidden);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "PrintScreen") {
+        setPrivacyShield(true);
+        if (printScreenTimer) clearTimeout(printScreenTimer);
+        printScreenTimer = setTimeout(() => setPrivacyShield(document.hidden), 2500);
+      }
+    };
+
+    window.addEventListener("blur", shield);
+    window.addEventListener("focus", unshield);
+    window.addEventListener("beforeprint", shield);
+    window.addEventListener("afterprint", unshield);
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      if (printScreenTimer) clearTimeout(printScreenTimer);
+      window.removeEventListener("blur", shield);
+      window.removeEventListener("focus", unshield);
+      window.removeEventListener("beforeprint", shield);
+      window.removeEventListener("afterprint", unshield);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div
+      className="h-screen bg-background flex overflow-hidden select-none"
+      onContextMenu={(event) => event.preventDefault()}
+      data-testid="chat-privacy-surface"
+    >
+      {privacyShield && (
+        <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6">
+          <Shield className="w-12 h-12 text-primary mb-4" />
+          <p className="font-mono text-sm tracking-widest text-primary">PRIVACY SHIELD ACTIVE</p>
+          <p className="font-mono text-xs text-muted-foreground mt-2 max-w-sm">
+            Secure content is hidden while the app is backgrounded, unfocused, printing, or screenshot keys are detected.
+          </p>
+        </div>
+      )}
       <div
         className={`${
           activeRoomId ? "hidden md:flex" : "flex"

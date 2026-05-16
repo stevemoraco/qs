@@ -54,4 +54,8 @@ Thumbs.db
 # Environment secrets (VAPID keys, etc.)
 .env
 .env.local
+.env.*
+!.env.example
 
+# Uploaded prompt/session assets are local-only and may contain private data.
+attached_assets/

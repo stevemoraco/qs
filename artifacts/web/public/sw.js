@@ -1,5 +1,12 @@
 /* QuantumShield Service Worker */
-const CACHE_NAME = "quantumshield-v1";
+const CACHE_NAME = "quantumshield-v2";
+const MODEL_CACHE_NAME = "quantumshield-models-v1";
+const MODEL_HOSTS = ["huggingface.co", "storage.googleapis.com", "tfhub.dev"];
+const MODEL_HOST_SUFFIXES = [".huggingface.co", ".hf.co", ".xethub.hf.co"];
+
+function isModelHost(hostname) {
+  return MODEL_HOSTS.includes(hostname) || MODEL_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
+}
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -10,8 +17,28 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Network-first; let the app handle its own caching strategy
-  return;
+  const url = new URL(event.request.url);
+  const isModelRequest =
+    isModelHost(url.hostname) ||
+    url.pathname.includes("/resolve/") ||
+    url.pathname.endsWith(".onnx") ||
+    url.pathname.endsWith(".wasm") ||
+    (url.pathname.endsWith(".json") && url.pathname.includes("model"));
+
+  if (!isModelRequest || event.request.method !== "GET") return;
+
+  event.respondWith(
+    caches.open(MODEL_CACHE_NAME).then(async (cache) => {
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+
+      const response = await fetch(event.request);
+      if (response.ok) {
+        cache.put(event.request, response.clone());
+      }
+      return response;
+    }),
+  );
 });
 
 self.addEventListener("push", (event) => {

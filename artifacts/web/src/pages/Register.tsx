@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
@@ -39,6 +39,33 @@ export default function Register() {
 
   const register = usePostAuthRegister();
   const uploadKeys = usePostKeysUpload();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email") ?? "";
+    const name = params.get("name") ?? "";
+    let savedName = "";
+
+    try {
+      const saved = localStorage.getItem("qs_invite_profile");
+      if (saved) {
+        const parsed = JSON.parse(saved) as { name?: unknown; email?: unknown };
+        if (!email && typeof parsed.email === "string") {
+          const candidate = parsed.email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
+          if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
+        }
+        if (typeof parsed.name === "string") savedName = parsed.name;
+      }
+    } catch {
+      // Ignore malformed local invite state.
+    }
+
+    if (email) {
+      const candidate = email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
+      if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
+    }
+    if (name || savedName) setDisplayName(name || savedName);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
