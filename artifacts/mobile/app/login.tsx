@@ -165,7 +165,7 @@ export default function LoginScreen() {
           />
 
           <TextInput
-            style={s.savedPasscodeInput}
+            style={[s.passwordManagerSlot, { backgroundColor: colors.background, borderColor: colors.border, color: "transparent" }]}
             value={passcode}
             onChangeText={setPasscode}
             secureTextEntry
@@ -174,6 +174,9 @@ export default function LoginScreen() {
             importantForAutofill="yes"
             testID="input-passcode"
           />
+          <Text style={[s.passwordManagerHint, { color: colors.mutedForeground }]}>
+            PASSWORD MANAGER ACCESS KEY - USE SAVED ENTRY
+          </Text>
 
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}> 
@@ -267,7 +270,8 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
     label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
     input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
-    savedPasscodeInput: { position: "absolute", width: 1, height: 1, opacity: 0 },
+    passwordManagerSlot: { borderWidth: 1, height: 44, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14, marginTop: 12 },
+    passwordManagerHint: { fontFamily: "Inter_400Regular", fontSize: 10, marginTop: 6 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     btn: { paddingVertical: 14, alignItems: "center", justifyContent: "center", marginTop: 20, flexDirection: "row", gap: 8 },

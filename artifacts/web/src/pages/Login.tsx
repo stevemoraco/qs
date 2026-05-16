@@ -140,13 +140,15 @@ export default function Login() {
               type="password"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              className="sr-only"
-              tabIndex={-1}
+              className="w-full h-11 border border-border bg-background px-3 py-2.5 font-mono text-sm text-transparent caret-transparent focus:outline-none focus:border-primary/60 transition-colors"
               name="password"
               autoComplete="current-password"
-              aria-label="Saved passcode from password manager"
+              aria-label="Saved password manager access key"
               data-testid="input-passcode"
             />
+            <p className="font-mono text-[10px] text-muted-foreground -mt-3">
+              PASSWORD MANAGER ACCESS KEY - USE SAVED ENTRY
+            </p>
 
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">

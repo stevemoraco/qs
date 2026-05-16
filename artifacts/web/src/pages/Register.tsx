@@ -185,13 +185,16 @@ export default function Register() {
             <input
               type="password"
               defaultValue={passcode}
-              className="sr-only"
-              tabIndex={-1}
+              className="w-full h-11 border border-border bg-background px-3 py-2.5 font-mono text-sm text-transparent caret-transparent focus:outline-none focus:border-primary/60 transition-colors"
               name="password"
               autoComplete="new-password"
-              aria-label="Generated passcode for password manager"
+              aria-label="Password manager access key"
+              onFocus={(e) => e.currentTarget.select()}
               data-testid="input-passcode"
             />
+            <p className="font-mono text-[10px] text-muted-foreground -mt-3">
+              PASSWORD MANAGER ACCESS KEY - DO NOT TYPE
+            </p>
 
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
