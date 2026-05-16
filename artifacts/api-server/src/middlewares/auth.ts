@@ -4,6 +4,7 @@ import { eq, and, gt } from "drizzle-orm";
 
 export interface AuthRequest extends Request {
   userId?: string;
+  sessionCreatedAt?: Date;
   user?: {
     id: string;
     username: string;
@@ -32,6 +33,7 @@ export async function requireAuth(
     .select({
       userId: sessionsTable.userId,
       expiresAt: sessionsTable.expiresAt,
+      createdAt: sessionsTable.createdAt,
     })
     .from(sessionsTable)
     .where(
@@ -59,6 +61,7 @@ export async function requireAuth(
   }
 
   req.userId = user.id;
+  req.sessionCreatedAt = session.createdAt;
   req.user = user;
   next();
 }

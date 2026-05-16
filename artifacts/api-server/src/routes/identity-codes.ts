@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, identityCodesTable, usersTable } from "@workspace/db";
-import { and, asc, desc, eq, gt, ilike, isNull, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, ilike, isNull, or } from "drizzle-orm";
 import {
   PatchIdentityCodesCodeIdBody,
   PostIdentityCodesBody,
@@ -125,6 +125,28 @@ router.patch("/identity-codes/:codeId", requireAuth, async (req: AuthRequest, re
   }
 
   const nextActive = parse.data.active ?? existing.active;
+  if (existing.kind === "alias" && existing.active && nextActive === false) {
+    const [activeAliasCount] = await db
+      .select({ count: count() })
+      .from(identityCodesTable)
+      .where(
+        and(
+          eq(identityCodesTable.ownerUserId, req.userId!),
+          eq(identityCodesTable.kind, "alias"),
+          eq(identityCodesTable.active, true),
+          or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
+        )
+      );
+    const isLastActiveHandle = (activeAliasCount?.count ?? 0) <= 1;
+    const freshSession = !!req.sessionCreatedAt && Date.now() - req.sessionCreatedAt.getTime() < 5 * 60 * 1000;
+    if (isLastActiveHandle && (!parse.data.confirmLastHandleDisable || !freshSession)) {
+      res.status(409).json({
+        error: "Disabling the last active handle requires triple confirmation and fresh passkey or device verification.",
+      });
+      return;
+    }
+  }
+
   const [updated] = await db
     .update(identityCodesTable)
     .set({
