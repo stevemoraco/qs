@@ -174,18 +174,34 @@ function CameraScanStatus({
   status: "scanning" | "clear" | "threat" | "unavailable";
   detail: string;
 }) {
+  const [open, setOpen] = useState(false);
   const cfg = {
-    scanning: { dot: "bg-muted-foreground/60", text: "text-muted-foreground", label: "INITIALIZING FRONT CAMERA SCAN..." },
-    clear: { dot: "bg-primary animate-pulse", text: "text-primary", label: "NO CAMERA DETECTED - AREA CLEAR" },
+    scanning: { dot: "bg-muted-foreground/60", text: "text-muted-foreground", label: "STARTING PRIVACY SCAN" },
+    clear: { dot: "bg-primary animate-pulse", text: "text-primary", label: "PRIVACY ENSURED" },
     threat: { dot: "bg-destructive animate-pulse", text: "text-destructive", label: "RECORDING DEVICE DETECTED" },
-    unavailable: { dot: "bg-muted-foreground/40", text: "text-muted-foreground", label: "CAMERA UNAVAILABLE - SCAN OFFLINE" },
+    unavailable: { dot: "bg-muted-foreground/40", text: "text-muted-foreground", label: "PRIVACY SCAN OFFLINE" },
   }[status];
   return (
-    <div className="border-b border-border/50 px-4 py-1.5 flex items-center gap-2 flex-shrink-0" data-testid="camera-status">
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} flex-shrink-0`} />
-      <span className={`font-mono text-[10px] tracking-widest ${cfg.text}`}>
-        {cfg.label}{detail ? ` / ${detail}` : ""}
-      </span>
+    <div className="relative border-b border-border/50 flex-shrink-0" data-testid="camera-status">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="w-full px-4 py-1.5 flex items-center gap-2 text-left"
+        aria-expanded={open}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} flex-shrink-0`} />
+        <span className={`font-mono text-[10px] tracking-widest ${cfg.text}`}>
+          {cfg.label}{detail ? ` / ${detail}` : ""}
+        </span>
+      </button>
+      {open && (
+        <div className="absolute left-4 right-4 top-full z-50 mt-2 border border-primary/30 bg-background/95 p-4 shadow-xl backdrop-blur">
+          <p className="font-mono text-xs tracking-widest text-primary mb-2">WHY THE CAMERA IS ON</p>
+          <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+            QuantumShield uses your front camera locally to look for nearby recording devices pointed at the screen. Frames are processed on this device for privacy-shield decisions and are not uploaded or attached to messages.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
