@@ -36,11 +36,15 @@ import {
   usePostIdentityCodes,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearAll, getToken } from "@/lib/auth";
+import { clearToken, getToken } from "@/lib/auth";
 import { encryptMessage, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+
+function normalizeCodeInput(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
 
 type Room = {
   id: string;
@@ -196,9 +200,10 @@ function NewRoomDialog({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [revealedUserId, setRevealedUserId] = useState<string | null>(null);
 
+  const normalizedSearch = normalizeCodeInput(search);
   const { data: searchResults } = useGetUsersSearch(
-    { q: search },
-    { query: { queryKey: getGetUsersSearchQueryKey({ q: search }), enabled: search.length > 0 } }
+    { q: normalizedSearch },
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: normalizedSearch }), enabled: normalizedSearch.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -369,6 +374,26 @@ const CODE_SCOPE_OPTIONS = [
   { label: "Disabled", value: "disabled" },
 ] as const;
 
+function describeCodeKind(kind: "alias" | "invite"): string {
+  return kind === "alias"
+    ? "A handle is your reusable public name. People can search it, add you to chats, or link a device with it until you disable or expire it."
+    : "An invite is a public one-use code. Share it with one person or device, and it stops working after it is used, expired, or rolled.";
+}
+
+function formatExpiry(expiresAt?: string | null): string {
+  if (!expiresAt) return "No expiration";
+  const expiry = new Date(expiresAt);
+  const diff = expiry.getTime() - Date.now();
+  const abs = expiry.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  if (diff <= 0) return `${abs} / expired`;
+  const minutes = Math.floor(diff / 60000);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  const remaining = days > 0 ? `${days}d ${hours}h remaining` : hours > 0 ? `${hours}h ${mins}m remaining` : `${mins}m remaining`;
+  return `${abs} / ${remaining}`;
+}
+
 function useDeviceCount(enabled: boolean) {
   const [count, setCount] = useState<number | null>(null);
 
@@ -410,7 +435,6 @@ function ProfilePanel({
   const [revealed, setRevealed] = useState(false);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
-  const [newScope, setNewScope] = useState<"public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled">("public");
   const [newTtl, setNewTtl] = useState<number>(315360000);
   const [error, setError] = useState("");
   const deviceCount = useDeviceCount(revealed);
@@ -446,12 +470,26 @@ function ProfilePanel({
     e.preventDefault();
     createCode.mutate({
       data: {
-        code: newCode.trim() || null,
+        code: normalizeCodeInput(newCode) || null,
         kind: newKind,
-        visibilityScope: newScope,
+        visibilityScope: "public",
         ttlSeconds: newTtl,
+        maxUses: newKind === "invite" ? 1 : null,
       },
     });
+  };
+
+  const confirmUpdate = (
+    message: string,
+    codeId: string,
+    data: {
+      active?: boolean | null;
+      visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
+      ttlSeconds?: number | null;
+    }
+  ) => {
+    if (!window.confirm(message)) return;
+    updateCode.mutate({ codeId, data });
   };
 
   return (
@@ -502,23 +540,22 @@ function ProfilePanel({
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 className="bg-background border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:border-primary/60"
-                placeholder="stv or leave blank for random code"
+                placeholder="@marlin or leave blank for random"
                 autoCapitalize="none"
                 data-testid="input-new-identity-code"
               />
               <select value={newKind} onChange={(e) => setNewKind(e.target.value as "alias" | "invite")} className="bg-background border border-border px-3 py-2 font-mono text-xs">
-                <option value="alias">HANDLE</option>
-                <option value="invite">INVITE</option>
+                <option value="alias">HANDLE - stable searchable ID</option>
+                <option value="invite">INVITE - shareable expiring link code</option>
               </select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <select value={newScope} onChange={(e) => setNewScope(e.target.value as typeof newScope)} className="bg-background border border-border px-3 py-2 font-mono text-xs">
-                {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
-              </select>
+            <p className="font-mono text-xs text-muted-foreground leading-relaxed">{describeCodeKind(newKind)}</p>
+            <div className="grid grid-cols-1 gap-2">
               <select value={newTtl} onChange={(e) => setNewTtl(Number(e.target.value))} className="bg-background border border-border px-3 py-2 font-mono text-xs">
                 {CODE_TTL_OPTIONS.map((ttl) => <option key={ttl.value} value={ttl.value}>{ttl.label}</option>)}
               </select>
             </div>
+            <p className="font-mono text-xs text-primary/80">New handles and invites are public when created. You can restrict or disable them after creation.</p>
             {error && <p className="font-mono text-xs text-destructive">{error}</p>}
             <button type="submit" disabled={createCode.isPending} className="w-full bg-primary text-primary-foreground font-mono text-xs tracking-widest py-2.5 disabled:opacity-50" data-testid="button-create-identity-code">
               {createCode.isPending ? "CREATING..." : "CREATE CODE"}
@@ -538,10 +575,11 @@ function ProfilePanel({
                     <div className="font-mono text-xs text-muted-foreground">
                       {code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses
                     </div>
+                    <div className="font-mono text-xs text-muted-foreground mt-1">{formatExpiry(code.expiresAt)}</div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => updateCode.mutate({ codeId: code.id, data: { active: !code.active } })}
+                    onClick={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })}
                     className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50"
                   >
                     {code.active ? "DISABLE" : "ENABLE"}
@@ -550,7 +588,7 @@ function ProfilePanel({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <select
                     value={code.visibilityScope}
-                    onChange={(e) => updateCode.mutate({ codeId: code.id, data: { visibilityScope: e.target.value as typeof code.visibilityScope } })}
+                    onChange={(e) => confirmUpdate(`Change visibility for ${code.code} to ${e.target.value.replaceAll("_", " ")}?`, code.id, { visibilityScope: e.target.value as typeof code.visibilityScope })}
                     className="bg-background border border-border px-2 py-2 font-mono text-xs"
                   >
                     {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
@@ -558,7 +596,10 @@ function ProfilePanel({
                   <select
                     defaultValue=""
                     onChange={(e) => {
-                      if (e.target.value) updateCode.mutate({ codeId: code.id, data: { ttlSeconds: Number(e.target.value) } });
+                      if (e.target.value) {
+                        const label = CODE_TTL_OPTIONS.find((ttl) => ttl.value === Number(e.target.value))?.label ?? e.target.value;
+                        confirmUpdate(`Change duration for ${code.code} to ${label}?`, code.id, { ttlSeconds: Number(e.target.value) });
+                      }
                       e.currentTarget.value = "";
                     }}
                     className="bg-background border border-border px-2 py-2 font-mono text-xs"
@@ -568,7 +609,7 @@ function ProfilePanel({
                   </select>
                   <button
                     type="button"
-                    onClick={() => updateCode.mutate({ codeId: code.id, data: { active: false, visibilityScope: "disabled" } })}
+                    onClick={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })}
                     className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive"
                   >
                     ROLL / EXPIRE
@@ -881,7 +922,7 @@ export default function ChatApp() {
   const logout = usePostAuthLogout({
     mutation: {
       onSuccess: () => {
-        clearAll();
+        clearToken();
         setLocation("/");
       },
     },
@@ -1007,24 +1048,24 @@ export default function ChatApp() {
             </div>
             <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <a
               href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="inline-flex h-10 w-10 items-center justify-center border border-transparent text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-colors"
               title="View source on GitHub"
               data-testid="button-github"
             >
-              <Github className="w-4 h-4" />
+              <Github className="w-5 h-5" />
             </a>
             <button
               onClick={() => logout.mutate()}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex h-10 w-10 items-center justify-center border border-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-accent/30 transition-colors"
               title="Logout"
               data-testid="button-logout"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -1055,11 +1096,11 @@ export default function ChatApp() {
               <button
                 type="button"
                 onClick={() => setShowProfile(true)}
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="inline-flex h-10 w-10 items-center justify-center border border-transparent text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-colors"
                 title="Manage profile, devices, handles, and invites"
                 data-testid="button-profile-settings"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -1069,10 +1110,11 @@ export default function ChatApp() {
           <span className="font-mono text-xs text-muted-foreground tracking-widest">CHANNELS</span>
           <button
             onClick={() => setShowNewRoom(true)}
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="inline-flex h-11 w-11 items-center justify-center border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+            title="New encrypted channel"
             data-testid="button-new-room"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
           </button>
         </div>
 

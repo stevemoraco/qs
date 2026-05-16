@@ -120,7 +120,7 @@ const PRIVACY_FEATURES = [
   {
     icon: <Shield className="w-5 h-5" />,
     title: "Rotating device sessions",
-    desc: "Each successful login issues a fresh bearer session, and logout invalidates it. A device without its local handle must request clearance again.",
+    desc: "Each successful login issues a fresh bearer session, and logout invalidates only that session while keeping the device passkey available.",
   },
 ];
 

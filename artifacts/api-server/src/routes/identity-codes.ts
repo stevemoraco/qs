@@ -15,7 +15,7 @@ function routeParam(value: string | string[] | undefined): string {
 }
 
 function normalizeIdentityCode(code: string): string {
-  return code.trim().toLowerCase();
+  return code.trim().replace(/^[@#]+/, "").toLowerCase();
 }
 
 function isValidIdentityCode(code: string): boolean {
@@ -137,7 +137,7 @@ router.patch("/identity-codes/:codeId", requireAuth, async (req: AuthRequest, re
 });
 
 router.get("/identity-codes/search", requireAuth, async (req: AuthRequest, res) => {
-  const q = String(req.query.q ?? "").trim().toLowerCase();
+  const q = normalizeIdentityCode(String(req.query.q ?? ""));
   if (!q) {
     res.json([]);
     return;

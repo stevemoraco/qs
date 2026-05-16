@@ -2,10 +2,26 @@ import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
-import { getAuthHandle, getDevicePasscode, isAuthenticated, setToken, verifyDevice } from "@/lib/auth";
+import {
+  enrollDeviceVerification,
+  generateDevicePasscode,
+  getAuthHandle,
+  getDevicePasscode,
+  isAuthenticated,
+  linkDeviceWithInvite,
+  setAuthHandle,
+  setDevicePasscode,
+  setToken,
+  verifyDevice,
+} from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+
+function normalizeCodeInput(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
 const LOGIN_PRIVACY_FEATURES = [
   { icon: Camera, label: "Front-camera detection for nearby recording devices" },
   { icon: MousePointerClick, label: "Messages decrypt only while held, one at a time" },
@@ -22,6 +38,8 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const [error, setError] = useState("");
   const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
+  const [linkCode, setLinkCode] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
   const authHandle = getAuthHandle();
 
   const login = usePostAuthLogin({
@@ -42,11 +60,11 @@ export default function Login() {
     setError("");
     const passcode = getDevicePasscode();
     if (!authHandle) {
-      setError("No local identity found on this device. Create a passkey first.");
+      setError("No local identity found on this device. Create a passkey or link this device with an invite.");
       return;
     }
     if (!passcode) {
-      setError("No device passkey secret is linked here. Create one on this device first.");
+      setError("No device passkey secret is linked here. Create a passkey or link this device with an invite.");
       return;
     }
     try {
@@ -62,6 +80,31 @@ export default function Login() {
   };
 
   const isLoading = isVerifyingDevice || login.isPending;
+
+  const handleLinkDevice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const code = normalizeCodeInput(linkCode);
+    if (!code) {
+      setError("Enter an invite code to link this device. Handles are for discovery only.");
+      return;
+    }
+    try {
+      setIsLinking(true);
+      await enrollDeviceVerification();
+      const passcode = generateDevicePasscode();
+      const data = await linkDeviceWithInvite(code, passcode);
+      setToken(data.token);
+      setAuthHandle(data.authHandle);
+      setDevicePasscode(passcode);
+      void subscribeToPush(data.token);
+      setLocation("/app", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not link this device with that invite.");
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
   if (isAuthenticated()) {
     return <Redirect to="/app" replace />;
@@ -112,6 +155,31 @@ export default function Login() {
             </p>
           </div>
         </div>
+
+        <form onSubmit={handleLinkDevice} className="mt-4 border border-border/50 bg-card/40 p-4 space-y-3">
+          <div>
+            <div className="font-mono text-xs text-primary tracking-widest">LINK THIS DEVICE</div>
+            <p className="font-mono text-xs text-muted-foreground mt-1 leading-relaxed">
+              Use a one-use invite code from an existing device. Public handles are for chat discovery, not login.
+            </p>
+          </div>
+          <input
+            value={linkCode}
+            onChange={(e) => setLinkCode(e.target.value)}
+            className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm focus:outline-none focus:border-primary/60"
+            placeholder="invite code"
+            autoCapitalize="none"
+            data-testid="input-link-code"
+          />
+          <button
+            type="submit"
+            disabled={isLinking}
+            className="w-full border border-primary/40 text-primary font-mono text-xs tracking-widest py-3 hover:bg-primary/10 transition-all disabled:opacity-50"
+            data-testid="button-link-device"
+          >
+            {isLinking ? "LINKING DEVICE..." : "LINK WITH INVITE"}
+          </button>
+        </form>
 
         <div className="mt-4 border border-border/30 bg-card/20 px-4 py-3">
           <p className="font-mono text-xs text-muted-foreground text-center">

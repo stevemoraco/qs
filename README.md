@@ -47,7 +47,7 @@ Account access works the same way across web, PWA, and Expo:
 - Request clearance to generate post-quantum identity keys locally and create a device-local auth handle.
 - Optionally claim a primary alias code during registration, then use invite codes to control who can discover or join you.
 - Return from the same device with your passcode. The API verifies the hash of the local auth handle plus an argon2 passcode hash before issuing a session.
-- Log out to invalidate the current session. A device without the local auth handle must request clearance again.
+- Log out to invalidate the current session while keeping that device's local passkey credential available for the next login.
 
 ## PWA Install
 
@@ -96,7 +96,7 @@ Mobile behavior to know:
 - Backgrounding the app clears any currently revealed plaintext.
 - `expo-screen-capture` attempts to prevent screen capture for the chat screen where the platform supports it.
 - If a screenshot event is reported, the app shows a warning banner.
-- Login requires the same device-local auth handle created during clearance plus the account passcode.
+- Login requires the same device-local auth handle created during clearance plus the hidden device passcode.
 - Alias and invite code behavior matches the web/PWA API: codes can be scoped, limited, expired, and rolled.
 
 ## Privacy Behavior

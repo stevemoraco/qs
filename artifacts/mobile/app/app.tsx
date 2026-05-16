@@ -12,6 +12,7 @@ import {
   Platform,
   AppState,
   Linking,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -45,6 +46,10 @@ import * as ScreenCapture from "expo-screen-capture";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+
+function normalizeCodeInput(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
 
 type Room = {
   id: string;
@@ -470,9 +475,10 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
 
+  const normalizedSearch = normalizeCodeInput(search);
   const { data: results = [] } = useGetUsersSearch(
-    { q: search },
-    { query: { queryKey: getGetUsersSearchQueryKey({ q: search }), enabled: search.length > 0 } }
+    { q: normalizedSearch },
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: normalizedSearch }), enabled: normalizedSearch.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -568,6 +574,25 @@ const CODE_SCOPE_OPTIONS = [
   { label: "Disabled", value: "disabled" },
 ] as const;
 
+function describeCodeKind(kind: "alias" | "invite"): string {
+  return kind === "alias"
+    ? "A handle is your reusable public name. People can search it, add you to chats, or link a device with it until you disable or expire it."
+    : "An invite is a public one-use code. Share it with one person or device, and it stops working after it is used, expired, or rolled.";
+}
+
+function formatExpiry(expiresAt?: string | null): string {
+  if (!expiresAt) return "No expiration";
+  const expiry = new Date(expiresAt);
+  const diff = expiry.getTime() - Date.now();
+  const abs = expiry.toLocaleString();
+  if (diff <= 0) return `${abs} / expired`;
+  const minutes = Math.floor(diff / 60000);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+  return `${abs} / ${days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${mins}m` : `${mins}m`} remaining`;
+}
+
 function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   visible: boolean;
   onClose: () => void;
@@ -581,7 +606,6 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   const [deviceCount, setDeviceCount] = useState<number | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
-  const [newScope, setNewScope] = useState<"public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled">("public");
   const [newTtl, setNewTtl] = useState(315360000);
   const [error, setError] = useState("");
   const { data: codes = [] } = useGetIdentityCodes({ query: { queryKey: getGetIdentityCodesQueryKey(), enabled: visible } });
@@ -627,12 +651,28 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   const submitCode = () => {
     createCode.mutate({
       data: {
-        code: newCode.trim() || null,
+        code: normalizeCodeInput(newCode) || null,
         kind: newKind,
-        visibilityScope: newScope,
+        visibilityScope: "public",
         ttlSeconds: newTtl,
+        maxUses: newKind === "invite" ? 1 : null,
       },
     });
+  };
+
+  const confirmUpdate = (
+    message: string,
+    codeId: string,
+    data: {
+      active?: boolean | null;
+      visibilityScope?: "public" | "invited_by_you" | "invited_you" | "mutuals" | "disabled" | null;
+      ttlSeconds?: number | null;
+    }
+  ) => {
+    Alert.alert("Confirm change", message, [
+      { text: "Cancel", style: "cancel" },
+      { text: "Confirm", style: "destructive", onPress: () => updateCode.mutate({ codeId, data }) },
+    ]);
   };
 
   return (
@@ -663,7 +703,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
             style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
             value={newCode}
             onChangeText={setNewCode}
-            placeholder="stv or blank for random"
+            placeholder="@marlin or blank for random"
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="none"
             testID="input-new-identity-code"
@@ -675,13 +715,8 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
               </TouchableOpacity>
             ))}
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
-            {CODE_SCOPE_OPTIONS.map((scope) => (
-              <TouchableOpacity key={scope.value} onPress={() => setNewScope(scope.value)} style={[styles.ttlBtn, { borderColor: newScope === scope.value ? colors.primary : colors.border }, newScope === scope.value && { backgroundColor: `${colors.primary}20` }]}>
-                <Text style={[styles.ttlBtnText, { color: newScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <Text style={[styles.codeMeta, { color: colors.mutedForeground, marginTop: 8 }]}>{describeCodeKind(newKind)}</Text>
+          <Text style={[styles.codeMeta, { color: colors.primary, marginTop: 8 }]}>New handles and invites are public when created. You can restrict or disable them after creation.</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
             {CODE_TTL_OPTIONS.map((ttl) => (
               <TouchableOpacity key={ttl.value} onPress={() => setNewTtl(ttl.value)} style={[styles.ttlBtn, { borderColor: newTtl === ttl.value ? colors.primary : colors.border }, newTtl === ttl.value && { backgroundColor: `${colors.primary}20` }]}>
@@ -702,25 +737,26 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.codeTitle, { color: colors.foreground }]}>{code.kind === "alias" ? "@" : "#"}{code.code}</Text>
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses</Text>
+                  <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{formatExpiry(code.expiresAt)}</Text>
                 </View>
-                <TouchableOpacity onPress={() => updateCode.mutate({ codeId: code.id, data: { active: !code.active } })} style={[styles.smallBtn, { borderColor: colors.border }]}>
+                <TouchableOpacity onPress={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }]}>
                   <Text style={[styles.smallBtnText, { color: colors.primary }]}>{code.active ? "DISABLE" : "ENABLE"}</Text>
                 </TouchableOpacity>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_SCOPE_OPTIONS.map((scope) => (
-                  <TouchableOpacity key={scope.value} onPress={() => updateCode.mutate({ codeId: code.id, data: { visibilityScope: scope.value } })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }]}>
+                  <TouchableOpacity key={scope.value} onPress={() => confirmUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code.id, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }]}>
                     <Text style={[styles.ttlBtnText, { color: code.visibilityScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_TTL_OPTIONS.map((ttl) => (
-                  <TouchableOpacity key={ttl.value} onPress={() => updateCode.mutate({ codeId: code.id, data: { ttlSeconds: ttl.value } })} style={[styles.ttlBtn, { borderColor: colors.border }]}>
+                  <TouchableOpacity key={ttl.value} onPress={() => confirmUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code.id, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }]}>
                     <Text style={[styles.ttlBtnText, { color: colors.mutedForeground }]}>{ttl.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity onPress={() => updateCode.mutate({ codeId: code.id, data: { active: false, visibilityScope: "disabled" } })} style={[styles.ttlBtn, { borderColor: colors.destructive }]}>
+                <TouchableOpacity onPress={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }]}>
                   <Text style={[styles.ttlBtnText, { color: colors.destructive }]}>Roll / expire</Text>
                 </TouchableOpacity>
               </ScrollView>
@@ -786,9 +822,9 @@ export default function AppScreen() {
               <Text style={[styles.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
             </View>
             <View style={styles.headerActions}>
-              <TouchableOpacity onPress={() => setShowProfile(true)} testID="button-profile-settings"><Feather name="settings" size={18} color={colors.mutedForeground} /></TouchableOpacity>
-              <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} testID="button-github"><Feather name="github" size={18} color={colors.mutedForeground} /></TouchableOpacity>
-              <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout"><Feather name="log-out" size={18} color={colors.mutedForeground} /></TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowProfile(true)} style={[styles.headerActionButton, { borderColor: colors.border }]} hitSlop={8} testID="button-profile-settings"><Feather name="settings" size={22} color={colors.mutedForeground} /></TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL(GITHUB_URL)} style={[styles.headerActionButton, { borderColor: colors.border }]} hitSlop={8} testID="button-github"><Feather name="github" size={22} color={colors.mutedForeground} /></TouchableOpacity>
+              <TouchableOpacity onPress={() => logout.mutate()} style={[styles.headerActionButton, { borderColor: colors.border }]} hitSlop={8} testID="button-logout"><Feather name="log-out" size={22} color={colors.mutedForeground} /></TouchableOpacity>
             </View>
           </View>
 
@@ -806,7 +842,7 @@ export default function AppScreen() {
 
           <View style={[styles.channelsHeader, { borderBottomColor: colors.border }]}> 
             <Text style={[styles.channelsLabel, { color: colors.mutedForeground }]}>CHANNELS</Text>
-            <TouchableOpacity onPress={() => setShowNewRoom(true)} testID="button-new-room"><Feather name="plus" size={18} color={colors.primary} /></TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowNewRoom(true)} style={[styles.newRoomButton, { borderColor: colors.primary }]} hitSlop={8} testID="button-new-room"><Feather name="plus" size={24} color={colors.primary} /></TouchableOpacity>
           </View>
 
           <FlatList
@@ -835,7 +871,8 @@ const styles = StyleSheet.create({
   sidebar: { flex: 1, borderRightWidth: 1 },
   sidebarTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 14 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerActionButton: { width: 42, height: 42, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   iconBox: { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
   brand: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 4 },
   meRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderBottomWidth: 1 },
@@ -845,6 +882,7 @@ const styles = StyleSheet.create({
   meUsername: { fontFamily: "Inter_600SemiBold", fontSize: 13 },
   meHandle: { fontFamily: "Inter_400Regular", fontSize: 11 },
   channelsHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
+  newRoomButton: { width: 46, height: 46, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   channelsLabel: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3 },
   roomItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 0 },
   roomName: { fontFamily: "Inter_600SemiBold", fontSize: 13 },

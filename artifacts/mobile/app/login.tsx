@@ -9,6 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Linking,
+  TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +20,11 @@ import { useAuth } from "@/context/AuthContext";
 import { usePostAuthLogin } from "@workspace/api-client-react";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+
+function normalizeCodeInput(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
 const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; label: string }> = [
   { icon: "camera", label: "Front-camera detection for nearby recording devices" },
   { icon: "mouse-pointer", label: "Messages decrypt only while held, one at a time" },
@@ -50,10 +56,12 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getAuthHandle, getDevicePasscode, setToken } = useAuth();
+  const { getAuthHandle, getDevicePasscode, setAuthHandle, setDevicePasscode, setToken } = useAuth();
 
   const [error, setError] = useState("");
   const [isVerifyingDevice, setIsVerifyingDevice] = useState(false);
+  const [linkCode, setLinkCode] = useState("");
+  const [isLinking, setIsLinking] = useState(false);
 
   const login = usePostAuthLogin({
     mutation: {
@@ -71,12 +79,12 @@ export default function LoginScreen() {
     setError("");
     const authHandle = await getAuthHandle();
     if (!authHandle) {
-      setError("No local identity found on this device. Create a passkey first.");
+      setError("No local identity found on this device. Create a passkey or link this device with an invite.");
       return;
     }
     const passcode = await getDevicePasscode();
     if (!passcode) {
-      setError("No device passkey secret is linked here. Create one on this device first.");
+      setError("No device passkey secret is linked here. Create a passkey or link this device with an invite.");
       return;
     }
     try {
@@ -93,6 +101,44 @@ export default function LoginScreen() {
 
   const isLoading = isVerifyingDevice || login.isPending;
   const s = makeStyles(colors);
+
+  const generateDevicePasscode = () => {
+    const bytes = new Uint8Array(32);
+    const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+    if (!getRandomValues) throw new Error("Secure random generator unavailable.");
+    getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  };
+
+  const handleLinkDevice = async () => {
+    setError("");
+    const code = normalizeCodeInput(linkCode);
+    if (!code) {
+      setError("Enter an invite code to link this device. Handles are for discovery only.");
+      return;
+    }
+    try {
+      setIsLinking(true);
+      await verifyDevice("Link QuantumShield device");
+      const passcode = generateDevicePasscode();
+      const url = Platform.OS === "web" ? "/api/auth/link-device" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/link-device`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code, passcode, deviceLabel: Platform.OS }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Could not link this device");
+      await setToken(data.token);
+      await setAuthHandle(data.authHandle);
+      await setDevicePasscode(passcode);
+      router.replace("/app");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Could not link this device with that invite.");
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -139,6 +185,28 @@ export default function LoginScreen() {
           <Text style={[s.linkText, { color: colors.mutedForeground }]}>No account? <Text style={{ color: colors.primary }}>CREATE PASSCODE</Text></Text>
         </TouchableOpacity>
 
+        <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[s.ethosLabel, { color: colors.primary }]}>LINK THIS DEVICE</Text>
+          <Text style={[s.securityText, { color: colors.mutedForeground, marginBottom: 12 }]}>Use a one-use invite code from an existing device. Public handles are for chat discovery, not login.</Text>
+          <TextInput
+            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
+            value={linkCode}
+            onChangeText={setLinkCode}
+            placeholder="invite code"
+            placeholderTextColor={colors.mutedForeground}
+            autoCapitalize="none"
+            testID="input-link-code"
+          />
+          <TouchableOpacity
+            style={[s.btn, { backgroundColor: colors.primary }, isLinking && s.btnDisabled]}
+            onPress={handleLinkDevice}
+            disabled={isLinking}
+            testID="button-link-device"
+          >
+            {isLinking ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[s.btnText, { color: colors.background }]}>LINK WITH INVITE</Text>}
+          </TouchableOpacity>
+        </View>
+
         <View style={[s.securityNote, { borderColor: colors.border, backgroundColor: colors.card }]}> 
           <Feather name="lock" size={12} color={colors.primary} />
           <Text style={[s.securityText, { color: colors.mutedForeground }]}>Your private keys never leave this device</Text>
@@ -182,6 +250,7 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     title: { fontFamily: "Inter_700Bold", fontSize: 24, letterSpacing: -0.5, marginBottom: 8 },
     subtitle: { fontFamily: "Inter_400Regular", fontSize: 13, marginBottom: 28, lineHeight: 20 },
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
+    input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     btn: { paddingVertical: 14, alignItems: "center", justifyContent: "center", marginTop: 20, flexDirection: "row", gap: 8 },

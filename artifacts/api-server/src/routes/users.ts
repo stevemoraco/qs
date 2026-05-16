@@ -22,8 +22,12 @@ function publicUser(u: typeof usersTable.$inferSelect) {
   };
 }
 
+function normalizeIdentityCode(code: string): string {
+  return code.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
 router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
-  const q = String(req.query.q ?? "").trim();
+  const q = normalizeIdentityCode(String(req.query.q ?? ""));
   if (!q) {
     res.json([]);
     return;
@@ -35,7 +39,7 @@ router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
     .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
     .where(
       and(
-        ilike(identityCodesTable.code, `%${q.toLowerCase()}%`),
+        ilike(identityCodesTable.code, `%${q}%`),
         eq(identityCodesTable.active, true),
         eq(identityCodesTable.visibilityScope, "public"),
         or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))

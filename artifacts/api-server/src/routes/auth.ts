@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, usersTable, sessionsTable, leadsTable, identityCodesTable } from "@workspace/db";
-import { and, count, eq, gt } from "drizzle-orm";
+import { db, usersTable, sessionsTable, leadsTable, identityCodesTable, deviceCredentialsTable } from "@workspace/db";
+import { and, count, eq, gt, isNull, or } from "drizzle-orm";
 import argon2 from "argon2";
 import { createHash, randomBytes } from "crypto";
 import {
@@ -8,6 +8,7 @@ import {
   PostAuthLoginBody,
 } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
+import { notifyUser } from "./push";
 
 const router = Router();
 
@@ -37,17 +38,49 @@ function generateInternalUsername(): string {
 }
 
 function normalizeIdentityCode(code: string): string {
-  return code.trim().toLowerCase();
+  return code.trim().replace(/^[@#]+/, "").toLowerCase();
 }
 
 function isValidIdentityCode(code: string): boolean {
   return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
 }
 
+function expiryFromTtl(ttlSeconds: number | null | undefined): Date | null {
+  if (!ttlSeconds) return null;
+  return new Date(Date.now() + ttlSeconds * 1000);
+}
+
 function sessionExpiresAt(): Date {
   const d = new Date();
   d.setDate(d.getDate() + 30);
   return d;
+}
+
+async function createSession(userId: string): Promise<string> {
+  const token = generateToken();
+  await db.insert(sessionsTable).values({
+    userId,
+    token,
+    expiresAt: sessionExpiresAt(),
+  });
+  return token;
+}
+
+function authUser(user: typeof usersTable.$inferSelect, authHandle: string, token: string, username = "sealed", primaryCode: string | null = null) {
+  return {
+    token,
+    authHandle,
+    user: {
+      id: user.id,
+      username,
+      primaryCode,
+      displayName: user.displayName,
+      avatarColor: user.avatarColor,
+      kemPublicKey: user.kemPublicKey,
+      dsaPublicKey: user.dsaPublicKey,
+      createdAt: user.createdAt,
+    },
+  };
 }
 
 router.post("/auth/register", async (req, res) => {
@@ -94,6 +127,13 @@ router.post("/auth/register", async (req, res) => {
     })
     .returning();
 
+  await db.insert(deviceCredentialsTable).values({
+    userId: user.id,
+    authHandleHash: hashAuthHandle(authHandle),
+    passwordHash,
+    label: "First device",
+  });
+
   if (normalizedPrimaryCode) {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 10);
@@ -105,12 +145,7 @@ router.post("/auth/register", async (req, res) => {
     });
   }
 
-  const token = generateToken();
-  await db.insert(sessionsTable).values({
-    userId: user.id,
-    token,
-    expiresAt: sessionExpiresAt(),
-  });
+  const token = await createSession(user.id);
 
   if (leadEmail) {
     await db
@@ -134,20 +169,7 @@ router.post("/auth/register", async (req, res) => {
       });
   }
 
-  res.status(201).json({
-    token,
-    authHandle,
-    user: {
-      id: user.id,
-      username: normalizedPrimaryCode ?? "sealed",
-      primaryCode: normalizedPrimaryCode,
-      displayName: user.displayName,
-      avatarColor: user.avatarColor,
-      kemPublicKey: user.kemPublicKey,
-      dsaPublicKey: user.dsaPublicKey,
-      createdAt: user.createdAt,
-    },
-  });
+  res.status(201).json(authUser(user, authHandle, token, normalizedPrimaryCode ?? "sealed", normalizedPrimaryCode));
 });
 
 router.post("/auth/login", async (req, res) => {
@@ -159,44 +181,111 @@ router.post("/auth/login", async (req, res) => {
 
   const { authHandle, passcode } = parse.data;
 
-  const [user] = await db
+  let [user] = await db
     .select()
     .from(usersTable)
     .where(eq(usersTable.authHandleHash, hashAuthHandle(authHandle)))
     .limit(1);
+  let passwordHash = user?.passwordHash;
 
   if (!user) {
+    const [linked] = await db
+      .select({ credential: deviceCredentialsTable, user: usersTable })
+      .from(deviceCredentialsTable)
+      .innerJoin(usersTable, eq(deviceCredentialsTable.userId, usersTable.id))
+      .where(and(eq(deviceCredentialsTable.authHandleHash, hashAuthHandle(authHandle)), isNull(deviceCredentialsTable.revokedAt)))
+      .limit(1);
+    if (linked) {
+      user = linked.user;
+      passwordHash = linked.credential.passwordHash;
+    }
+  }
+
+  if (!user || !passwordHash) {
     res.status(401).json({ error: "Invalid passcode" });
     return;
   }
 
-  const valid = await argon2.verify(user.passwordHash, passcode);
+  const valid = await argon2.verify(passwordHash, passcode);
   if (!valid) {
     res.status(401).json({ error: "Invalid passcode" });
     return;
   }
 
-  const token = generateToken();
-  await db.insert(sessionsTable).values({
-    userId: user.id,
-    token,
-    expiresAt: sessionExpiresAt(),
+  const token = await createSession(user.id);
+  res.json(authUser(user, authHandle, token));
+});
+
+router.post("/auth/link-device", async (req, res) => {
+  const body = req.body as { code?: unknown; passcode?: unknown; deviceLabel?: unknown };
+  if (typeof body.code !== "string" || body.code.length < 2 || body.code.length > 32) {
+    res.status(400).json({ error: "Code must be 2-32 characters" });
+    return;
+  }
+  if (typeof body.passcode !== "string" || body.passcode.length < 8) {
+    res.status(400).json({ error: "Device passcode is required" });
+    return;
+  }
+  if (body.deviceLabel !== undefined && body.deviceLabel !== null && typeof body.deviceLabel !== "string") {
+    res.status(400).json({ error: "Device label must be a string" });
+    return;
+  }
+
+  const requestedCode = normalizeIdentityCode(body.code);
+  const [row] = await db
+    .select({ code: identityCodesTable, user: usersTable })
+    .from(identityCodesTable)
+    .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
+    .where(
+      and(
+        eq(identityCodesTable.code, requestedCode),
+        eq(identityCodesTable.active, true),
+        or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
+      )
+    )
+    .limit(1);
+
+  if (!row) {
+    res.status(404).json({ error: "Code is not active or has expired" });
+    return;
+  }
+
+  if (row.code.kind !== "invite") {
+    res.status(403).json({ error: "Device linking requires an invite code. Handles are for discovery only." });
+    return;
+  }
+
+  if (row.code.maxUses !== null && row.code.useCount >= row.code.maxUses) {
+    res.status(403).json({ error: "Code has reached its use limit" });
+    return;
+  }
+
+  const authHandle = generateAuthHandle();
+  await db.insert(deviceCredentialsTable).values({
+    userId: row.user.id,
+    authHandleHash: hashAuthHandle(authHandle),
+    passwordHash: await argon2.hash(body.passcode),
+    label: body.deviceLabel ?? "Linked device",
+    linkedByCode: row.code.code,
   });
 
-  res.json({
-    token,
-    authHandle,
-    user: {
-      id: user.id,
-      username: "sealed",
-      primaryCode: null,
-      displayName: user.displayName,
-      avatarColor: user.avatarColor,
-      kemPublicKey: user.kemPublicKey,
-      dsaPublicKey: user.dsaPublicKey,
-      createdAt: user.createdAt,
-    },
+  await db
+    .update(identityCodesTable)
+    .set({
+      useCount: row.code.useCount + 1,
+      expiresAt: row.code.kind === "invite" && row.code.maxUses === 1 ? expiryFromTtl(1) : row.code.expiresAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(identityCodesTable.id, row.code.id));
+
+  const token = await createSession(row.user.id);
+  void notifyUser(row.user.id, {
+    title: "New device linked",
+    body: `A new device was linked with invite ${row.code.code}. Disable or roll the invite if this was not you.`,
+    url: "/app",
+    tag: "quantumshield-device-link",
   });
+  res.status(201).json(authUser(row.user, authHandle, token, row.code.code, row.code.code));
 });
 
 router.get("/auth/me", requireAuth, (req: AuthRequest, res) => {

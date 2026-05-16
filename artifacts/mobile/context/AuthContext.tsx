@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearAuth = useCallback(async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, AUTH_HANDLE_KEY, DEVICE_PASSCODE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY]);
+    await AsyncStorage.removeItem(TOKEN_KEY);
     setTokenState(null);
   }, []);
 

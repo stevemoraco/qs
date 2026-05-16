@@ -161,3 +161,22 @@ export function clearAll(): void {
   localStorage.removeItem(DSA_SK_KEY);
   localStorage.removeItem(DSA_PK_KEY);
 }
+
+export async function linkDeviceWithInvite(code: string, passcode: string): Promise<{ token: string; authHandle: string }> {
+  const res = await fetch("/api/auth/link-device", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      code,
+      passcode,
+      deviceLabel: navigator.userAgent.slice(0, 80),
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null) as { error?: string } | null;
+    throw new Error(data?.error ?? "Could not link this device with that invite");
+  }
+
+  return res.json() as Promise<{ token: string; authHandle: string }>;
+}
