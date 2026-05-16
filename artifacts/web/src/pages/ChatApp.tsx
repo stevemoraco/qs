@@ -990,7 +990,13 @@ function RoomView({
   };
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
+    if (event.pointerType === "touch") event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    void revealMsg(msg);
+  };
+
+  const startTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>, msg: Message) => {
+    event.preventDefault();
     void revealMsg(msg);
   };
 
@@ -1093,8 +1099,12 @@ function RoomView({
                       onPointerCancel={hideRevealedMsg}
                       onPointerLeave={hideRevealedMsg}
                       onLostPointerCapture={hideRevealedMsg}
+                      onTouchStart={(event) => startTouchMessageReveal(event, msg as Message)}
+                      onTouchEnd={hideRevealedMsg}
+                      onTouchCancel={hideRevealedMsg}
                       onContextMenu={(event) => event.preventDefault()}
                       className="block w-full text-left select-none"
+                      style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", touchAction: "none" }}
                       data-testid={`button-hold-reveal-${msg.id}`}
                     >
                       {plaintext ? (
