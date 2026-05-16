@@ -29,8 +29,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: payload.body,
-    icon: "/favicon.svg",
-    badge: "/favicon.svg",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     vibrate: [80, 40, 80],
     data: payload.url || "/app",
     tag: payload.tag || "quantumshield-msg",

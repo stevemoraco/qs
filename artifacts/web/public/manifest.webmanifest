@@ -1,7 +1,7 @@
 {
   "name": "QuantumShield",
   "short_name": "QuantumShield",
-  "description": "Post-quantum encrypted chat. ML-KEM-1024 + ML-DSA-87.",
+  "description": "Post-quantum encrypted chat with ML-KEM-1024 key exchange, ML-DSA-87 signatures, and expiring ciphertext.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,9 +10,21 @@
   "theme_color": "#06b6d4",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

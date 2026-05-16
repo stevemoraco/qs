@@ -1,4 +1,5 @@
 const fs = require("fs");
+const net = require("net");
 const path = require("path");
 const { spawn } = require("child_process");
 const { Readable } = require("stream");
@@ -21,7 +22,7 @@ function findWorkspaceRoot(startDir) {
 
 const workspaceRoot = findWorkspaceRoot(projectRoot);
 const basePath = (process.env.BASE_PATH || "/").replace(/\/+$/, "");
-const metroPort = Number(process.env.EXPO_METRO_PORT || "8082");
+let metroPort = Number(process.env.EXPO_METRO_PORT || "8082");
 
 if (!Number.isInteger(metroPort) || metroPort <= 0) {
   throw new Error(`Invalid EXPO_METRO_PORT value: "${process.env.EXPO_METRO_PORT}"`);
@@ -132,11 +133,35 @@ function getExpoPublicReplId() {
   return process.env.REPL_ID || process.env.EXPO_PUBLIC_REPL_ID;
 }
 
+function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", () => resolve(false));
+    server.once("listening", () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port, "127.0.0.1");
+  });
+}
+
+async function findAvailablePort(startPort) {
+  for (let port = startPort; port < startPort + 100; port++) {
+    if (await isPortAvailable(port)) return port;
+  }
+  throw new Error(`No available Metro port found from ${startPort} to ${startPort + 99}`);
+}
+
 async function startMetro(expoPublicDomain, expoPublicReplId) {
   const isRunning = await checkMetroHealth();
   if (isRunning) {
     console.log("Metro already running");
     return;
+  }
+
+  if (!(await isPortAvailable(metroPort))) {
+    const requestedPort = metroPort;
+    metroPort = await findAvailablePort(metroPort + 1);
+    console.log(`Metro port ${requestedPort} is unavailable; using ${metroPort}`);
   }
 
   console.log("Starting Metro...");
