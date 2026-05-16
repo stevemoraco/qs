@@ -10,6 +10,7 @@ import {
   Modal,
   ScrollView,
   Platform,
+  AppState,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -139,11 +140,13 @@ function RoomListItem({ room, myId, active, onPress, colors }: {
   );
 }
 
-function MessageBubble({ msg, isOwn, colors, plaintext }: {
+function MessageBubble({ msg, isOwn, colors, plaintext, onRevealStart, onRevealEnd }: {
   msg: Message;
   isOwn: boolean;
   colors: ReturnType<typeof useColors>;
   plaintext?: string;
+  onRevealStart: () => void;
+  onRevealEnd: () => void;
 }) {
   const expired = msg.expiresAt ? new Date(msg.expiresAt).getTime() < Date.now() : false;
 
@@ -164,10 +167,18 @@ function MessageBubble({ msg, isOwn, colors, plaintext }: {
         ) : plaintext ? (
           <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
         ) : (
-          <View style={styles.encryptedRow}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            delayLongPress={120}
+            onPressIn={onRevealStart}
+            onPressOut={onRevealEnd}
+            onLongPress={onRevealStart}
+            style={styles.encryptedRow}
+            testID={`button-hold-reveal-${msg.id}`}
+          >
             <Feather name="lock" size={12} color={colors.mutedForeground} />
-            <Text style={[styles.msgText, { color: colors.mutedForeground }]}>Encrypted</Text>
-          </View>
+            <Text style={[styles.msgText, { color: colors.mutedForeground }]}>Encrypted — hold to reveal</Text>
+          </TouchableOpacity>
         )}
         <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>
           {formatTime(msg.createdAt)}
@@ -180,7 +191,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext }: {
 function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: string; colors: ReturnType<typeof useColors>; onBack: () => void; topPad: number }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
-  const [decrypted, setDecrypted] = useState<Record<string, string>>({});
+  const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -215,6 +226,13 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
     };
   }, []);
 
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") setHeldPlaintext(null);
+    });
+    return () => sub.remove();
+  }, []);
+
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id, {},
     { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: 3000 } }
@@ -240,13 +258,21 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
       {
         onSuccess: (msg) => {
           messageKeyStore.set(msg.id, key);
-          decryptMsg(msg.ciphertext, msg.nonce, key)
-            .then((pt) => setDecrypted((d) => ({ ...d, [msg.id]: pt })))
-            .catch(() => {});
         },
       }
     );
   };
+
+  const revealMessage = async (msg: Message) => {
+    const key = messageKeyStore.get(msg.id);
+    if (!key) return;
+    try {
+      const plaintext = await decryptMsg(msg.ciphertext, msg.nonce, key);
+      setHeldPlaintext({ id: msg.id, text: plaintext });
+    } catch {}
+  };
+
+  const hideRevealedMessage = () => setHeldPlaintext(null);
 
   const reversed = [...messages].reverse();
 
@@ -295,7 +321,9 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
             msg={item as Message}
             isOwn={item.senderId === myId}
             colors={colors}
-            plaintext={decrypted[item.id]}
+            plaintext={heldPlaintext?.id === item.id ? heldPlaintext.text : undefined}
+            onRevealStart={() => revealMessage(item as Message)}
+            onRevealEnd={hideRevealedMessage}
           />
         )}
         ListEmptyComponent={
@@ -311,6 +339,7 @@ function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: st
         }
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
+        onScrollBeginDrag={hideRevealedMessage}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!!messages.length}
       />

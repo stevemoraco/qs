@@ -281,7 +281,7 @@ function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; curren
 function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: string; onBack: () => void }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
-  const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({});
+  const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [hidden, setHidden] = useState(false);
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
@@ -375,8 +375,14 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   }, []);
 
   useEffect(() => {
-    const onVis = () => setHidden(document.visibilityState === "hidden");
-    const onBlur = () => setHidden(true);
+    const onVis = () => {
+      setHidden(document.visibilityState === "hidden");
+      if (document.visibilityState === "hidden") hideRevealedMsg();
+    };
+    const onBlur = () => {
+      setHidden(true);
+      hideRevealedMsg();
+    };
     const onFocus = () => setHidden(document.visibilityState === "hidden");
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("blur", onBlur);
@@ -412,20 +418,21 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
       {
         onSuccess: (msg) => {
           storeMessageKey(msg.id, key);
-          decryptMsg(msg as Message, key);
         },
       }
     );
   };
 
-  const decryptMsg = async (msg: Message, key?: CryptoKey) => {
+  const revealMsg = async (msg: Message, key?: CryptoKey) => {
     const k = key ?? getMessageKey(msg.id);
     if (!k) return;
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
-      setDecryptedMessages((prev) => ({ ...prev, [msg.id]: plaintext }));
+      setHeldPlaintext({ id: msg.id, text: plaintext });
     } catch {}
   };
+
+  const hideRevealedMsg = () => setHeldPlaintext(null);
 
   const isExpired = (expiresAt?: string | null) => {
     if (!expiresAt) return false;
@@ -485,6 +492,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
       <div
         className="flex-1 overflow-y-auto p-4 space-y-3 select-none"
         style={{ filter: hidden ? "blur(24px)" : "none", WebkitUserSelect: "none" }}
+        onScroll={hideRevealedMsg}
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -497,7 +505,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
         {messages.map((msg) => {
           const isOwn = msg.senderId === currentUserId;
           const expired = isExpired(msg.expiresAt);
-          const plaintext = decryptedMessages[msg.id];
+          const plaintext = heldPlaintext?.id === msg.id ? heldPlaintext.text : undefined;
 
           return (
             <div
@@ -530,8 +538,17 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
                   ) : (
                     <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
                       <Lock className="w-3 h-3" />
-                      <button onClick={() => decryptMsg(msg as Message)} className="hover:text-primary">
-                        Encrypted — tap to attempt decrypt
+                      <button
+                        type="button"
+                        onPointerDown={() => revealMsg(msg as Message)}
+                        onPointerUp={hideRevealedMsg}
+                        onPointerCancel={hideRevealedMsg}
+                        onPointerLeave={hideRevealedMsg}
+                        onContextMenu={(event) => event.preventDefault()}
+                        className="hover:text-primary select-none"
+                        data-testid={`button-hold-reveal-${msg.id}`}
+                      >
+                        Encrypted — hold to reveal
                       </button>
                     </div>
                   )}
