@@ -39,7 +39,7 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey, setAuthHandle, setToken, verifyDevice } from "@/lib/auth";
+import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, verifyDevice } from "@/lib/auth";
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
@@ -1152,6 +1152,7 @@ export default function ChatApp() {
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
+  const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
@@ -1189,11 +1190,12 @@ export default function ChatApp() {
     setPrivacyShield((current) => ({ ...current, error: undefined }));
     setIsUnlockingPrivacy(true);
     try {
-      const handle = getLastHandle();
+      const handle = normalizeCodeInput(privacyHandle || getLastHandle() || "");
       if (handle) {
         const data = await loginWithPasskey(handle);
         setToken(data.token);
         setAuthHandle(data.authHandle);
+        setLastHandle(handle);
       } else {
         await verifyDevice();
       }
@@ -1202,7 +1204,9 @@ export default function ChatApp() {
       setPrivacyShield((current) => ({
         ...current,
         active: true,
-        error: err instanceof Error ? err.message : "Device verification failed.",
+        error: err instanceof Error && !err.message.includes("No device verification")
+          ? err.message
+          : "Enter your handle and verify with your passkey to unlock.",
       }));
     } finally {
       setIsUnlockingPrivacy(false);
@@ -1305,6 +1309,14 @@ export default function ChatApp() {
           {privacyShield.error && (
             <p className="font-mono text-xs text-destructive mt-3 max-w-sm">{privacyShield.error}</p>
           )}
+          <input
+            value={privacyHandle}
+            onChange={(event) => setPrivacyHandle(event.target.value)}
+            className="mt-5 w-full max-w-xs bg-background border border-border px-3 py-2.5 font-mono text-sm text-center focus:outline-none focus:border-primary/60"
+            placeholder="@marlin"
+            autoCapitalize="none"
+            data-testid="input-privacy-shield-handle"
+          />
           <button
             type="button"
             onClick={() => void unlockPrivacyShield()}
