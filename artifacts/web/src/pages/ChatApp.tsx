@@ -1355,7 +1355,7 @@ export default function ChatApp() {
             <input
               value={privacyHandle}
               onChange={(event) => setPrivacyHandle(event.target.value)}
-              className="mt-5 w-full max-w-xs bg-background border border-border px-3 py-2.5 font-mono text-sm text-center focus:outline-none focus:border-primary/60"
+              className="mt-5 w-full max-w-xs bg-primary/5 border border-primary/60 ring-1 ring-primary/20 px-3 py-2.5 font-mono text-sm text-center focus:outline-none focus:border-primary focus:ring-primary/40"
               placeholder="@marlin"
               autoCapitalize="none"
               data-testid="input-privacy-shield-handle"
