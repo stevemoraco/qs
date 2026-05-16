@@ -669,6 +669,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
       ttlSeconds?: number | null;
     }
   ) => {
+    if (updateCode.isPending) return;
     Alert.alert("Confirm change", message, [
       { text: "Cancel", style: "cancel" },
       { text: "Confirm", style: "destructive", onPress: () => updateCode.mutate({ codeId, data }) },
@@ -731,7 +732,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 24 }]}>YOUR HANDLES / INVITES</Text>
           {codes.length === 0 && <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No handles or invite codes yet.</Text>}
-          {codes.map((code) => (
+          {[...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`)).map((code) => (
             <View key={code.id} style={[styles.codeCard, { borderColor: colors.border, backgroundColor: colors.card }]} testID={`identity-code-${code.id}`}>
               <View style={styles.codeHeader}>
                 <View style={{ flex: 1 }}>
@@ -739,24 +740,24 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses</Text>
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{formatExpiry(code.expiresAt)}</Text>
                 </View>
-                <TouchableOpacity onPress={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.smallBtnText, { color: colors.primary }]}>{code.active ? "DISABLE" : "ENABLE"}</Text>
                 </TouchableOpacity>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_SCOPE_OPTIONS.map((scope) => (
-                  <TouchableOpacity key={scope.value} onPress={() => confirmUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code.id, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }]}>
+                  <TouchableOpacity key={scope.value} disabled={updateCode.isPending} onPress={() => confirmUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code.id, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: code.visibilityScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_TTL_OPTIONS.map((ttl) => (
-                  <TouchableOpacity key={ttl.value} onPress={() => confirmUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code.id, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }]}>
+                  <TouchableOpacity key={ttl.value} disabled={updateCode.isPending} onPress={() => confirmUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code.id, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: colors.mutedForeground }]}>{ttl.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity onPress={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.ttlBtnText, { color: colors.destructive }]}>Roll / expire</Text>
                 </TouchableOpacity>
               </ScrollView>

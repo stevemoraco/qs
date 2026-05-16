@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, identityCodesTable, usersTable } from "@workspace/db";
-import { and, eq, gt, ilike, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, isNull, or } from "drizzle-orm";
 import {
   PatchIdentityCodesCodeIdBody,
   PostIdentityCodesBody,
@@ -52,7 +52,13 @@ router.get("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
   const rows = await db
     .select()
     .from(identityCodesTable)
-    .where(eq(identityCodesTable.ownerUserId, req.userId!));
+    .where(eq(identityCodesTable.ownerUserId, req.userId!))
+    .orderBy(
+      asc(identityCodesTable.kind),
+      desc(identityCodesTable.active),
+      asc(identityCodesTable.code),
+      asc(identityCodesTable.createdAt)
+    );
 
   res.json(rows.map(publicIdentityCode));
 });

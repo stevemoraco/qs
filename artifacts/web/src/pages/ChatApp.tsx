@@ -488,6 +488,7 @@ function ProfilePanel({
       ttlSeconds?: number | null;
     }
   ) => {
+    if (updateCode.isPending) return;
     if (!window.confirm(message)) return;
     updateCode.mutate({ codeId, data });
   };
@@ -567,7 +568,7 @@ function ProfilePanel({
             {codes.length === 0 && (
               <div className="border border-border/50 bg-background/40 p-4 font-mono text-xs text-muted-foreground">No handles or invite codes yet.</div>
             )}
-            {codes.map((code) => (
+            {[...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`)).map((code) => (
               <div key={code.id} className="border border-border/50 bg-background/40 p-3 space-y-3" data-testid={`identity-code-${code.id}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -579,8 +580,9 @@ function ProfilePanel({
                   </div>
                   <button
                     type="button"
+                    disabled={updateCode.isPending}
                     onClick={() => confirmUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code.id, { active: !code.active })}
-                    className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50"
+                    className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50 disabled:opacity-50"
                   >
                     {code.active ? "DISABLE" : "ENABLE"}
                   </button>
@@ -588,13 +590,15 @@ function ProfilePanel({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <select
                     value={code.visibilityScope}
+                    disabled={updateCode.isPending}
                     onChange={(e) => confirmUpdate(`Change visibility for ${code.code} to ${e.target.value.replaceAll("_", " ")}?`, code.id, { visibilityScope: e.target.value as typeof code.visibilityScope })}
-                    className="bg-background border border-border px-2 py-2 font-mono text-xs"
+                    className="bg-background border border-border px-2 py-2 font-mono text-xs disabled:opacity-50"
                   >
                     {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
                   </select>
                   <select
                     defaultValue=""
+                    disabled={updateCode.isPending}
                     onChange={(e) => {
                       if (e.target.value) {
                         const label = CODE_TTL_OPTIONS.find((ttl) => ttl.value === Number(e.target.value))?.label ?? e.target.value;
@@ -602,15 +606,16 @@ function ProfilePanel({
                       }
                       e.currentTarget.value = "";
                     }}
-                    className="bg-background border border-border px-2 py-2 font-mono text-xs"
+                    className="bg-background border border-border px-2 py-2 font-mono text-xs disabled:opacity-50"
                   >
                     <option value="">RETIMING...</option>
                     {CODE_TTL_OPTIONS.map((ttl) => <option key={ttl.value} value={ttl.value}>{ttl.label}</option>)}
                   </select>
                   <button
                     type="button"
+                    disabled={updateCode.isPending}
                     onClick={() => confirmUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code.id, { active: false, visibilityScope: "disabled" })}
-                    className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive"
+                    className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive disabled:opacity-50"
                   >
                     ROLL / EXPIRE
                   </button>
