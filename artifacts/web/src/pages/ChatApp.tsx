@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import {
   Shield,
@@ -66,6 +66,57 @@ function getRoomLabel(room: Room, currentUserId?: string): string {
   return `Group (${room.memberCount})`;
 }
 
+const CODE_NAMES = [
+  "Axiom", "Beacon", "Cipher", "Delta", "Echo", "Flux", "Grid", "Halo",
+  "Ion", "Junction", "Keystone", "Lumen", "Matrix", "Nova", "Obsidian", "Pulse",
+  "Quartz", "Relay", "Signal", "Trace", "Unit", "Vector", "Ward", "Zenith",
+];
+
+function createSessionCodenameFactory() {
+  const names = [...CODE_NAMES];
+  const random = new Uint32Array(names.length);
+  crypto.getRandomValues(random);
+  for (let i = names.length - 1; i > 0; i--) {
+    const j = random[i] % (i + 1);
+    [names[i], names[j]] = [names[j], names[i]];
+  }
+
+  const assigned = new Map<string, string>();
+  let cursor = 0;
+
+  return (id: string) => {
+    const existing = assigned.get(id);
+    if (existing) return existing;
+    const label = `${names[cursor % names.length]}-${String(cursor + 1).padStart(2, "0")}`;
+    cursor += 1;
+    assigned.set(id, label);
+    return label;
+  };
+}
+
+function CameraScanStatus({
+  status,
+  detail,
+}: {
+  status: "scanning" | "clear" | "threat" | "unavailable";
+  detail: string;
+}) {
+  const cfg = {
+    scanning: { dot: "bg-muted-foreground/60", text: "text-muted-foreground", label: "INITIALIZING FRONT CAMERA SCAN..." },
+    clear: { dot: "bg-primary animate-pulse", text: "text-primary", label: "NO CAMERA DETECTED - AREA CLEAR" },
+    threat: { dot: "bg-destructive animate-pulse", text: "text-destructive", label: "RECORDING DEVICE DETECTED" },
+    unavailable: { dot: "bg-muted-foreground/40", text: "text-muted-foreground", label: "CAMERA UNAVAILABLE - SCAN OFFLINE" },
+  }[status];
+  return (
+    <div className="border-b border-border/50 px-4 py-1.5 flex items-center gap-2 flex-shrink-0" data-testid="camera-status">
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} flex-shrink-0`} />
+      <span className={`font-mono text-[10px] tracking-widest ${cfg.text}`}>
+        {cfg.label}{detail ? ` / ${detail}` : ""}
+      </span>
+    </div>
+  );
+}
+
 function formatTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -121,13 +172,22 @@ function MessageExpiry({ expiresAt }: { expiresAt: string | null | undefined }) 
   );
 }
 
-function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; currentUserId: string }) {
+function NewRoomDialog({
+  onClose,
+  currentUserId,
+  codenameForUser,
+}: {
+  onClose: () => void;
+  currentUserId: string;
+  codenameForUser: (id: string) => string;
+}) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [type, setType] = useState<"direct" | "group">("direct");
   const [ttl, setTtl] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [revealedUserId, setRevealedUserId] = useState<string | null>(null);
 
   const { data: searchResults } = useGetUsersSearch(
     { q: search },
@@ -237,25 +297,32 @@ function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; curren
               <div className="border border-border mt-1 max-h-32 overflow-y-auto">
                 {searchResults
                   .filter((u) => u.id !== currentUserId)
-                  .map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => toggleUser(u.id)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 font-mono text-xs hover:bg-accent transition-colors text-left ${
-                        selectedIds.includes(u.id) ? "bg-primary/10 text-primary" : ""
-                      }`}
-                      data-testid={`button-user-${u.id}`}
-                    >
-                      <div
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: u.avatarColor ?? "#06b6d4" }}
+                  .map((u) => {
+                    const visibleName = revealedUserId === u.id ? (u.displayName ?? u.username) : codenameForUser(u.id);
+                    return (
+                      <button
+                        key={u.id}
+                        onClick={() => toggleUser(u.id)}
+                        onPointerDown={() => setRevealedUserId(u.id)}
+                        onPointerUp={() => setRevealedUserId(null)}
+                        onPointerCancel={() => setRevealedUserId(null)}
+                        onPointerLeave={() => setRevealedUserId(null)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 font-mono text-xs hover:bg-accent transition-colors text-left ${
+                          selectedIds.includes(u.id) ? "bg-primary/10 text-primary" : ""
+                        }`}
+                        data-testid={`button-user-${u.id}`}
                       >
-                        {u.username[0].toUpperCase()}
-                      </div>
-                      {u.displayName ?? u.username}
-                      {selectedIds.includes(u.id) && <span className="ml-auto text-primary">SELECTED</span>}
-                    </button>
-                  ))}
+                        <div
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                          style={{ backgroundColor: u.avatarColor ?? "#06b6d4" }}
+                        >
+                          {codenameForUser(u.id)[0]}
+                        </div>
+                        {visibleName}
+                        {selectedIds.includes(u.id) && <span className="ml-auto text-primary">SELECTED</span>}
+                      </button>
+                    );
+                  })}
               </div>
             )}
 
@@ -278,16 +345,25 @@ function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; curren
   );
 }
 
-function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: string; onBack: () => void }) {
+function RoomView({
+  room,
+  currentUserId,
+  onBack,
+  codenameForUser,
+  roomCodename,
+}: {
+  room: Room;
+  currentUserId: string;
+  onBack: () => void;
+  codenameForUser: (id: string) => string;
+  roomCodename: string;
+}) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
-  const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [hidden, setHidden] = useState(false);
-  const [cameraStatusDetail, setCameraStatusDetail] = useState("");
+  const [revealRoomName, setRevealRoomName] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id,
@@ -323,56 +399,6 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    const startCamera = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-        }
-
-        const detector = await getFrameThreatDetector();
-        if (!detector) {
-          setCameraStatus("unavailable");
-          setCameraStatusDetail("MODEL UNAVAILABLE");
-          return;
-        }
-        setCameraStatus("clear");
-        setCameraStatusDetail(detector.source.toUpperCase());
-
-        detectionIntervalRef.current = setInterval(async () => {
-          if (!videoRef.current) return;
-          try {
-            const threats = await detector.detect(videoRef.current);
-            const strongest = threats.sort((a, b) => b.score - a.score)[0];
-            setCameraStatus(strongest ? "threat" : "clear");
-            setCameraStatusDetail(
-              strongest
-                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}% · ${detector.source.toUpperCase()}`
-                : detector.source.toUpperCase(),
-            );
-          } catch {
-            setCameraStatus("unavailable");
-            setCameraStatusDetail("SCAN ERROR");
-          }
-        }, 2200);
-      } catch {
-        setCameraStatus("unavailable");
-        setCameraStatusDetail("CAMERA DENIED");
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
 
   useEffect(() => {
     const onVis = () => {
@@ -441,25 +467,6 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
 
   return (
     <div className="flex flex-col h-full relative">
-      <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
-
-      {(() => {
-        const cfg = {
-          scanning:    { dot: "bg-muted-foreground/60",   text: "text-muted-foreground", label: "INITIALIZING CAMERA SCAN..." },
-          clear:       { dot: "bg-primary animate-pulse", text: "text-primary",          label: "NO CAMERA DETECTED — AREA CLEAR" },
-          threat:      { dot: "bg-destructive animate-pulse", text: "text-destructive",  label: "RECORDING DEVICE DETECTED" },
-          unavailable: { dot: "bg-muted-foreground/40",   text: "text-muted-foreground", label: "CAMERA UNAVAILABLE — SCAN OFFLINE" },
-        }[cameraStatus];
-        return (
-          <div className="border-b border-border/50 px-4 py-1.5 flex items-center gap-2 flex-shrink-0" data-testid="camera-status">
-            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} flex-shrink-0`} />
-            <span className={`font-mono text-[10px] tracking-widest ${cfg.text}`}>
-              {cfg.label}{cameraStatusDetail ? ` · ${cameraStatusDetail}` : ""}
-            </span>
-          </div>
-        );
-      })()}
-
       <div className="flex items-center justify-between gap-2 px-4 md:px-6 py-3 md:py-4 border-b border-border/50 flex-shrink-0">
         <button
           onClick={onBack}
@@ -472,7 +479,17 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="font-mono font-bold text-sm tracking-tight truncate">
-              {getRoomLabel(room, currentUserId)}
+              <button
+                type="button"
+                onPointerDown={() => setRevealRoomName(true)}
+                onPointerUp={() => setRevealRoomName(false)}
+                onPointerCancel={() => setRevealRoomName(false)}
+                onPointerLeave={() => setRevealRoomName(false)}
+                className="truncate text-left hover:text-primary"
+                data-testid="button-hold-reveal-room-name"
+              >
+                {revealRoomName ? getRoomLabel(room, currentUserId) : roomCodename}
+              </button>
             </h2>
             <TTLLabel seconds={room.ttlSeconds} />
           </div>
@@ -506,6 +523,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
           const isOwn = msg.senderId === currentUserId;
           const expired = isExpired(msg.expiresAt);
           const plaintext = heldPlaintext?.id === msg.id ? heldPlaintext.text : undefined;
+          const senderLabel = plaintext ? (msg.senderUsername ?? codenameForUser(msg.senderId)) : codenameForUser(msg.senderId);
 
           return (
             <div
@@ -517,7 +535,7 @@ function RoomView({ room, currentUserId, onBack }: { room: Room; currentUserId: 
                 <div className="flex items-center gap-2">
                   {!isOwn && (
                     <span className="font-mono text-xs text-muted-foreground">
-                      {msg.senderUsername}
+                      {senderLabel}
                     </span>
                   )}
                   <MessageExpiry expiresAt={msg.expiresAt} />
