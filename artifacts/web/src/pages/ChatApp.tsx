@@ -863,6 +863,7 @@ function RoomView({
   const [revealRoomName, setRevealRoomName] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const revealTokenRef = useRef(0);
+  const touchRevealActiveRef = useRef(false);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id,
@@ -981,6 +982,7 @@ function RoomView({
   };
 
   const hideRevealedMsg = () => {
+    touchRevealActiveRef.current = false;
     revealTokenRef.current += 1;
     setHeldPlaintext((current) => {
       if (!current) return null;
@@ -990,14 +992,28 @@ function RoomView({
   };
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
-    if (event.pointerType === "touch") event.preventDefault();
+    if (event.pointerType === "touch") return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     void revealMsg(msg);
   };
 
+  const endPointerMessageReveal = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === "touch" || touchRevealActiveRef.current) return;
+    hideRevealedMsg();
+  };
+
   const startTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>, msg: Message) => {
     event.preventDefault();
+    event.stopPropagation();
+    touchRevealActiveRef.current = true;
     void revealMsg(msg);
+  };
+
+  const endTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    touchRevealActiveRef.current = false;
+    hideRevealedMsg();
   };
 
   const isExpired = (expiresAt?: string | null) => {
@@ -1095,13 +1111,14 @@ function RoomView({
                     <button
                       type="button"
                       onPointerDown={(event) => startMessageReveal(event, msg as Message)}
-                      onPointerUp={hideRevealedMsg}
-                      onPointerCancel={hideRevealedMsg}
-                      onPointerLeave={hideRevealedMsg}
-                      onLostPointerCapture={hideRevealedMsg}
+                      onPointerUp={endPointerMessageReveal}
+                      onPointerCancel={endPointerMessageReveal}
+                      onPointerLeave={endPointerMessageReveal}
+                      onLostPointerCapture={endPointerMessageReveal}
                       onTouchStart={(event) => startTouchMessageReveal(event, msg as Message)}
-                      onTouchEnd={hideRevealedMsg}
-                      onTouchCancel={hideRevealedMsg}
+                      onTouchEnd={endTouchMessageReveal}
+                      onTouchCancel={endTouchMessageReveal}
+                      onTouchMove={(event) => event.preventDefault()}
                       onContextMenu={(event) => event.preventDefault()}
                       className="block w-full text-left select-none"
                       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", touchAction: "none" }}
