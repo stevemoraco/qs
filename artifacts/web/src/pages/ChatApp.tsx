@@ -1328,7 +1328,7 @@ export default function ChatApp() {
           return;
         }
         setCameraStatus("clear");
-        setCameraStatusDetail(detector.source.toUpperCase());
+        setCameraStatusDetail("ON-DEVICE");
 
         detectionIntervalRef.current = setInterval(async () => {
           if (!videoRef.current) return;
@@ -1339,8 +1339,8 @@ export default function ChatApp() {
             if (strongest) lockPrivacyShield(`Recording device detected: ${strongest.label}.`);
             setCameraStatusDetail(
               strongest
-                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}% / ${detector.source.toUpperCase()}`
-                : detector.source.toUpperCase(),
+                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}%`
+                : "ON-DEVICE",
             );
           } catch {
             setCameraStatus("unavailable");
