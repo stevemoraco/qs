@@ -166,7 +166,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext }: {
   );
 }
 
-function ChatView({ room, myId, colors }: { room: Room; myId: string; colors: ReturnType<typeof useColors> }) {
+function ChatView({ room, myId, colors, onBack, topPad }: { room: Room; myId: string; colors: ReturnType<typeof useColors>; onBack: () => void; topPad: number }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [decrypted, setDecrypted] = useState<Record<string, string>>({});
@@ -209,14 +209,17 @@ function ChatView({ room, myId, colors }: { room: Room; myId: string; colors: Re
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={0}>
-      <View style={[styles.chatHeader, { borderBottomColor: colors.border }]}>
-        <View>
+      <View style={[styles.chatHeader, { paddingTop: topPad + 10, borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn} testID="button-back-to-channels">
+          <Feather name="chevron-left" size={24} color={colors.primary} />
+        </TouchableOpacity>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>
             {getRoomLabel(room, myId)}
           </Text>
           <View style={styles.cipherRow}>
             <Feather name="shield" size={10} color={colors.primary} />
-            <Text style={[styles.cipherText, { color: colors.primary }]}>{CIPHER_SUITE}</Text>
+            <Text style={[styles.cipherText, { color: colors.primary }]} numberOfLines={1}>{CIPHER_SUITE}</Text>
           </View>
         </View>
         <View style={styles.memberBadge}>
@@ -521,17 +524,13 @@ export default function AppScreen() {
           />
         </View>
       ) : activeRoom && me ? (
-        <View style={{ flex: 1 }}>
-          <View style={[styles.chatTopBar, { paddingTop: topPad + 8, borderBottomColor: colors.border }]}>
-            <TouchableOpacity onPress={() => { setShowRooms(true); setActiveRoomId(null); }} style={styles.backBtn}>
-              <Feather name="chevron-left" size={22} color={colors.primary} />
-            </TouchableOpacity>
-            <Text style={[styles.chatTopTitle, { color: colors.foreground }]} numberOfLines={1}>
-              {getRoomLabel(activeRoom, me.id)}
-            </Text>
-          </View>
-          <ChatView room={activeRoom} myId={me.id} colors={colors} />
-        </View>
+        <ChatView
+          room={activeRoom}
+          myId={me.id}
+          colors={colors}
+          topPad={topPad}
+          onBack={() => { setShowRooms(true); setActiveRoomId(null); }}
+        />
       ) : null}
 
       {me && (
@@ -569,10 +568,8 @@ const styles = StyleSheet.create({
   emptyRooms: { alignItems: "center", paddingTop: 60, gap: 8 },
   emptyText: { fontFamily: "Inter_400Regular", fontSize: 13 },
   emptyLink: { fontFamily: "Inter_600SemiBold", fontSize: 13 },
-  chatTopBar: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 8, borderBottomWidth: 1, gap: 8 },
-  backBtn: { padding: 4 },
-  chatTopTitle: { fontFamily: "Inter_600SemiBold", fontSize: 16, flex: 1 },
-  chatHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
+  backBtn: { padding: 4, marginLeft: -4 },
+  chatHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingBottom: 10, borderBottomWidth: 1 },
   chatTitle: { fontFamily: "Inter_600SemiBold", fontSize: 15 },
   cipherRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
   cipherText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 0.5 },
