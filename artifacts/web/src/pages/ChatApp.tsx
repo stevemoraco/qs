@@ -43,6 +43,7 @@ import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey,
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
+import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
@@ -1162,6 +1163,11 @@ export default function ChatApp() {
 
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) void subscribeToPush(token);
+  }, []);
 
   const logout = usePostAuthLogout({
     mutation: {

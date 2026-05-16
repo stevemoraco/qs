@@ -3,6 +3,7 @@ import { db, pushSubscriptionsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import webPush from "web-push";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -48,7 +49,10 @@ export function configureWebPush(): boolean {
 }
 
 export async function notifyUser(userId: string, payload: { title: string; body: string; url?: string; tag?: string }) {
-  if (!configureWebPush()) return;
+  if (!configureWebPush()) {
+    logger.warn("Push notification skipped: VAPID is not configured");
+    return;
+  }
 
   const subscriptions = await db
     .select()
@@ -72,6 +76,8 @@ export async function notifyUser(userId: string, payload: { title: string; body:
         const statusCode = (err as { statusCode?: number }).statusCode;
         if (statusCode === 404 || statusCode === 410) {
           await db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
+        } else {
+          logger.warn({ err, statusCode }, "Push notification delivery failed");
         }
       }
     }),

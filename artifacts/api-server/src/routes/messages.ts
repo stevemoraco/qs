@@ -152,7 +152,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
 
   const notificationPayload = {
     title: "QuantumShield",
-    body: "Someone sent an encrypted message.",
+    body: "There is a new message to check in one of your chats.",
     url: "/app",
     tag: `room-${roomId}`,
   };

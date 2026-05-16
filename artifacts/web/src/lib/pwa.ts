@@ -70,6 +70,16 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return out;
 }
 
+function arrayBufferEquals(a: ArrayBuffer | null, b: Uint8Array): boolean {
+  if (!a) return false;
+  const left = new Uint8Array(a);
+  if (left.byteLength !== b.byteLength) return false;
+  for (let i = 0; i < left.byteLength; i++) {
+    if (left[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!("serviceWorker" in navigator)) return null;
   try {
@@ -92,9 +102,16 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
 
     if (!vapidKey) return false;
 
+    const permission = await requestNotificationPermission();
+    if (permission !== "granted") return false;
+
+    const keyBytes = urlBase64ToUint8Array(vapidKey);
     let sub = await reg.pushManager.getSubscription();
+    if (sub && !arrayBufferEquals(sub.options.applicationServerKey, keyBytes)) {
+      await sub.unsubscribe();
+      sub = null;
+    }
     if (!sub) {
-      const keyBytes = urlBase64ToUint8Array(vapidKey);
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: keyBytes.buffer.slice(
