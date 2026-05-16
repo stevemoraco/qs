@@ -8,6 +8,7 @@ QuantumShield is a post-quantum encrypted chat platform available at [quantumshi
 - Read this README on GitHub: [github.com/stevemoraco/qs#quantumshield](https://github.com/stevemoraco/qs#quantumshield)
 - Install and use the app: [Using QuantumShield](https://github.com/stevemoraco/qs#using-quantumshield)
 - Review privacy protections: [Privacy Behavior](https://github.com/stevemoraco/qs#privacy-behavior)
+- Review release notes: [CHANGELOG.md](CHANGELOG.md)
 - Run the project locally: [Development](https://github.com/stevemoraco/qs#development)
 - Report vulnerabilities privately: [SECURITY.md](https://github.com/stevemoraco/qs/blob/main/SECURITY.md)
 - Contribute patches: [CONTRIBUTING.md](https://github.com/stevemoraco/qs/blob/main/CONTRIBUTING.md)
