@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq, ilike } from "drizzle-orm";
+import { db, identityCodesTable, usersTable } from "@workspace/db";
+import { and, eq, gt, ilike, isNull, or } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router = Router();
@@ -12,7 +12,8 @@ function routeParam(value: string | string[] | undefined): string {
 function publicUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
-    username: u.username,
+    username: "sealed",
+    primaryCode: null,
     displayName: u.displayName,
     avatarColor: u.avatarColor,
     kemPublicKey: u.kemPublicKey,
@@ -29,12 +30,20 @@ router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
   }
 
   const users = await db
-    .select()
-    .from(usersTable)
-    .where(ilike(usersTable.username, `%${q}%`))
+    .select({ user: usersTable, code: identityCodesTable })
+    .from(identityCodesTable)
+    .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
+    .where(
+      and(
+        ilike(identityCodesTable.code, `%${q.toLowerCase()}%`),
+        eq(identityCodesTable.active, true),
+        eq(identityCodesTable.visibilityScope, "public"),
+        or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
+      )
+    )
     .limit(20);
 
-  res.json(users.map(publicUser));
+  res.json(users.map(({ user, code }) => ({ ...publicUser(user), username: code.code, primaryCode: code.code })));
 });
 
 router.get("/users/:userId", requireAuth, async (req: AuthRequest, res) => {

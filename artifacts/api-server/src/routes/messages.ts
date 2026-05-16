@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, messagesTable, roomMembersTable, roomsTable, usersTable } from "@workspace/db";
+import { db, messagesTable, roomMembersTable, roomsTable } from "@workspace/db";
 import { eq, and, lt, desc, ne } from "drizzle-orm";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
@@ -31,10 +31,8 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
   let query = db
     .select({
       message: messagesTable,
-      senderUsername: usersTable.username,
     })
     .from(messagesTable)
-    .leftJoin(usersTable, eq(messagesTable.senderId, usersTable.id))
     .where(eq(messagesTable.roomId, roomId))
     .orderBy(desc(messagesTable.createdAt))
     .limit(limit);
@@ -49,10 +47,8 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       query = db
         .select({
           message: messagesTable,
-          senderUsername: usersTable.username,
         })
         .from(messagesTable)
-        .leftJoin(usersTable, eq(messagesTable.senderId, usersTable.id))
         .where(and(eq(messagesTable.roomId, roomId), lt(messagesTable.createdAt, beforeMsg.createdAt)))
         .orderBy(desc(messagesTable.createdAt))
         .limit(limit);
@@ -68,7 +64,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       id: r.message.id,
       roomId: r.message.roomId,
       senderId: r.message.senderId,
-      senderUsername: r.senderUsername,
+      senderUsername: null,
       ciphertext: r.message.ciphertext,
       nonce: r.message.nonce,
       algorithm: r.message.algorithm,
@@ -134,12 +130,6 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     .set({ lastMessageAt: new Date() })
     .where(eq(roomsTable.id, roomId));
 
-  const [sender] = await db
-    .select({ username: usersTable.username })
-    .from(usersTable)
-    .where(eq(usersTable.id, req.userId!))
-    .limit(1);
-
   const recipients = await db
     .select({ userId: roomMembersTable.userId })
     .from(roomMembersTable)
@@ -147,7 +137,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
 
   const notificationPayload = {
     title: "QuantumShield",
-    body: `${sender?.username ?? "Someone"} sent an encrypted message.`,
+    body: "Someone sent an encrypted message.",
     url: "/app",
     tag: `room-${roomId}`,
   };
@@ -158,7 +148,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     id: message.id,
     roomId: message.roomId,
     senderId: message.senderId,
-    senderUsername: sender?.username ?? null,
+    senderUsername: null,
     ciphertext: message.ciphertext,
     nonce: message.nonce,
     algorithm: message.algorithm,

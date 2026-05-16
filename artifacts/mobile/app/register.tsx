@@ -39,9 +39,9 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { setToken, storeKeyPair } = useAuth();
+  const { setAuthHandle, setToken, storeKeyPair } = useAuth();
 
-  const [username, setUsername] = useState("");
+  const [primaryCode, setPrimaryCode] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
@@ -67,8 +67,8 @@ export default function RegisterScreen() {
       setStep("register");
       const authData = await register.mutateAsync({
         data: {
-          username,
-          password: passcode,
+          primaryCode: primaryCode || undefined,
+          passcode,
           displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -77,6 +77,7 @@ export default function RegisterScreen() {
 
       await storeKeyPair(kemSkB64, kemPkB64, dsaSkB64, dsaPkB64);
       await setToken(authData.token);
+      await setAuthHandle(authData.authHandle);
 
       setStep("upload");
       const kemSig = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
@@ -92,7 +93,7 @@ export default function RegisterScreen() {
       router.replace("/app");
     } catch {
       setStep("idle");
-      setError("Registration failed. Username or passcode may be invalid.");
+      setError("Registration failed. Code or passcode may be invalid.");
     }
   };
 
@@ -121,12 +122,12 @@ export default function RegisterScreen() {
         </Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[s.label, { color: colors.mutedForeground }]}>IDENTIFIER</Text>
+          <Text style={[s.label, { color: colors.mutedForeground }]}>CLAIM CODE (OPTIONAL)</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="username (min 3 chars)"
+            value={primaryCode}
+            onChangeText={setPrimaryCode}
+            placeholder="stv, team-alpha, invite-01"
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="none"
             autoCorrect={false}

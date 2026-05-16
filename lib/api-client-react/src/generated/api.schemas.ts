@@ -19,7 +19,9 @@ export interface SuccessResponse {
 
 export interface User {
   id: string;
+  /** Active identity code for compatibility with older clients; may be "sealed". */
   username: string;
+  primaryCode?: string | null;
   displayName?: string | null;
   avatarColor?: string | null;
   /** Base64-encoded ML-KEM-1024 public key */
@@ -31,12 +33,13 @@ export interface User {
 
 export interface RegisterRequest {
   /**
+     * Optional globally unique alias code to claim at registration.
      * @minLength 3
      * @maxLength 32
      */
-  username: string;
+  primaryCode?: string | null;
   /** @minLength 8 */
-  password: string;
+  passcode: string;
   displayName?: string | null;
   /** Base64-encoded ML-KEM-1024 public key */
   kemPublicKey: string;
@@ -74,13 +77,101 @@ export interface Lead {
 }
 
 export interface LoginRequest {
-  username: string;
-  password: string;
+  /** Opaque device-local account handle issued at registration. */
+  authHandle: string;
+  passcode: string;
 }
 
 export interface AuthResponse {
   token: string;
+  authHandle: string;
   user: User;
+}
+
+export type IdentityCodeKind = typeof IdentityCodeKind[keyof typeof IdentityCodeKind];
+
+
+export const IdentityCodeKind = {
+  alias: 'alias',
+  invite: 'invite',
+} as const;
+
+export type IdentityCodeVisibilityScope = typeof IdentityCodeVisibilityScope[keyof typeof IdentityCodeVisibilityScope];
+
+
+export const IdentityCodeVisibilityScope = {
+  public: 'public',
+  invited_by_you: 'invited_by_you',
+  invited_you: 'invited_you',
+  mutuals: 'mutuals',
+  disabled: 'disabled',
+} as const;
+
+export interface IdentityCode {
+  id: string;
+  code: string;
+  kind: IdentityCodeKind;
+  visibilityScope: IdentityCodeVisibilityScope;
+  active: boolean;
+  maxUses?: number | null;
+  useCount: number;
+  allowedCodes?: string[] | null;
+  expiresAt?: string | null;
+  rolledAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateIdentityCodeRequestKind = typeof CreateIdentityCodeRequestKind[keyof typeof CreateIdentityCodeRequestKind];
+
+
+export const CreateIdentityCodeRequestKind = {
+  alias: 'alias',
+  invite: 'invite',
+} as const;
+
+export type CreateIdentityCodeRequestVisibilityScope = typeof CreateIdentityCodeRequestVisibilityScope[keyof typeof CreateIdentityCodeRequestVisibilityScope];
+
+
+export const CreateIdentityCodeRequestVisibilityScope = {
+  public: 'public',
+  invited_by_you: 'invited_by_you',
+  invited_you: 'invited_you',
+  mutuals: 'mutuals',
+  disabled: 'disabled',
+} as const;
+
+export interface CreateIdentityCodeRequest {
+  /**
+     * @minLength 2
+     * @maxLength 32
+     */
+  code?: string | null;
+  kind?: CreateIdentityCodeRequestKind;
+  visibilityScope?: CreateIdentityCodeRequestVisibilityScope;
+  /** Optional lifetime such as 300, 3600, 86400, 2592000, 31536000, or 315360000. */
+  ttlSeconds?: number | null;
+  maxUses?: number | null;
+  allowedCodes?: string[] | null;
+}
+
+export type UpdateIdentityCodeRequestVisibilityScope = typeof UpdateIdentityCodeRequestVisibilityScope[keyof typeof UpdateIdentityCodeRequestVisibilityScope] | null;
+
+
+export const UpdateIdentityCodeRequestVisibilityScope = {
+  public: 'public',
+  invited_by_you: 'invited_by_you',
+  invited_you: 'invited_you',
+  mutuals: 'mutuals',
+  disabled: 'disabled',
+} as const;
+
+export interface UpdateIdentityCodeRequest {
+  active?: boolean | null;
+  visibilityScope?: UpdateIdentityCodeRequestVisibilityScope;
+  ttlSeconds?: number | null;
+  maxUses?: number | null;
+  allowedCodes?: string[] | null;
 }
 
 export type RoomType = typeof RoomType[keyof typeof RoomType];
@@ -184,6 +275,10 @@ export interface StatsOverview {
   totalMessages: number;
   activeRoomsToday: number;
 }
+
+export type GetIdentityCodesSearchParams = {
+q: string;
+};
 
 export type GetUsersSearchParams = {
 q: string;

@@ -22,11 +22,14 @@ import type {
 import type {
   AddMemberRequest,
   AuthResponse,
+  CreateIdentityCodeRequest,
   CreateRoomRequest,
   ErrorResponse,
+  GetIdentityCodesSearchParams,
   GetRoomsRoomIdMessagesParams,
   GetUsersSearchParams,
   HealthStatus,
+  IdentityCode,
   Lead,
   LeadUpsertRequest,
   LoginRequest,
@@ -37,6 +40,7 @@ import type {
   SendMessageRequest,
   StatsOverview,
   SuccessResponse,
+  UpdateIdentityCodeRequest,
   User
 } from './api.schemas';
 
@@ -343,6 +347,310 @@ export const usePostAuthLogin = <TError = ErrorType<ErrorResponse>,
       return useMutation(getPostAuthLoginMutationOptions(options));
     }
 
+export const getGetIdentityCodesUrl = () => {
+
+
+
+
+  return `/api/identity-codes`
+}
+
+/**
+ * @summary List identity and invite codes owned by the current account
+ */
+export const getIdentityCodes = async ( options?: RequestInit): Promise<IdentityCode[]> => {
+
+  return customFetch<IdentityCode[]>(getGetIdentityCodesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetIdentityCodesQueryKey = () => {
+    return [
+    `/api/identity-codes`
+    ] as const;
+    }
+
+
+export const getGetIdentityCodesQueryOptions = <TData = Awaited<ReturnType<typeof getIdentityCodes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetIdentityCodesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIdentityCodes>>> = ({ signal }) => getIdentityCodes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetIdentityCodesQueryResult = NonNullable<Awaited<ReturnType<typeof getIdentityCodes>>>
+export type GetIdentityCodesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List identity and invite codes owned by the current account
+ */
+
+export function useGetIdentityCodes<TData = Awaited<ReturnType<typeof getIdentityCodes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetIdentityCodesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getPostIdentityCodesUrl = () => {
+
+
+
+
+  return `/api/identity-codes`
+}
+
+/**
+ * @summary Claim a globally unique alias or invite code
+ */
+export const postIdentityCodes = async (createIdentityCodeRequest: CreateIdentityCodeRequest, options?: RequestInit): Promise<IdentityCode> => {
+
+  return customFetch<IdentityCode>(getPostIdentityCodesUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createIdentityCodeRequest,)
+  }
+);}
+
+
+
+
+export const getPostIdentityCodesMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIdentityCodes>>, TError,{data: BodyType<CreateIdentityCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof postIdentityCodes>>, TError,{data: BodyType<CreateIdentityCodeRequest>}, TContext> => {
+
+const mutationKey = ['postIdentityCodes'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIdentityCodes>>, {data: BodyType<CreateIdentityCodeRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postIdentityCodes(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostIdentityCodesMutationResult = NonNullable<Awaited<ReturnType<typeof postIdentityCodes>>>
+    export type PostIdentityCodesMutationBody = BodyType<CreateIdentityCodeRequest>
+    export type PostIdentityCodesMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Claim a globally unique alias or invite code
+ */
+export const usePostIdentityCodes = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIdentityCodes>>, TError,{data: BodyType<CreateIdentityCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof postIdentityCodes>>,
+        TError,
+        {data: BodyType<CreateIdentityCodeRequest>},
+        TContext
+      > => {
+      return useMutation(getPostIdentityCodesMutationOptions(options));
+    }
+
+export const getGetIdentityCodesSearchUrl = (params: GetIdentityCodesSearchParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/identity-codes/search?${stringifiedParams}` : `/api/identity-codes/search`
+}
+
+/**
+ * @summary Search active public identity codes
+ */
+export const getIdentityCodesSearch = async (params: GetIdentityCodesSearchParams, options?: RequestInit): Promise<User[]> => {
+
+  return customFetch<User[]>(getGetIdentityCodesSearchUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetIdentityCodesSearchQueryKey = (params?: GetIdentityCodesSearchParams,) => {
+    return [
+    `/api/identity-codes/search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetIdentityCodesSearchQueryOptions = <TData = Awaited<ReturnType<typeof getIdentityCodesSearch>>, TError = ErrorType<unknown>>(params: GetIdentityCodesSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodesSearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetIdentityCodesSearchQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIdentityCodesSearch>>> = ({ signal }) => getIdentityCodesSearch(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodesSearch>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetIdentityCodesSearchQueryResult = NonNullable<Awaited<ReturnType<typeof getIdentityCodesSearch>>>
+export type GetIdentityCodesSearchQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Search active public identity codes
+ */
+
+export function useGetIdentityCodesSearch<TData = Awaited<ReturnType<typeof getIdentityCodesSearch>>, TError = ErrorType<unknown>>(
+ params: GetIdentityCodesSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIdentityCodesSearch>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetIdentityCodesSearchQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getPatchIdentityCodesCodeIdUrl = (codeId: string,) => {
+
+
+
+
+  return `/api/identity-codes/${codeId}`
+}
+
+/**
+ * @summary Activate, deactivate, roll, or retime an owned code
+ */
+export const patchIdentityCodesCodeId = async (codeId: string,
+    updateIdentityCodeRequest: UpdateIdentityCodeRequest, options?: RequestInit): Promise<IdentityCode> => {
+
+  return customFetch<IdentityCode>(getPatchIdentityCodesCodeIdUrl(codeId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateIdentityCodeRequest,)
+  }
+);}
+
+
+
+
+export const getPatchIdentityCodesCodeIdMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchIdentityCodesCodeId>>, TError,{codeId: string;data: BodyType<UpdateIdentityCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchIdentityCodesCodeId>>, TError,{codeId: string;data: BodyType<UpdateIdentityCodeRequest>}, TContext> => {
+
+const mutationKey = ['patchIdentityCodesCodeId'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchIdentityCodesCodeId>>, {codeId: string;data: BodyType<UpdateIdentityCodeRequest>}> = (props) => {
+          const {codeId,data} = props ?? {};
+
+          return  patchIdentityCodesCodeId(codeId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchIdentityCodesCodeIdMutationResult = NonNullable<Awaited<ReturnType<typeof patchIdentityCodesCodeId>>>
+    export type PatchIdentityCodesCodeIdMutationBody = BodyType<UpdateIdentityCodeRequest>
+    export type PatchIdentityCodesCodeIdMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Activate, deactivate, roll, or retime an owned code
+ */
+export const usePatchIdentityCodesCodeId = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchIdentityCodesCodeId>>, TError,{codeId: string;data: BodyType<UpdateIdentityCodeRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof patchIdentityCodesCodeId>>,
+        TError,
+        {codeId: string;data: BodyType<UpdateIdentityCodeRequest>},
+        TContext
+      > => {
+      return useMutation(getPatchIdentityCodesCodeIdMutationOptions(options));
+    }
+
 export const getGetAuthMeUrl = () => {
 
 
@@ -506,7 +814,7 @@ export const getGetUsersSearchUrl = (params: GetUsersSearchParams,) => {
 }
 
 /**
- * @summary Search users by username
+ * @summary Search active identity codes
  */
 export const getUsersSearch = async (params: GetUsersSearchParams, options?: RequestInit): Promise<User[]> => {
 
@@ -553,7 +861,7 @@ export type GetUsersSearchQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Search users by username
+ * @summary Search active identity codes
  */
 
 export function useGetUsersSearch<TData = Awaited<ReturnType<typeof getUsersSearch>>, TError = ErrorType<unknown>>(

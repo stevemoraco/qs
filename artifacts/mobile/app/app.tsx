@@ -522,7 +522,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>ADD MEMBERS</Text>
           <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <Feather name="search" size={14} color={colors.mutedForeground} />
-            <TextInput style={[styles.searchInput, { color: colors.foreground }]} value={search} onChangeText={setSearch} placeholder="Search username..." placeholderTextColor={colors.mutedForeground} autoCapitalize="none" testID="input-search-users" />
+            <TextInput style={[styles.searchInput, { color: colors.foreground }]} value={search} onChangeText={setSearch} placeholder="Search code..." placeholderTextColor={colors.mutedForeground} autoCapitalize="none" testID="input-search-users" />
           </View>
 
           {results.filter((u) => u.id !== myId).map((u) => {

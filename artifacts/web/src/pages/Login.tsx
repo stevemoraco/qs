@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
-import { isAuthenticated, setToken } from "@/lib/auth";
+import { getAuthHandle, isAuthenticated, setToken } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -17,9 +17,9 @@ const LOGIN_PRIVACY_FEATURES = [
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [username, setUsername] = useState("");
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
+  const authHandle = getAuthHandle();
 
   const login = usePostAuthLogin({
     mutation: {
@@ -29,7 +29,7 @@ export default function Login() {
         setLocation("/app", { replace: true });
       },
       onError: () => {
-        setError("Invalid username or passcode");
+        setError("Invalid passcode");
       },
     },
   });
@@ -37,7 +37,11 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    login.mutate({ data: { username, password: passcode } });
+    if (!authHandle) {
+      setError("No local identity found on this device. Request clearance first.");
+      return;
+    }
+    login.mutate({ data: { authHandle, passcode } });
   };
 
   if (isAuthenticated()) {
@@ -63,22 +67,6 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                IDENTIFIER
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="username"
-                autoComplete="username"
-                required
-                data-testid="input-username"
-              />
-            </div>
-
             <div>
               <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
                 PASSCODE

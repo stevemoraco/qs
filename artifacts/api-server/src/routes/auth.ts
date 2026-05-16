@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { db, usersTable, sessionsTable, leadsTable } from "@workspace/db";
+import { db, usersTable, sessionsTable, leadsTable, identityCodesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import argon2 from "argon2";
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import {
   PostAuthRegisterBody,
   PostAuthLoginBody,
@@ -24,6 +24,26 @@ function generateToken(): string {
   return randomBytes(48).toString("hex");
 }
 
+function generateAuthHandle(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+function hashAuthHandle(authHandle: string): string {
+  return createHash("sha256").update(authHandle).digest("hex");
+}
+
+function generateInternalUsername(): string {
+  return `acct_${randomBytes(12).toString("hex")}`;
+}
+
+function normalizeIdentityCode(code: string): string {
+  return code.trim().toLowerCase();
+}
+
+function isValidIdentityCode(code: string): boolean {
+  return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
+}
+
 function sessionExpiresAt(): Date {
   const d = new Date();
   d.setDate(d.getDate() + 30);
@@ -37,25 +57,35 @@ router.post("/auth/register", async (req, res) => {
     return;
   }
 
-  const { username, password, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
+  const { passcode, primaryCode, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
+  const normalizedPrimaryCode = primaryCode ? normalizeIdentityCode(primaryCode) : null;
 
-  const existing = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(eq(usersTable.username, username.toLowerCase()))
-    .limit(1);
-
-  if (existing.length > 0) {
-    res.status(409).json({ error: "Username already taken" });
+  if (normalizedPrimaryCode && !isValidIdentityCode(normalizedPrimaryCode)) {
+    res.status(400).json({ error: "Code must be 2-32 letters, numbers, underscores, or dashes" });
     return;
   }
 
-  const passwordHash = await argon2.hash(password);
+  if (normalizedPrimaryCode) {
+    const existing = await db
+      .select({ id: identityCodesTable.id })
+      .from(identityCodesTable)
+      .where(eq(identityCodesTable.code, normalizedPrimaryCode))
+      .limit(1);
+
+    if (existing.length > 0) {
+      res.status(409).json({ error: "Code already claimed" });
+      return;
+    }
+  }
+
+  const authHandle = generateAuthHandle();
+  const passwordHash = await argon2.hash(passcode);
 
   const [user] = await db
     .insert(usersTable)
     .values({
-      username: username.toLowerCase(),
+      username: generateInternalUsername(),
+      authHandleHash: hashAuthHandle(authHandle),
       passwordHash,
       displayName: displayName ?? null,
       avatarColor: randomColor(),
@@ -63,6 +93,17 @@ router.post("/auth/register", async (req, res) => {
       dsaPublicKey,
     })
     .returning();
+
+  if (normalizedPrimaryCode) {
+    const expiresAt = new Date();
+    expiresAt.setFullYear(expiresAt.getFullYear() + 10);
+    await db.insert(identityCodesTable).values({
+      ownerUserId: user.id,
+      code: normalizedPrimaryCode,
+      kind: "alias",
+      expiresAt,
+    });
+  }
 
   const token = generateToken();
   await db.insert(sessionsTable).values({
@@ -95,9 +136,11 @@ router.post("/auth/register", async (req, res) => {
 
   res.status(201).json({
     token,
+    authHandle,
     user: {
       id: user.id,
-      username: user.username,
+      username: normalizedPrimaryCode ?? "sealed",
+      primaryCode: normalizedPrimaryCode,
       displayName: user.displayName,
       avatarColor: user.avatarColor,
       kemPublicKey: user.kemPublicKey,
@@ -114,22 +157,22 @@ router.post("/auth/login", async (req, res) => {
     return;
   }
 
-  const { username, password } = parse.data;
+  const { authHandle, passcode } = parse.data;
 
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.username, username.toLowerCase()))
+    .where(eq(usersTable.authHandleHash, hashAuthHandle(authHandle)))
     .limit(1);
 
   if (!user) {
-    res.status(401).json({ error: "Invalid username or password" });
+    res.status(401).json({ error: "Invalid passcode" });
     return;
   }
 
-  const valid = await argon2.verify(user.passwordHash, password);
+  const valid = await argon2.verify(user.passwordHash, passcode);
   if (!valid) {
-    res.status(401).json({ error: "Invalid username or password" });
+    res.status(401).json({ error: "Invalid passcode" });
     return;
   }
 
@@ -142,9 +185,11 @@ router.post("/auth/login", async (req, res) => {
 
   res.json({
     token,
+    authHandle,
     user: {
       id: user.id,
-      username: user.username,
+      username: "sealed",
+      primaryCode: null,
       displayName: user.displayName,
       avatarColor: user.avatarColor,
       kemPublicKey: user.kemPublicKey,
@@ -158,7 +203,8 @@ router.get("/auth/me", requireAuth, (req: AuthRequest, res) => {
   const u = req.user!;
   res.json({
     id: u.id,
-    username: u.username,
+    username: "sealed",
+    primaryCode: null,
     displayName: u.displayName,
     avatarColor: u.avatarColor,
     kemPublicKey: u.kemPublicKey,

@@ -8,12 +8,13 @@
 
 export interface RegisterRequest {
   /**
+     * Optional globally unique alias code to claim at registration.
      * @minLength 3
      * @maxLength 32
      */
-  username: string;
+  primaryCode?: string | null;
   /** @minLength 8 */
-  password: string;
+  passcode: string;
   displayName?: string | null;
   /** Base64-encoded ML-KEM-1024 public key */
   kemPublicKey: string;

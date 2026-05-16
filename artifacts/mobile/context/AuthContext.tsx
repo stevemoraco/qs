@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 const TOKEN_KEY = "qs_token";
+const AUTH_HANDLE_KEY = "qs_auth_handle";
 const KEM_SK_KEY = "qs_kem_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_SK_KEY = "qs_dsa_sk";
@@ -13,6 +14,8 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   setToken: (t: string) => Promise<void>;
+  getAuthHandle: () => Promise<string | null>;
+  setAuthHandle: (h: string) => Promise<void>;
   clearAuth: () => Promise<void>;
   storeKeyPair: (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => Promise<void>;
   getKemPublicKey: () => Promise<string | null>;
@@ -43,8 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokenState(t);
   }, []);
 
+  const getAuthHandle = useCallback(() => AsyncStorage.getItem(AUTH_HANDLE_KEY), []);
+
+  const setAuthHandle = useCallback(async (h: string) => {
+    await AsyncStorage.setItem(AUTH_HANDLE_KEY, h);
+  }, []);
+
   const clearAuth = useCallback(async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY]);
+    await AsyncStorage.multiRemove([TOKEN_KEY, AUTH_HANDLE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY]);
     setTokenState(null);
   }, []);
 
@@ -67,6 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!token,
         isLoading,
         setToken,
+        getAuthHandle,
+        setAuthHandle,
         clearAuth,
         storeKeyPair,
         getKemPublicKey,

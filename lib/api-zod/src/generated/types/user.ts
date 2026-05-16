@@ -8,7 +8,9 @@
 
 export interface User {
   id: string;
+  /** Active identity code for compatibility with older clients; may be "sealed". */
   username: string;
+  primaryCode?: string | null;
   displayName?: string | null;
   avatarColor?: string | null;
   /** Base64-encoded ML-KEM-1024 public key */

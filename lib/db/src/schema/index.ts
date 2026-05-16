@@ -6,3 +6,4 @@ export * from "./messages";
 export * from "./pre_keys";
 export * from "./push_subscriptions";
 export * from "./leads";
+export * from "./identity_codes";

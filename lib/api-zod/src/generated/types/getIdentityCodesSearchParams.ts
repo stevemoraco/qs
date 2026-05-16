@@ -5,10 +5,7 @@
  * QuantumShield — Post-quantum encrypted chat API (ML-KEM-1024 + ML-DSA-87)
  * OpenAPI spec version: 1.0.0
  */
-import type { User } from './user';
 
-export interface AuthResponse {
-  token: string;
-  authHandle: string;
-  user: User;
-}
+export type GetIdentityCodesSearchParams = {
+q: string;
+};

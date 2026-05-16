@@ -8,12 +8,19 @@
 
 export * from './addMemberRequest';
 export * from './authResponse';
+export * from './createIdentityCodeRequest';
+export * from './createIdentityCodeRequestKind';
+export * from './createIdentityCodeRequestVisibilityScope';
 export * from './createRoomRequest';
 export * from './createRoomRequestType';
 export * from './errorResponse';
+export * from './getIdentityCodesSearchParams';
 export * from './getRoomsRoomIdMessagesParams';
 export * from './getUsersSearchParams';
 export * from './healthStatus';
+export * from './identityCode';
+export * from './identityCodeKind';
+export * from './identityCodeVisibilityScope';
 export * from './lead';
 export * from './leadUpsertRequest';
 export * from './loginRequest';
@@ -28,4 +35,6 @@ export * from './sendMessageRequest';
 export * from './sendMessageRequestRecipientEncryptedKeys';
 export * from './statsOverview';
 export * from './successResponse';
+export * from './updateIdentityCodeRequest';
+export * from './updateIdentityCodeRequestVisibilityScope';
 export * from './user';

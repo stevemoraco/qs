@@ -288,7 +288,7 @@ function NewRoomDialog({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full bg-background border border-border pl-8 pr-3 py-2 font-mono text-sm focus:outline-none focus:border-primary/60"
-                placeholder="Search username..."
+                placeholder="Search code..."
                 data-testid="input-search-users"
               />
             </div>
@@ -465,7 +465,13 @@ function RoomView({
     } catch {}
   };
 
-  const hideRevealedMsg = () => setHeldPlaintext(null);
+  const hideRevealedMsg = () => {
+    setHeldPlaintext((current) => {
+      if (!current) return null;
+      return { id: current.id, text: "" };
+    });
+    queueMicrotask(() => setHeldPlaintext(null));
+  };
 
   const isExpired = (expiresAt?: string | null) => {
     if (!expiresAt) return false;
@@ -566,9 +572,10 @@ function RoomView({
                       <button
                         type="button"
                         onPointerDown={() => revealMsg(msg as Message)}
-                        onPointerUp={hideRevealedMsg}
-                        onPointerCancel={hideRevealedMsg}
+                        onPointerUpCapture={hideRevealedMsg}
+                        onPointerCancelCapture={hideRevealedMsg}
                         onPointerLeave={hideRevealedMsg}
+                        onLostPointerCapture={hideRevealedMsg}
                         onContextMenu={(event) => event.preventDefault()}
                         className="hover:text-primary select-none"
                         data-testid={`button-hold-reveal-${msg.id}`}

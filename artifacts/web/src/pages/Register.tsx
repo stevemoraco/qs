@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
-import { setToken, storeKeyPair } from "@/lib/auth";
+import { setAuthHandle, setToken, storeKeyPair } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
@@ -31,7 +31,7 @@ type GenerationStep =
 
 export default function Register() {
   const [, setLocation] = useLocation();
-  const [username, setUsername] = useState("");
+  const [primaryCode, setPrimaryCode] = useState("");
   const [passcode, setPasscode] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
@@ -53,10 +53,6 @@ export default function Register() {
       if (saved) {
         const parsed = JSON.parse(saved) as { name?: unknown; email?: unknown };
         if (typeof parsed.email === "string") savedEmail = parsed.email;
-        if (!email && savedEmail) {
-          const candidate = savedEmail.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
-          if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
-        }
         if (typeof parsed.name === "string") savedName = parsed.name;
       }
     } catch {
@@ -65,7 +61,7 @@ export default function Register() {
 
     if (email) {
       const candidate = email.split("@")[0]?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32);
-      if (candidate && candidate.length >= 3) setUsername(candidate.toLowerCase());
+      if (candidate && candidate.length >= 3) setPrimaryCode(candidate.toLowerCase());
     }
     if (email || savedEmail) setLeadEmail(email || savedEmail);
     if (name || savedName) setDisplayName(name || savedName);
@@ -89,8 +85,8 @@ export default function Register() {
       setStep("submitting");
       const authData = await register.mutateAsync({
         data: {
-          username,
-          password: passcode,
+          primaryCode: primaryCode || undefined,
+          passcode,
           displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -100,9 +96,10 @@ export default function Register() {
       token = authData.token;
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
       setToken(token);
+      setAuthHandle(authData.authHandle);
     } catch (err: unknown) {
       setStep("idle");
-      setError(extractErrorMessage(err, "Could not create identity. Please try a different username or passcode."));
+      setError(extractErrorMessage(err, "Could not create identity. Please try a different code or passcode."));
       return;
     }
 
@@ -161,18 +158,17 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                IDENTIFIER
+                CLAIM CODE (OPTIONAL)
               </label>
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={primaryCode}
+                onChange={(e) => setPrimaryCode(e.target.value)}
                 className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="username (min 3 chars)"
-                autoComplete="username"
+                placeholder="stv, team-alpha, invite-01"
+                autoComplete="off"
                 minLength={3}
                 maxLength={32}
-                required
                 disabled={isLoading}
                 data-testid="input-username"
               />

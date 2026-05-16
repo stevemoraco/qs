@@ -13,7 +13,8 @@ function routeParam(value: string | string[] | undefined): string {
 function publicUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
-    username: u.username,
+    username: "sealed",
+    primaryCode: null,
     displayName: u.displayName,
     avatarColor: u.avatarColor,
     kemPublicKey: u.kemPublicKey,

@@ -24,6 +24,8 @@ tags:
     description: Platform statistics
   - name: leads
     description: Public lead capture
+  - name: identity-codes
+    description: Claimable account aliases and invite codes
 
 paths:
   /healthz:
@@ -115,6 +117,105 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /identity-codes:
+    get:
+      operationId: getIdentityCodes
+      tags: [identity-codes]
+      summary: List identity and invite codes owned by the current account
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Owned codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IdentityCode"
+
+    post:
+      operationId: postIdentityCodes
+      tags: [identity-codes]
+      summary: Claim a globally unique alias or invite code
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIdentityCodeRequest"
+      responses:
+        "201":
+          description: Code claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentityCode"
+        "409":
+          description: Code already claimed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /identity-codes/search:
+    get:
+      operationId: getIdentityCodesSearch
+      tags: [identity-codes]
+      summary: Search active public identity codes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matching account codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /identity-codes/{codeId}:
+    patch:
+      operationId: patchIdentityCodesCodeId
+      tags: [identity-codes]
+      summary: Activate, deactivate, roll, or retime an owned code
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: codeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIdentityCodeRequest"
+      responses:
+        "200":
+          description: Code updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdentityCode"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auth/me:
     get:
       operationId: getAuthMe
@@ -155,7 +256,7 @@ paths:
     get:
       operationId: getUsersSearch
       tags: [users]
-      summary: Search users by username
+      summary: Search active identity codes
       security:
         - bearerAuth: []
       parameters:
@@ -522,6 +623,10 @@ components:
           type: string
         username:
           type: string
+          description: Active identity code for compatibility with older clients; may be "sealed".
+        primaryCode:
+          type: string
+          nullable: true
         displayName:
           type: string
           nullable: true
@@ -542,13 +647,15 @@ components:
 
     RegisterRequest:
       type: object
-      required: [username, password, kemPublicKey, dsaPublicKey]
+      required: [passcode, kemPublicKey, dsaPublicKey]
       properties:
-        username:
+        primaryCode:
           type: string
           minLength: 3
           maxLength: 32
-        password:
+          nullable: true
+          description: Optional globally unique alias code to claim at registration.
+        passcode:
           type: string
           minLength: 8
         displayName:
@@ -629,21 +736,116 @@ components:
 
     LoginRequest:
       type: object
-      required: [username, password]
+      required: [authHandle, passcode]
       properties:
-        username:
+        authHandle:
           type: string
-        password:
+          description: Opaque device-local account handle issued at registration.
+        passcode:
           type: string
 
     AuthResponse:
       type: object
-      required: [token, user]
+      required: [token, authHandle, user]
       properties:
         token:
           type: string
+        authHandle:
+          type: string
         user:
           $ref: "#/components/schemas/User"
+
+    IdentityCode:
+      type: object
+      required: [id, code, kind, visibilityScope, active, useCount, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        kind:
+          type: string
+          enum: [alias, invite]
+        visibilityScope:
+          type: string
+          enum: [public, invited_by_you, invited_you, mutuals, disabled]
+        active:
+          type: boolean
+        maxUses:
+          type: integer
+          nullable: true
+        useCount:
+          type: integer
+        allowedCodes:
+          type: array
+          nullable: true
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        rolledAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateIdentityCodeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 2
+          maxLength: 32
+          nullable: true
+        kind:
+          type: string
+          enum: [alias, invite]
+          default: alias
+        visibilityScope:
+          type: string
+          enum: [public, invited_by_you, invited_you, mutuals, disabled]
+          default: public
+        ttlSeconds:
+          type: integer
+          nullable: true
+          description: Optional lifetime such as 300, 3600, 86400, 2592000, 31536000, or 315360000.
+        maxUses:
+          type: integer
+          nullable: true
+        allowedCodes:
+          type: array
+          nullable: true
+          items:
+            type: string
+
+    UpdateIdentityCodeRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+          nullable: true
+        visibilityScope:
+          type: string
+          enum: [public, invited_by_you, invited_you, mutuals, disabled]
+          nullable: true
+        ttlSeconds:
+          type: integer
+          nullable: true
+        maxUses:
+          type: integer
+          nullable: true
+        allowedCodes:
+          type: array
+          nullable: true
+          items:
+            type: string
 
     Room:
       type: object

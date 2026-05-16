@@ -7,6 +7,7 @@
  */
 
 export interface LoginRequest {
-  username: string;
-  password: string;
+  /** Opaque device-local account handle issued at registration. */
+  authHandle: string;
+  passcode: string;
 }

@@ -32,9 +32,8 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { setToken } = useAuth();
+  const { getAuthHandle, setToken } = useAuth();
 
-  const [username, setUsername] = useState("");
   const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
 
@@ -45,14 +44,19 @@ export default function LoginScreen() {
         router.replace("/app");
       },
       onError: () => {
-        setError("Invalid username or passcode");
+        setError("Invalid passcode");
       },
     },
   });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError("");
-    login.mutate({ data: { username, password: passcode } });
+    const authHandle = await getAuthHandle();
+    if (!authHandle) {
+      setError("No local identity found on this device. Request clearance first.");
+      return;
+    }
+    login.mutate({ data: { authHandle, passcode } });
   };
 
   const s = makeStyles(colors);
@@ -77,19 +81,7 @@ export default function LoginScreen() {
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>Authenticate to access encrypted channels</Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[s.label, { color: colors.mutedForeground }]}>IDENTIFIER</Text>
-          <TextInput
-            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="username"
-            placeholderTextColor={colors.mutedForeground}
-            autoCapitalize="none"
-            autoCorrect={false}
-            testID="input-username"
-          />
-
-          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSCODE</Text>
+          <Text style={[s.label, { color: colors.mutedForeground }]}>PASSCODE</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
             value={passcode}

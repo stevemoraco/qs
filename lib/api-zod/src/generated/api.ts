@@ -20,16 +20,16 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Register with post-quantum key bundle
  */
-export const postAuthRegisterBodyUsernameMin = 3;
-export const postAuthRegisterBodyUsernameMax = 32;
+export const postAuthRegisterBodyPrimaryCodeMin = 3;
+export const postAuthRegisterBodyPrimaryCodeMax = 32;
 
-export const postAuthRegisterBodyPasswordMin = 8;
+export const postAuthRegisterBodyPasscodeMin = 8;
 
 
 
 export const PostAuthRegisterBody = zod.object({
-  "username": zod.string().min(postAuthRegisterBodyUsernameMin).max(postAuthRegisterBodyUsernameMax),
-  "password": zod.string().min(postAuthRegisterBodyPasswordMin),
+  "primaryCode": zod.string().min(postAuthRegisterBodyPrimaryCodeMin).max(postAuthRegisterBodyPrimaryCodeMax).nullish().describe('Optional globally unique alias code to claim at registration.'),
+  "passcode": zod.string().min(postAuthRegisterBodyPasscodeMin),
   "displayName": zod.string().nullish(),
   "kemPublicKey": zod.string().describe('Base64-encoded ML-KEM-1024 public key'),
   "dsaPublicKey": zod.string().describe('Base64-encoded ML-DSA-87 public key'),
@@ -73,15 +73,17 @@ export const PostLeadsResponse = zod.object({
  * @summary Login and receive a session token
  */
 export const PostAuthLoginBody = zod.object({
-  "username": zod.string(),
-  "password": zod.string()
+  "authHandle": zod.string().describe('Opaque device-local account handle issued at registration.'),
+  "passcode": zod.string()
 })
 
 export const PostAuthLoginResponse = zod.object({
   "token": zod.string(),
+  "authHandle": zod.string(),
   "user": zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -92,11 +94,102 @@ export const PostAuthLoginResponse = zod.object({
 
 
 /**
+ * @summary List identity and invite codes owned by the current account
+ */
+export const GetIdentityCodesResponseItem = zod.object({
+  "id": zod.string(),
+  "code": zod.string(),
+  "kind": zod.enum(['alias', 'invite']),
+  "visibilityScope": zod.enum(['public', 'invited_by_you', 'invited_you', 'mutuals', 'disabled']),
+  "active": zod.boolean(),
+  "maxUses": zod.number().nullish(),
+  "useCount": zod.number(),
+  "allowedCodes": zod.array(zod.string()).nullish(),
+  "expiresAt": zod.coerce.date().nullish(),
+  "rolledAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const GetIdentityCodesResponse = zod.array(GetIdentityCodesResponseItem)
+
+
+/**
+ * @summary Claim a globally unique alias or invite code
+ */
+export const postIdentityCodesBodyCodeMin = 2;
+export const postIdentityCodesBodyCodeMax = 32;
+
+export const postIdentityCodesBodyKindDefault = `alias`;
+export const postIdentityCodesBodyVisibilityScopeDefault = `public`;
+
+export const PostIdentityCodesBody = zod.object({
+  "code": zod.string().min(postIdentityCodesBodyCodeMin).max(postIdentityCodesBodyCodeMax).nullish(),
+  "kind": zod.enum(['alias', 'invite']).default(postIdentityCodesBodyKindDefault),
+  "visibilityScope": zod.enum(['public', 'invited_by_you', 'invited_you', 'mutuals', 'disabled']).default(postIdentityCodesBodyVisibilityScopeDefault),
+  "ttlSeconds": zod.number().nullish().describe('Optional lifetime such as 300, 3600, 86400, 2592000, 31536000, or 315360000.'),
+  "maxUses": zod.number().nullish(),
+  "allowedCodes": zod.array(zod.string()).nullish()
+})
+
+
+/**
+ * @summary Search active public identity codes
+ */
+export const GetIdentityCodesSearchQueryParams = zod.object({
+  "q": zod.coerce.string()
+})
+
+export const GetIdentityCodesSearchResponseItem = zod.object({
+  "id": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
+  "displayName": zod.string().nullish(),
+  "avatarColor": zod.string().nullish(),
+  "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
+  "dsaPublicKey": zod.string().nullish().describe('Base64-encoded ML-DSA-87 public key'),
+  "createdAt": zod.coerce.date()
+})
+export const GetIdentityCodesSearchResponse = zod.array(GetIdentityCodesSearchResponseItem)
+
+
+/**
+ * @summary Activate, deactivate, roll, or retime an owned code
+ */
+export const PatchIdentityCodesCodeIdParams = zod.object({
+  "codeId": zod.coerce.string()
+})
+
+export const PatchIdentityCodesCodeIdBody = zod.object({
+  "active": zod.boolean().nullish(),
+  "visibilityScope": zod.enum(['public', 'invited_by_you', 'invited_you', 'mutuals', 'disabled']).nullish(),
+  "ttlSeconds": zod.number().nullish(),
+  "maxUses": zod.number().nullish(),
+  "allowedCodes": zod.array(zod.string()).nullish()
+})
+
+export const PatchIdentityCodesCodeIdResponse = zod.object({
+  "id": zod.string(),
+  "code": zod.string(),
+  "kind": zod.enum(['alias', 'invite']),
+  "visibilityScope": zod.enum(['public', 'invited_by_you', 'invited_you', 'mutuals', 'disabled']),
+  "active": zod.boolean(),
+  "maxUses": zod.number().nullish(),
+  "useCount": zod.number(),
+  "allowedCodes": zod.array(zod.string()).nullish(),
+  "expiresAt": zod.coerce.date().nullish(),
+  "rolledAt": zod.coerce.date().nullish(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary Get current authenticated user
  */
 export const GetAuthMeResponse = zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -114,7 +207,7 @@ export const PostAuthLogoutResponse = zod.object({
 
 
 /**
- * @summary Search users by username
+ * @summary Search active identity codes
  */
 export const GetUsersSearchQueryParams = zod.object({
   "q": zod.coerce.string()
@@ -122,7 +215,8 @@ export const GetUsersSearchQueryParams = zod.object({
 
 export const GetUsersSearchResponseItem = zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -141,7 +235,8 @@ export const GetUsersUserIdParams = zod.object({
 
 export const GetUsersUserIdResponse = zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -163,7 +258,8 @@ export const GetRoomsResponseItem = zod.object({
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -202,7 +298,8 @@ export const GetRoomsRoomIdResponse = zod.object({
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),
@@ -233,7 +330,8 @@ export const GetRoomsRoomIdMembersParams = zod.object({
 
 export const GetRoomsRoomIdMembersResponseItem = zod.object({
   "id": zod.string(),
-  "username": zod.string(),
+  "username": zod.string().describe('Active identity code for compatibility with older clients; may be \"sealed\".'),
+  "primaryCode": zod.string().nullish(),
   "displayName": zod.string().nullish(),
   "avatarColor": zod.string().nullish(),
   "kemPublicKey": zod.string().nullish().describe('Base64-encoded ML-KEM-1024 public key'),

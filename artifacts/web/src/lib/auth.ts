@@ -1,4 +1,5 @@
 const TOKEN_KEY = "qs_token";
+const AUTH_HANDLE_KEY = "qs_auth_handle";
 const KEM_SK_KEY = "qs_kem_sk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const KEM_PK_KEY = "qs_kem_pk";
@@ -10,6 +11,14 @@ export function getToken(): string | null {
 
 export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function getAuthHandle(): string | null {
+  return localStorage.getItem(AUTH_HANDLE_KEY);
+}
+
+export function setAuthHandle(authHandle: string): void {
+  localStorage.setItem(AUTH_HANDLE_KEY, authHandle);
 }
 
 export function clearToken(): void {
@@ -54,6 +63,7 @@ export function getDsaSecretKey(): Uint8Array | null {
 
 export function clearAll(): void {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(AUTH_HANDLE_KEY);
   localStorage.removeItem(KEM_SK_KEY);
   localStorage.removeItem(KEM_PK_KEY);
   localStorage.removeItem(DSA_SK_KEY);
