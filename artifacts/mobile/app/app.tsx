@@ -274,7 +274,7 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
         </View>
       </View>
       {room.lastMessageAt && (
-        <Text style={[styles.roomTime, { color: colors.mutedForeground }]}>{formatTime(room.lastMessageAt)}</Text>
+        <Text style={[styles.roomTime, { color: colors.mutedForeground }]}>{revealName ? formatTime(room.lastMessageAt) : "SEALED"}</Text>
       )}
     </TouchableOpacity>
   );
@@ -321,7 +321,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
             )}
           </TouchableOpacity>
         )}
-        <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{formatTime(msg.createdAt)}</Text>
+        <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{plaintext ? formatTime(msg.createdAt) : "TIME SEALED"}</Text>
       </View>
     </View>
   );
@@ -503,7 +503,7 @@ function ChatView({
               isOwn={item.senderId === myId}
               colors={colors}
               plaintext={plaintext}
-              senderLabel={plaintext ? (item.senderUsername ?? codenameForUser(item.senderId)) : codenameForUser(item.senderId)}
+              senderLabel={codenameForUser(item.senderId)}
               onRevealStart={() => revealMessage(item as Message)}
               onRevealEnd={hideRevealedMessage}
             />

@@ -232,7 +232,7 @@ function TTLLabel({ seconds, mode }: { seconds?: number | null; mode?: "after_vi
   );
 }
 
-function MessageExpiry({ expiresAt }: { expiresAt: string | null | undefined }) {
+function MessageExpiry({ expiresAt, revealed }: { expiresAt: string | null | undefined; revealed: boolean }) {
   const [remaining, setRemaining] = useState("");
 
   useEffect(() => {
@@ -256,7 +256,7 @@ function MessageExpiry({ expiresAt }: { expiresAt: string | null | undefined }) 
   return (
     <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
       <Clock className="w-3 h-3" />
-      {remaining}
+      {revealed ? remaining : "TTL SEALED"}
     </span>
   );
 }
@@ -875,8 +875,10 @@ function RoomView({
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
+  const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
   const [hidden, setHidden] = useState(false);
   const [revealRoomName, setRevealRoomName] = useState(false);
+  const [revealedSenderId, setRevealedSenderId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const revealTokenRef = useRef(0);
   const touchRevealActiveRef = useRef(false);
@@ -914,7 +916,7 @@ function RoomView({
       for (const msg of messages as Message[]) {
         if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= now) {
           deleteMessageKey(msg.id);
-          if (heldPlaintext?.id === msg.id) hideRevealedMsg();
+          if (heldPlaintext?.id === msg.id) forceHideRevealedMsg();
         }
       }
     };
@@ -926,11 +928,11 @@ function RoomView({
   useEffect(() => {
     const onVis = () => {
       setHidden(document.visibilityState === "hidden");
-      if (document.visibilityState === "hidden") hideRevealedMsg();
+      if (document.visibilityState === "hidden") forceHideRevealedMsg();
     };
     const onBlur = () => {
       setHidden(true);
-      hideRevealedMsg();
+      forceHideRevealedMsg();
     };
     const onFocus = () => setHidden(document.visibilityState === "hidden");
     document.addEventListener("visibilitychange", onVis);
@@ -984,22 +986,47 @@ function RoomView({
 
   const revealMsg = async (msg: Message, key?: CryptoKey) => {
     const revealToken = ++revealTokenRef.current;
+    setRevealError((current) => (current?.id === msg.id ? null : current));
     let k = key ?? getMessageKey(msg.id);
     if (!k && msg.recipientEncryptedKeys?.[currentUserId]) {
       k = (await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])) ?? undefined;
       if (k) storeMessageKey(msg.id, k);
     }
-    if (!k) return;
+    if (!k) {
+      if (revealToken === revealTokenRef.current) {
+        setRevealError({
+          id: msg.id,
+          text: msg.recipientEncryptedKeys?.[currentUserId]
+            ? "No local decrypt key on this device. Link from the device that created this account."
+            : "This message was not encrypted for this device.",
+        });
+      }
+      return;
+    }
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
       if (revealToken !== revealTokenRef.current) return;
       setHeldPlaintext({ id: msg.id, text: plaintext });
-    } catch {}
+    } catch {
+      if (revealToken === revealTokenRef.current) {
+        setRevealError({ id: msg.id, text: "Could not decrypt this message on this device." });
+      }
+    }
   };
 
   const hideRevealedMsg = () => {
+    if (touchRevealActiveRef.current) return;
+    hideRevealedMsgNow();
+  };
+
+  const forceHideRevealedMsg = () => {
     touchRevealActiveRef.current = false;
+    hideRevealedMsgNow();
+  };
+
+  const hideRevealedMsgNow = () => {
     revealTokenRef.current += 1;
+    setRevealedSenderId(null);
     setHeldPlaintext((current) => {
       if (!current) return null;
       return { id: current.id, text: "" };
@@ -1028,8 +1055,7 @@ function RoomView({
   const endTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    touchRevealActiveRef.current = false;
-    hideRevealedMsg();
+    forceHideRevealedMsg();
   };
 
   const isExpired = (expiresAt?: string | null) => {
@@ -1080,7 +1106,7 @@ function RoomView({
 
       <div
         className="flex-1 overflow-y-auto p-4 space-y-3 select-none"
-        style={{ filter: hidden ? "blur(24px)" : "none", WebkitUserSelect: "none" }}
+        style={{ filter: hidden ? "blur(24px)" : "none", WebkitUserSelect: "none", overscrollBehavior: "contain" }}
         onScroll={hideRevealedMsg}
       >
         {messages.length === 0 && (
@@ -1095,7 +1121,8 @@ function RoomView({
           const isOwn = msg.senderId === currentUserId;
           const expired = isExpired(msg.expiresAt);
           const plaintext = heldPlaintext?.id === msg.id ? heldPlaintext.text : undefined;
-          const senderLabel = plaintext ? (msg.senderUsername ?? codenameForUser(msg.senderId)) : codenameForUser(msg.senderId);
+          const error = revealError?.id === msg.id ? revealError.text : undefined;
+          const senderLabel = revealedSenderId === msg.senderId ? (msg.senderUsername ?? codenameForUser(msg.senderId)) : codenameForUser(msg.senderId);
 
           return (
             <div
@@ -1106,11 +1133,19 @@ function RoomView({
               <div className={`max-w-[85%] md:max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
                 <div className="flex items-center gap-2">
                   {!isOwn && (
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <button
+                      type="button"
+                      onPointerDown={() => setRevealedSenderId(msg.senderId)}
+                      onPointerUp={() => setRevealedSenderId(null)}
+                      onPointerCancel={() => setRevealedSenderId(null)}
+                      onPointerLeave={() => setRevealedSenderId(null)}
+                      className="font-mono text-xs text-muted-foreground hover:text-primary"
+                      data-testid={`button-hold-reveal-sender-${msg.id}`}
+                    >
                       {senderLabel}
-                    </span>
+                    </button>
                   )}
-                  <MessageExpiry expiresAt={msg.expiresAt} />
+                  <MessageExpiry expiresAt={msg.expiresAt} revealed={!!plaintext} />
                 </div>
                 <div
                   className={`px-4 py-3 border ${
@@ -1150,10 +1185,15 @@ function RoomView({
                       )}
                     </button>
                   )}
+                  {error && (
+                    <p className="mt-2 font-mono text-[10px] leading-snug text-destructive" data-testid={`message-reveal-error-${msg.id}`}>
+                      {error}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-muted-foreground">
-                    {formatTime(msg.createdAt)}
+                    {plaintext ? formatTime(msg.createdAt) : "TIME SEALED"}
                   </span>
                   <Shield className="w-3 h-3 text-primary/50" />
                 </div>
@@ -1204,6 +1244,7 @@ export default function ChatApp() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const privacyAutoUnlockAttemptedRef = useRef(false);
+  const revealNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1227,6 +1268,15 @@ export default function ChatApp() {
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
   const codenameForUser = (id: string) => codenameFor(`user:${id}`);
   const codenameForRoom = (id: string) => codenameFor(`room:${id}`);
+  const scheduleNameReveal = (id: string) => {
+    if (revealNameTimerRef.current) clearTimeout(revealNameTimerRef.current);
+    revealNameTimerRef.current = setTimeout(() => setRevealedNameId(id), 220);
+  };
+  const clearNameReveal = () => {
+    if (revealNameTimerRef.current) clearTimeout(revealNameTimerRef.current);
+    revealNameTimerRef.current = null;
+    setRevealedNameId(null);
+  };
   const lockPrivacyShield = (reason: string) => {
     setPrivacyShield((current) => {
       if (!current.active) privacyAutoUnlockAttemptedRef.current = false;
@@ -1455,10 +1505,10 @@ export default function ChatApp() {
               <div className="flex-1 min-w-0">
                 <button
                   type="button"
-                  onPointerDown={() => setRevealedNameId(`user:${me.id}`)}
-                  onPointerUp={() => setRevealedNameId(null)}
-                  onPointerCancel={() => setRevealedNameId(null)}
-                  onPointerLeave={() => setRevealedNameId(null)}
+                  onPointerDown={() => scheduleNameReveal(`user:${me.id}`)}
+                  onPointerUp={clearNameReveal}
+                  onPointerCancel={clearNameReveal}
+                  onPointerLeave={clearNameReveal}
                   className="block font-mono text-xs font-semibold text-left hover:text-primary"
                   data-testid="button-hold-reveal-account-name"
                 >
@@ -1510,10 +1560,10 @@ export default function ChatApp() {
             <button
               key={room.id}
               onClick={() => setActiveRoomId(room.id)}
-              onPointerDown={() => setRevealedNameId(`room:${room.id}`)}
-              onPointerUp={() => setRevealedNameId(null)}
-              onPointerCancel={() => setRevealedNameId(null)}
-              onPointerLeave={() => setRevealedNameId(null)}
+              onPointerDown={() => scheduleNameReveal(`room:${room.id}`)}
+              onPointerUp={clearNameReveal}
+              onPointerCancel={clearNameReveal}
+              onPointerLeave={clearNameReveal}
               className={`w-full px-4 py-3 flex items-center gap-3 border-b border-border/30 hover:bg-accent/30 transition-colors text-left ${
                 activeRoomId === room.id ? "bg-accent/50 border-l-2 border-l-primary" : ""
               }`}
@@ -1537,7 +1587,7 @@ export default function ChatApp() {
                   </p>
                   {room.lastMessageAt && (
                     <span className="font-mono text-xs text-muted-foreground ml-2 flex-shrink-0">
-                      {formatDate(room.lastMessageAt)}
+                      {revealedNameId === `room:${room.id}` ? formatDate(room.lastMessageAt) : "SEALED"}
                     </span>
                   )}
                 </div>
