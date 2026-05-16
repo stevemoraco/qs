@@ -10,7 +10,7 @@ import {
   setToken,
   storeKeyPair,
 } from "@/lib/auth";
-import { subscribeToPush } from "@/lib/pwa";
+import { ensurePushSubscription } from "@/lib/pwa";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 
@@ -119,8 +119,8 @@ export default function Register() {
       return;
     }
 
-    // Best-effort push subscription — non-blocking failures.
-    void subscribeToPush(token);
+    // Best-effort push subscription — relinks this browser endpoint to the new account.
+    await ensurePushSubscription(token);
 
     setStep("done");
     setLocation("/app");

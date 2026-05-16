@@ -1295,18 +1295,35 @@ export default function ChatApp() {
     setPushBusy(false);
   };
 
-  useEffect(() => {
+  const relinkPushIfAllowed = async () => {
     const token = getToken();
     if (!token) return;
     const permission = notificationPermission();
     if (permission === "granted") {
-      void ensurePushSubscription(token).then(setPushStatus);
-    } else {
-      setPushStatus({
-        ok: false,
-        reason: permission === "denied" ? "Notifications are blocked for this site." : "Tap enable to register this device for message alerts.",
-      });
+      setPushStatus(await ensurePushSubscription(token));
+      return;
     }
+    setPushStatus({
+      ok: false,
+      reason: permission === "denied" ? "Notifications are blocked for this site." : "Tap enable to register this device for message alerts.",
+    });
+  };
+
+  useEffect(() => {
+    void relinkPushIfAllowed();
+    const onFocus = () => void relinkPushIfAllowed();
+    const onPageShow = () => void relinkPushIfAllowed();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void relinkPushIfAllowed();
+    };
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, []);
 
   const uploadLocalKeys = async () => {

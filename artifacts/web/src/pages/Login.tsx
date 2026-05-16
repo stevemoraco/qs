@@ -12,7 +12,7 @@ import {
   setLastHandle,
   setToken,
 } from "@/lib/auth";
-import { subscribeToPush } from "@/lib/pwa";
+import { ensurePushSubscription } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
@@ -54,7 +54,7 @@ export default function Login() {
       setToken(data.token);
       setAuthHandle(data.authHandle);
       setLastHandle(normalizedHandle);
-      void subscribeToPush(data.token);
+      await ensurePushSubscription(data.token);
       setLocation("/app", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Passkey login failed.");
@@ -81,7 +81,7 @@ export default function Login() {
       setToken(data.token);
       setAuthHandle(data.authHandle);
       setDevicePasscode(passcode);
-      void subscribeToPush(data.token);
+      await ensurePushSubscription(data.token);
       setLocation("/app", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not link this device with that invite.");
