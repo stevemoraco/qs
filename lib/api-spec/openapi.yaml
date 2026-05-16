@@ -2,14 +2,27 @@ openapi: 3.1.0
 info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 1.0.0
+  description: QuantumShield — Post-quantum encrypted chat API (ML-KEM-1024 + ML-DSA-87)
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+  - name: rooms
+    description: Chat rooms
+  - name: messages
+    description: Encrypted messages
+  - name: keys
+    description: Post-quantum key exchange
+  - name: stats
+    description: Platform statistics
+
 paths:
   /healthz:
     get:
@@ -24,7 +37,433 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: postAuthRegister
+      tags: [auth]
+      summary: Register with post-quantum key bundle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "409":
+          description: Username taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: postAuthLogin
+      tags: [auth]
+      summary: Login and receive a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getAuthMe
+      tags: [auth]
+      summary: Get current authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: postAuthLogout
+      tags: [auth]
+      summary: Logout and invalidate session
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users/search:
+    get:
+      operationId: getUsersSearch
+      tags: [users]
+      summary: Search users by username
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{userId}:
+    get:
+      operationId: getUsersUserId
+      tags: [users]
+      summary: Get a user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rooms:
+    get:
+      operationId: getRooms
+      tags: [rooms]
+      summary: List rooms for the current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+
+    post:
+      operationId: postRooms
+      tags: [rooms]
+      summary: Create a new room
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomRequest"
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /rooms/{roomId}:
+    get:
+      operationId: getRoomsRoomId
+      tags: [rooms]
+      summary: Get room details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteRoomsRoomId
+      tags: [rooms]
+      summary: Delete a room
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /rooms/{roomId}/members:
+    get:
+      operationId: getRoomsRoomIdMembers
+      tags: [rooms]
+      summary: Get room members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Room members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+    post:
+      operationId: postRoomsRoomIdMembers
+      tags: [rooms]
+      summary: Add a member to a room
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddMemberRequest"
+      responses:
+        "200":
+          description: Member added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /rooms/{roomId}/messages:
+    get:
+      operationId: getRoomsRoomIdMessages
+      tags: [messages]
+      summary: Get encrypted messages in a room
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cursor for pagination (message ID)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: List of encrypted messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+
+    post:
+      operationId: postRoomsRoomIdMessages
+      tags: [messages]
+      summary: Send an encrypted message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /rooms/{roomId}/messages/{messageId}:
+    delete:
+      operationId: deleteRoomsRoomIdMessagesMessageId
+      tags: [messages]
+      summary: Delete a message (triggers key destruction)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Message deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /keys/upload:
+    post:
+      operationId: postKeysUpload
+      tags: [keys]
+      summary: Upload pre-key bundle (ML-KEM-1024 + ML-DSA-87)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreKeyBundle"
+      responses:
+        "200":
+          description: Keys uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /keys/{userId}:
+    get:
+      operationId: getKeysUserId
+      tags: [keys]
+      summary: Fetch a user's pre-key bundle for key exchange
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Pre-key bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreKeyBundle"
+        "404":
+          description: No keys found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /stats/overview:
+    get:
+      operationId: getStatsOverview
+      tags: [stats]
+      summary: Get platform stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsOverview"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +473,241 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+
+    User:
+      type: object
+      required: [id, username, createdAt]
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        avatarColor:
+          type: string
+          nullable: true
+        kemPublicKey:
+          type: string
+          nullable: true
+          description: Base64-encoded ML-KEM-1024 public key
+        dsaPublicKey:
+          type: string
+          nullable: true
+          description: Base64-encoded ML-DSA-87 public key
+        createdAt:
+          type: string
+          format: date-time
+
+    RegisterRequest:
+      type: object
+      required: [username, password, kemPublicKey, dsaPublicKey]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+        password:
+          type: string
+          minLength: 8
+        displayName:
+          type: string
+          nullable: true
+        kemPublicKey:
+          type: string
+          description: Base64-encoded ML-KEM-1024 public key
+        dsaPublicKey:
+          type: string
+          description: Base64-encoded ML-DSA-87 public key
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    Room:
+      type: object
+      required: [id, type, createdAt, memberCount]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [direct, group]
+        memberCount:
+          type: integer
+        lastMessageAt:
+          type: string
+          format: date-time
+          nullable: true
+        ttlSeconds:
+          type: integer
+          nullable: true
+          description: Message TTL — keys destroyed after this period
+        createdAt:
+          type: string
+          format: date-time
+        members:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/User"
+
+    CreateRoomRequest:
+      type: object
+      required: [type, memberIds]
+      properties:
+        name:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [direct, group]
+        memberIds:
+          type: array
+          items:
+            type: string
+        ttlSeconds:
+          type: integer
+          nullable: true
+          description: Message TTL in seconds. Keys are destroyed after this period.
+
+    Message:
+      type: object
+      required: [id, roomId, senderId, ciphertext, nonce, algorithm, createdAt]
+      properties:
+        id:
+          type: string
+        roomId:
+          type: string
+        senderId:
+          type: string
+        senderUsername:
+          type: string
+          nullable: true
+        ciphertext:
+          type: string
+          description: Base64-encoded AES-256-GCM ciphertext
+        nonce:
+          type: string
+          description: Base64-encoded 96-bit nonce
+        algorithm:
+          type: string
+          description: "Cipher suite: AES-256-GCM+ML-KEM-1024+ML-DSA-87"
+        signature:
+          type: string
+          nullable: true
+          description: Base64-encoded ML-DSA-87 signature over ciphertext
+        recipientEncryptedKeys:
+          type: object
+          nullable: true
+          description: Map of userId to their ML-KEM encapsulated message key
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    SendMessageRequest:
+      type: object
+      required: [ciphertext, nonce, algorithm]
+      properties:
+        ciphertext:
+          type: string
+        nonce:
+          type: string
+        algorithm:
+          type: string
+        signature:
+          type: string
+          nullable: true
+        recipientEncryptedKeys:
+          type: object
+          nullable: true
+          description: Map of userId to their ML-KEM encapsulated message key
+          additionalProperties:
+            type: string
+        ttlSeconds:
+          type: integer
+          nullable: true
+
+    PreKeyBundle:
+      type: object
+      required: [kemPublicKey, dsaPublicKey, kemSignature]
+      properties:
+        kemPublicKey:
+          type: string
+          description: Base64-encoded ML-KEM-1024 public key
+        dsaPublicKey:
+          type: string
+          description: Base64-encoded ML-DSA-87 public key
+        kemSignature:
+          type: string
+          description: ML-DSA-87 signature over the KEM public key
+        oneTimePreKeys:
+          type: array
+          nullable: true
+          items:
+            type: object
+            required: [keyId, publicKey, signature]
+            properties:
+              keyId:
+                type: string
+              publicKey:
+                type: string
+              signature:
+                type: string
+
+    AddMemberRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+
+    StatsOverview:
+      type: object
+      required: [totalUsers, totalRooms, totalMessages, activeRoomsToday]
+      properties:
+        totalUsers:
+          type: integer
+        totalRooms:
+          type: integer
+        totalMessages:
+          type: integer
+        activeRoomsToday:
+          type: integer

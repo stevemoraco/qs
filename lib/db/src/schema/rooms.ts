@@ -1,0 +1,12 @@
+import { pgTable, text, timestamp, uuid, integer } from "drizzle-orm/pg-core";
+
+export const roomsTable = pgTable("rooms", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name"),
+  type: text("type", { enum: ["direct", "group"] }).notNull().default("direct"),
+  ttlSeconds: integer("ttl_seconds"),
+  lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type Room = typeof roomsTable.$inferSelect;
