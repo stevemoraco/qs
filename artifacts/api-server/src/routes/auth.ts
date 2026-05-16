@@ -380,6 +380,25 @@ router.post("/auth/passkey/login/options", async (req, res) => {
     return;
   }
 
+  const [handleState] = await db
+    .select({
+      active: identityCodesTable.active,
+      expiresAt: identityCodesTable.expiresAt,
+    })
+    .from(identityCodesTable)
+    .where(and(eq(identityCodesTable.code, handle), eq(identityCodesTable.kind, "alias")))
+    .limit(1);
+
+  if (!handleState) {
+    res.status(404).json({ error: "Handle not found" });
+    return;
+  }
+
+  if (!handleState.active || (handleState.expiresAt && handleState.expiresAt <= new Date())) {
+    res.status(403).json({ error: "Handle is disabled or expired. Enable it from an active session before using it to log in." });
+    return;
+  }
+
   const rows = await db
     .select({ credential: deviceCredentialsTable })
     .from(identityCodesTable)
