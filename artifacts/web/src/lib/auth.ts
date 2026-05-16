@@ -192,14 +192,30 @@ export function getDsaPublicKey(): string | null {
   return localStorage.getItem(DSA_PK_KEY);
 }
 
+export function getLocalKeyPair(): {
+  kemSecretKey: Uint8Array | null;
+  kemPublicKey: Uint8Array | null;
+  dsaSecretKey: Uint8Array | null;
+  dsaPublicKey: Uint8Array | null;
+} {
+  return {
+    kemSecretKey: getStoredBytes(KEM_SK_KEY),
+    kemPublicKey: getStoredBytes(KEM_PK_KEY),
+    dsaSecretKey: getStoredBytes(DSA_SK_KEY),
+    dsaPublicKey: getStoredBytes(DSA_PK_KEY),
+  };
+}
+
 export function getKemSecretKey(): Uint8Array | null {
-  const v = localStorage.getItem(KEM_SK_KEY);
-  if (!v) return null;
-  return Uint8Array.from(atob(v), (c) => c.charCodeAt(0));
+  return getStoredBytes(KEM_SK_KEY);
 }
 
 export function getDsaSecretKey(): Uint8Array | null {
-  const v = localStorage.getItem(DSA_SK_KEY);
+  return getStoredBytes(DSA_SK_KEY);
+}
+
+function getStoredBytes(key: string): Uint8Array | null {
+  const v = localStorage.getItem(key);
   if (!v) return null;
   return Uint8Array.from(atob(v), (c) => c.charCodeAt(0));
 }

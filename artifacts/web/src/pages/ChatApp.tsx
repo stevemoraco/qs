@@ -36,13 +36,15 @@ import {
   useGetIdentityCodes,
   usePatchIdentityCodesCodeId,
   usePostIdentityCodes,
+  usePostKeysUpload,
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, verifyDevice } from "@/lib/auth";
+import { clearToken, getKemSecretKey, getLastHandle, getLocalKeyPair, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
+import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -55,6 +57,10 @@ function bytesToBase64(bytes: Uint8Array): string {
   let value = "";
   for (const byte of bytes) value += String.fromCharCode(byte);
   return btoa(value);
+}
+
+function sameBase64Bytes(a: string | null | undefined, b: Uint8Array | null): boolean {
+  return !!a && !!b && a === bytesToBase64(b);
 }
 
 function base64ToBytes(value: string): Uint8Array {
@@ -1266,6 +1272,8 @@ export default function ChatApp() {
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
   const [pushStatus, setPushStatus] = useState<{ ok: boolean; reason: string } | null>(null);
   const [pushBusy, setPushBusy] = useState(false);
+  const [keyRepairStatus, setKeyRepairStatus] = useState<{ ok: boolean; reason: string } | null>(null);
+  const [keyRepairBusy, setKeyRepairBusy] = useState(false);
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -1276,6 +1284,7 @@ export default function ChatApp() {
 
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
+  const uploadKeys = usePostKeysUpload();
 
   const enablePush = async () => {
     const token = getToken();
@@ -1299,6 +1308,67 @@ export default function ChatApp() {
       });
     }
   }, []);
+
+  const uploadLocalKeys = async () => {
+    const keys = getLocalKeyPair();
+    if (!keys.kemPublicKey || !keys.kemSecretKey || !keys.dsaPublicKey || !keys.dsaSecretKey) {
+      setKeyRepairStatus({
+        ok: false,
+        reason: "Local private keys are missing on this install. Rotate this device to fresh keys for future messages, or use an install that still has the original keys for old messages.",
+      });
+      return false;
+    }
+    const kemSignature = ml_dsa87.sign(keys.kemPublicKey, keys.dsaSecretKey);
+    await uploadKeys.mutateAsync({
+      data: {
+        kemPublicKey: bytesToBase64(keys.kemPublicKey),
+        dsaPublicKey: bytesToBase64(keys.dsaPublicKey),
+        kemSignature: bytesToBase64(kemSignature),
+      },
+    });
+    setKeyRepairStatus({ ok: true, reason: "Local key bundle relinked to this account." });
+    return true;
+  };
+
+  const rotateLocalKeys = async () => {
+    setKeyRepairBusy(true);
+    try {
+      const kem = ml_kem1024.keygen();
+      const dsa = ml_dsa87.keygen();
+      const kemSignature = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
+      await uploadKeys.mutateAsync({
+        data: {
+          kemPublicKey: bytesToBase64(kem.publicKey),
+          dsaPublicKey: bytesToBase64(dsa.publicKey),
+          kemSignature: bytesToBase64(kemSignature),
+        },
+      });
+      storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
+      setKeyRepairStatus({ ok: true, reason: "Fresh keys linked. New messages will encrypt to this install." });
+    } catch (err) {
+      setKeyRepairStatus({ ok: false, reason: err instanceof Error ? err.message : "Could not rotate keys for this install." });
+    } finally {
+      setKeyRepairBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!me) return;
+    const keys = getLocalKeyPair();
+    const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
+    if (!localComplete) {
+      setKeyRepairStatus({
+        ok: false,
+        reason: "Local private keys are missing on this install. Old messages require the install that originally held the keys.",
+      });
+      return;
+    }
+    if (!sameBase64Bytes(me.kemPublicKey, keys.kemPublicKey) || !sameBase64Bytes(me.dsaPublicKey, keys.dsaPublicKey)) {
+      void uploadLocalKeys().catch((err) => {
+        setKeyRepairStatus({ ok: false, reason: err instanceof Error ? err.message : "Could not relink local keys." });
+      });
+    }
+  }, [me?.id, me?.kemPublicKey, me?.dsaPublicKey]);
 
   const logout = usePostAuthLogout({
     mutation: {
@@ -1516,6 +1586,23 @@ export default function ChatApp() {
             data-testid="button-enable-push-inline"
           >
             {pushBusy ? "ENABLING..." : "ENABLE PUSH"}
+          </button>
+        </div>
+      )}
+      {keyRepairStatus && !keyRepairStatus.ok && (
+        <div className="border-b border-destructive/25 bg-destructive/10 px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2" data-testid="key-status-warning">
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[10px] tracking-widest text-destructive">LOCAL DECRYPT KEYS NOT LINKED</p>
+            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{keyRepairStatus.reason}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void rotateLocalKeys()}
+            disabled={keyRepairBusy}
+            className="border border-destructive/40 bg-destructive/10 px-3 py-2 font-mono text-[10px] tracking-widest text-destructive hover:bg-destructive/15 disabled:opacity-50"
+            data-testid="button-rotate-local-keys"
+          >
+            {keyRepairBusy ? "LINKING..." : "LINK FRESH KEYS"}
           </button>
         </div>
       )}
