@@ -43,7 +43,7 @@ import { clearToken, getKemSecretKey, getLastHandle, getToken, loginWithPasskey,
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
-import { subscribeToPush } from "@/lib/pwa";
+import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
@@ -1264,6 +1264,8 @@ export default function ChatApp() {
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "threat" | "unavailable">("scanning");
   const [cameraStatusDetail, setCameraStatusDetail] = useState("");
+  const [pushStatus, setPushStatus] = useState<{ ok: boolean; reason: string } | null>(null);
+  const [pushBusy, setPushBusy] = useState(false);
   const [revealedNameId, setRevealedNameId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -1275,9 +1277,27 @@ export default function ChatApp() {
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
 
+  const enablePush = async () => {
+    const token = getToken();
+    if (!token) return;
+    setPushBusy(true);
+    const result = await ensurePushSubscription(token);
+    setPushStatus(result);
+    setPushBusy(false);
+  };
+
   useEffect(() => {
     const token = getToken();
-    if (token) void subscribeToPush(token);
+    if (!token) return;
+    const permission = notificationPermission();
+    if (permission === "granted") {
+      void ensurePushSubscription(token).then(setPushStatus);
+    } else {
+      setPushStatus({
+        ok: false,
+        reason: permission === "denied" ? "Notifications are blocked for this site." : "Tap enable to register this device for message alerts.",
+      });
+    }
   }, []);
 
   const logout = usePostAuthLogout({
@@ -1482,6 +1502,23 @@ export default function ChatApp() {
         </div>
       )}
       <CameraScanStatus status={cameraStatus} detail={cameraStatusDetail} />
+      {pushStatus && !pushStatus.ok && (
+        <div className="border-b border-primary/20 bg-primary/5 px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2" data-testid="push-status-warning">
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[10px] tracking-widest text-primary">PUSH NOTIFICATIONS OFFLINE</p>
+            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{pushStatus.reason}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void enablePush()}
+            disabled={pushBusy}
+            className="border border-primary/40 bg-primary/10 px-3 py-2 font-mono text-[10px] tracking-widest text-primary hover:bg-primary/15 disabled:opacity-50"
+            data-testid="button-enable-push-inline"
+          >
+            {pushBusy ? "ENABLING..." : "ENABLE PUSH"}
+          </button>
+        </div>
+      )}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div
           className={`${

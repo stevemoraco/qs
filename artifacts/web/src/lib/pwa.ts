@@ -90,21 +90,26 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
-export async function subscribeToPush(authToken: string): Promise<boolean> {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+export type PushSubscriptionResult =
+  | { ok: true; reason: "subscribed" }
+  | { ok: false; reason: string };
+
+export async function ensurePushSubscription(authToken: string): Promise<PushSubscriptionResult> {
+  if (!("serviceWorker" in navigator)) return { ok: false, reason: "Service workers are not supported in this browser." };
+  if (!("PushManager" in window)) return { ok: false, reason: "Push notifications are not supported in this browser." };
   try {
     const reg = (await navigator.serviceWorker.ready) ?? (await registerServiceWorker());
-    if (!reg) return false;
+    if (!reg) return { ok: false, reason: "Service worker registration is not ready." };
 
     const vapidKey = await fetch("/api/push/vapid-public-key")
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => j?.publicKey)
       .catch(() => null);
 
-    if (!vapidKey) return false;
+    if (!vapidKey) return { ok: false, reason: "Server push key is unavailable." };
 
     const permission = await requestNotificationPermission();
-    if (permission !== "granted") return false;
+    if (permission !== "granted") return { ok: false, reason: permission === "denied" ? "Notifications are blocked for this site." : "Notification permission was not granted." };
 
     const keyBytes = urlBase64ToUint8Array(vapidKey);
     let sub = await reg.pushManager.getSubscription();
@@ -135,9 +140,17 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
         userAgent: navigator.userAgent,
       }),
     });
-    return res.ok;
+    if (!res.ok) {
+      const data = await res.json().catch(() => null) as { error?: string } | null;
+      return { ok: false, reason: data?.error ?? "Server rejected the push subscription." };
+    }
+    return { ok: true, reason: "subscribed" };
   } catch (e) {
     console.error("Push subscription failed", e);
-    return false;
+    return { ok: false, reason: e instanceof Error ? e.message : "Push subscription failed." };
   }
+}
+
+export async function subscribeToPush(authToken: string): Promise<boolean> {
+  return (await ensurePushSubscription(authToken)).ok;
 }

@@ -59,7 +59,12 @@ export async function notifyUser(userId: string, payload: { title: string; body:
     .from(pushSubscriptionsTable)
     .where(eq(pushSubscriptionsTable.userId, userId));
 
-  await Promise.allSettled(
+  if (subscriptions.length === 0) {
+    logger.info({ userId }, "Push notification skipped: user has no subscriptions");
+    return;
+  }
+
+  const results = await Promise.allSettled(
     subscriptions.map(async (sub) => {
       try {
         await webPush.sendNotification(
@@ -76,12 +81,15 @@ export async function notifyUser(userId: string, payload: { title: string; body:
         const statusCode = (err as { statusCode?: number }).statusCode;
         if (statusCode === 404 || statusCode === 410) {
           await db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
+          logger.info({ userId, statusCode }, "Deleted expired push subscription");
         } else {
           logger.warn({ err, statusCode }, "Push notification delivery failed");
         }
       }
     }),
   );
+  const failed = results.filter((result) => result.status === "rejected").length;
+  logger.info({ userId, subscriptions: subscriptions.length, failed }, "Push notification delivery attempted");
 }
 
 router.get("/push/vapid-public-key", (_req, res) => {
@@ -132,6 +140,7 @@ router.post("/push/subscribe", requireAuth, async (req: AuthRequest, res) => {
     });
   }
 
+  logger.info({ userId: req.user!.id, updated: existing.length > 0 }, "Push subscription saved");
   res.status(201).json({ ok: true });
 });
 
