@@ -234,7 +234,7 @@ export default function Landing() {
               Why don't "privacy focused" apps <span className="whitespace-nowrap">work this way?</span>
             </span>
           </h1>
-          <p className="font-mono text-xs md:text-sm text-muted-foreground max-w-xl mx-auto mb-4 leading-snug">Encrypted. Hold-revealed. Expiring by design.</p>
+          <p className="font-mono text-xs md:text-sm text-muted-foreground max-w-xl mx-auto mb-4 leading-snug">PQ encrypted. Hold-revealed. Self-expiring.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-w-2xl mx-auto mb-4 text-left">
             {HERO_FEATURES.map((feature) => (
               <div key={feature.label} className="flex items-center gap-2 border border-border/50 bg-card/35 px-3 py-2 backdrop-blur-sm">
