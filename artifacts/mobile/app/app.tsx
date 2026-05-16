@@ -148,11 +148,11 @@ function FrontCameraSentinel({
 
   useEffect(() => {
     let mounted = true;
-    onStatus("scanning", "REQUESTING FRONT CAMERA");
+    onStatus("scanning", "REQUESTING LOCAL SCAN");
     requestPermission()
       .then((result) => {
         if (!mounted) return;
-        onStatus(result.granted ? "scanning" : "unavailable", result.granted ? "STARTING FRONT CAMERA" : "CAMERA DENIED");
+        onStatus(result.granted ? "scanning" : "unavailable", result.granted ? "STARTING ON-DEVICE SCAN" : "CAMERA DENIED");
       })
       .catch(() => {
         if (mounted) onStatus("unavailable", "CAMERA PERMISSION ERROR");
@@ -176,7 +176,7 @@ function FrontCameraSentinel({
       active={active}
       mode="video"
       mute
-      onCameraReady={() => onStatus("clear", "FRONT CAMERA LIVE")}
+      onCameraReady={() => onStatus("clear", "ON-DEVICE")}
       onMountError={() => onStatus("unavailable", "CAMERA MOUNT ERROR")}
     />
   );
@@ -1010,7 +1010,8 @@ export default function AppScreen() {
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const privacyAutoUnlockAttemptedRef = useRef(false);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "unavailable">("scanning");
-  const [cameraDetail, setCameraDetail] = useState("REQUESTING FRONT CAMERA");
+  const [cameraDetail, setCameraDetail] = useState("REQUESTING LOCAL SCAN");
+  const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
 
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
@@ -1090,10 +1091,30 @@ export default function AppScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}> 
       <FrontCameraSentinel active={appActive} onStatus={updateCameraStatus} />
-      <View style={[styles.cameraStatus, { borderBottomColor: colors.border, paddingTop: (Platform.OS === "web" ? 6 : insets.top + 6) }]} testID="camera-status">
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => setCameraInfoOpen(true)}
+        style={[styles.cameraStatus, { borderBottomColor: colors.border, paddingTop: (Platform.OS === "web" ? 6 : insets.top + 6) }]}
+        testID="camera-status"
+      >
         <View style={[styles.cameraDot, { backgroundColor: cameraColor }]} />
-        <Text style={[styles.cameraStatusText, { color: cameraColor }]}>{cameraStatus === "clear" ? "NO CAMERA DETECTED - AREA CLEAR" : cameraStatus === "scanning" ? "INITIALIZING FRONT CAMERA SCAN" : "CAMERA UNAVAILABLE - SCAN OFFLINE"} / {cameraDetail}</Text>
-      </View>
+        <Text style={[styles.cameraStatusText, { color: cameraColor }]}>{cameraStatus === "clear" ? "PRIVACY ENSURED" : cameraStatus === "scanning" ? "STARTING PRIVACY SCAN" : "PRIVACY SCAN OFFLINE"} / {cameraDetail}</Text>
+      </TouchableOpacity>
+      <Modal visible={cameraInfoOpen} transparent animationType="fade" onRequestClose={() => setCameraInfoOpen(false)}>
+        <View style={styles.confirmOverlay}>
+          <View style={[styles.confirmBox, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+            <Text style={[styles.confirmTitle, { color: colors.primary }]}>WHY THE CAMERA IS ON</Text>
+            <Text style={[styles.confirmText, { color: colors.mutedForeground }]}>
+              QuantumShield uses your front camera locally to help detect nearby recording devices pointed at the screen. Frames stay on this device for privacy-shield decisions and are not uploaded or attached to messages.
+            </Text>
+            <View style={styles.confirmActions}>
+              <TouchableOpacity onPress={() => setCameraInfoOpen(false)} style={[styles.confirmBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+                <Text style={[styles.confirmBtnText, { color: colors.background }]}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       {privacyLock.active && (
         <View style={[styles.privacyLock, { backgroundColor: colors.background }]} testID="privacy-lock">
           <Feather name="shield" size={44} color={colors.primary} />
