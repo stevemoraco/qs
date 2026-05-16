@@ -30,6 +30,7 @@ import {
   useGetRoomsRoomIdMembers,
   getGetRoomsRoomIdMembersQueryKey,
   useGetUsersSearch,
+  getGetUsersSearchQueryKey,
 } from "@workspace/api-client-react";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
@@ -180,7 +181,7 @@ function ChatView({ room, myId, colors }: { room: Room; myId: string; colors: Re
     query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) },
   });
 
-  const sendMsg = usePostRoomsRoomIdMessages(room.id, {
+  const sendMsg = usePostRoomsRoomIdMessages({
     mutation: {
       onSuccess: () => qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) }),
     },
@@ -192,7 +193,7 @@ function ChatView({ room, myId, colors }: { room: Room; myId: string; colors: Re
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
     sendMsg.mutate(
-      { data: { ciphertext, nonce, algorithm: CIPHER_SUITE, ttlSeconds: room.ttlSeconds } },
+      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, ttlSeconds: room.ttlSeconds } },
       {
         onSuccess: (msg) => {
           messageKeyStore.set(msg.id, key);
@@ -292,7 +293,7 @@ function NewRoomModal({ visible, onClose, myId, colors }: {
 
   const { data: results = [] } = useGetUsersSearch(
     { q: search },
-    { query: { enabled: search.length > 0 } }
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: search }), enabled: search.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -466,7 +467,7 @@ export default function AppScreen() {
               </View>
               <Text style={[styles.brand, { color: colors.foreground }]}>QUANTUMSHIELD</Text>
             </View>
-            <TouchableOpacity onPress={() => logout.mutate({})} testID="button-logout">
+            <TouchableOpacity onPress={() => logout.mutate()} testID="button-logout">
               <Feather name="log-out" size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
           </View>

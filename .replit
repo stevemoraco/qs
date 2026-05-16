@@ -37,7 +37,3 @@ externalPort = 3000
 [[ports]]
 localPort = 22333
 externalPort = 80
-
-
-# Claude persistence (added by DATA Tools)
-onBoot = "source /home/runner/workspace/.replit-tools/scripts/setup-claude-code.sh 2>/dev/null || true"

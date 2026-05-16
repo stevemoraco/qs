@@ -3,11 +3,22 @@ import { Link, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
 import { setToken, storeKeyPair } from "@/lib/auth";
+import { subscribeToPush } from "@/lib/pwa";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 
 function uint8ToBase64(arr: Uint8Array): string {
   return btoa(String.fromCharCode(...arr));
+}
+
+function extractErrorMessage(err: unknown, fallback: string): string {
+  if (err && typeof err === "object") {
+    const e = err as { response?: { data?: { error?: unknown } }; message?: unknown };
+    const apiErr = e.response?.data?.error;
+    if (typeof apiErr === "string" && apiErr.length > 0) return apiErr;
+    if (typeof e.message === "string" && e.message.length > 0) return e.message;
+  }
+  return fallback;
 }
 
 type GenerationStep =
@@ -33,16 +44,17 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    setStep("generating-kem");
+    const kem = ml_kem1024.keygen();
+
+    setStep("generating-dsa");
+    const dsa = ml_dsa87.keygen();
+
+    const kemPkB64 = uint8ToBase64(kem.publicKey);
+    const dsaPkB64 = uint8ToBase64(dsa.publicKey);
+
+    let token: string;
     try {
-      setStep("generating-kem");
-      const kem = ml_kem1024.keygen();
-
-      setStep("generating-dsa");
-      const dsa = ml_dsa87.keygen();
-
-      const kemPkB64 = uint8ToBase64(kem.publicKey);
-      const dsaPkB64 = uint8ToBase64(dsa.publicKey);
-
       setStep("submitting");
       const authData = await register.mutateAsync({
         data: {
@@ -53,10 +65,16 @@ export default function Register() {
           dsaPublicKey: dsaPkB64,
         },
       });
-
+      token = authData.token;
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
-      setToken(authData.token);
+      setToken(token);
+    } catch (err: unknown) {
+      setStep("idle");
+      setError(extractErrorMessage(err, "Could not create identity. Please try a different username."));
+      return;
+    }
 
+    try {
       setStep("uploading");
       const kemSig = ml_dsa87.sign(dsa.secretKey, kem.publicKey);
       await uploadKeys.mutateAsync({
@@ -66,13 +84,17 @@ export default function Register() {
           kemSignature: uint8ToBase64(kemSig),
         },
       });
-
-      setStep("done");
-      setLocation("/app");
-    } catch {
+    } catch (err: unknown) {
       setStep("idle");
-      setError("Registration failed. Username may already be taken.");
+      setError(extractErrorMessage(err, "Identity created, but key bundle upload failed. Please log in and retry."));
+      return;
     }
+
+    // Best-effort push subscription — non-blocking failures.
+    void subscribeToPush(token);
+
+    setStep("done");
+    setLocation("/app");
   };
 
   const stepLabels: Record<GenerationStep, string> = {

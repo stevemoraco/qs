@@ -6,6 +6,7 @@ import roomsRouter from "./rooms";
 import messagesRouter from "./messages";
 import keysRouter from "./keys";
 import statsRouter from "./stats";
+import pushRouter from "./push";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(roomsRouter);
 router.use(messagesRouter);
 router.use(keysRouter);
 router.use(statsRouter);
+router.use(pushRouter);
 
 export default router;

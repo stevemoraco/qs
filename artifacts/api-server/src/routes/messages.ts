@@ -1,13 +1,18 @@
 import { Router } from "express";
 import { db, messagesTable, roomMembersTable, roomsTable, usersTable } from "@workspace/db";
-import { eq, and, lt, desc, sql } from "drizzle-orm";
+import { eq, and, lt, desc, ne } from "drizzle-orm";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
+import { notifyUser } from "./push";
 
 const router = Router();
 
+function routeParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] : (value ?? "");
+}
+
 router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
 
   const membership = await db
     .select()
@@ -77,7 +82,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
 });
 
 router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
 
   const membership = await db
     .select()
@@ -135,6 +140,20 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     .where(eq(usersTable.id, req.userId!))
     .limit(1);
 
+  const recipients = await db
+    .select({ userId: roomMembersTable.userId })
+    .from(roomMembersTable)
+    .where(and(eq(roomMembersTable.roomId, roomId), ne(roomMembersTable.userId, req.userId!)));
+
+  const notificationPayload = {
+    title: "QuantumShield",
+    body: `${sender?.username ?? "Someone"} sent an encrypted message.`,
+    url: "/app",
+    tag: `room-${roomId}`,
+  };
+
+  void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
+
   res.status(201).json({
     id: message.id,
     roomId: message.roomId,
@@ -151,7 +170,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
 });
 
 router.delete("/rooms/:roomId/messages/:messageId", requireAuth, async (req: AuthRequest, res) => {
-  const { messageId } = req.params;
+  const messageId = routeParam(req.params.messageId);
 
   await db
     .delete(messagesTable)

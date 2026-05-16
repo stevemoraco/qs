@@ -6,6 +6,10 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router = Router();
 
+function routeParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] : (value ?? "");
+}
+
 router.post("/keys/upload", requireAuth, async (req: AuthRequest, res) => {
   const parse = PostKeysUploadBody.safeParse(req.body);
   if (!parse.success) {
@@ -28,10 +32,12 @@ router.post("/keys/upload", requireAuth, async (req: AuthRequest, res) => {
 });
 
 router.get("/keys/:userId", requireAuth, async (req: AuthRequest, res) => {
+  const userId = routeParam(req.params.userId);
+
   const [key] = await db
     .select()
     .from(preKeysTable)
-    .where(eq(preKeysTable.userId, req.params.userId))
+    .where(eq(preKeysTable.userId, userId))
     .orderBy(preKeysTable.createdAt)
     .limit(1);
 

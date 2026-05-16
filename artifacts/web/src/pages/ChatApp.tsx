@@ -25,6 +25,7 @@ import {
   usePostRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
   useGetUsersSearch,
+  getGetUsersSearchQueryKey,
   usePostRoomsRoomIdMembers,
   getGetRoomsRoomIdMembersQueryKey,
 } from "@workspace/api-client-react";
@@ -128,7 +129,7 @@ function NewRoomDialog({ onClose, currentUserId }: { onClose: () => void; curren
 
   const { data: searchResults } = useGetUsersSearch(
     { q: search },
-    { query: { enabled: search.length > 0 } }
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: search }), enabled: search.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -299,7 +300,7 @@ function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }
     query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) },
   });
 
-  const sendMessage = usePostRoomsRoomIdMessages(room.id, {
+  const sendMessage = usePostRoomsRoomIdMessages({
     mutation: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) });
@@ -307,7 +308,7 @@ function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }
     },
   });
 
-  const addMember = usePostRoomsRoomIdMembers(room.id, {
+  const addMember = usePostRoomsRoomIdMembers({
     mutation: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) });
@@ -367,6 +368,7 @@ function RoomView({ room, currentUserId }: { room: Room; currentUserId: string }
 
     sendMessage.mutate(
       {
+        roomId: room.id,
         data: {
           ciphertext,
           nonce,
@@ -556,7 +558,7 @@ export default function ChatApp() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => logout.mutate({})}
+              onClick={() => logout.mutate()}
               className="text-muted-foreground hover:text-foreground transition-colors"
               title="Logout"
               data-testid="button-logout"

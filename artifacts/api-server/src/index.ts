@@ -1,5 +1,10 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+import { config as loadDotenv } from "dotenv";
+import { resolve } from "path";
+
+loadDotenv({ path: resolve(process.cwd(), "../../.env"), quiet: true });
+
+const app = (await import("./app")).default;
+const { logger } = await import("./lib/logger");
 
 const rawPort = process.env["PORT"];
 

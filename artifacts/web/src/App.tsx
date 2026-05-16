@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ChatApp from "@/pages/ChatApp";
 import NotFound from "@/pages/not-found";
+import SignupGate from "@/components/SignupGate";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +29,13 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
+      <Route path="/register">
+        {() => (
+          <SignupGate>
+            <Register />
+          </SignupGate>
+        )}
+      </Route>
       <Route path="/app">
         {() => <ProtectedRoute component={ChatApp} />}
       </Route>

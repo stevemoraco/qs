@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Shield, AlertCircle } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
 import { setToken } from "@/lib/auth";
+import { subscribeToPush } from "@/lib/pwa";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -14,6 +15,7 @@ export default function Login() {
     mutation: {
       onSuccess: (data) => {
         setToken(data.token);
+        void subscribeToPush(data.token);
         setLocation("/app");
       },
       onError: () => {

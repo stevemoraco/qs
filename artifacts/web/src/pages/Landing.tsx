@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Shield, Lock, Eye, Clock, Github, Zap, Key, Cpu, ChevronRight } from "lucide-react";
-import { useGetStatsOverview } from "@workspace/api-client-react";
+import {
+  getGetStatsOverviewQueryKey,
+  useGetStatsOverview,
+  type StatsOverview,
+} from "@workspace/api-client-react";
 import { isAuthenticated } from "@/lib/auth";
 
 const FEATURES = [
@@ -45,7 +49,9 @@ const ALGORITHMS = [
 ];
 
 export default function Landing() {
-  const { data: stats } = useGetStatsOverview({ query: { enabled: isAuthenticated() } } as Parameters<typeof useGetStatsOverview>[0]);
+  const { data: stats } = useGetStatsOverview<StatsOverview>({
+    query: { queryKey: getGetStatsOverviewQueryKey(), enabled: isAuthenticated() },
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

@@ -6,6 +6,10 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router = Router();
 
+function routeParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] : (value ?? "");
+}
+
 function publicUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
@@ -104,7 +108,7 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
 });
 
 router.get("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
 
   const membership = await db
     .select()
@@ -152,7 +156,7 @@ router.get("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
 });
 
 router.delete("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
 
   const membership = await db
     .select()
@@ -170,7 +174,7 @@ router.delete("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
 });
 
 router.get("/rooms/:roomId/members", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
 
   const members = await db
     .select({ user: usersTable })
@@ -182,7 +186,7 @@ router.get("/rooms/:roomId/members", requireAuth, async (req: AuthRequest, res) 
 });
 
 router.post("/rooms/:roomId/members", requireAuth, async (req: AuthRequest, res) => {
-  const { roomId } = req.params;
+  const roomId = routeParam(req.params.roomId);
   const parse = PostRoomsRoomIdMembersBody.safeParse(req.body);
   if (!parse.success) {
     res.status(400).json({ error: parse.error.message });

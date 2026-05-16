@@ -5,6 +5,10 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
 const router = Router();
 
+function routeParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] : (value ?? "");
+}
+
 function publicUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
@@ -34,10 +38,12 @@ router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
 });
 
 router.get("/users/:userId", requireAuth, async (req: AuthRequest, res) => {
+  const userId = routeParam(req.params.userId);
+
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, req.params.userId))
+    .where(eq(usersTable.id, userId))
     .limit(1);
 
   if (!user) {
