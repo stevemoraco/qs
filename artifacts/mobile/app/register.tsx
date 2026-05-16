@@ -139,7 +139,7 @@ export default function RegisterScreen() {
 
         <Text style={[s.title, { color: colors.foreground }]}>CREATE HANDLE</Text>
         <Text style={[s.subtitle, { color: colors.mutedForeground }]}>
-          Choose a durable handle. A strong passcode is created for your password manager.
+          Choose a durable handle. Device verification protects the generated access key.
         </Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -154,19 +154,6 @@ export default function RegisterScreen() {
             autoComplete="username"
             testID="input-handle"
           />
-
-          <TextInput
-            style={[s.passwordManagerSlot, { backgroundColor: colors.background, borderColor: colors.border, color: "transparent" }]}
-            value={passcode}
-            secureTextEntry
-            autoComplete="password-new"
-            textContentType="newPassword"
-            importantForAutofill="yes"
-            testID="input-passcode"
-          />
-          <Text style={[s.passwordManagerHint, { color: colors.mutedForeground }]}>
-            PASSWORD MANAGER ACCESS KEY - DO NOT TYPE
-          </Text>
 
           {!!error && (
             <View style={[s.errorBox, { backgroundColor: "#ef444420", borderColor: "#ef444440" }]}>
@@ -207,7 +194,7 @@ export default function RegisterScreen() {
           {[
             "ML-KEM-1024 keys generated on-device",
             "ML-DSA-87 identity keys generated locally",
-            "Handle plus password-manager passcode can recover access if app storage clears",
+            "Device verification protects the local generated access key",
           ].map((note) => (
             <View key={note} style={s.checkRow}>
               <Feather name="check-circle" size={12} color={colors.primary} />
@@ -232,8 +219,6 @@ const makeStyles = (colors: ReturnType<typeof useColors>) =>
     card: { borderWidth: 1, padding: 20, marginBottom: 24 },
     label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
     input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14 },
-    passwordManagerSlot: { borderWidth: 1, height: 44, paddingHorizontal: 12, paddingVertical: 12, fontFamily: "Inter_400Regular", fontSize: 14, marginTop: 12 },
-    passwordManagerHint: { fontFamily: "Inter_400Regular", fontSize: 10, marginTop: 6 },
     errorBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },
     errorText: { fontFamily: "Inter_400Regular", fontSize: 12, flex: 1 },
     infoBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, padding: 10, marginTop: 12 },

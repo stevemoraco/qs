@@ -18,7 +18,7 @@ The privacy features this project combines:
 | Screen | Screenshot and print friction | The web client reacts to PrintScreen and print lifecycle events. Expo requests platform screen-capture prevention and warns on screenshot events where supported. |
 | Key | Device-local identity keys | Post-quantum identity keys are generated locally during account creation. Private keys are not uploaded to the API. |
 | Code | Rollable handles and invite codes | Users claim a globally unique handle and can mint invite codes with visibility scopes, use limits, allow lists, expirations, and roll/disable controls. |
-| Passcode | Durable handle plus saved passcode login | Login shows only the user-created handle. A strong passcode is generated for the password manager and verified server-side as an argon2 hash. |
+| Passkey | Durable handle plus passkey login | Login shows only the user-created handle. The browser opens Face ID, Touch ID, Windows Hello, or the platform password manager to create or unlock the passkey. |
 | Session | Rotating device sessions | Each successful login issues a fresh bearer session, and logout deletes only that session. Handles can be disabled or rolled without reusing old names. |
 
 ## Start Here
@@ -44,9 +44,9 @@ All clients talk to the same API and use the same account system. Messages are e
 
 Account access works the same way across web, PWA, and Expo:
 
-- Create a permanent handle while a strong passcode is generated for the password manager and post-quantum identity keys are generated locally.
+- Create a permanent handle while the browser creates a passkey and post-quantum identity keys are generated locally.
 - Use the same handle as your primary alias, then roll or disable it if it should stop working for login/discovery.
-- Return from any browser or device with the handle plus the saved password-manager passcode. The API verifies the active handle and argon2 passcode hash before issuing a session.
+- Return from any browser or device with the handle plus its synced passkey. The API verifies the active handle and WebAuthn assertion before issuing a session.
 - Use invite codes to link trusted devices or control who can discover and join you.
 
 ## PWA Install
@@ -57,7 +57,7 @@ Chrome or Edge on desktop:
 2. Use the install icon in the address bar, or open the browser menu and choose `Install app`.
 3. Launch QuantumShield from the installed app window.
 4. Allow notifications when prompted so encrypted push alerts can be registered.
-5. Create a handle; a strong passcode is saved through the password manager and post-quantum identity keys are generated locally on that device.
+5. Create a handle; the browser creates a passkey and post-quantum identity keys are generated locally on that device.
 
 Chrome on Android:
 
@@ -96,7 +96,7 @@ Mobile behavior to know:
 - Backgrounding the app clears any currently revealed plaintext.
 - `expo-screen-capture` attempts to prevent screen capture for the chat screen where the platform supports it.
 - If a screenshot event is reported, the app shows a warning banner.
-- Login requires the account handle plus the saved password-manager passcode, so cleared app storage does not prevent sign-in.
+- Web/PWA login requires the account handle plus the synced passkey, so cleared browser storage does not prevent sign-in.
 - Alias and invite code behavior matches the web/PWA API: codes can be scoped, limited, expired, and rolled.
 
 ## Privacy Behavior
@@ -126,7 +126,7 @@ Identity and access behavior:
 - Registration creates an internal opaque account identifier and a required user-created handle stored as an alias code.
 - Handles, aliases, and invite codes support visibility scopes, max-use limits, allow lists, expirations, active/inactive state, and roll timestamps.
 - Search only returns active, public, non-expired identity codes.
-- Passcodes are verified with argon2. Login is rate-limited by handle and client address.
+- Web/PWA passkeys are verified with WebAuthn. Legacy device-link passcodes are still argon2 hashed, and login is rate-limited by handle and client address.
 - Session records are created on login and removed on logout.
 
 ## Status

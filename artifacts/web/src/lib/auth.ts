@@ -180,3 +180,45 @@ export async function linkDeviceWithInvite(code: string, passcode: string): Prom
 
   return res.json() as Promise<{ token: string; authHandle: string }>;
 }
+
+async function jsonFetch<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null) as T & { error?: string } | null;
+  if (!res.ok) {
+    throw new Error(data?.error ?? "Request failed");
+  }
+  return data as T;
+}
+
+export async function registerWithPasskey(input: {
+  handle: string;
+  kemPublicKey: string;
+  dsaPublicKey: string;
+  leadEmail?: string;
+}): Promise<{ token: string; authHandle: string }> {
+  const options = await jsonFetch<Parameters<typeof startRegistration>[0]>("/api/auth/passkey/register/options", {
+    handle: input.handle,
+  });
+  const response = await startRegistration(options);
+  return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/register/verify", {
+    handle: input.handle,
+    response,
+    kemPublicKey: input.kemPublicKey,
+    dsaPublicKey: input.dsaPublicKey,
+    leadEmail: input.leadEmail,
+  });
+}
+
+export async function loginWithPasskey(handle: string): Promise<{ token: string; authHandle: string }> {
+  const options = await jsonFetch<Parameters<typeof startAuthentication>[0]>("/api/auth/passkey/login/options", { handle });
+  const response = await startAuthentication(options);
+  return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/login/verify", {
+    handle,
+    response,
+  });
+}
+import { startAuthentication, startRegistration } from "@simplewebauthn/browser";

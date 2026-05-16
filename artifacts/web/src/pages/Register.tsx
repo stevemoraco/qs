@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, CheckCircle, Loader } from "lucide-react";
-import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
+import { usePostKeysUpload } from "@workspace/api-client-react";
 import {
-  generateDevicePasscode,
   isAuthenticated,
+  registerWithPasskey,
   setAuthHandle,
   setToken,
   storeKeyPair,
@@ -40,11 +40,9 @@ export default function Register() {
   const [, setLocation] = useLocation();
   const [leadEmail, setLeadEmail] = useState("");
   const [handle, setHandle] = useState("");
-  const [passcode] = useState(() => generateDevicePasscode());
   const [error, setError] = useState("");
   const [step, setStep] = useState<GenerationStep>("idle");
 
-  const register = usePostAuthRegister();
   const uploadKeys = usePostKeysUpload();
 
   useEffect(() => {
@@ -87,14 +85,11 @@ export default function Register() {
     let token: string;
     try {
       setStep("submitting");
-      const authData = await register.mutateAsync({
-        data: {
-          primaryCode: normalizedHandle,
-          passcode,
-          kemPublicKey: kemPkB64,
-          dsaPublicKey: dsaPkB64,
-          leadEmail: leadEmail || undefined,
-        },
+      const authData = await registerWithPasskey({
+        handle: normalizedHandle,
+        kemPublicKey: kemPkB64,
+        dsaPublicKey: dsaPkB64,
+        leadEmail: leadEmail || undefined,
       });
       token = authData.token;
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
@@ -159,7 +154,7 @@ export default function Register() {
           <div className="mb-8">
             <h1 className="font-mono font-bold text-xl tracking-tight">CREATE HANDLE</h1>
             <p className="font-mono text-xs text-muted-foreground mt-2">
-              Choose a permanent account handle. A strong passcode is created for your password manager.
+              Choose a permanent account handle. Face ID or your password manager creates the passkey.
             </p>
           </div>
 
@@ -181,20 +176,6 @@ export default function Register() {
                 data-testid="input-handle"
               />
             </div>
-
-            <input
-              type="password"
-              defaultValue={passcode}
-              className="w-full h-11 border border-border bg-background px-3 py-2.5 font-mono text-sm text-transparent caret-transparent focus:outline-none focus:border-primary/60 transition-colors"
-              name="password"
-              autoComplete="new-password"
-              aria-label="Password manager access key"
-              onFocus={(e) => e.currentTarget.select()}
-              data-testid="input-passcode"
-            />
-            <p className="font-mono text-[10px] text-muted-foreground -mt-3">
-              PASSWORD MANAGER ACCESS KEY - DO NOT TYPE
-            </p>
 
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">
@@ -234,7 +215,7 @@ export default function Register() {
           {[
             "ML-KEM-1024 keys generated in your browser",
             "ML-DSA-87 identity keys generated locally",
-            "Handle plus password-manager passcode can recover access if browser storage clears",
+            "A synced passkey can recover access if browser storage clears",
           ].map((note) => (
             <div key={note} className="flex items-center gap-2">
               <CheckCircle className="w-3 h-3 text-primary flex-shrink-0" />

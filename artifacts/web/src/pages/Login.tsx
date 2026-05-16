@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
-import { usePostAuthLogin } from "@workspace/api-client-react";
 import {
   enrollDeviceVerification,
   generateDevicePasscode,
   isAuthenticated,
+  loginWithPasskey,
   linkDeviceWithInvite,
   setAuthHandle,
   setDevicePasscode,
@@ -27,31 +27,17 @@ const LOGIN_PRIVACY_FEATURES = [
   { icon: EyeOff, label: "Blur and background shields hide secure content" },
   { icon: MonitorOff, label: "Screenshot, screen-capture, and print friction" },
   { icon: Key, label: "Alias and invite codes scope discovery and access" },
-  { icon: Lock, label: "Only the handle is typed; the passcode comes from the password manager" },
+  { icon: Lock, label: "Only the handle is typed; Face ID or your password manager unlocks the passkey" },
   { icon: Shield, label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [handle, setHandle] = useState("");
-  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
+  const [isPasskeyPending, setIsPasskeyPending] = useState(false);
   const [linkCode, setLinkCode] = useState("");
   const [isLinking, setIsLinking] = useState(false);
-
-  const login = usePostAuthLogin({
-    mutation: {
-      onSuccess: (data) => {
-        setToken(data.token);
-        setAuthHandle(data.authHandle);
-        void subscribeToPush(data.token);
-        setLocation("/app", { replace: true });
-      },
-      onError: () => {
-        setError("Invalid handle or passcode");
-      },
-    },
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,14 +47,21 @@ export default function Login() {
       setError("Enter your handle.");
       return;
     }
-    if (!passcode) {
-      setError("Select the saved QuantumShield passcode from your password manager.");
-      return;
+    try {
+      setIsPasskeyPending(true);
+      const data = await loginWithPasskey(normalizedHandle);
+      setToken(data.token);
+      setAuthHandle(data.authHandle);
+      void subscribeToPush(data.token);
+      setLocation("/app", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Passkey login failed.");
+    } finally {
+      setIsPasskeyPending(false);
     }
-    login.mutate({ data: { handle: normalizedHandle, passcode } });
   };
 
-  const isLoading = login.isPending;
+  const isLoading = isPasskeyPending;
 
   const handleLinkDevice = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,20 +128,6 @@ export default function Login() {
                 data-testid="input-handle"
               />
             </div>
-
-            <input
-              type="password"
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              className="w-full h-11 border border-border bg-background px-3 py-2.5 font-mono text-sm text-transparent caret-transparent focus:outline-none focus:border-primary/60 transition-colors"
-              name="password"
-              autoComplete="current-password"
-              aria-label="Saved password manager access key"
-              data-testid="input-passcode"
-            />
-            <p className="font-mono text-[10px] text-muted-foreground -mt-3">
-              PASSWORD MANAGER ACCESS KEY - USE SAVED ENTRY
-            </p>
 
             {error && (
               <div className="flex items-center gap-2 text-destructive border border-destructive/30 bg-destructive/10 px-3 py-2" data-testid="text-error">

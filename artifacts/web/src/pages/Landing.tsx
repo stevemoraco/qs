@@ -114,8 +114,8 @@ const PRIVACY_FEATURES = [
   },
   {
     icon: <Lock className="w-5 h-5" />,
-    title: "Handle plus saved passcode login",
-    desc: "Return access shows only the globally unique handle. The passcode is generated for the password manager and verified server-side as an argon2 hash.",
+    title: "Handle plus passkey login",
+    desc: "Return access shows only the globally unique handle. Face ID, Touch ID, Windows Hello, or the platform password manager creates and unlocks the passkey.",
   },
   {
     icon: <Shield className="w-5 h-5" />,
