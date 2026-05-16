@@ -95,6 +95,15 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
+async function readyServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  const registered = await registerServiceWorker();
+  if (!registered) return null;
+  return await Promise.race<ServiceWorkerRegistration | null>([
+    navigator.serviceWorker.ready,
+    new Promise((resolve) => setTimeout(() => resolve(registered), 2500)),
+  ]);
+}
+
 export type PushSubscriptionResult =
   | { ok: true; reason: "subscribed" }
   | { ok: false; reason: string };
@@ -103,7 +112,7 @@ export async function ensurePushSubscription(authToken: string): Promise<PushSub
   if (!("serviceWorker" in navigator)) return { ok: false, reason: "Service workers are not supported in this browser." };
   if (!("PushManager" in window)) return { ok: false, reason: "Push notifications are not supported in this browser." };
   try {
-    const reg = (await navigator.serviceWorker.ready) ?? (await registerServiceWorker());
+    const reg = await readyServiceWorker();
     if (!reg) return { ok: false, reason: "Service worker registration is not ready." };
 
     const vapidKey = await fetch("/api/push/vapid-public-key")
@@ -113,7 +122,7 @@ export async function ensurePushSubscription(authToken: string): Promise<PushSub
 
     if (!vapidKey) return { ok: false, reason: "Server push key is unavailable." };
 
-    const permission = await requestNotificationPermission();
+    const permission = notificationPermission() === "granted" ? "granted" : await requestNotificationPermission();
     if (permission !== "granted") return { ok: false, reason: permission === "denied" ? "Notifications are blocked for this site." : "Notification permission was not granted." };
 
     const keyBytes = urlBase64ToUint8Array(vapidKey);

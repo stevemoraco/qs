@@ -1291,9 +1291,12 @@ export default function ChatApp() {
     const token = getToken();
     if (!token) return;
     setPushBusy(true);
-    const result = await ensurePushSubscription(token);
-    setPushStatus(result);
-    setPushBusy(false);
+    try {
+      const result = await ensurePushSubscription(token);
+      setPushStatus(result);
+    } finally {
+      setPushBusy(false);
+    }
   };
 
   const relinkPushIfAllowed = async () => {
