@@ -882,6 +882,8 @@ function RoomView({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const revealTokenRef = useRef(0);
   const touchRevealActiveRef = useRef(false);
+  const activeRevealRef = useRef<{ id: string; input: "mouse" | "touch"; released: boolean; painted: boolean } | null>(null);
+  const revealFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id,
@@ -986,6 +988,7 @@ function RoomView({
 
   const revealMsg = async (msg: Message, key?: CryptoKey) => {
     const revealToken = ++revealTokenRef.current;
+    const revealInput = activeRevealRef.current?.id === msg.id ? activeRevealRef.current.input : "mouse";
     setRevealError((current) => (current?.id === msg.id ? null : current));
     let k = key ?? getMessageKey(msg.id);
     if (!k && msg.recipientEncryptedKeys?.[currentUserId]) {
@@ -1006,7 +1009,14 @@ function RoomView({
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
       if (revealToken !== revealTokenRef.current) return;
+      if (activeRevealRef.current?.id === msg.id) {
+        activeRevealRef.current.painted = true;
+      }
       setHeldPlaintext({ id: msg.id, text: plaintext });
+      if (activeRevealRef.current?.id === msg.id && activeRevealRef.current.released && revealInput === "touch") {
+        if (revealFallbackTimerRef.current) clearTimeout(revealFallbackTimerRef.current);
+        revealFallbackTimerRef.current = setTimeout(forceHideRevealedMsg, 900);
+      }
     } catch {
       if (revealToken === revealTokenRef.current) {
         setRevealError({ id: msg.id, text: "Could not decrypt this message on this device." });
@@ -1021,10 +1031,15 @@ function RoomView({
 
   const forceHideRevealedMsg = () => {
     touchRevealActiveRef.current = false;
+    activeRevealRef.current = null;
     hideRevealedMsgNow();
   };
 
   const hideRevealedMsgNow = () => {
+    if (revealFallbackTimerRef.current) {
+      clearTimeout(revealFallbackTimerRef.current);
+      revealFallbackTimerRef.current = null;
+    }
     revealTokenRef.current += 1;
     setRevealedSenderId(null);
     setHeldPlaintext((current) => {
@@ -1036,6 +1051,7 @@ function RoomView({
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
     if (event.pointerType === "touch") return;
+    activeRevealRef.current = { id: msg.id, input: "mouse", released: false, painted: false };
     event.currentTarget.setPointerCapture?.(event.pointerId);
     void revealMsg(msg);
   };
@@ -1049,13 +1065,21 @@ function RoomView({
     event.preventDefault();
     event.stopPropagation();
     touchRevealActiveRef.current = true;
+    activeRevealRef.current = { id: msg.id, input: "touch", released: false, painted: false };
     void revealMsg(msg);
   };
 
   const endTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    forceHideRevealedMsg();
+    const activeReveal = activeRevealRef.current;
+    if (!activeReveal || activeReveal.input !== "touch") {
+      forceHideRevealedMsg();
+      return;
+    }
+    activeReveal.released = true;
+    touchRevealActiveRef.current = false;
+    if (activeReveal.painted) forceHideRevealedMsg();
   };
 
   const isExpired = (expiresAt?: string | null) => {
