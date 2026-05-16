@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, preKeysTable, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { PostKeysUploadBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 
@@ -38,7 +38,7 @@ router.get("/keys/:userId", requireAuth, async (req: AuthRequest, res) => {
     .select()
     .from(preKeysTable)
     .where(eq(preKeysTable.userId, userId))
-    .orderBy(preKeysTable.createdAt)
+    .orderBy(desc(preKeysTable.createdAt))
     .limit(1);
 
   if (!key) {

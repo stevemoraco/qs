@@ -1025,7 +1025,7 @@ function RoomView({
       }
     } catch {
       if (revealToken === revealTokenRef.current) {
-        setRevealError({ id: msg.id, text: "Could not decrypt this message on this device." });
+        setRevealError({ id: msg.id, text: "This message was encrypted to an older local key that is not on this install." });
       }
     }
   };
@@ -1279,6 +1279,7 @@ export default function ChatApp() {
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const privacyAutoUnlockAttemptedRef = useRef(false);
   const revealNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoKeyRepairAttemptedRef = useRef(false);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1374,9 +1375,13 @@ export default function ChatApp() {
     const keys = getLocalKeyPair();
     const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
     if (!localComplete) {
+      if (!autoKeyRepairAttemptedRef.current) {
+        autoKeyRepairAttemptedRef.current = true;
+        void rotateLocalKeys();
+      }
       setKeyRepairStatus({
         ok: false,
-        reason: "Local private keys are missing on this install. Old messages require the install that originally held the keys.",
+        reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
       });
       return;
     }
