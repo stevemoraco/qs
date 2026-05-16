@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
-import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff } from "lucide-react";
+import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
 import { usePostAuthLogin } from "@workspace/api-client-react";
 import { getAuthHandle, isAuthenticated, setToken } from "@/lib/auth";
 import { subscribeToPush } from "@/lib/pwa";
@@ -13,6 +13,9 @@ const LOGIN_PRIVACY_FEATURES = [
   { icon: TimerOff, label: "TTL keys are purged so old ciphertext becomes noise" },
   { icon: EyeOff, label: "Blur and background shields hide secure content" },
   { icon: MonitorOff, label: "Screenshot, screen-capture, and print friction" },
+  { icon: Key, label: "Alias and invite codes scope discovery and access" },
+  { icon: Lock, label: "Passcode login requires this device's local auth handle" },
+  { icon: Shield, label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
 export default function Login() {

@@ -26,6 +26,9 @@ const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; la
   { icon: "clock", label: "TTL keys are purged so old ciphertext becomes noise" },
   { icon: "eye-off", label: "Blur and background shields hide secure content" },
   { icon: "monitor", label: "Screenshot, screen-capture, and print friction" },
+  { icon: "key", label: "Alias and invite codes scope discovery and access" },
+  { icon: "lock", label: "Passcode login requires this device's local auth handle" },
+  { icon: "shield", label: "Fresh device sessions are issued and invalidated on logout" },
 ];
 
 export default function LoginScreen() {

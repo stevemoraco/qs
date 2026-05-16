@@ -107,6 +107,21 @@ const PRIVACY_FEATURES = [
     title: "Device-local identity keys",
     desc: "Post-quantum identity keys are generated locally during account creation. Private keys are not uploaded to the API.",
   },
+  {
+    icon: <Key className="w-5 h-5" />,
+    title: "Alias and invite codes",
+    desc: "Primary alias codes and invite codes control discoverability and access with visibility scopes, max-use limits, allow lists, expirations, and roll/disable controls.",
+  },
+  {
+    icon: <Lock className="w-5 h-5" />,
+    title: "Passcode plus local device handle",
+    desc: "Return access requires the passcode and a device-local auth handle. The API stores only an auth-handle hash and argon2 passcode hash.",
+  },
+  {
+    icon: <Shield className="w-5 h-5" />,
+    title: "Rotating device sessions",
+    desc: "Each successful login issues a fresh bearer session, and logout invalidates it. A device without its local handle must request clearance again.",
+  },
 ];
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
