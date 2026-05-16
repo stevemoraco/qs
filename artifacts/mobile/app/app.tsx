@@ -264,8 +264,6 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
         {!isOwn && <Text style={[styles.senderName, { color: colors.primary }]}>{senderLabel}</Text>}
         {expired ? (
           <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>Message expired — key destroyed</Text>
-        ) : plaintext ? (
-          <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
         ) : (
           <TouchableOpacity
             activeOpacity={0.85}
@@ -276,8 +274,14 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
             style={styles.encryptedRow}
             testID={`button-hold-reveal-${msg.id}`}
           >
-            <Feather name="lock" size={12} color={colors.mutedForeground} />
-            <Text style={[styles.msgText, { color: colors.mutedForeground }]}>Encrypted — hold to reveal</Text>
+            {plaintext ? (
+              <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
+            ) : (
+              <>
+                <Feather name="lock" size={12} color={colors.mutedForeground} />
+                <Text style={[styles.msgText, { color: colors.mutedForeground }]}>Encrypted — hold to reveal</Text>
+              </>
+            )}
           </TouchableOpacity>
         )}
         <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{formatTime(msg.createdAt)}</Text>
@@ -308,6 +312,7 @@ function ChatView({
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
   const [revealRoomName, setRevealRoomName] = useState(false);
+  const revealTokenRef = useRef(0);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -388,15 +393,20 @@ function ChatView({
   };
 
   const revealMessage = async (msg: Message) => {
+    const revealToken = ++revealTokenRef.current;
     const key = messageKeyStore.get(msg.id);
     if (!key) return;
     try {
       const plaintext = await decryptMsg(msg.ciphertext, msg.nonce, key);
+      if (revealToken !== revealTokenRef.current) return;
       setHeldPlaintext({ id: msg.id, text: plaintext });
     } catch {}
   };
 
-  const hideRevealedMessage = () => setHeldPlaintext(null);
+  const hideRevealedMessage = () => {
+    revealTokenRef.current += 1;
+    setHeldPlaintext(null);
+  };
   const reversed = [...messages].reverse();
 
   return (

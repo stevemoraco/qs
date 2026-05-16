@@ -749,6 +749,7 @@ function RoomView({
   const [hidden, setHidden] = useState(false);
   const [revealRoomName, setRevealRoomName] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const revealTokenRef = useRef(0);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id,
@@ -842,20 +843,28 @@ function RoomView({
   };
 
   const revealMsg = async (msg: Message, key?: CryptoKey) => {
+    const revealToken = ++revealTokenRef.current;
     const k = key ?? getMessageKey(msg.id);
     if (!k) return;
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
+      if (revealToken !== revealTokenRef.current) return;
       setHeldPlaintext({ id: msg.id, text: plaintext });
     } catch {}
   };
 
   const hideRevealedMsg = () => {
+    revealTokenRef.current += 1;
     setHeldPlaintext((current) => {
       if (!current) return null;
       return { id: current.id, text: "" };
     });
     queueMicrotask(() => setHeldPlaintext(null));
+  };
+
+  const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    void revealMsg(msg);
   };
 
   const isExpired = (expiresAt?: string | null) => {
@@ -949,25 +958,27 @@ function RoomView({
                     <p className="font-mono text-xs text-muted-foreground italic">
                       Message expired — cryptographically destroyed
                     </p>
-                  ) : plaintext ? (
-                    <p className="font-mono text-sm">{plaintext}</p>
                   ) : (
-                    <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                      <Lock className="w-3 h-3" />
-                      <button
-                        type="button"
-                        onPointerDown={() => revealMsg(msg as Message)}
-                        onPointerUpCapture={hideRevealedMsg}
-                        onPointerCancelCapture={hideRevealedMsg}
-                        onPointerLeave={hideRevealedMsg}
-                        onLostPointerCapture={hideRevealedMsg}
-                        onContextMenu={(event) => event.preventDefault()}
-                        className="hover:text-primary select-none"
-                        data-testid={`button-hold-reveal-${msg.id}`}
-                      >
-                        Encrypted — hold to reveal
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onPointerDown={(event) => startMessageReveal(event, msg as Message)}
+                      onPointerUp={hideRevealedMsg}
+                      onPointerCancel={hideRevealedMsg}
+                      onPointerLeave={hideRevealedMsg}
+                      onLostPointerCapture={hideRevealedMsg}
+                      onContextMenu={(event) => event.preventDefault()}
+                      className="block w-full text-left select-none"
+                      data-testid={`button-hold-reveal-${msg.id}`}
+                    >
+                      {plaintext ? (
+                        <span className="font-mono text-sm">{plaintext}</span>
+                      ) : (
+                        <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-primary">
+                          <Lock className="w-3 h-3" />
+                          Encrypted — hold to reveal
+                        </span>
+                      )}
+                    </button>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
