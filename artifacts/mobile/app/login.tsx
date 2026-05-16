@@ -35,7 +35,7 @@ export default function LoginScreen() {
   const { setToken } = useAuth();
 
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
 
   const login = usePostAuthLogin({
@@ -45,14 +45,14 @@ export default function LoginScreen() {
         router.replace("/app");
       },
       onError: () => {
-        setError("Invalid credentials");
+        setError("Invalid username or passcode");
       },
     },
   });
 
   const handleLogin = () => {
     setError("");
-    login.mutate({ data: { username, password } });
+    login.mutate({ data: { username, password: passcode } });
   };
 
   const s = makeStyles(colors);
@@ -89,12 +89,12 @@ export default function LoginScreen() {
             testID="input-username"
           />
 
-          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSPHRASE</Text>
+          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSCODE</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
+            value={passcode}
+            onChangeText={setPasscode}
+            placeholder="passcode"
             placeholderTextColor={colors.mutedForeground}
             secureTextEntry
             testID="input-password"

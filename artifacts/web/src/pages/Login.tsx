@@ -18,7 +18,7 @@ const LOGIN_PRIVACY_FEATURES = [
 export default function Login() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
 
   const login = usePostAuthLogin({
@@ -29,7 +29,7 @@ export default function Login() {
         setLocation("/app", { replace: true });
       },
       onError: () => {
-        setError("Invalid username or password");
+        setError("Invalid username or passcode");
       },
     },
   });
@@ -37,7 +37,7 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    login.mutate({ data: { username, password } });
+    login.mutate({ data: { username, password: passcode } });
   };
 
   if (isAuthenticated()) {
@@ -81,14 +81,14 @@ export default function Login() {
 
             <div>
               <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                PASSPHRASE
+                PASSCODE
               </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
                 className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="••••••••"
+                placeholder="passcode"
                 autoComplete="current-password"
                 required
                 data-testid="input-password"

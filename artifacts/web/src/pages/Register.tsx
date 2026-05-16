@@ -32,7 +32,7 @@ type GenerationStep =
 export default function Register() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [error, setError] = useState("");
@@ -90,7 +90,7 @@ export default function Register() {
       const authData = await register.mutateAsync({
         data: {
           username,
-          password,
+          password: passcode,
           displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -102,7 +102,7 @@ export default function Register() {
       setToken(token);
     } catch (err: unknown) {
       setStep("idle");
-      setError(extractErrorMessage(err, "Could not create identity. Please try a different username."));
+      setError(extractErrorMessage(err, "Could not create identity. Please try a different username or passcode."));
       return;
     }
 
@@ -195,14 +195,14 @@ export default function Register() {
 
             <div>
               <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">
-                PASSPHRASE
+                PASSCODE
               </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
                 className="w-full bg-background border border-border px-3 py-2.5 font-mono text-sm text-foreground focus:outline-none focus:border-primary/60 transition-colors"
-                placeholder="min 8 characters"
+                placeholder="passcode (min 8 characters)"
                 autoComplete="new-password"
                 minLength={8}
                 required

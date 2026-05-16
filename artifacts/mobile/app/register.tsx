@@ -43,7 +43,7 @@ export default function RegisterScreen() {
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [password, setPassword] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
 
@@ -68,7 +68,7 @@ export default function RegisterScreen() {
       const authData = await register.mutateAsync({
         data: {
           username,
-          password,
+          password: passcode,
           displayName: displayName || undefined,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -92,7 +92,7 @@ export default function RegisterScreen() {
       router.replace("/app");
     } catch {
       setStep("idle");
-      setError("Registration failed. Username may be taken.");
+      setError("Registration failed. Username or passcode may be invalid.");
     }
   };
 
@@ -144,12 +144,12 @@ export default function RegisterScreen() {
             editable={!isLoading}
           />
 
-          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSPHRASE</Text>
+          <Text style={[s.label, { color: colors.mutedForeground, marginTop: 16 }]}>PASSCODE</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="min 8 characters"
+            value={passcode}
+            onChangeText={setPasscode}
+            placeholder="passcode (min 8 characters)"
             placeholderTextColor={colors.mutedForeground}
             secureTextEntry
             editable={!isLoading}
