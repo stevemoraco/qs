@@ -7,7 +7,7 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 const router = Router();
 const DEFAULT_ROOM_TTL_SECONDS = 300;
 const DEFAULT_ROOM_TTL_MODE = "after_view";
-const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");

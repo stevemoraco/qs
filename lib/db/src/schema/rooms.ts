@@ -6,7 +6,7 @@ export const roomsTable = pgTable("rooms", {
   type: text("type", { enum: ["direct", "group"] }).notNull().default("direct"),
   ttlSeconds: integer("ttl_seconds"),
   ttlMode: text("ttl_mode", { enum: ["after_view", "after_send"] }).notNull().default("after_view"),
-  deliveryFuzzSeconds: integer("delivery_fuzz_seconds").notNull().default(1680),
+  deliveryFuzzSeconds: integer("delivery_fuzz_seconds").notNull().default(89),
   lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

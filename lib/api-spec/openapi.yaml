@@ -881,7 +881,7 @@ components:
           description: Whether TTL starts when a message is first viewed or when it is sent.
         deliveryFuzzSeconds:
           type: integer
-          default: 1680
+          default: 89
           description: Random server-side delivery delay window in seconds.
         createdAt:
           type: string
@@ -917,7 +917,7 @@ components:
           description: Whether TTL starts when a message is first viewed or when it is sent.
         deliveryFuzzSeconds:
           type: integer
-          default: 1680
+          default: 89
           description: Random server-side delivery delay window in seconds.
 
     Message:

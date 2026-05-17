@@ -264,7 +264,7 @@ export const GetRoomsResponseItem = zod.object({
   "lastMessageAt": zod.coerce.date().nullish(),
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
-  "deliveryFuzzSeconds": zod.number().default(1680).describe('Random server-side delivery delay window in seconds.'),
+  "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
@@ -291,7 +291,7 @@ export const PostRoomsBody = zod.object({
   "memberIds": zod.array(zod.string()),
   "ttlSeconds": zod.number().nullish().describe('Message TTL in seconds. Keys are destroyed after this period.'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(postRoomsBodyTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
-  "deliveryFuzzSeconds": zod.number().default(1680).describe('Random server-side delivery delay window in seconds.')
+  "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.')
 })
 
 
@@ -312,7 +312,7 @@ export const GetRoomsRoomIdResponse = zod.object({
   "lastMessageAt": zod.coerce.date().nullish(),
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsRoomIdResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
-  "deliveryFuzzSeconds": zod.number().default(1680).describe('Random server-side delivery delay window in seconds.'),
+  "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
@@ -483,4 +483,3 @@ export const GetStatsOverviewResponse = zod.object({
   "totalMessages": zod.number(),
   "activeRoomsToday": zod.number()
 })
-
