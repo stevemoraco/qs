@@ -1521,7 +1521,7 @@ export default function ChatApp() {
     const globalFlash = avgDelta > 17 && brightDelta > 0.025 && avg > 42;
     const localizedFlash = peakDelta > 24 && brightDelta > 0.012 && veryBrightRatio > 0.004;
     const brightBloom = veryBrightRatio > 0.028 && brightDelta > 0.01 && avgDelta > 7;
-    const dimPeakFlash = peakDelta > 48 && avgDelta > 0.35 && avg > 1 && brightDelta > -0.01;
+    const dimPeakFlash = peakDelta > 42 && avgDelta > 0.35 && avg > 1 && brightDelta > -0.01;
     const dimPeakCandidate = peakDelta > 36 && avgDelta > 0.25 && avg > 1 && brightDelta > -0.01;
     const strongFlash = avgDelta > 34 || brightDelta > 0.075 || (peakDelta > 44 && veryBrightRatio > 0.01);
     const candidate = globalFlash || localizedFlash || brightBloom || dimPeakCandidate;
