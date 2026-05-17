@@ -45,6 +45,7 @@ import {
 import { gcm } from "@noble/ciphers/aes.js";
 import { randomBytes } from "@noble/hashes/utils.js";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
+import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import * as ScreenCapture from "expo-screen-capture";
 import * as LocalAuthentication from "expo-local-authentication";
 
@@ -88,6 +89,7 @@ type Message = {
   ciphertext: string;
   nonce: string;
   algorithm: string;
+  signature?: string | null;
   recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
   createdAt: string;
@@ -200,6 +202,48 @@ function b64ToBytes(s: string): Uint8Array {
   return out;
 }
 
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value as Record<string, unknown>)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson((value as Record<string, unknown>)[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function messageSignaturePayload(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  recipientEncryptedKeys?: Record<string, string> | null;
+}): Uint8Array {
+  return new TextEncoder().encode(
+    stableJson({
+      v: 1,
+      purpose: "quantumshield.chat.message",
+      roomId: input.roomId,
+      senderId: input.senderId,
+      ciphertext: input.ciphertext,
+      nonce: input.nonce,
+      algorithm: input.algorithm,
+      recipientEncryptedKeys: input.recipientEncryptedKeys ?? {},
+    })
+  );
+}
+
+function verifyKeyBundleSignature(bundle: { kemPublicKey?: string | null; dsaPublicKey?: string | null; kemSignature?: string | null }): boolean {
+  if (!bundle.kemPublicKey || !bundle.dsaPublicKey || !bundle.kemSignature) return false;
+  try {
+    return ml_dsa87.verify(b64ToBytes(bundle.kemSignature), b64ToBytes(bundle.kemPublicKey), b64ToBytes(bundle.dsaPublicKey));
+  } catch {
+    return false;
+  }
+}
+
 async function encryptMsg(text: string): Promise<{ ciphertext: string; nonce: string; key: Uint8Array }> {
   const key = randomBytes(32);
   const nonce = randomBytes(12);
@@ -215,6 +259,7 @@ async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): P
 async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
   try {
     const bundle = await getKeysUserId(userId);
+    if (!verifyKeyBundleSignature(bundle)) return null;
     const { cipherText, sharedSecret } = ml_kem1024.encapsulate(b64ToBytes(bundle.kemPublicKey));
     const nonce = randomBytes(12);
     const wrappedKey = gcm(sharedSecret, nonce).encrypt(rawMessageKey);
@@ -225,6 +270,41 @@ async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array):
     } satisfies WrappedMessageKey);
   } catch {
     return null;
+  }
+}
+
+async function signMessagePayload(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  recipientEncryptedKeys: Record<string, string>;
+}, dsaSecretKeyB64: string | null): Promise<string | null> {
+  if (!dsaSecretKeyB64) return null;
+  const signature = ml_dsa87.sign(messageSignaturePayload(input), b64ToBytes(dsaSecretKeyB64));
+  return bytesToB64(signature);
+}
+
+async function verifyMessageSignature(roomId: string, msg: Message): Promise<boolean> {
+  if (!msg.signature) return false;
+  try {
+    const bundle = await getKeysUserId(msg.senderId);
+    if (!verifyKeyBundleSignature(bundle)) return false;
+    return ml_dsa87.verify(
+      b64ToBytes(msg.signature),
+      messageSignaturePayload({
+        roomId,
+        senderId: msg.senderId,
+        ciphertext: msg.ciphertext,
+        nonce: msg.nonce,
+        algorithm: msg.algorithm,
+        recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
+      }),
+      b64ToBytes(bundle.dsaPublicKey)
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -345,7 +425,7 @@ function ChatView({
   roomCodename: string;
 }) {
   const qc = useQueryClient();
-  const { getKemSecretKey } = useAuth();
+  const { getKemSecretKey, getDsaSecretKey } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [screenshotAlert, setScreenshotAlert] = useState(false);
@@ -433,14 +513,28 @@ function ChatView({
         if (wrapped) recipientEncryptedKeys[userId] = wrapped;
       })
     );
+    if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
+      setInput(text);
+      return;
+    }
+    const signature = await signMessagePayload(
+      { roomId: room.id, senderId: myId, ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys },
+      await getDsaSecretKey()
+    );
+    if (!signature) {
+      setInput(text);
+      return;
+    }
     sendMsg.mutate(
-      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
+      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
       { onSuccess: (msg) => { messageKeyStore.set(msg.id, key); } }
     );
   };
 
   const revealMessage = async (msg: Message) => {
     const revealToken = ++revealTokenRef.current;
+    const verified = await verifyMessageSignature(room.id, msg);
+    if (!verified) return;
     let key = messageKeyStore.get(msg.id);
     if (!key && msg.recipientEncryptedKeys?.[myId]) {
       const kemSecretKey = await getKemSecretKey();
