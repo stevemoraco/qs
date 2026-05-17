@@ -239,10 +239,10 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Metadata and routing",
     icon: <Server className="w-5 h-5" />,
-    quantumShieldLead: "We say exactly what metadata still exists.",
+    quantumShieldLead: "Advanced privacy should feel like saving a website to your home screen.",
     signalLead: "even hidden messages can leave clues about your activity.",
     imessageLead: "Apple routing can show which account and devices were involved.",
-    quantumShield: "Our server sees operational records: ciphertext, room membership, wrapped keys, delivery state, sessions, peppered handle lookup values, and push tokens. That is why the product calls out metadata as an audit target.",
+    quantumShield: "QuantumShield packages post-quantum encryption, delivery fuzzing, hold-to-reveal, passkeys, and experimental multi-check quorum decay into an installable PWA. Add the site to your home screen like a bookmark and you get the advanced controls without waiting for an app store. Our server still sees operational records like ciphertext, room membership, delivery state, sessions, peppered handle lookup values, and push tokens, so metadata stays explicit and auditable.",
     signal: "Signal works hard to reduce server-visible metadata, including private contact and group recovery designs, but some timing, network, registration, and delivery facts can still exist around the system.",
     imessage: "Apple infrastructure handles account lookup, device lookup, delivery, push, sync choices, and account/device coordination for iMessage.",
     warning: "What this means: even unreadable messages can leave a pattern. A nation-state with carrier logs, internet routing visibility, push logs, device records, or server history can study who was active, when, from where, and with which devices.",
