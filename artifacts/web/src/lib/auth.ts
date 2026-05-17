@@ -356,7 +356,9 @@ export function storeKeyPair(
   cachePrivateKey(KEM_SK_KEY, kemSk);
   cachePrivateKey(DSA_SK_KEY, dsaSk);
   void storeKeyPairInIndexedDb({
+    [KEM_SK_KEY]: bytesToBase64(kemSk),
     [KEM_PK_KEY]: bytesToBase64(kemPk),
+    [DSA_SK_KEY]: bytesToBase64(dsaSk),
     [DSA_PK_KEY]: bytesToBase64(dsaPk),
   });
 }
@@ -488,13 +490,13 @@ export async function hydrateKeyPairFromIndexedDb(): Promise<boolean> {
   for (const key of keys) {
     if (isPrivateKey(key) && values[key]) {
       localStorage.removeItem(key);
+      cachePrivateKey(key, base64ToBytes(values[key]));
       hydrated = true;
     } else if (!localStorage.getItem(key) && values[key]) {
       localStorage.setItem(key, values[key]);
       hydrated = true;
     }
   }
-  void deletePrivateKeysFromIndexedDb();
   return hydrated;
 }
 

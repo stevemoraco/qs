@@ -410,6 +410,7 @@ type Message = {
   createdAt: string;
   localQueued?: boolean;
   localFuzzing?: boolean;
+  localOptimistic?: boolean;
 };
 
 type WrappedMessageKey = {
@@ -436,7 +437,7 @@ function outboxEntryToMessage(entry: OfflineOutboxEntry, senderId: string): Mess
   };
 }
 
-function localFuzzMessage(input: {
+function localSentMessage(input: {
   roomId: string;
   senderId: string;
   ciphertext: string;
@@ -445,9 +446,10 @@ function localFuzzMessage(input: {
   signature: string;
   recipientEncryptedKeys: Record<string, string>;
   createdAt: string;
+  localFuzzing: boolean;
 }): Message {
   return {
-    id: `local-fuzz-${crypto.randomUUID()}`,
+    id: `local-sent-${crypto.randomUUID()}`,
     senderId: input.senderId,
     senderUsername: null,
     ciphertext: input.ciphertext,
@@ -461,7 +463,8 @@ function localFuzzMessage(input: {
     expiresAt: null,
     availableAt: input.createdAt,
     createdAt: input.createdAt,
-    localFuzzing: true,
+    localFuzzing: input.localFuzzing,
+    localOptimistic: true,
   };
 }
 
@@ -1786,7 +1789,7 @@ function RoomView({
   const queuedCount = queuedMessages.filter((msg) => msg.localQueued).length;
   const visibleLiveMessages = liveMessages as Message[];
   const visibleLocalMessages = queuedMessages.filter((local) => {
-    if (!local.localFuzzing) return true;
+    if (!local.localOptimistic && !local.localFuzzing) return true;
     return !visibleLiveMessages.some((live) => (
       (local.signature && live.signature === local.signature) ||
       live.ciphertext === local.ciphertext
@@ -1826,7 +1829,7 @@ function RoomView({
       setQueuedMessages((current) => [
         ...queued,
         ...current.filter((message) => (
-          message.localFuzzing &&
+          (message.localFuzzing || message.localOptimistic) &&
           !queued.some((queuedMessage) => queuedMessage.signature === message.signature)
         )),
       ]);
@@ -1858,12 +1861,13 @@ function RoomView({
     if (!online || queuedMessages.length === 0) return;
     const fuzzSeconds = room.deliveryFuzzSeconds ?? 0;
     setQueuedMessages((current) => current.filter((local) => {
-      if (!local.localFuzzing) return true;
+      if (!local.localOptimistic && !local.localFuzzing) return true;
       const hasLiveCopy = (liveMessages as Message[]).some((live) => (
         (local.signature && live.signature === local.signature) ||
         live.ciphertext === local.ciphertext
       ));
       if (hasLiveCopy) return false;
+      if (local.localOptimistic && !local.localFuzzing) return true;
       return isWithinFuzzWindow(local.createdAt, Math.max(1, fuzzSeconds), nowMs);
     }));
   }, [liveMessages, nowMs, online, queuedMessages.length, room.deliveryFuzzSeconds]);
@@ -2007,18 +2011,17 @@ function RoomView({
         return;
       }
 
-      const optimistic = room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0
-        ? localFuzzMessage({
-            roomId: room.id,
-            senderId: currentUserId,
-            ciphertext,
-            nonce,
-            algorithm: CIPHER_SUITE,
-            signature,
-            recipientEncryptedKeys,
-            createdAt: sentAt,
-          })
-        : null;
+      const optimistic = localSentMessage({
+        roomId: room.id,
+        senderId: currentUserId,
+        ciphertext,
+        nonce,
+        algorithm: CIPHER_SUITE,
+        signature,
+        recipientEncryptedKeys,
+        createdAt: sentAt,
+        localFuzzing: !!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0,
+      });
       try {
         const sentMessage = await postQueuedMessage(queued);
         qc.setQueryData<Message[]>(getGetRoomsRoomIdMessagesQueryKey(room.id), (current = []) => {
@@ -2029,7 +2032,7 @@ function RoomView({
         });
         setQueuedMessages((current) => [
           ...current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature),
-          ...(optimistic ? [optimistic] : []),
+          optimistic,
         ]);
       } catch {
         setSendError("Server did not accept the message. It is still queued and will retry.");

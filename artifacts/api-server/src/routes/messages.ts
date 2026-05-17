@@ -195,7 +195,10 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       message: messagesTable,
     })
     .from(messagesTable)
-    .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, serverNow)))
+    .where(and(
+      eq(messagesTable.roomId, roomId),
+      or(lte(messagesTable.availableAt, serverNow), eq(messagesTable.senderId, req.userId!)),
+    ))
     .orderBy(desc(messagesTable.createdAt))
     .limit(limit);
 
@@ -211,7 +214,11 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
           message: messagesTable,
         })
         .from(messagesTable)
-        .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, serverNow), lt(messagesTable.createdAt, beforeMsg.createdAt)))
+        .where(and(
+          eq(messagesTable.roomId, roomId),
+          or(lte(messagesTable.availableAt, serverNow), eq(messagesTable.senderId, req.userId!)),
+          lt(messagesTable.createdAt, beforeMsg.createdAt),
+        ))
         .orderBy(desc(messagesTable.createdAt))
         .limit(limit);
     }
