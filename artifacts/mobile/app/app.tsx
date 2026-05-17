@@ -935,7 +935,11 @@ function ChatView({
         return;
       }
       const recipientIds = Array.from(new Set(freshMembers.map((member) => member.id)));
-      if (!recipientIds.includes(myId)) recipientIds.push(myId);
+      if (!recipientIds.includes(myId)) {
+        setSendError("This account is no longer a current member of this room. Refresh the chat list before sending.");
+        setInput(text);
+        return;
+      }
       const recipientEncryptedKeys: RecipientEncryptedKeys = {};
       await Promise.all(
         recipientIds.map(async (userId) => {

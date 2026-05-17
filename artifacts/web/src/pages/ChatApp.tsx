@@ -43,6 +43,7 @@ import {
   usePostKeysUpload,
   type IdentityCode,
   type SendMessageRequest,
+  customFetch,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearEphemeralSecrets, clearToken, getDsaPublicKey, getDsaPublicKeysAsync, getKemSecretKeysAsync, getLastHandle, getLocalKeyPairAsync, getToken, getUnsealedHandleLabels, hashIdentityCode, isFreshLoginVerificationValid, linkLocalPlatformPasskey, loginWithPasskey, rememberAssociatedHandle, rememberUnsealedHandle, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
@@ -476,16 +477,23 @@ async function apiReachable(timeoutMs = 2500): Promise<boolean> {
   }
 }
 
-function readTrustedKeyBundles(): Record<string, string> {
+type TrustedKeyBundleStore = Record<string, string | string[]>;
+
+function readTrustedKeyBundles(): TrustedKeyBundleStore {
   try {
-    return JSON.parse(localStorage.getItem(KEY_BUNDLE_TRUST_KEY) ?? "{}") as Record<string, string>;
+    return JSON.parse(localStorage.getItem(KEY_BUNDLE_TRUST_KEY) ?? "{}") as TrustedKeyBundleStore;
   } catch {
     return {};
   }
 }
 
-function writeTrustedKeyBundles(value: Record<string, string>): void {
+function writeTrustedKeyBundles(value: TrustedKeyBundleStore): void {
   localStorage.setItem(KEY_BUNDLE_TRUST_KEY, JSON.stringify(value));
+}
+
+function trustedFingerprintList(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? [value] : [];
 }
 
 async function keyBundleFingerprint(bundle: KeyBundle): Promise<string> {
@@ -503,8 +511,8 @@ async function trustFetchedKeyBundle(userId: string, bundle: KeyBundle): Promise
   if (!verifyKeyBundleSignature(bundle)) return false;
   const fingerprint = await keyBundleFingerprint(bundle);
   const trusted = readTrustedKeyBundles();
-  const previous = trusted[userId];
-  if (previous && previous !== fingerprint) {
+  const previous = trustedFingerprintList(trusted[userId]);
+  if (previous.length > 0 && !previous.includes(fingerprint)) {
     localStorage.setItem(KEY_BUNDLE_WARNING_KEY, JSON.stringify({
       userId,
       previous,
@@ -512,8 +520,8 @@ async function trustFetchedKeyBundle(userId: string, bundle: KeyBundle): Promise
       detectedAt: new Date().toISOString(),
     }));
   }
-  if (previous !== fingerprint) {
-    trusted[userId] = fingerprint;
+  if (!previous.includes(fingerprint)) {
+    trusted[userId] = [...previous, fingerprint];
     writeTrustedKeyBundles(trusted);
   }
   await cacheTrustedKeyBundle({ userId, ...bundle, trustedAt: new Date().toISOString() });
@@ -523,7 +531,7 @@ async function trustFetchedKeyBundle(userId: string, bundle: KeyBundle): Promise
 async function replaceTrustedKeyBundle(userId: string, bundle: KeyBundle): Promise<void> {
   if (!verifyKeyBundleSignature(bundle)) return;
   const trusted = readTrustedKeyBundles();
-  trusted[userId] = await keyBundleFingerprint(bundle);
+  trusted[userId] = [await keyBundleFingerprint(bundle)];
   writeTrustedKeyBundles(trusted);
   await cacheTrustedKeyBundle({ userId, ...bundle, trustedAt: new Date().toISOString() });
 }
@@ -547,11 +555,10 @@ async function getTrustedKeyBundle(userId: string): Promise<KeyBundle | null> {
 
 async function getTrustedKeyBundles(userId: string): Promise<KeyBundle[]> {
   try {
-    const response = await fetch(`/api/keys/${encodeURIComponent(userId)}/devices`, {
-      headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : undefined,
-    });
-    if (!response.ok) throw new Error("No device key bundles found");
-    const data = await response.json() as { bundles?: KeyBundle[] };
+    const data = await customFetch<{ bundles?: KeyBundle[] }>(
+      `/api/keys/${encodeURIComponent(userId)}/devices`,
+      { responseType: "json" },
+    );
     const trusted: KeyBundle[] = [];
     const seenKemKeys = new Set<string>();
     for (const bundle of data.bundles ?? []) {
@@ -2473,6 +2480,7 @@ function RoomView({
       if (canReachServer) {
         try {
           sendMembers = await getRoomsRoomIdMembers(room.id);
+          cacheRoomMembers(room.id, sendMembers).catch(() => {});
         } catch (err) {
           setSendError(`Could not refresh the current room member list from the server. Message was not queued. ${errorMessage(err)}`);
           setInput(text);
@@ -2480,7 +2488,12 @@ function RoomView({
         }
       }
       const recipientIds = Array.from(new Set(sendMembers.map((member) => member.id)));
-      if (!recipientIds.includes(currentUserId)) recipientIds.push(currentUserId);
+      if (canReachServer && !recipientIds.includes(currentUserId)) {
+        setSendError("This account is no longer a current member of this room. Refresh the chat list before sending.");
+        setInput(text);
+        return;
+      }
+      if (!canReachServer && !recipientIds.includes(currentUserId)) recipientIds.push(currentUserId);
       if (!canReachServer && room.memberCount > 1 && recipientIds.length < room.memberCount) {
         setSendError("This room's member list is not cached yet. Reconnect once before sending offline.");
         setInput(text);

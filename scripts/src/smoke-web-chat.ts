@@ -55,6 +55,7 @@ const checks: Check[] = [
     name: "send path wraps each user message key for all linked devices",
     pass: has(chatApp, [
       "getTrustedKeyBundles",
+      "customFetch<{ bundles?: KeyBundle[] }>",
       "/api/keys/",
       "/devices",
       "wrapMessageKeyForUserDevices",
@@ -63,6 +64,7 @@ const checks: Check[] = [
       "return unique.length === 1 ? unique[0] : unique",
       "function sendRecipientEncryptedKeys(keys: RecipientEncryptedKeys): SendRecipientEncryptedKeys {\n  return keys as SendRecipientEncryptedKeys;\n}",
       "recipientEncryptedKeySignatureVariants",
+      "This account is no longer a current member of this room. Refresh the chat list before sending.",
     ]),
   },
   {
