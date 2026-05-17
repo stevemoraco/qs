@@ -1521,10 +1521,12 @@ export default function ChatApp() {
     const globalFlash = avgDelta > 17 && brightDelta > 0.025 && avg > 42;
     const localizedFlash = peakDelta > 24 && brightDelta > 0.012 && veryBrightRatio > 0.004;
     const brightBloom = veryBrightRatio > 0.028 && brightDelta > 0.01 && avgDelta > 7;
+    const dimPeakFlash = peakDelta > 48 && avgDelta > 1 && avg > 3 && brightDelta > -0.01;
+    const dimPeakCandidate = peakDelta > 40 && avgDelta > 1 && avg > 3 && brightDelta > -0.01;
     const strongFlash = avgDelta > 34 || brightDelta > 0.075 || (peakDelta > 44 && veryBrightRatio > 0.01);
-    const candidate = globalFlash || localizedFlash || brightBloom;
+    const candidate = globalFlash || localizedFlash || brightBloom || dimPeakCandidate;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
-    const isFlash = strongFlash || flashStreakRef.current >= 2;
+    const isFlash = strongFlash || dimPeakFlash || flashStreakRef.current >= 2;
     flashBaselineRef.current = candidate
       ? baseline
       : {
@@ -1547,6 +1549,8 @@ export default function ChatApp() {
         peakDelta: Math.round(peakDelta),
         candidate,
         strongFlash,
+        dimPeakFlash,
+        dimPeakCandidate,
         triggered: isFlash,
         streak: flashStreakRef.current,
         scanMs: FLASH_SCAN_MS,
