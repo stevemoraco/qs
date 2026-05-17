@@ -706,7 +706,7 @@ function FuzzLabel({ seconds }: { seconds?: number | null }) {
   );
 }
 
-function ChatMetaRows({ room }: { room: Room }) {
+function ChatMetaRows({ room, revealed }: { room: Room; revealed: boolean }) {
   return (
     <div className="mt-1 space-y-0.5 min-w-0">
       <div className="flex items-center gap-2 min-w-0">
@@ -720,11 +720,25 @@ function ChatMetaRows({ room }: { room: Room }) {
       )}
       {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
         <div className="flex items-center gap-2 min-w-0">
-          <FuzzLabel seconds={room.deliveryFuzzSeconds} />
+          {revealed ? (
+            <FuzzLabel seconds={room.deliveryFuzzSeconds} />
+          ) : (
+            <span className="font-mono text-[10px] md:text-xs text-amber-500/80 flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              FUZZ SEALED
+            </span>
+          )}
         </div>
       )}
       <div className="flex items-center gap-2 min-w-0">
-        <DecayModeLabel mode={room.decayMode} />
+        {revealed ? (
+          <DecayModeLabel mode={room.decayMode} />
+        ) : (
+          <span className="font-mono text-[10px] md:text-xs text-muted-foreground flex items-center gap-1">
+            <Shield className="w-3 h-3" />
+            DECAY SEALED
+          </span>
+        )}
       </div>
     </div>
   );
@@ -2133,7 +2147,13 @@ function RoomView({
     if (event.pointerType === "touch") return;
     onSensitiveRevealChange(true);
     activeRevealRef.current = { id: msg.id, input: "mouse", released: false, painted: false };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    if (event.type === "pointerdown") {
+      try {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      } catch {
+        // Hover reveal has no active pointer capture to bind.
+      }
+    }
     void revealMsg(msg);
   };
 
@@ -2188,6 +2208,9 @@ function RoomView({
               <button
                 type="button"
                 onPointerDown={() => setRevealRoomName(true)}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") setRevealRoomName(true);
+                }}
                 onPointerUp={() => setRevealRoomName(false)}
                 onPointerCancel={() => setRevealRoomName(false)}
                 onPointerLeave={() => setRevealRoomName(false)}
@@ -2198,7 +2221,7 @@ function RoomView({
               </button>
             </h2>
           </div>
-          <ChatMetaRows room={room} />
+          <ChatMetaRows room={room} revealed={revealRoomName} />
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
@@ -2251,6 +2274,9 @@ function RoomView({
                     <button
                       type="button"
                       onPointerDown={() => setRevealedSenderId(msg.senderId)}
+                      onPointerEnter={(event) => {
+                        if (event.pointerType === "mouse") setRevealedSenderId(msg.senderId);
+                      }}
                       onPointerUp={() => setRevealedSenderId(null)}
                       onPointerCancel={() => setRevealedSenderId(null)}
                       onPointerLeave={() => setRevealedSenderId(null)}
@@ -2292,6 +2318,9 @@ function RoomView({
                     <button
                       type="button"
                       onPointerDown={(event) => startMessageReveal(event, msg as Message)}
+                      onPointerEnter={(event) => {
+                        if (event.pointerType === "mouse") startMessageReveal(event, msg as Message);
+                      }}
                       onPointerUp={endPointerMessageReveal}
                       onPointerCancel={endPointerMessageReveal}
                       onPointerLeave={endPointerMessageReveal}
@@ -2319,7 +2348,7 @@ function RoomView({
                       ) : (
                         <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-primary">
                           <Lock className="w-3 h-3" />
-                          Encrypted — hold to reveal
+                          Encrypted — hover or hold to reveal
                         </span>
                       )}
                     </button>
@@ -2333,9 +2362,13 @@ function RoomView({
                     <p className="mt-2 font-mono text-[10px] leading-snug text-primary">
                       Encrypted on this device. It will be sent to the server when you are back online.
                     </p>
-                  ) : fuzzLabel ? (
+                  ) : fuzzLabel && plaintext ? (
                     <p className="mt-2 font-mono text-[10px] leading-snug text-amber-500">
                       Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
+                    </p>
+                  ) : fuzzLabel ? (
+                    <p className="mt-2 font-mono text-[10px] leading-snug text-amber-500">
+                      Fuzzing metadata sealed. Hold to reveal delivery window.
                     </p>
                   ) : null}
                 </div>
@@ -3288,6 +3321,9 @@ export default function ChatApp() {
               key={room.id}
               onClick={() => setActiveRoomId(room.id)}
               onPointerDown={() => scheduleNameReveal(`room:${room.id}`)}
+              onPointerEnter={(event) => {
+                if (event.pointerType === "mouse") scheduleNameReveal(`room:${room.id}`);
+              }}
               onPointerUp={clearNameReveal}
               onPointerCancel={clearNameReveal}
               onPointerLeave={clearNameReveal}
@@ -3322,8 +3358,19 @@ export default function ChatApp() {
                   <Lock className="w-2.5 h-2.5 text-primary/50" />
                   <span className="font-mono text-xs text-muted-foreground">Encrypted</span>
                   {room.ttlSeconds && <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />}
-                  <FuzzLabel seconds={room.deliveryFuzzSeconds} />
-                  <DecayModeLabel mode={room.decayMode} />
+                  {revealedNameId === `room:${room.id}` ? (
+                    <>
+                      <FuzzLabel seconds={room.deliveryFuzzSeconds} />
+                      <DecayModeLabel mode={room.decayMode} />
+                    </>
+                  ) : (
+                    <>
+                      {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+                        <span className="font-mono text-[10px] text-amber-500/80">FUZZ SEALED</span>
+                      )}
+                      <span className="font-mono text-[10px] text-muted-foreground">DECAY SEALED</span>
+                    </>
+                  )}
                 </div>
               </div>
             </button>
