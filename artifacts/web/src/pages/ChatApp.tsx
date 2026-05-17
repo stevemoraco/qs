@@ -1952,9 +1952,9 @@ export default function ChatApp() {
         ...current,
         active: true,
         error: source === "auto" && attemptedHandle
-          ? "Tap to verify your passkey and clear the privacy shield."
+          ? "Tap to unlock with your passkey and clear the privacy shield."
           : needsHandle
-            ? "Enter your handle once and verify with your passkey to unlock."
+            ? "Enter your handle locally once, then unlock with your passkey."
             : message,
       }));
     } finally {

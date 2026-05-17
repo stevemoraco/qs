@@ -26,6 +26,9 @@ import {
   Server,
   ScanFace,
   AlertTriangle,
+  HardDrive,
+  FolderSearch,
+  Database,
 } from "lucide-react";
 import {
   getGetStatsOverviewQueryKey,
@@ -272,6 +275,46 @@ const PROTOCOL_REFERENCES = [
   { label: "Signal post-quantum ratchet", href: "https://signal.org/blog/spqr/" },
   { label: "Signal usernames", href: "https://support.signal.org/hc/en-us/articles/6712070553754-Phone-Number-Privacy-and-Usernames" },
   { label: "Signal PIN/SVR", href: "https://support.signal.org/hc/en-us/articles/360007059792-Signal-PIN" },
+];
+
+const LOCAL_DEVICE_EXPOSURE = [
+  {
+    name: "QuantumShield",
+    tone: "benefit",
+    icon: <MousePointerClick className="w-5 h-5" />,
+    headline: "Plaintext is not meant to sit around waiting for an agent.",
+    items: [
+      "Messages are stored and synced as ciphertext packages plus wrapped keys.",
+      "Readable handles are kept local; the server stores peppered exact-lookup values.",
+      "The UI reveals one message at a time only while you hold, tap, or intentionally unlock it.",
+      "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
+      "A fully compromised device can still steal local keys or read plaintext while you reveal it.",
+    ],
+  },
+  {
+    name: "Signal",
+    tone: "risk",
+    icon: <Database className="w-5 h-5" />,
+    headline: "Desktop history exists locally when you use desktop.",
+    items: [
+      "Signal Desktop keeps a local message database and attachment state on the computer.",
+      "That database is encrypted, but desktop clients need local keys to open it while you use the app.",
+      "An AI agent or person running as your user may be able to inspect app files, screenshots, notifications, exports, or live app state depending on OS protections.",
+      "App lock and screen security help, but they do not defeat malware or an agent with your unlocked user session.",
+    ],
+  },
+  {
+    name: "iMessage",
+    tone: "risk",
+    icon: <FolderSearch className="w-5 h-5" />,
+    headline: "Mac message history and attachments are ordinary local targets.",
+    items: [
+      "On macOS, Messages history is commonly stored under the user Library Messages database and attachment folders.",
+      "A person or AI agent with access to your unlocked Mac account may see message history, contacts/handles, attachments, previews, search indexes, or backups.",
+      "iCloud settings, local retention, backups, FileVault, device lock state, and Advanced Data Protection change the exposure.",
+      "Endpoint access can bypass excellent transport encryption because the device already received the plaintext.",
+    ],
+  },
 ];
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -556,6 +599,49 @@ export default function Landing() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="local-device-exposure" className="py-24 px-6 border-y border-border/50 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start mb-10">
+            <div>
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">LOCAL DEVICE EXPOSURE</div>
+              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">What can an AI agent on your computer read?</h2>
+              <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                Transport encryption does not protect plaintext after your device receives it. If an AI agent, remote admin tool, malware process, or person has access to your unlocked computer account, the practical question becomes what is already on disk, in app storage, in notifications, in previews, or visible on screen.
+              </p>
+            </div>
+            <div className="border border-destructive/35 bg-destructive/5 p-5">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-mono text-xs text-destructive tracking-widest mb-2">UNLOCKED DEVICE WARNING</div>
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                    No messenger can guarantee secrecy from software already running with your user privileges. QuantumShield narrows the normal on-disk and on-screen plaintext window; it does not defeat a fully compromised endpoint while you are actively revealing secrets.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {LOCAL_DEVICE_EXPOSURE.map((item) => (
+              <div key={item.name} className="border border-border/50 bg-card/30 p-5">
+                <div className="text-primary mb-4">{item.icon}</div>
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.name.toUpperCase()}</div>
+                <h3 className={`font-mono text-lg font-bold leading-snug mb-4 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{item.headline}</h3>
+                <div className="space-y-3">
+                  {item.items.map((line) => (
+                    <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
+                      <HardDrive className={`w-4 h-4 mt-0.5 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`} />
+                      <p className="font-mono text-xs text-muted-foreground leading-relaxed">{line}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
