@@ -282,22 +282,22 @@ const LOCAL_DEVICE_EXPOSURE = [
     name: "QuantumShield",
     tone: "benefit",
     icon: <MousePointerClick className="w-5 h-5" />,
-    plain: "QuantumShield tries not to leave readable chats lying around.",
+    plain: "QuantumShield does not leave a readable pile of chats for someone to steal.",
     headline: "Plaintext is designed to be brief, deliberate, and one-at-a-time.",
-    runningPlain: "While open, only the message you choose should be readable.",
+    runningPlain: "Even with your device, an attacker should need your biometric passkey confirmation to reveal one message.",
     running: [
       "RAM can contain decrypted plaintext only for the message currently being held or intentionally revealed.",
       "RAM can contain active session state and local decryption keys while the app is unlocked.",
       "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
     ],
-    stoppedPlain: "When closed, old chats should look like locked boxes, not notes.",
+    stoppedPlain: "When closed, chats should sit on disk as encrypted boxes, not readable words or files.",
     stopped: [
       "Disk is intended to hold ciphertext packages, wrapped keys, public key material, and app/session metadata.",
       "Readable handles stay local; the server stores peppered exact-lookup values instead of readable handles.",
       "Expired local message keys are removed so old ciphertext should remain unreadable.",
     ],
-    implicationPlain: "A bad app has to catch the tiny moment when you reveal something.",
-    implication: "An AI agent or malware running as your user has the best chance only during the reveal window or by stealing local keys. It should not find a normal plaintext chat archive waiting on disk.",
+    implicationPlain: "A bad app has to beat the passkey gate and catch the one message you reveal.",
+    implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history should not sit on disk or remain broadly readable in memory.",
   },
   {
     name: "Signal",
@@ -317,7 +317,7 @@ const LOCAL_DEVICE_EXPOSURE = [
       "The database is not a simple plaintext file, but the desktop app must retain enough local material to reopen your history.",
       "OS account compromise, backups, screenshots, exports, and notification artifacts can still matter.",
     ],
-    implicationPlain: "A bad app may attack your computer instead of breaking Signal's network encryption.",
+    implicationPlain: "Anyone or any AI agent with your unlocked computer can target your chats, files, contacts, and notifications.",
     implication: "A local AI agent or malware with your user privileges may not need to break Signal's network encryption; it can target the desktop app's local dataset, live process, screen, clipboard, notifications, or backups.",
   },
   {
@@ -338,8 +338,8 @@ const LOCAL_DEVICE_EXPOSURE = [
       "Disk may also expose contacts, handles, previews, Spotlight/search artifacts, caches, and backup-derived copies depending on settings.",
       "iCloud settings, local retention, backups, FileVault, device lock state, and Advanced Data Protection change the exposure.",
     ],
-    implicationPlain: "A bad app or person on your Mac can look for the local copy.",
-    implication: "A local AI agent or person with access to your unlocked Mac account can often inspect the endpoint record directly. Transport encryption is already over by the time messages are stored and rendered locally.",
+    implicationPlain: "Anyone or any AI agent with your unlocked Mac can target all local messages, attachments, contacts, previews, and search records.",
+    implication: "A local AI agent, malware process, remote admin tool, or person with access to your unlocked Mac account can often inspect the endpoint record directly. Transport encryption is already over by the time messages are stored and rendered locally.",
   },
 ];
 
