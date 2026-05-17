@@ -41,7 +41,7 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKeyAsync, getLastHandle, getLocalKeyPairAsync, getToken, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
+import { clearToken, getKemSecretKeyAsync, getLastHandle, getLocalKeyPairAsync, getToken, hashIdentityCode, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
 import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
@@ -238,7 +238,7 @@ const CODE_NAMES = [
   "Quartz", "Relay", "Signal", "Trace", "Unit", "Vector", "Ward", "Zenith",
 ];
 
-const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 const DELIVERY_FUZZ_OPTIONS = [
   { label: "89 sec", value: 89 },
   { label: "7 minutes", value: 420 },
@@ -388,13 +388,26 @@ function NewRoomDialog({
   const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
+  const [searchHash, setSearchHash] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [revealedUserId, setRevealedUserId] = useState<string | null>(null);
 
   const normalizedSearch = normalizeCodeInput(search);
+  useEffect(() => {
+    let cancelled = false;
+    if (!normalizedSearch) {
+      setSearchHash("");
+      return;
+    }
+    hashIdentityCode(normalizedSearch).then((hash) => {
+      if (!cancelled) setSearchHash(hash);
+    });
+    return () => { cancelled = true; };
+  }, [normalizedSearch]);
+
   const { data: searchResults } = useGetUsersSearch(
-    { q: normalizedSearch },
-    { query: { queryKey: getGetUsersSearchQueryKey({ q: normalizedSearch }), enabled: normalizedSearch.length > 0 } }
+    { q: searchHash },
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: searchHash }), enabled: searchHash.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -516,7 +529,7 @@ function NewRoomDialog({
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-            <p className="font-mono text-xs text-muted-foreground mt-1">Server releases each message at a random time inside this window. Default is 28 minutes.</p>
+            <p className="font-mono text-xs text-muted-foreground mt-1">Server releases each message at a random time inside this window. Default is 89 seconds.</p>
           </div>
 
           <div>
@@ -750,11 +763,12 @@ function ProfilePanel({
     },
   });
 
-  const submitCode = (e: React.FormEvent) => {
+  const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalized = normalizeCodeInput(newCode);
     createCode.mutate({
       data: {
-        code: normalizeCodeInput(newCode) || null,
+        code: newKind === "alias" && normalized ? await hashIdentityCode(normalized) : normalized || null,
         kind: newKind,
         visibilityScope: "public",
         ttlSeconds: newTtl,

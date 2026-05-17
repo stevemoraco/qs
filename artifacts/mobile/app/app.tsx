@@ -43,7 +43,8 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { gcm } from "@noble/ciphers/aes.js";
-import { randomBytes } from "@noble/hashes/utils.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import * as ScreenCapture from "expo-screen-capture";
@@ -51,7 +52,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
-const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 const DELIVERY_FUZZ_OPTIONS = [
   { label: "89 sec", v: 89 },
   { label: "7 min", v: 420 },
@@ -70,6 +71,12 @@ function randomRefetchInterval(minMs: number, maxMs: number): number {
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+function hashIdentityCode(value: string): string {
+  const normalized = normalizeCodeInput(value);
+  if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
+  return bytesToHex(sha256(new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`)));
 }
 
 async function verifyDevice(promptMessage: string): Promise<void> {
@@ -709,12 +716,16 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
+  const [searchHash, setSearchHash] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
 
   const normalizedSearch = normalizeCodeInput(search);
+  useEffect(() => {
+    setSearchHash(normalizedSearch ? hashIdentityCode(normalizedSearch) : "");
+  }, [normalizedSearch]);
   const { data: results = [] } = useGetUsersSearch(
-    { q: normalizedSearch },
-    { query: { queryKey: getGetUsersSearchQueryKey({ q: normalizedSearch }), enabled: normalizedSearch.length > 0 } }
+    { q: searchHash },
+    { query: { queryKey: getGetUsersSearchQueryKey({ q: searchHash }), enabled: searchHash.length > 0 } }
   );
 
   const createRoom = usePostRooms({
@@ -764,7 +775,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <Text style={[styles.codeMeta, { color: colors.mutedForeground, marginTop: 6 }]}>Each message releases at a random point inside this window. Default is 28 minutes.</Text>
+          <Text style={[styles.codeMeta, { color: colors.mutedForeground, marginTop: 6 }]}>Each message releases at a random point inside this window. Default is 89 seconds.</Text>
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>MESSAGE EXPIRY (TTL)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
@@ -960,9 +971,10 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   });
 
   const submitCode = () => {
+    const normalized = normalizeCodeInput(newCode);
     createCode.mutate({
       data: {
-        code: normalizeCodeInput(newCode) || null,
+        code: newKind === "alias" && normalized ? hashIdentityCode(normalized) : normalized || null,
         kind: newKind,
         visibilityScope: "public",
         ttlSeconds: newTtl,

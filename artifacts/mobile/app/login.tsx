@@ -15,6 +15,8 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthLogin } from "@workspace/api-client-react";
@@ -23,6 +25,12 @@ const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+function hashIdentityCode(value: string): string {
+  const normalized = normalizeCodeInput(value);
+  if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
+  return bytesToHex(sha256(new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`)));
 }
 
 const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; label: string }> = [
@@ -104,7 +112,7 @@ export default function LoginScreen() {
       setError(err instanceof Error ? err.message : "Device verification failed.");
       return;
     }
-    login.mutate({ data: { handle: normalizedHandle, passcode } });
+    login.mutate({ data: { handle: hashIdentityCode(normalizedHandle), passcode } });
   };
 
   const isLoading = login.isPending;

@@ -79,6 +79,14 @@ function isValidIdentityCode(code: string): boolean {
   return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
 }
 
+function isHashedIdentityCode(code: string): boolean {
+  return /^[a-f0-9]{64}$/.test(code);
+}
+
+function isValidStoredIdentityCode(code: string): boolean {
+  return isValidIdentityCode(code) || isHashedIdentityCode(code);
+}
+
 function isRegistrationResponse(value: unknown): value is RegistrationResponseJSON {
   return !!value && typeof value === "object" && "id" in value && "response" in value;
 }
@@ -156,8 +164,8 @@ router.post("/auth/register", async (req, res) => {
   const { passcode, primaryCode, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
   const normalizedPrimaryCode = primaryCode ? normalizeIdentityCode(primaryCode) : "";
 
-  if (!isValidIdentityCode(normalizedPrimaryCode)) {
-    res.status(400).json({ error: "Handle must be 2-32 letters, numbers, underscores, or dashes" });
+  if (!isValidStoredIdentityCode(normalizedPrimaryCode)) {
+    res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
     return;
   }
 
@@ -230,8 +238,8 @@ router.post("/auth/register", async (req, res) => {
 
 router.post("/auth/passkey/register/options", async (req, res) => {
   const handle = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
-  if (!isValidIdentityCode(handle)) {
-    res.status(400).json({ error: "Handle must be 2-32 letters, numbers, underscores, or dashes" });
+  if (!isValidStoredIdentityCode(handle)) {
+    res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
     return;
   }
 
@@ -249,9 +257,9 @@ router.post("/auth/passkey/register/options", async (req, res) => {
   const options = await generateRegistrationOptions({
     rpName: "QuantumShield",
     rpID: rpId(req),
-    userName: handle,
+    userName: `handle-${handle.slice(0, 12)}`,
     userID: randomBytes(16),
-    userDisplayName: handle,
+    userDisplayName: "QuantumShield handle",
     attestationType: "none",
     authenticatorSelection: {
       residentKey: "required",
@@ -275,8 +283,8 @@ router.post("/auth/passkey/register/verify", async (req, res) => {
   };
   const handle = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
 
-  if (!isValidIdentityCode(handle)) {
-    res.status(400).json({ error: "Handle must be 2-32 letters, numbers, underscores, or dashes" });
+  if (!isValidStoredIdentityCode(handle)) {
+    res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
     return;
   }
   if (!isRegistrationResponse(body.response) || typeof body.kemPublicKey !== "string" || typeof body.dsaPublicKey !== "string") {
@@ -375,8 +383,8 @@ router.post("/auth/passkey/register/verify", async (req, res) => {
 
 router.post("/auth/passkey/login/options", async (req, res) => {
   const handle = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
-  if (!isValidIdentityCode(handle)) {
-    res.status(400).json({ error: "Handle must be 2-32 letters, numbers, underscores, or dashes" });
+  if (!isValidStoredIdentityCode(handle)) {
+    res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
     return;
   }
 
@@ -439,7 +447,7 @@ router.post("/auth/passkey/login/options", async (req, res) => {
 router.post("/auth/passkey/login/verify", async (req, res) => {
   const body = req.body as { handle?: unknown; response?: unknown };
   const handle = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
-  if (!isValidIdentityCode(handle) || !isAuthenticationResponse(body.response)) {
+  if (!isValidStoredIdentityCode(handle) || !isAuthenticationResponse(body.response)) {
     res.status(400).json({ error: "Handle and passkey response are required" });
     return;
   }

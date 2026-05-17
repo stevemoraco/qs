@@ -201,50 +201,50 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Account identity",
     icon: <Fingerprint className="w-5 h-5" />,
-    quantumShield: "Handle plus passkey. No typed password field. The handle is the public locator; the private passkey material is mediated by the platform authenticator.",
-    signal: "Signal supports usernames for contact without sharing your phone number, but registration still starts from a phone number. PIN/Secure Value Recovery helps keep contacts and groups private from Signal servers.",
-    imessage: "iMessage is anchored to Apple ID, phone numbers, email addresses, device registration, and Apple's identity directory.",
-    warning: "Nation-state implication: encrypted message bodies do not hide account directories. Phone numbers, emails, handles, device registrations, group joins, and recovery flows can become a durable map of people and organizations.",
+    quantumShield: "You type a handle locally, then Face ID, Touch ID, Windows Hello, or your passkey provider proves it is really you. The app sends a deterministic handle hash for exact lookup. We store that lookup hash, the passkey public key, and a device session. We do not receive your readable handle, face, fingerprint, device passcode, typed password, or passkey private key.",
+    signal: "You start with a phone number. A username can let new people contact you without seeing that number, and Signal's PIN/Secure Value Recovery helps restore profile, contacts, and groups privately.",
+    imessage: "You sign in with Apple ID and reachable phone numbers or email addresses. Apple coordinates which devices can receive your iMessages.",
+    warning: "What this means: your exact handle can be found by someone who already knows and types it, but the database does not need the readable handle for lookup. A powerful adversary still cares about sessions, devices, room joins, timing, and push routes.",
   },
   {
     stage: "Initial key establishment",
     icon: <Key className="w-5 h-5" />,
-    quantumShield: "Each message uses a fresh symmetric key wrapped to recipient devices with ML-KEM-1024, the finalized NIST lattice-based key encapsulation standard.",
-    signal: "Signal's PQXDH upgrades the X3DH handshake by mixing classical X25519 with post-quantum Kyber-derived shared secret material to resist harvest-now-decrypt-later attacks.",
-    imessage: "Apple's PQ3 adds a post-quantum encryption key to the device key material registered for iMessage and uses it in the conversation setup.",
-    warning: "Nation-state implication: if the first exchange is only classical, a recorded transcript may become readable later. Hybrid and post-quantum setup reduce that risk, but endpoint compromise still wins.",
+    quantumShield: "When you send a message, the app creates a fresh message key and wraps it to each recipient device with ML-KEM-1024. The server carries the package but should not have the key needed to read it.",
+    signal: "When a Signal chat starts, PQXDH mixes classical X25519 with post-quantum Kyber-derived secret material. The goal is to make today's captured setup traffic useless to a future quantum computer.",
+    imessage: "When supported Apple devices talk, PQ3 adds post-quantum key material to iMessage setup so recorded traffic is harder to decrypt later.",
+    warning: "What this means: the first handshake is where future decryption risk begins. If an attacker records everything today, post-quantum setup is what keeps those recordings from becoming readable when quantum attacks improve.",
   },
   {
     stage: "Ongoing conversation security",
     icon: <Shield className="w-5 h-5" />,
-    quantumShield: "Message packages are signed with ML-DSA-87 before recipients unwrap keys or decrypt. Tampering is rejected before plaintext exists.",
-    signal: "Signal is built around the Signal Protocol ratchet. Its public post-quantum work has covered PQXDH and ongoing post-quantum ratchet research/deployment work.",
-    imessage: "Apple describes PQ3 as post-quantum protection for both initial establishment and ongoing rekeying inside supported iMessage conversations.",
-    warning: "Nation-state implication: confidentiality and authentication are separate. Post-quantum encryption protects old content from future decryption; post-quantum signatures matter when an active adversary can forge classical authentication in the future.",
+    quantumShield: "Before your device decrypts, it verifies the message package with ML-DSA-87. If the ciphertext, wrapped keys, room, sender, or algorithm fields were changed, the message is rejected instead of shown.",
+    signal: "Signal continuously ratchets keys as the chat continues, so compromise at one moment should not automatically reveal every past and future message.",
+    imessage: "Apple describes PQ3 as protecting both the setup and the ongoing conversation, with rekeying as messages continue between supported devices.",
+    warning: "What this means: encryption answers 'can they read it?' Signatures and verification answer 'can they fake or alter it?' A serious attacker tries both.",
   },
   {
     stage: "Metadata and routing",
     icon: <Server className="w-5 h-5" />,
-    quantumShield: "The server stores ciphertext, wrapped keys, delivery state, room membership, account/session records, and push routing data. The product intentionally calls this out for auditors.",
-    signal: "Signal is designed to minimize server knowledge and has private-contact-discovery and sealed-sender style protections, but network timing, registration, delivery, and device linkage can still be observable at some layer.",
-    imessage: "iMessage depends on Apple infrastructure for device lookup, delivery, push, backups/settings choices, and account/device coordination.",
-    warning: "Nation-state implication: with full network access and historical logs, an adversary can preserve timestamps, IPs, device identifiers, push tokens, delivery retries, group events, and account lookups even when content is unreadable.",
+    quantumShield: "Our server sees operational records: ciphertext, room membership, wrapped keys, delivery state, sessions, handle lookup hashes, and push tokens. That is why the product calls out metadata as an audit target.",
+    signal: "Signal works hard to reduce server-visible metadata, including private contact and group recovery designs, but some timing, network, registration, and delivery facts can still exist around the system.",
+    imessage: "Apple infrastructure handles account lookup, device lookup, delivery, push, sync choices, and account/device coordination for iMessage.",
+    warning: "What this means: even unreadable messages can leave a pattern. A nation-state with carrier logs, internet routing visibility, push logs, device records, or server history can study who was active, when, from where, and with which devices.",
   },
   {
     stage: "Plaintext exposure on screen",
     icon: <EyeOff className="w-5 h-5" />,
-    quantumShield: "Messages remain ciphertext in the interface until deliberate hold/tap reveal. Release, blur, scroll, background, camera detection, or capture-adjacent events hide the plaintext.",
-    signal: "Signal can reduce local leakage with app lock, screen security, disappearing messages, and notification privacy, depending on platform support and settings.",
-    imessage: "iMessage inherits Apple device lock screen, notification, Focus, screenshot, backup, and platform privacy controls.",
-    warning: "Nation-state implication: the hardest leak may be the endpoint, not the cipher. Screenshots, a second camera, shoulder surfing, malware, backups, and notification previews can defeat perfect transport encryption.",
+    quantumShield: "You hold to reveal one message at a time. Let go, switch tabs, scroll, background the app, trigger capture warnings, or point another camera at the screen and the chat hides again.",
+    signal: "Signal can protect local use with app lock, screen security, disappearing messages, and notification privacy where the operating system supports it.",
+    imessage: "iMessage relies on Apple device protections like lock screen settings, notification privacy, Focus, and device-level screenshot/backup behavior.",
+    warning: "What this means: the screen is often the weakest moment. A second phone, malware, a screenshot, a backup, or a notification preview can expose content after perfect encryption already did its job.",
   },
   {
     stage: "Time decay and deletion",
     icon: <TimerOff className="w-5 h-5" />,
-    quantumShield: "TTL can start after first view or immediately on send. When the local usable key is destroyed before capture, remaining server ciphertext is intentionally useless.",
-    signal: "Signal disappearing messages are a retention control, not a guarantee that already delivered plaintext was never copied, photographed, backed up, or compromised.",
-    imessage: "iMessage deletion and retention depend on device state, sync state, backups, recipient devices, and Apple account settings.",
-    warning: "Nation-state implication: deletion is only meaningful before collection. If plaintext or keys reached a compromised endpoint, historical log, backup, screenshot, or external camera, later expiry cannot claw it back.",
+    quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. After expiry, the usable local key is destroyed; leftover server ciphertext should be unreadable noise.",
+    signal: "Signal disappearing messages remove messages after a timer, but recipients or compromised devices may already have copied or captured them.",
+    imessage: "iMessage deletion depends on the sender's devices, recipient devices, sync state, retention settings, and backups.",
+    warning: "What this means: deletion only helps before collection. If someone already saw it, photographed it, backed it up, or compromised the endpoint, a later timer cannot make that copy disappear.",
   },
 ];
 
@@ -478,9 +478,9 @@ export default function Landing() {
             <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start mb-8">
               <div>
                 <div className="font-mono text-xs text-primary tracking-widest mb-3">SIGNAL / IMESSAGE / QUANTUMSHIELD</div>
-                <h3 className="font-mono font-bold text-2xl md:text-3xl leading-tight mb-4">Where the hard parts actually live.</h3>
+                <h3 className="font-mono font-bold text-2xl md:text-3xl leading-tight mb-4">What each app exposes in real life.</h3>
                 <p className="font-mono text-sm text-muted-foreground leading-relaxed">
-                  The question is not whether a messenger says end-to-end encrypted. The question is what survives when the adversary is a nation-state with complete network access, historical packet logs, server subpoenas or compromise, endpoint malware, and years to wait.
+                  This is the plain-English version: what you do, what the app stores or routes, and what a nation-state can still learn even when message content stays encrypted.
                 </p>
               </div>
               <div className="border border-destructive/35 bg-destructive/5 p-4">

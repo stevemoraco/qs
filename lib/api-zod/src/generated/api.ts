@@ -21,7 +21,7 @@ export const HealthCheckResponse = zod.object({
  * @summary Register with post-quantum key bundle
  */
 export const postAuthRegisterBodyPrimaryCodeMin = 2;
-export const postAuthRegisterBodyPrimaryCodeMax = 32;
+export const postAuthRegisterBodyPrimaryCodeMax = 64;
 
 export const postAuthRegisterBodyPasscodeMin = 8;
 
@@ -73,7 +73,7 @@ export const PostLeadsResponse = zod.object({
  * @summary Login and receive a session token
  */
 export const postAuthLoginBodyHandleMin = 2;
-export const postAuthLoginBodyHandleMax = 32;
+export const postAuthLoginBodyHandleMax = 64;
 
 
 

@@ -10,7 +10,7 @@ export interface LoginRequest {
   /**
      * Globally unique account handle.
      * @minLength 2
-     * @maxLength 32
+     * @maxLength 64
      */
   handle: string;
   passcode: string;

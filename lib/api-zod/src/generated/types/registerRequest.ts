@@ -10,7 +10,7 @@ export interface RegisterRequest {
   /**
      * Globally unique durable account handle. It can be disabled or rolled, but cannot be reused by another account.
      * @minLength 2
-     * @maxLength 32
+     * @maxLength 64
      */
   primaryCode: string;
   /** @minLength 8 */

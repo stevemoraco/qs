@@ -22,6 +22,10 @@ function isValidIdentityCode(code: string): boolean {
   return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
 }
 
+function isHashedIdentityCode(code: string): boolean {
+  return /^[a-f0-9]{64}$/.test(code);
+}
+
 function expiryFromTtl(ttlSeconds: number | null | undefined): Date | null {
   if (!ttlSeconds) return null;
   return new Date(Date.now() + ttlSeconds * 1000);
@@ -71,8 +75,9 @@ router.post("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
   }
 
   const requestedCode = parse.data.code ? normalizeIdentityCode(parse.data.code) : randomCode();
-  if (!isValidIdentityCode(requestedCode)) {
-    res.status(400).json({ error: "Code must be 2-32 letters, numbers, underscores, or dashes" });
+  const kind = parse.data.kind ?? "alias";
+  if (kind === "alias" ? !isHashedIdentityCode(requestedCode) : !isValidIdentityCode(requestedCode)) {
+    res.status(400).json({ error: kind === "alias" ? "Handle lookup hash is invalid" : "Code must be 2-32 letters, numbers, underscores, or dashes" });
     return;
   }
 
@@ -92,7 +97,7 @@ router.post("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
     .values({
       ownerUserId: req.userId!,
       code: requestedCode,
-      kind: parse.data.kind ?? "alias",
+      kind,
       visibilityScope: parse.data.visibilityScope ?? "public",
       active: true,
       maxUses: parse.data.maxUses ?? null,

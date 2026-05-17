@@ -13,6 +13,8 @@ import {
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthRegister, usePostKeysUpload } from "@workspace/api-client-react";
@@ -40,6 +42,12 @@ function normalizeHandle(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
 }
 
+function hashIdentityCode(value: string): string {
+  const normalized = normalizeHandle(value);
+  if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
+  return bytesToHex(sha256(new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`)));
+}
+
 function generateDevicePasscode(): string {
   const bytes = new Uint8Array(32);
   const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
@@ -52,7 +60,7 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setToken, storeKeyPair } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setLastHandle, setToken, storeKeyPair } = useAuth();
 
   const [handle, setHandle] = useState("");
   const [passcode] = useState(() => generateDevicePasscode());
@@ -87,9 +95,10 @@ export default function RegisterScreen() {
       const dsaSkB64 = uint8ToBase64(dsa.secretKey);
 
       setStep("register");
+      const handleHash = hashIdentityCode(normalizedHandle);
       const authData = await register.mutateAsync({
         data: {
-          primaryCode: normalizedHandle,
+          primaryCode: handleHash,
           passcode,
           kemPublicKey: kemPkB64,
           dsaPublicKey: dsaPkB64,
@@ -99,6 +108,7 @@ export default function RegisterScreen() {
       await storeKeyPair(kemSkB64, kemPkB64, dsaSkB64, dsaPkB64);
       await setToken(authData.token);
       await setAuthHandle(authData.authHandle);
+      await setLastHandle(normalizedHandle);
 
       setStep("upload");
       const kemSig = ml_dsa87.sign(kem.publicKey, dsa.secretKey);

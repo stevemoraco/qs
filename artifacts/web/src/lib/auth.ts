@@ -25,6 +25,22 @@ function base64ToBytes(value: string): Uint8Array {
   return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
 }
 
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export function normalizeIdentityHandle(value: string): string {
+  return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+export async function hashIdentityCode(value: string): Promise<string> {
+  const normalized = normalizeIdentityHandle(value);
+  if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
+  const input = new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`);
+  const digest = await crypto.subtle.digest("SHA-256", input);
+  return bytesToHex(new Uint8Array(digest));
+}
+
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const prefix = `${name}=`;
@@ -364,12 +380,13 @@ export async function registerWithPasskey(input: {
   dsaPublicKey: string;
   leadEmail?: string;
 }): Promise<{ token: string; authHandle: string }> {
+  const handleHash = await hashIdentityCode(input.handle);
   const options = await jsonFetch<Parameters<typeof startRegistration>[0]>("/api/auth/passkey/register/options", {
-    handle: input.handle,
+    handle: handleHash,
   });
   const response = await startRegistration(options);
   return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/register/verify", {
-    handle: input.handle,
+    handle: handleHash,
     response,
     kemPublicKey: input.kemPublicKey,
     dsaPublicKey: input.dsaPublicKey,
@@ -378,10 +395,11 @@ export async function registerWithPasskey(input: {
 }
 
 export async function loginWithPasskey(handle: string): Promise<{ token: string; authHandle: string }> {
-  const options = await jsonFetch<Parameters<typeof startAuthentication>[0]>("/api/auth/passkey/login/options", { handle });
+  const handleHash = await hashIdentityCode(handle);
+  const options = await jsonFetch<Parameters<typeof startAuthentication>[0]>("/api/auth/passkey/login/options", { handle: handleHash });
   const response = await startAuthentication(options);
   return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/login/verify", {
-    handle,
+    handle: handleHash,
     response,
   });
 }
