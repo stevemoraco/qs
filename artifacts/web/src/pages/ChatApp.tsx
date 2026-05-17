@@ -51,10 +51,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
 const PRIVACY_ALERT_THROTTLE_MS = 60_000;
-const FLASH_SCAN_MS = 250;
-const FLASH_ALERT_THROTTLE_MS = 15_000;
-const FLASH_FRAME_WIDTH = 48;
-const FLASH_FRAME_HEIGHT = 32;
+const FLASH_SCAN_MS = 150;
+const FLASH_ALERT_THROTTLE_MS = 20_000;
+const FLASH_FRAME_WIDTH = 64;
+const FLASH_FRAME_HEIGHT = 40;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1293,7 +1293,7 @@ export default function ChatApp() {
   const lastPrivacyAlertAtRef = useRef(0);
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const flashBaselineRef = useRef<number | null>(null);
+  const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
   const lastFlashAlertAtRef = useRef(0);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
@@ -1484,8 +1484,9 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
-  const scanCameraFlash = (video: HTMLVideoElement): boolean => {
-    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return false;
+  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; detail: string } => {
+    const noFlash = { triggered: false, detail: "" };
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return noFlash;
 
     const canvas = flashCanvasRef.current ?? document.createElement("canvas");
     if (!flashCanvasRef.current) {
@@ -1495,26 +1496,47 @@ export default function ChatApp() {
     }
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return false;
+    if (!ctx) return noFlash;
     ctx.drawImage(video, 0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT);
     const data = ctx.getImageData(0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT).data;
 
     let luminanceTotal = 0;
     let brightPixels = 0;
+    let veryBrightPixels = 0;
+    let peak = 0;
     const pixelCount = FLASH_FRAME_WIDTH * FLASH_FRAME_HEIGHT;
     for (let i = 0; i < data.length; i += 4) {
       const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
       luminanceTotal += lum;
-      if (lum > 215) brightPixels += 1;
+      if (lum > 200) brightPixels += 1;
+      if (lum > 242) veryBrightPixels += 1;
+      if (lum > peak) peak = lum;
     }
 
     const avg = luminanceTotal / pixelCount;
     const brightRatio = brightPixels / pixelCount;
-    const baseline = flashBaselineRef.current ?? avg;
-    const delta = avg - baseline;
-    const isFlash = avg > 120 && delta > 42 && brightRatio > 0.12;
-    flashBaselineRef.current = isFlash ? baseline : baseline * 0.92 + avg * 0.08;
-    return isFlash;
+    const veryBrightRatio = veryBrightPixels / pixelCount;
+    const baseline = flashBaselineRef.current ?? { avg, brightRatio, peak };
+    const avgDelta = avg - baseline.avg;
+    const brightDelta = brightRatio - baseline.brightRatio;
+    const peakDelta = peak - baseline.peak;
+    const globalFlash = avgDelta > 34 && brightDelta > 0.055 && avg > 85;
+    const localizedFlash = peakDelta > 52 && brightDelta > 0.035 && veryBrightRatio > 0.012;
+    const brightBloom = veryBrightRatio > 0.075 && brightDelta > 0.03 && avgDelta > 18;
+    const triggered = globalFlash || localizedFlash || brightBloom;
+
+    if (!triggered) {
+      flashBaselineRef.current = {
+        avg: baseline.avg * 0.9 + avg * 0.1,
+        brightRatio: baseline.brightRatio * 0.9 + brightRatio * 0.1,
+        peak: baseline.peak * 0.86 + peak * 0.14,
+      };
+    }
+
+    return {
+      triggered,
+      detail: `avg +${avgDelta.toFixed(0)} / bright +${(brightDelta * 100).toFixed(1)}% / peak +${peakDelta.toFixed(0)}`,
+    };
   };
 
   const unlockPrivacyShield = async (source: "auto" | "manual" = "manual") => {
@@ -1639,7 +1661,9 @@ export default function ChatApp() {
         setCameraStatusDetail("ON-DEVICE");
 
         flashScanIntervalRef.current = setInterval(() => {
-          if (!videoRef.current || scanCameraFlash(videoRef.current) === false) return;
+          if (!videoRef.current) return;
+          const flash = scanCameraFlash(videoRef.current);
+          if (!flash.triggered) return;
           const now = Date.now();
           if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
           lastFlashAlertAtRef.current = now;
@@ -1647,7 +1671,7 @@ export default function ChatApp() {
           const roomId = activeRoomIdRef.current;
           if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
           setCameraStatus("threat");
-          setCameraStatusDetail("FLASH GUARD");
+          setCameraStatusDetail(`FLASH GUARD / ${flash.detail}`);
         }, FLASH_SCAN_MS);
 
         detectionIntervalRef.current = setInterval(async () => {
