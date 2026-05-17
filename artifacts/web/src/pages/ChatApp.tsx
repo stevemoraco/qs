@@ -50,12 +50,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
-const PRIVACY_ALERT_THROTTLE_MS = 60_000;
 const FLASH_SCAN_MS = 100;
-const FLASH_ALERT_THROTTLE_MS = 12_000;
 const FLASH_FRAME_WIDTH = 64;
 const FLASH_FRAME_HEIGHT = 40;
-const FLASH_DEBUG_SEND_MS = 350;
+const FLASH_DEBUG_SEND_MS = 500;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1291,12 +1289,10 @@ export default function ChatApp() {
   const autoKeyRepairAttemptedRef = useRef(false);
   const captureWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeRoomIdRef = useRef<string | null>(null);
-  const lastPrivacyAlertAtRef = useRef(0);
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
   const flashStreakRef = useRef(0);
-  const lastFlashAlertAtRef = useRef(0);
   const lastFlashDebugAtRef = useRef(0);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const startingCameraRef = useRef<Promise<void> | null>(null);
@@ -1435,9 +1431,6 @@ export default function ChatApp() {
   const sendPrivacyAlert = async (roomId: string, label: string) => {
     const token = getToken();
     if (!token) return;
-    const now = Date.now();
-    if (now - lastPrivacyAlertAtRef.current < PRIVACY_ALERT_THROTTLE_MS) return;
-    lastPrivacyAlertAtRef.current = now;
     await fetch(`/api/rooms/${roomId}/privacy-alert`, {
       method: "POST",
       headers: {
@@ -1489,7 +1482,7 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
-  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; candidate: boolean; detail: string; metrics?: Record<string, number | boolean> } => {
+  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; candidate: boolean; detail: string; metrics?: Record<string, number | boolean | string> } => {
     const noFlash = { triggered: false, candidate: false, detail: "" };
     if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return noFlash;
 
@@ -1556,6 +1549,7 @@ export default function ChatApp() {
         strongFlash,
         triggered: isFlash,
         streak: flashStreakRef.current,
+        scanMs: FLASH_SCAN_MS,
       },
     };
   };
@@ -1581,7 +1575,7 @@ export default function ChatApp() {
     return !!stream && stream.getVideoTracks().some((track) => track.readyState === "live" && track.enabled);
   };
 
-  const sendFlashDebug = (roomId: string, flash: { detail: string; metrics?: Record<string, number | boolean> }) => {
+  const sendFlashDebug = (roomId: string, flash: { detail: string; metrics?: Record<string, number | boolean | string> }) => {
     const token = getToken();
     if (!token) return;
     fetch(`/api/rooms/${roomId}/privacy-debug`, {
@@ -1637,7 +1631,7 @@ export default function ChatApp() {
           if (!videoRef.current) return;
           const flash = scanCameraFlash(videoRef.current);
           const roomId = activeRoomIdRef.current;
-          if (roomId && (flash.candidate || flash.triggered)) {
+          if (roomId && flash.metrics) {
             const now = Date.now();
             if (flash.triggered || now - lastFlashDebugAtRef.current > FLASH_DEBUG_SEND_MS) {
               lastFlashDebugAtRef.current = now;
@@ -1645,9 +1639,6 @@ export default function ChatApp() {
             }
           }
           if (!flash.triggered) return;
-          const now = Date.now();
-          if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
-          lastFlashAlertAtRef.current = now;
           lockForCaptureAttempt("Possible screenshot flash reflected in the selfie camera. Secure content was hidden.");
           if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
           setCameraStatus("threat");

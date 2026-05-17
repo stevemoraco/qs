@@ -5,6 +5,7 @@ import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
 import { logger } from "../lib/logger";
+import { appendFile } from "fs/promises";
 
 const router = Router();
 
@@ -222,6 +223,10 @@ router.post("/rooms/:roomId/privacy-debug", requireAuth, async (req: AuthRequest
 
   const metrics = typeof req.body === "object" && req.body ? req.body : {};
   logger.info({ userId: req.userId, roomId, metrics }, "Privacy camera flash debug");
+  void appendFile(
+    "/tmp/quantumshield-flash-debug.log",
+    `${JSON.stringify({ ts: new Date().toISOString(), userId: req.userId, roomId, metrics })}\n`,
+  ).catch((err) => logger.warn({ err }, "Could not write privacy flash debug log"));
   res.status(202).json({ ok: true });
 });
 
