@@ -207,7 +207,9 @@ export function getAssociatedHandles(): string[] {
 
 export function getPreferredPasskeyHandle(fallback = ""): string {
   const normalizedFallback = normalizeIdentityHandle(fallback);
-  const handles = [...getAssociatedHandles(), normalizedFallback].filter(Boolean);
+  const unsealedHandles = Object.values(getUnsealedHandleLabels()).map(normalizeIdentityHandle);
+  const handles = [...unsealedHandles, ...getAssociatedHandles(), normalizedFallback]
+    .filter((value, index, values) => value && !/^[a-f0-9]{64}$/.test(value) && values.indexOf(value) === index);
   return handles.sort((a, b) => a.length - b.length || a.localeCompare(b))[0] ?? normalizedFallback;
 }
 
@@ -344,8 +346,6 @@ export function clearToken(): void {
 
 export function clearEphemeralSecrets(): void {
   clearPrivateKeyCache();
-  localStorage.removeItem(KEM_SK_KEY);
-  localStorage.removeItem(DSA_SK_KEY);
 }
 
 export function isAuthenticated(): boolean {
@@ -586,12 +586,13 @@ export async function hydrateKeyPairFromIndexedDb(): Promise<boolean> {
   db.close();
 
   let hydrated = false;
+  const hasCompleteIndexedDbKeyPair = keys.every((key) => !!values[key]);
   for (const key of keys) {
     if (isPrivateKey(key) && values[key]) {
       localStorage.removeItem(key);
       cachePrivateKey(key, base64ToBytes(values[key]));
       hydrated = true;
-    } else if (!localStorage.getItem(key) && values[key]) {
+    } else if (values[key] && (hasCompleteIndexedDbKeyPair || !localStorage.getItem(key))) {
       localStorage.setItem(key, values[key]);
       hydrated = true;
     }
@@ -667,8 +668,8 @@ async function authedJsonFetch<T>(url: string, body: unknown, token = getToken()
   return data as T;
 }
 
-function devicePasskeyLabel(): string {
-  const handle = getPreferredPasskeyHandle();
+function devicePasskeyLabel(fallbackHandle = ""): string {
+  const handle = getPreferredPasskeyHandle(fallbackHandle);
   if (handle) return handle;
   const device = /iphone|ipad|ipod/i.test(navigator.userAgent)
     ? "iPhone"
@@ -679,7 +680,7 @@ function devicePasskeyLabel(): string {
         : /win/i.test(navigator.userAgent)
           ? "Windows"
           : "Device";
-  return `Passkey from ${device} ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+  return `${device} Passkey`;
 }
 
 function withLocalPasskeyDisplayName<T extends { user: { name: string; displayName: string } }>(optionsJSON: T, displayName: string): T {
@@ -723,7 +724,7 @@ export async function registerWithPasskey(input: {
   const optionsJSON = await jsonFetch<Parameters<typeof startRegistration>[0]["optionsJSON"]>("/api/auth/passkey/register/options", {
     handle: handleHash,
   });
-  const response = await runWebAuthnCeremony(() => startRegistration({ optionsJSON: withLocalPasskeyDisplayName(optionsJSON, devicePasskeyLabel()) }));
+  const response = await runWebAuthnCeremony(() => startRegistration({ optionsJSON: withLocalPasskeyDisplayName(optionsJSON, devicePasskeyLabel(input.handle)) }));
   return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/register/verify", {
     handle: handleHash,
     response,
@@ -756,9 +757,12 @@ export async function localPlatformPasskeyAvailable(): Promise<boolean> {
   return platformAuthenticatorIsAvailable().catch(() => false);
 }
 
-export async function linkLocalPlatformPasskey(token: string, label = "Desktop passkey", handle = ""): Promise<void> {
+export async function linkLocalPlatformPasskey(token: string, label = "", handle = ""): Promise<void> {
   const optionsJSON = await authedJsonFetch<Parameters<typeof startRegistration>[0]["optionsJSON"]>("/api/auth/passkey/add/options", {}, token);
-  const passkeyLabel = label || devicePasskeyLabel();
+  const requestedLabel = label.trim();
+  const passkeyLabel = requestedLabel && !/^desktop passkey$/i.test(requestedLabel)
+    ? requestedLabel
+    : devicePasskeyLabel(handle);
   const response = await runWebAuthnCeremony(() => startRegistration({ optionsJSON: withLocalPasskeyDisplayName(optionsJSON, passkeyLabel) }));
   await authedJsonFetch<{ ok: boolean }>("/api/auth/passkey/add/verify", { response, label: passkeyLabel }, token);
 }
@@ -772,7 +776,7 @@ export async function maybeLinkLocalPlatformPasskey(handle: string, token: strin
 
   await new Promise((resolve) => window.setTimeout(resolve, 600));
   try {
-    await linkLocalPlatformPasskey(token, devicePasskeyLabel(), handle);
+    await linkLocalPlatformPasskey(token, "", handle);
     localStorage.setItem(storageKey, "1");
     return "linked";
   } catch (err) {

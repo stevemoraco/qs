@@ -424,7 +424,7 @@ router.post("/auth/passkey/add/options", requireAuth, async (req: AuthRequest, r
     rpID: rpId(req),
     userName: `account-${req.userId.slice(0, 8)}`,
     userID: randomBytes(16),
-    userDisplayName: "QuantumShield desktop",
+    userDisplayName: "QuantumShield Passkey",
     attestationType: "none",
     excludeCredentials,
     authenticatorSelection: {
@@ -491,7 +491,7 @@ router.post("/auth/passkey/add/verify", requireAuth, async (req: AuthRequest, re
     credentialPublicKey: Buffer.from(credential.publicKey).toString("base64url"),
     credentialCounter: credential.counter,
     credentialTransports: body.response.response.transports ?? null,
-    label: typeof body.label === "string" && body.label.trim() ? body.label.trim().slice(0, 80) : "Desktop passkey",
+    label: typeof body.label === "string" && body.label.trim() ? body.label.trim().slice(0, 80) : "Device passkey",
   });
 
   res.status(201).json({ ok: true });

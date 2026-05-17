@@ -49,7 +49,7 @@ import { clearBytes, decryptMessage, encryptMessage, importMessageKey, CIPHER_SU
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
-import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
+import { ensurePushSubscription, hasExistingPushSubscription, notificationPermission } from "@/lib/pwa";
 import {
   cacheRoomMembers,
   cacheRoomMessages,
@@ -65,8 +65,10 @@ import {
   getOutboxEntries,
   type OfflineOutboxEntry,
 } from "@/lib/offline-vault";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+const VERSION_LABEL_FALLBACK = "VERSION";
 const CAPTURE_WARNING_MS = 8000;
 const FLASH_SCAN_MS = 60;
 const FLASH_FRAME_WIDTH = 64;
@@ -110,6 +112,53 @@ type OfflineMe = {
   dsaPublicKey?: string | null;
 };
 
+type VersionAudit = {
+  app: string;
+  displayVersion: string;
+  packageVersion: string;
+  serverStartedAtUtc: string;
+  publishTimeUtc: string;
+  latestCodeRunning: boolean;
+  runningState: {
+    serverBootMatchesCurrentGit: boolean;
+    serverBootDirty: boolean;
+    currentWorkspaceDirty: boolean;
+    currentHeadMatchesOriginMain: boolean;
+  };
+  git: {
+    boot: VersionGitSnapshot;
+    current: VersionGitSnapshot;
+  };
+  runtime: {
+    node: string;
+    platform: string;
+    arch: string;
+    pid: number;
+    replit?: Record<string, string | null>;
+  };
+  attestations: Record<string, {
+    status: string;
+    reason?: string;
+    bootRepoSha256?: string;
+    currentRepoSha256?: string;
+  }>;
+};
+
+type VersionGitSnapshot = {
+  branch: string;
+  commit: string;
+  shortCommit: string;
+  commitSubject: string;
+  committedAtUtc: string;
+  originMainCommit: string;
+  dirty: boolean;
+  dirtySummary: string[];
+  commitMd5: string;
+  commitSha256: string;
+  repoMd5: string;
+  repoSha256: string;
+};
+
 function readJson<T>(key: string, fallback: T): T {
   try {
     const value = localStorage.getItem(key);
@@ -129,6 +178,168 @@ function loadOfflineMe(): OfflineMe | null {
 
 function saveOfflineMe(me: OfflineMe): void {
   writeJson(OFFLINE_ME_KEY, me);
+}
+
+function formatAuditTime(value: string, timeZone?: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "unavailable";
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+    timeZone,
+    timeZoneName: "short",
+  });
+}
+
+function formatElapsedSince(value: string, nowMs: number): string {
+  const then = new Date(value).getTime();
+  if (!Number.isFinite(then)) return "unavailable";
+  const seconds = Math.max(0, Math.floor((nowMs - then) / 1000));
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m ${seconds % 60}s`;
+}
+
+function versionLabelFromIso(value: string): string {
+  const date = new Date(value);
+  const source = Number.isNaN(date.getTime()) ? new Date() : date;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+  }).formatToParts(source);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `v${part("year")}.${part("month")}.${part("day")}.${part("hour")}.${part("minute")}${part("dayPeriod").toUpperCase()}.${part("timeZoneName")}`;
+}
+
+function VersionBadge({ label, onClick, className = "" }: { label: string; onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`font-mono text-[10px] leading-none text-muted-foreground hover:text-primary transition-colors ${className}`}
+      data-testid="button-version-audit"
+    >
+      {label}
+    </button>
+  );
+}
+
+function VersionAuditModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [audit, setAudit] = useState<VersionAudit | null>(null);
+  const [error, setError] = useState("");
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setError("");
+    fetch("/api/version", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText || "version request failed"}`);
+        return res.json() as Promise<VersionAudit>;
+      })
+      .then((data) => {
+        if (!cancelled) setAudit(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load version audit.");
+      });
+    const interval = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [open]);
+
+  if (!open) return null;
+  const clientAttestation = {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    online: navigator.onLine,
+    webCrypto: !!window.crypto?.subtle,
+    webAuthn: typeof PublicKeyCredential !== "undefined",
+    serviceWorker: "serviceWorker" in navigator,
+  };
+  const boot = audit?.git.boot;
+  const publishUtc = audit?.publishTimeUtc ?? "";
+
+  return (
+    <div className="fixed inset-0 z-[120] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="w-full max-w-3xl max-h-[88vh] overflow-y-auto border border-border bg-card text-left" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4 border-b border-border/50 p-4">
+          <div>
+            <div className="font-mono text-[10px] tracking-widest text-primary">VERSION / ATTESTATION</div>
+            <h2 className="mt-1 font-mono text-sm font-bold tracking-widest">QUANTUMSHIELD {audit?.displayVersion ?? VERSION_LABEL_FALLBACK}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground" data-testid="button-close-version-audit">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="space-y-4 p-4 font-mono text-xs">
+          {error && <div className="border border-destructive/40 bg-destructive/10 p-3 text-destructive">{error}</div>}
+          {!audit && !error ? (
+            <div className="text-muted-foreground">Loading version audit...</div>
+          ) : audit ? (
+            <>
+              <div className={`border p-3 ${audit.latestCodeRunning ? "border-primary/40 bg-primary/5 text-primary" : "border-amber-500/40 bg-amber-500/10 text-amber-500"}`}>
+                {audit.latestCodeRunning ? "LATEST CODE RUNNING" : "VERSION MISMATCH OR UNCOMMITTED WORKSPACE"}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <AuditRow label="commit" value={`${boot?.shortCommit ?? "unknown"} / ${boot?.commitSubject ?? "unknown"}`} />
+                <AuditRow label="package" value={audit.packageVersion} />
+                <AuditRow label="mountain publish" value={formatAuditTime(publishUtc, "America/Denver")} />
+                <AuditRow label="utc publish" value={formatAuditTime(publishUtc, "UTC")} />
+                <AuditRow label="browser time" value={new Date(nowMs).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "medium", timeZoneName: "short" })} />
+                <AuditRow label="elapsed since release" value={formatElapsedSince(publishUtc, nowMs)} />
+                <AuditRow label="server boot" value={formatAuditTime(audit.serverStartedAtUtc, "UTC")} />
+                <AuditRow label="origin/main match" value={audit.runningState.currentHeadMatchesOriginMain ? "yes" : "no"} />
+              </div>
+              <div className="grid gap-2">
+                <AuditRow label="commit md5" value={boot?.commitMd5 ?? "unavailable"} mono />
+                <AuditRow label="commit sha256" value={boot?.commitSha256 ?? "unavailable"} mono />
+                <AuditRow label="tracked repo md5" value={boot?.repoMd5 ?? "unavailable"} mono />
+                <AuditRow label="tracked repo sha256" value={boot?.repoSha256 ?? "unavailable"} mono />
+                <AuditRow label="full commit" value={boot?.commit ?? "unavailable"} mono />
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <AuditRow label="server runtime" value={`${audit.runtime.node} / ${audit.runtime.platform}-${audit.runtime.arch} / pid ${audit.runtime.pid}`} />
+                <AuditRow label="server source attestation" value={audit.attestations.sourceIntegrity?.status ?? "unavailable"} />
+                <AuditRow label="server hardware/os attestation" value={`${audit.attestations.serverHardwareOs?.status ?? "unavailable"}: ${audit.attestations.serverHardwareOs?.reason ?? ""}`} />
+                <AuditRow label="client hardware/os attestation" value={`${audit.attestations.clientHardwareOs?.status ?? "unavailable"}: ${audit.attestations.clientHardwareOs?.reason ?? ""}`} />
+              </div>
+              <div className="border border-border/50 bg-background/50 p-3">
+                <div className="mb-2 tracking-widest text-muted-foreground">CLIENT RUNTIME REPORT</div>
+                <pre className="whitespace-pre-wrap break-all text-[10px] text-muted-foreground">{JSON.stringify(clientAttestation, null, 2)}</pre>
+              </div>
+              <div className="border border-border/50 bg-background/50 p-3">
+                <div className="mb-2 tracking-widest text-muted-foreground">DIRTY FILES AT SERVER BOOT</div>
+                <pre className="whitespace-pre-wrap break-all text-[10px] text-muted-foreground">{audit.git.boot.dirtySummary.length ? audit.git.boot.dirtySummary.join("\n") : "clean"}</pre>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="border border-border/50 bg-background/50 p-3">
+      <div className="mb-1 text-[10px] tracking-widest text-muted-foreground">{label.toUpperCase()}</div>
+      <div className={`break-all text-foreground ${mono ? "text-[10px]" : ""}`}>{value}</div>
+    </div>
+  );
 }
 
 function useOnlineStatus(): boolean {
@@ -246,10 +457,28 @@ async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array):
 async function wrapMessageKeyForLocalDevice(rawMessageKey: Uint8Array): Promise<string | null> {
   const keys = await getLocalKeyPairAsync();
   try {
-    return keys.kemPublicKey ? wrapMessageKeyForKemPublicKey(keys.kemPublicKey, rawMessageKey) : null;
+    if (!keys.kemPublicKey || !keys.kemSecretKey) return null;
+    if (!localKemKeyPairCanRoundTrip(keys.kemPublicKey, keys.kemSecretKey)) return null;
+    return wrapMessageKeyForKemPublicKey(keys.kemPublicKey, rawMessageKey);
   } finally {
     clearBytes(keys.kemSecretKey);
     clearBytes(keys.dsaSecretKey);
+  }
+}
+
+function localKemKeyPairCanRoundTrip(kemPublicKey: Uint8Array, kemSecretKey: Uint8Array): boolean {
+  let sharedSecret: Uint8Array | null = null;
+  let decapsulated: Uint8Array | null = null;
+  try {
+    const encapsulated = ml_kem1024.encapsulate(kemPublicKey);
+    sharedSecret = encapsulated.sharedSecret;
+    decapsulated = ml_kem1024.decapsulate(encapsulated.cipherText, kemSecretKey);
+    return bytesToBase64(sharedSecret) === bytesToBase64(decapsulated);
+  } catch {
+    return false;
+  } finally {
+    clearBytes(sharedSecret);
+    clearBytes(decapsulated);
   }
 }
 
@@ -403,6 +632,7 @@ type Room = {
 
 type Message = {
   id: string;
+  roomId?: string | null;
   senderId: string;
   senderUsername?: string | null;
   ciphertext: string;
@@ -430,6 +660,7 @@ type WrappedMessageKey = {
 function outboxEntryToMessage(entry: OfflineOutboxEntry, senderId: string): Message {
   return {
     id: `offline:${entry.id}`,
+    roomId: entry.roomId,
     senderId,
     senderUsername: null,
     ciphertext: entry.ciphertext,
@@ -458,6 +689,7 @@ function localSentMessage(input: {
 }): Message {
   return {
     id: `local-sent-${crypto.randomUUID()}`,
+    roomId: input.roomId,
     senderId: input.senderId,
     senderUsername: null,
     ciphertext: input.ciphertext,
@@ -683,6 +915,10 @@ function isWithinFuzzWindow(sentAt: string, fuzzSeconds: number | null | undefin
 
 function sameSentMessage(local: Message, live: Message): boolean {
   return (local.signature ? live.signature === local.signature : false) || live.ciphertext === local.ciphertext;
+}
+
+function messageBelongsToRoom(message: Message, roomId: string): boolean {
+  return !message.roomId || message.roomId === roomId;
 }
 
 function shouldKeepFuzzMetadata(local: Message, fuzzSeconds: number | null | undefined, nowMs: number): boolean {
@@ -1224,6 +1460,7 @@ function ProfilePanel({
 }) {
   const qc = useQueryClient();
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const [revealed, setRevealed] = useState(false);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
@@ -1461,14 +1698,20 @@ function ProfilePanel({
         <div className="p-4 space-y-4">
           <div
             className="border border-border/50 bg-background/50 p-4"
-            onPointerEnter={() => setRevealed(true)}
-            onPointerLeave={() => setRevealed(false)}
-            onPointerDown={() => setRevealed(true)}
-            onPointerUp={() => setRevealed(false)}
-            onPointerCancel={() => setRevealed(false)}
+            onPointerEnter={() => {
+              if (!isMobile) setRevealed(true);
+            }}
+            onPointerLeave={() => {
+              if (!isMobile) setRevealed(false);
+            }}
             data-testid="button-hold-reveal-profile"
           >
-            <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-3"
+              onClick={() => {
+                if (isMobile) setRevealed((value) => !value);
+              }}
+            >
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-mono text-xs font-bold" style={{ backgroundColor: me.avatarColor ?? "#06b6d4" }}>
                 {codename[0]}
               </div>
@@ -1477,7 +1720,11 @@ function ProfilePanel({
                   {revealed ? (me.displayName ?? me.username) : codename}
                 </div>
                 <p className="font-mono text-xs text-muted-foreground mt-1">
-                  {revealed ? `${deviceSessions?.length ?? "..."} active login session${deviceSessions?.length === 1 ? "" : "s"}` : "Hover or hold this row to reveal login sessions"}
+                  {revealed
+                    ? `${deviceSessions?.length ?? "..."} active login session${deviceSessions?.length === 1 ? "" : "s"}`
+                    : isMobile
+                      ? "Tap this row to reveal login sessions"
+                      : "Hover this row to reveal login sessions"}
                 </p>
               </div>
               <button
@@ -1783,7 +2030,10 @@ function RoomView({
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [revealRoomName, setRevealRoomName] = useState(false);
   const [revealedSenderId, setRevealedSenderId] = useState<string | null>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastScrolledRoomRef = useRef(room.id);
   const revealTokenRef = useRef(0);
   const touchRevealActiveRef = useRef(false);
   const activeRevealRef = useRef<{ id: string; input: "mouse" | "touch"; released: boolean; painted: boolean } | null>(null);
@@ -1810,18 +2060,22 @@ function RoomView({
   const [queuedMessages, setQueuedMessages] = useState<Message[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState("");
-  const queuedCount = queuedMessages.filter((msg) => msg.localQueued).length;
+  const roomQueuedMessages = useMemo(
+    () => queuedMessages.filter((msg) => messageBelongsToRoom(msg, room.id)),
+    [queuedMessages, room.id],
+  );
+  const queuedCount = roomQueuedMessages.filter((msg) => msg.localQueued).length;
   const visibleLiveMessages = (liveMessages as Message[]).map((live) => {
-    const localFuzz = queuedMessages.find((local) => (
+    const localFuzz = roomQueuedMessages.find((local) => (
       shouldKeepFuzzMetadata(local, room.deliveryFuzzSeconds, nowMs) && sameSentMessage(local, live)
     ));
     return localFuzz ? { ...live, createdAt: localFuzz.createdAt, localFuzzing: true } : live;
   });
-  const visibleLocalMessages = queuedMessages.filter((local) => {
+  const visibleLocalMessages = roomQueuedMessages.filter((local) => {
     if (!local.localOptimistic && !local.localFuzzing) return true;
     return !visibleLiveMessages.some((live) => sameSentMessage(local, live));
   });
-  const messages = online ? [...visibleLiveMessages, ...visibleLocalMessages] : offlineMessages;
+  const messages = online ? [...visibleLiveMessages, ...visibleLocalMessages] : offlineMessages.filter((msg) => messageBelongsToRoom(msg, room.id));
   const members = online ? liveMembers : offlineMembers;
 
   const postQueuedMessage = async (entry: OfflineOutboxEntry): Promise<Message> => {
@@ -1856,6 +2110,7 @@ function RoomView({
       setQueuedMessages((current) => [
         ...queued,
         ...current.filter((message) => (
+          messageBelongsToRoom(message, room.id) &&
           (message.localFuzzing || message.localOptimistic) &&
           !queued.some((queuedMessage) => queuedMessage.signature === message.signature)
         )),
@@ -1876,13 +2131,13 @@ function RoomView({
     let cancelled = false;
     const save = async () => {
       await cacheRoomMessages(room.id, liveMessages as Message[]);
-      if (!cancelled) setOfflineMessages([...(liveMessages as Message[]), ...queuedMessages]);
+      if (!cancelled) setOfflineMessages([...(liveMessages as Message[]), ...roomQueuedMessages]);
     };
     void save();
     return () => {
       cancelled = true;
     };
-  }, [online, liveMessages, queuedMessages, room.id]);
+  }, [online, liveMessages, roomQueuedMessages, room.id]);
 
   useEffect(() => {
     if (!online || queuedMessages.length === 0) return;
@@ -1903,8 +2158,16 @@ function RoomView({
   }, [online, liveMembers, room.id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const scrollEl = messagesScrollRef.current;
+    if (!scrollEl) return;
+    const roomChanged = lastScrolledRoomRef.current !== room.id;
+    lastScrolledRoomRef.current = room.id;
+    if (!roomChanged && !shouldStickToBottomRef.current) return;
+    requestAnimationFrame(() => {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+      shouldStickToBottomRef.current = true;
+    });
+  }, [room.id, messages.length]);
 
   useEffect(() => {
     const purgeExpiredKeys = () => {
@@ -1991,6 +2254,11 @@ function RoomView({
           if (wrapped) recipientEncryptedKeys[userId] = wrapped;
         })
       );
+      if (!recipientEncryptedKeys[currentUserId]) {
+        setSendError("This device's local decrypt key is missing or out of sync. Rotate/link fresh keys before sending from here.");
+        setInput(text);
+        return;
+      }
       if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
         setSendError("Could not encrypt for every current room member. Refresh the room and try again.");
         setInput(text);
@@ -2129,6 +2397,7 @@ function RoomView({
 
   const hideRevealedMsg = () => {
     if (touchRevealActiveRef.current) return;
+    if (activeRevealRef.current?.input === "mouse" && !activeRevealRef.current.released) return;
     hideRevealedMsgNow();
   };
 
@@ -2175,7 +2444,12 @@ function RoomView({
 
   const endMouseMessageReveal = () => {
     if (mouseRevealHideTimerRef.current) clearTimeout(mouseRevealHideTimerRef.current);
+    const activeReveal = activeRevealRef.current;
+    if (activeReveal?.input === "mouse") {
+      activeReveal.released = true;
+    }
     mouseRevealHideTimerRef.current = setTimeout(() => {
+      if (activeRevealRef.current?.input === "mouse") activeRevealRef.current = null;
       clearEphemeralSecrets();
       hideRevealedMsg();
     }, 120);
@@ -2214,6 +2488,14 @@ function RoomView({
   const isExpired = (expiresAt?: string | null) => {
     if (!expiresAt) return false;
     return new Date(expiresAt).getTime() <= nowMs;
+  };
+
+  const handleMessagesScroll = () => {
+    const scrollEl = messagesScrollRef.current;
+    if (scrollEl) {
+      shouldStickToBottomRef.current = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 96;
+    }
+    hideRevealedMsg();
   };
 
   return (
@@ -2263,9 +2545,10 @@ function RoomView({
       </div>
 
       <div
+        ref={messagesScrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3 select-none"
         style={{ filter: hidden ? "blur(24px)" : "none", WebkitUserSelect: "none", overscrollBehavior: "contain" }}
-        onScroll={hideRevealedMsg}
+        onScroll={handleMessagesScroll}
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -2292,8 +2575,12 @@ function RoomView({
               key={msg.id}
               className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
               data-testid={`message-${msg.id}`}
+              onMouseEnter={() => startMouseMessageReveal(msg as Message)}
+              onMouseLeave={endMouseMessageReveal}
             >
-              <div className={`max-w-[85%] md:max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
+              <div
+                className={`max-w-[85%] md:max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}
+              >
                 <div className="flex items-center gap-2">
                   {!isOwn && (
                     <button
@@ -2325,8 +2612,6 @@ function RoomView({
                       ? "bg-primary/10 border-primary/30 text-foreground"
                       : "bg-card border-border/50 text-foreground"
                   }`}
-                  onMouseEnter={() => startMouseMessageReveal(msg as Message)}
-                  onMouseLeave={endMouseMessageReveal}
                 >
                   {expired && !experimentalDecay ? (
                     <p className="font-mono text-xs text-muted-foreground italic">
@@ -2459,6 +2744,8 @@ export default function ChatApp() {
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showVersionAudit, setShowVersionAudit] = useState(false);
+  const [versionLabel, setVersionLabel] = useState(VERSION_LABEL_FALLBACK);
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [captureWarning, setCaptureWarning] = useState<string | null>(null);
   const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
@@ -2545,7 +2832,13 @@ export default function ChatApp() {
     }
     const permission = notificationPermission();
     if (permission === "granted") {
-      setPushStatus(await ensurePushSubscription(token));
+      if (await hasExistingPushSubscription()) {
+        setPushStatus({ ok: true, reason: "subscribed" });
+      }
+      const result = await ensurePushSubscription(token);
+      if (result.ok || !(await hasExistingPushSubscription())) {
+        setPushStatus(result);
+      }
       return;
     }
     setPushStatus({
@@ -2659,6 +2952,13 @@ export default function ChatApp() {
         });
         return false;
       }
+      if (!localKemKeyPairCanRoundTrip(keys.kemPublicKey, keys.kemSecretKey)) {
+        setKeyRepairStatus({
+          ok: false,
+          reason: "Local decrypt keys are out of sync on this install. Rotate this device to fresh keys before sending new messages from here.",
+        });
+        return false;
+      }
       const kemSignature = ml_dsa87.sign(keys.kemPublicKey, keys.dsaSecretKey);
       const bundle = {
         kemPublicKey: bytesToBase64(keys.kemPublicKey),
@@ -2718,12 +3018,19 @@ export default function ChatApp() {
     const repairKeys = async () => {
       const keys = await getLocalKeyPairAsync();
       try {
-        const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
-        if (!localComplete) {
+        if (!keys.kemSecretKey || !keys.kemPublicKey || !keys.dsaSecretKey || !keys.dsaPublicKey) {
           autoKeyRepairAttemptedRef.current = true;
           setKeyRepairStatus({
             ok: false,
             reason: "Local private keys are missing on this install. Do not rotate yet if you need old messages here; use an install that still has the original keys, then relink or add this device.",
+          });
+          return;
+        }
+        if (!localKemKeyPairCanRoundTrip(keys.kemPublicKey, keys.kemSecretKey)) {
+          autoKeyRepairAttemptedRef.current = true;
+          setKeyRepairStatus({
+            ok: false,
+            reason: "Local decrypt keys are out of sync on this install. Rotate this device to fresh keys before sending new messages from here.",
           });
           return;
         }
@@ -2750,6 +3057,21 @@ export default function ChatApp() {
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/version", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() as Promise<VersionAudit> : null))
+      .then((audit) => {
+        if (!cancelled && audit) setVersionLabel(audit.displayVersion || versionLabelFromIso(audit.publishTimeUtc));
+      })
+      .catch(() => {
+        if (!cancelled) setVersionLabel(VERSION_LABEL_FALLBACK);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     activeRoomIdRef.current = activeRoomId;
   }, [activeRoomId]);
@@ -3152,6 +3474,7 @@ export default function ChatApp() {
       data-testid="chat-privacy-surface"
     >
       <video ref={videoRef} className="absolute w-0 h-0 opacity-0 pointer-events-none" playsInline muted />
+      <VersionAuditModal open={showVersionAudit} onClose={() => setShowVersionAudit(false)} />
       {privacyShield.active && (
         <div
           className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-6"
@@ -3159,6 +3482,11 @@ export default function ChatApp() {
             if (event.target === event.currentTarget && !isUnlockingPrivacy) void unlockPrivacyShield("manual");
           }}
         >
+          <VersionBadge
+            label={versionLabel}
+            onClick={() => setShowVersionAudit(true)}
+            className="absolute left-4 top-4"
+          />
           <button
             type="button"
             onClick={() => {
@@ -3273,7 +3601,10 @@ export default function ChatApp() {
             <div className="w-6 h-6 bg-primary flex items-center justify-center">
               <Shield className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
-            <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
+            <div className="flex flex-col leading-none">
+              <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
+              <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mt-1 text-left" />
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <a
@@ -3436,6 +3767,7 @@ export default function ChatApp() {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <h2 className="font-mono font-bold text-xl tracking-tight mb-3">QuantumShield</h2>
+            <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mb-4" />
             <p className="font-mono text-sm text-muted-foreground max-w-sm mb-2">
               Select a channel or create a new encrypted conversation
             </p>

@@ -10,6 +10,7 @@ import pushRouter from "./push";
 import leadsRouter from "./leads";
 import identityCodesRouter from "./identity-codes";
 import timeRouter from "./time";
+import versionRouter from "./version";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(pushRouter);
 router.use(leadsRouter);
 router.use(identityCodesRouter);
 router.use(timeRouter);
+router.use(versionRouter);
 
 export default router;

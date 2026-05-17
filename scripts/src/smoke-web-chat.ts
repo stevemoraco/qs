@@ -12,11 +12,14 @@ function has(source: string, snippets: string[]): boolean {
   return snippets.every((snippet) => source.includes(snippet));
 }
 
-const [chatApp, offlineVault, pwaLib] = await Promise.all([
+const [chatApp, offlineVault, pwaLib, authLib] = await Promise.all([
   readFile(path.join(root, "artifacts/web/src/pages/ChatApp.tsx"), "utf8"),
   readFile(path.join(root, "artifacts/web/src/lib/offline-vault.ts"), "utf8"),
   readFile(path.join(root, "artifacts/web/src/lib/pwa.ts"), "utf8"),
+  readFile(path.join(root, "artifacts/web/src/lib/auth.ts"), "utf8"),
 ]);
+
+const clearEphemeralSecretsBody = authLib.match(/export function clearEphemeralSecrets\(\): void \{([\s\S]*?)\n\}/)?.[1] ?? "";
 
 const checks: Check[] = [
   {
@@ -50,15 +53,25 @@ const checks: Check[] = [
       chatApp.indexOf("const verified = await verifyMessageSignature(room.id, msg)") < chatApp.indexOf("decryptMessage(msg.ciphertext"),
   },
   {
-    name: "reveal plaintext clears on release, scroll, blur, and page hide",
+    name: "reveal plaintext persists through mouse hover and clears on release, blur, and page hide",
     pass: has(chatApp, [
       "onPointerUp",
       "onPointerCancel",
       "onPointerLeave",
-      "onScroll={hideRevealedMsg}",
+      "onScroll={handleMessagesScroll}",
+      "activeRevealRef.current?.input === \"mouse\" && !activeRevealRef.current.released",
+      "activeReveal.released = true",
       "document.addEventListener(\"visibilitychange\"",
       "window.addEventListener(\"blur\"",
     ]),
+  },
+  {
+    name: "reveal cleanup preserves local decrypt keys for read-your-own messages",
+    pass:
+      clearEphemeralSecretsBody.includes("clearPrivateKeyCache()") &&
+      !clearEphemeralSecretsBody.includes("localStorage.removeItem(KEM_SK_KEY)") &&
+      !clearEphemeralSecretsBody.includes("localStorage.removeItem(DSA_SK_KEY)") &&
+      chatApp.includes("await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])"),
   },
   {
     name: "offline vault has durable stores for rooms, messages, members, keys, and outbox",

@@ -108,6 +108,23 @@ export type PushSubscriptionResult =
   | { ok: true; reason: "subscribed" }
   | { ok: false; reason: string };
 
+export async function hasExistingPushSubscription(): Promise<boolean> {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (const registration of registrations) {
+      if (await registration.pushManager.getSubscription()) return true;
+    }
+    const ready = await Promise.race<ServiceWorkerRegistration | null>([
+      navigator.serviceWorker.ready,
+      new Promise((resolve) => setTimeout(() => resolve(null), 1200)),
+    ]);
+    return !!(await ready?.pushManager.getSubscription());
+  } catch {
+    return false;
+  }
+}
+
 async function fetchVapidPublicKey(): Promise<PushSubscriptionResult & { publicKey?: string }> {
   let res: Response;
   try {
