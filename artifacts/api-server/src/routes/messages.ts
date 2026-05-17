@@ -310,15 +310,29 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     .where(eq(roomMembersTable.roomId, roomId));
   const expectedRecipientIds = new Set(roomMemberRows.map((member) => member.userId));
   if (!isValidRecipientEncryptedKeys(recipientEncryptedKeys, expectedRecipientIds)) {
-    const providedRecipientIds = recipientEncryptedKeys && typeof recipientEncryptedKeys === "object" && !Array.isArray(recipientEncryptedKeys)
-      ? Object.keys(recipientEncryptedKeys as Record<string, unknown>)
+    const providedRecipientEntries = recipientEncryptedKeys && typeof recipientEncryptedKeys === "object" && !Array.isArray(recipientEncryptedKeys)
+      ? Object.entries(recipientEncryptedKeys as Record<string, unknown>)
       : [];
+    const providedRecipientIds = providedRecipientEntries.map(([id]) => id);
+    const expectedIds = [...expectedRecipientIds];
+    const missingRecipientIds = expectedIds.filter((id) => !providedRecipientIds.includes(id));
+    const unexpectedRecipientIds = providedRecipientIds.filter((id) => !expectedRecipientIds.has(id));
+    const invalidWrappedKeyForIds = providedRecipientEntries
+      .filter(([, v]) => !isValidWrappedKeyValue(v))
+      .map(([id]) => id);
+    const senderIsExpectedMember = expectedRecipientIds.has(req.userId!);
     logger.warn({
       roomId,
       senderId: req.userId,
       expectedMemberCount: expectedRecipientIds.size,
       providedRecipientCount: providedRecipientIds.length,
       includesSender: providedRecipientIds.includes(req.userId!),
+      senderIsExpectedMember,
+      missingRecipientIds,
+      unexpectedRecipientIds,
+      invalidWrappedKeyForIds,
+      expectedRecipientIds: expectedIds,
+      providedRecipientIds,
     }, "Rejected message with mismatched recipient key fanout");
     res.status(400).json({
       error: "recipientEncryptedKeys must include exactly one wrapped key for each current room member",
@@ -327,6 +341,10 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
         expectedMemberCount: expectedRecipientIds.size,
         providedRecipientCount: providedRecipientIds.length,
         includesSender: providedRecipientIds.includes(req.userId!),
+        senderIsExpectedMember,
+        missingRecipientIds,
+        unexpectedRecipientIds,
+        invalidWrappedKeyForIds,
       },
     });
     return;
