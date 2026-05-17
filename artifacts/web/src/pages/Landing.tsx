@@ -282,7 +282,7 @@ const LOCAL_DEVICE_EXPOSURE = [
     name: "QuantumShield",
     tone: "benefit",
     icon: <MousePointerClick className="w-5 h-5" />,
-    plain: "QuantumShield does not leave a readable pile of chats for someone to steal.",
+    plain: "QuantumShield does not leave a readable pile of chats for someone, malware, or an AI agent to steal.",
     headline: "Plaintext is designed to be brief, deliberate, and one-at-a-time.",
     runningPlain: "Even with your device, the key path is mathematically guaranteed to unlock only through passkey-gated reveal.",
     running: [
@@ -290,56 +290,56 @@ const LOCAL_DEVICE_EXPOSURE = [
       "RAM can contain active session state and local decryption keys while the app is unlocked.",
       "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
     ],
-    stoppedPlain: "When closed, chats are mathematically guaranteed to sit on disk as encrypted boxes, not readable words or files.",
+    stoppedPlain: "When closed, chats are mathematically guaranteed to sit on disk as encrypted boxes, not readable words or files someone can instantly copy or upload.",
     stopped: [
       "Disk is intended to hold ciphertext packages, wrapped keys, public key material, and app/session metadata.",
       "Readable handles stay local; the server stores peppered exact-lookup values instead of readable handles.",
       "Expired local message keys are removed so old ciphertext is mathematically guaranteed to remain unreadable.",
     ],
     implicationPlain: "A bad app has to beat the passkey gate and catch the one message you reveal.",
-    implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history is mathematically guaranteed not to sit on disk or remain broadly readable in memory. Check the source code and verify the storage and reveal paths.",
+    implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history is mathematically guaranteed not to sit on disk or remain broadly readable in memory where a bad actor could silently copy or upload it. Check the source code and verify the storage and reveal paths.",
   },
   {
     name: "Signal",
     tone: "risk",
     icon: <Database className="w-5 h-5" />,
-    plain: "Signal Desktop keeps local chat data so it can reopen your history.",
-    headline: "Desktop history and attachments exist as a local app dataset.",
+    plain: "Signal keeps local chat data on your devices so it can reopen your history.",
+    headline: "Desktop and phone history, attachments, and notifications can become local app targets.",
     runningPlain: "While open, Signal has to read chats to show them to you.",
     running: [
-      "RAM can contain the messages, contacts, attachments, previews, and keys the desktop app is actively using.",
+      "RAM can contain the messages, contacts, attachments, previews, and keys the desktop app or phone app is actively using.",
       "The app must decrypt content locally to render conversations and attachments.",
-      "Screen security/app lock reduce casual exposure but do not hide content from malware already running as you.",
+      "Screen security/app lock reduce casual exposure but do not hide content from malware already running as you on a computer or phone.",
     ],
-    stoppedPlain: "When closed, the desktop app still keeps a local record it can reopen.",
+    stoppedPlain: "When closed, the app can still keep local records that bad actors may try to copy or upload.",
     stopped: [
-      "Disk can contain Signal Desktop's local encrypted database, attachment files/state, preferences, and key material needed by the desktop client.",
-      "The database is not a simple plaintext file, but the desktop app must retain enough local material to reopen your history.",
-      "OS account compromise, backups, screenshots, exports, and notification artifacts can still matter.",
+      "Disk or device storage can contain Signal's local encrypted database, attachment files/state, preferences, and key material needed by the client.",
+      "The database is not a simple plaintext file, but the app must retain enough local material to reopen your history.",
+      "OS account compromise, phone compromise, backups, screenshots, exports, and notification artifacts can still matter.",
     ],
-    implicationPlain: "Anyone or any AI agent with your unlocked computer can target your chats, files, contacts, and notifications.",
-    implication: "A local AI agent or malware with your user privileges may not need to break Signal's network encryption; it can target the desktop app's local dataset, live process, screen, clipboard, notifications, or backups.",
+    implicationPlain: "Anyone, phone malware, or any AI agent using your unlocked device can target chats, files, contacts, and notifications.",
+    implication: "A local AI agent or malware with your user privileges may not need to break Signal's network encryption; it can target the app's local dataset, live process, screen, clipboard, notifications, or backups on a computer or phone.",
   },
   {
     name: "iMessage",
     tone: "risk",
     icon: <FolderSearch className="w-5 h-5" />,
-    plain: "iMessage on a Mac keeps message history your Mac can search and reopen.",
-    headline: "Mac message history and attachments are ordinary local targets.",
-    runningPlain: "While open, your Mac can show messages, files, previews, and alerts.",
+    plain: "iMessage keeps message history your Apple devices can search and reopen.",
+    headline: "Mac and iPhone message history, attachments, contacts, and alerts are ordinary local targets.",
+    runningPlain: "While open, your Mac or iPhone can show messages, files, previews, and alerts.",
     running: [
       "RAM can contain open conversations, rendered plaintext, attachments, notification state, and account/device sync state.",
-      "The Messages app and system services can render searchable conversation history on your unlocked Mac.",
-      "Anything visible to the user can also be visible to screen-reading malware, screenshots, remote control tools, or a local agent.",
+      "The Messages app and system services can render searchable conversation history on your unlocked Mac or phone.",
+      "Anything visible to the user can also be visible to screen-reading malware, phone malware, screenshots, remote control tools, or a local agent.",
     ],
-    stoppedPlain: "When closed, history and attachments can still live on your Mac.",
+    stoppedPlain: "When closed, history and attachments can still live locally where bad actors can try to copy or upload them.",
     stopped: [
-      "Disk commonly contains Messages history under the user Library Messages database and attachment folders.",
-      "Disk may also expose contacts, handles, previews, Spotlight/search artifacts, caches, and backup-derived copies depending on settings.",
+      "Mac disk commonly contains Messages history under the user Library Messages database and attachment folders; phones can also retain local message databases, attachments, notifications, and backup-derived copies.",
+      "Local storage may also expose contacts, handles, previews, Spotlight/search artifacts, caches, and backup-derived copies depending on settings.",
       "iCloud settings, local retention, backups, FileVault, device lock state, and Advanced Data Protection change the exposure.",
     ],
-    implicationPlain: "Anyone or any AI agent with your unlocked Mac can target all local messages, attachments, contacts, previews, and search records.",
-    implication: "A local AI agent, malware process, remote admin tool, or person with access to your unlocked Mac account can often inspect the endpoint record directly. Transport encryption is already over by the time messages are stored and rendered locally.",
+    implicationPlain: "Anyone, phone malware, or any AI agent with your unlocked Apple device can target all local messages, attachments, contacts, previews, and search records.",
+    implication: "A local AI agent, malware process, remote admin tool, phone malware, or person with access to your unlocked Apple device can often inspect the endpoint record directly. If plaintext exists on disk or in local app stores, a bad actor can silently copy or upload it without breaking transport encryption.",
   },
 ];
 
@@ -421,8 +421,8 @@ export default function Landing() {
           <div className="flex items-center gap-1">
             <div className="hidden md:flex items-center gap-4 mr-6">
               <a href="#features" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
-              <a href="#privacy-stack" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">PRIVACY</a>
               <a href="#security-model" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">MODEL</a>
+              <a href="#privacy-stack" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">PRIVACY</a>
               <a href="#ethos" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">ETHOS</a>
               <a href="#security" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">SECURITY</a>
               <a href="#community" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">COMMUNITY</a>
@@ -478,9 +478,9 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start mb-10">
             <div>
               <div className="font-mono text-xs text-primary tracking-widest mb-3">LOCAL DEVICE EXPOSURE</div>
-              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Did you know your iMessage & Signal chats are readable in plaintext by anyone or any AI who uses your computer?</h2>
+              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Did you know your iMessage & Signal chats are readable in plaintext by anyone or any AI who uses your computer or phone?</h2>
               <p className="font-mono text-sm text-muted-foreground leading-relaxed">
-                Transport encryption does not protect plaintext after your device receives it. If an AI agent, remote admin tool, malware process, or person has access to your unlocked computer account, the practical question becomes what is already on disk, in app storage, in notifications, in previews, or visible on screen. QuantumShield's claim is source-auditable: check GitHub and verify the storage, key, and reveal paths yourself.
+                Transport encryption does not protect plaintext after your device receives it. If an AI agent, remote admin tool, malware process, phone malware, or person has access to your unlocked computer or phone, the practical question becomes what is already on disk, in app storage, in notifications, in previews, or visible on screen. If plaintext exists there, a bad actor can silently copy or upload it without your knowledge. QuantumShield's claim is source-auditable: check GitHub and verify the storage, key, and reveal paths yourself.
               </p>
             </div>
             <div className="border border-destructive/35 bg-destructive/5 p-5">
@@ -489,7 +489,7 @@ export default function Landing() {
                 <div>
                   <div className="font-mono text-xs text-destructive tracking-widest mb-2">UNLOCKED DEVICE WARNING</div>
                   <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-                    No messenger can guarantee secrecy from software already running with your user privileges. QuantumShield narrows the normal on-disk and on-screen plaintext window; it does not defeat a fully compromised endpoint while you are actively revealing secrets.
+                    No messenger can guarantee secrecy from software already running with your user privileges on a computer or phone. QuantumShield narrows the normal on-disk and on-screen plaintext window so there is less for a bad actor to silently copy or upload; it does not defeat a fully compromised endpoint while you are actively revealing secrets.
                   </p>
                 </div>
               </div>
@@ -536,26 +536,13 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="privacy-stack" className="py-24 px-6 border-y border-border/50 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mb-14">
-            <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY STACK</div>
-            <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Privacy features most messaging apps never combine.</h2>
-            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message that is mathematically guaranteed to decay into unreadable ciphertext. Check the source code and verify the key deletion path.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
-          </div>
-        </div>
-      </section>
-
       <section id="security-model" className="py-24 px-6 border-y border-border/50 bg-card/20">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start mb-12">
             <div>
-              <div className="font-mono text-xs text-primary tracking-widest mb-3">SECURITY MODEL / DISTRIBUTION</div>
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">CORE PRIVATE MESSENGER PROBLEM</div>
               <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">
-                Native-grade account entry. Web-speed auditability.
+                The core problem with private messengers is that they only protect message contents, not the people sending them.
               </h2>
               <p className="font-mono text-sm text-muted-foreground leading-relaxed mb-5">
                 QuantumShield uses passkeys so account access is mediated by the same class of platform authenticator native apps rely on. On supported Apple hardware, that means Face ID, Touch ID, device passcode policy, Keychain, and Secure Enclave-backed protection for the private passkey material.
@@ -688,6 +675,19 @@ export default function Landing() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="privacy-stack" className="py-24 px-6 border-y border-border/50 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-3xl mb-14">
+            <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY STACK</div>
+            <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Privacy features most messaging apps never combine.</h2>
+            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message that is mathematically guaranteed to decay into unreadable ciphertext. Check the source code and verify the key deletion path.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
           </div>
         </div>
       </section>
