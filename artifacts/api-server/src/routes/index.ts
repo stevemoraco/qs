@@ -11,6 +11,7 @@ import leadsRouter from "./leads";
 import identityCodesRouter from "./identity-codes";
 import timeRouter from "./time";
 import versionRouter from "./version";
+import errorLogsRouter from "./error-logs";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(leadsRouter);
 router.use(identityCodesRouter);
 router.use(timeRouter);
 router.use(versionRouter);
+router.use(errorLogsRouter);
 
 export default router;

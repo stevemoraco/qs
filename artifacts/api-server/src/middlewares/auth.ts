@@ -75,3 +75,49 @@ export async function requireAuth(
   req.user = user;
   next();
 }
+
+export async function optionalAuth(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+
+  const token = authHeader.slice(7);
+  const [session] = await db
+    .select({
+      userId: sessionsTable.userId,
+      expiresAt: sessionsTable.expiresAt,
+      createdAt: sessionsTable.createdAt,
+    })
+    .from(sessionsTable)
+    .where(
+      and(
+        inArray(sessionsTable.token, sessionTokenLookupValues(token)),
+        gt(sessionsTable.expiresAt, new Date())
+      )
+    )
+    .limit(1);
+
+  if (!session || session.createdAt.getTime() + SESSION_DURATION_MS <= Date.now()) {
+    next();
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.id, session.userId))
+    .limit(1);
+
+  if (user) {
+    req.userId = user.id;
+    req.sessionCreatedAt = session.createdAt;
+    req.user = user;
+  }
+  next();
+}

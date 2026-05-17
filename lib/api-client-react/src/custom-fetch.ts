@@ -360,6 +360,11 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
+  const clientCommit = (globalThis as Record<string, unknown>)["__QS_CLIENT_COMMIT__"];
+  if (!headers.has("x-qs-client-commit") && typeof clientCommit === "string" && clientCommit) {
+    headers.set("x-qs-client-commit", clientCommit);
+  }
+
   // Attach bearer token when an auth getter is configured and no
   // Authorization header has been explicitly provided.
   if (_authTokenGetter && !headers.has("authorization")) {

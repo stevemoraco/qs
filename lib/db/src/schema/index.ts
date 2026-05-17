@@ -9,3 +9,4 @@ export * from "./push_notification_jobs";
 export * from "./leads";
 export * from "./identity_codes";
 export * from "./device_credentials";
+export * from "./error_logs";

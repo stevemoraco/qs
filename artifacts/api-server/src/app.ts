@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { startPushNotificationWorker } from "./routes/push";
+import { recordErrorLog } from "./lib/error-log";
 
 const app: Express = express();
 app.disable("etag");
@@ -95,6 +96,21 @@ const apiErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     path: req.path,
     statusCode: status,
   }, "API request failed");
+  void recordErrorLog({
+    source: "server",
+    level: "error",
+    code: status === 500 ? "INTERNAL_SERVER_ERROR" : "REQUEST_FAILED",
+    message: err instanceof Error ? err.message : "API request failed",
+    method: req.method,
+    path: req.path,
+    statusCode: status,
+    userId: typeof (req as { userId?: unknown }).userId === "string" ? (req as unknown as { userId: string }).userId : null,
+    clientCommit: req.header("x-qs-client-commit") ?? null,
+    clientVersion: req.header("x-qs-client-version") ?? null,
+    details: {
+      name: err instanceof Error ? err.name : typeof err,
+    },
+  });
   if (res.headersSent) return;
   res.status(status).json({
     error: status === 500 ? "Internal server error" : "Request failed",

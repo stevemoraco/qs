@@ -201,6 +201,51 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
 }
 
+function errorStatus(err: unknown): number | null {
+  return typeof err === "object" && err !== null && "status" in err && typeof (err as { status?: unknown }).status === "number"
+    ? (err as { status: number }).status
+    : null;
+}
+
+function errorCode(err: unknown): string | null {
+  const data = typeof err === "object" && err !== null && "data" in err
+    ? (err as { data?: unknown }).data
+    : null;
+  if (data && typeof data === "object" && "code" in data && typeof (data as { code?: unknown }).code === "string") {
+    return (data as { code: string }).code;
+  }
+  return null;
+}
+
+function reportClientError(input: {
+  code?: string | null;
+  message: string;
+  method?: string | null;
+  path?: string | null;
+  statusCode?: number | null;
+  clientVersion?: string | null;
+  details?: Record<string, unknown>;
+}): void {
+  customFetch("/api/logs/client-error", {
+    method: "POST",
+    responseType: "json",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      level: "error",
+      code: input.code ?? null,
+      message: input.message,
+      method: input.method ?? null,
+      path: input.path ?? window.location.pathname,
+      statusCode: input.statusCode ?? null,
+      clientCommit: CLIENT_COMMIT,
+      clientVersion: input.clientVersion ?? null,
+      details: input.details ?? {},
+    }),
+  }).catch((err) => {
+    console.warn("Client error log persist failed", err);
+  });
+}
+
 function isUnrecoverableQueuedSendError(err: unknown): boolean {
   const message = errorMessage(err);
   return /recipientEncryptedKeys must include exactly one wrapped key for each current room member|Invalid message signature|Not a member of this room/i.test(message);
@@ -2590,6 +2635,20 @@ function RoomView({
           optimistic,
         ]);
       } catch (err) {
+        reportClientError({
+          code: errorCode(err) ?? "SEND_MESSAGE_REJECTED",
+          message: errorMessage(err),
+          method: "POST",
+          path: `/api/rooms/${room.id}/messages`,
+          statusCode: errorStatus(err),
+          details: {
+            roomId: room.id,
+            queued: true,
+            memberCount: room.memberCount,
+            recipientCount: Object.keys(recipientEncryptedKeys).length,
+            online: canReachServer,
+          },
+        });
         if (isUnrecoverableQueuedSendError(err)) {
           await deleteOutboxEntry(queued.id).catch(() => {});
           window.dispatchEvent(new Event("qs-offline-outbox-changed"));
@@ -2603,6 +2662,18 @@ function RoomView({
         }
       }
     } catch (err) {
+      reportClientError({
+        code: errorCode(err) ?? "SEND_MESSAGE_CLIENT_ERROR",
+        message: errorMessage(err),
+        method: "POST",
+        path: `/api/rooms/${room.id}/messages`,
+        statusCode: errorStatus(err),
+        details: {
+          roomId: room.id,
+          memberCount: room.memberCount,
+          online,
+        },
+      });
       setSendError(err instanceof Error ? err.message : "Could not send message.");
       setInput(text);
     } finally {
@@ -3205,6 +3276,18 @@ export default function ChatApp() {
             await deleteOutboxEntry(entry.id);
             window.dispatchEvent(new Event("qs-offline-outbox-changed"));
           }
+          reportClientError({
+            code: errorCode(err) ?? "OUTBOX_FLUSH_FAILED",
+            message: errorMessage(err),
+            method: "POST",
+            path: `/api/rooms/${entry.roomId}/messages`,
+            statusCode: errorStatus(err),
+            clientVersion: versionLabel,
+            details: {
+              roomId: entry.roomId,
+              queuedAgeMs: Date.now() - new Date(entry.createdAt).getTime(),
+            },
+          });
           console.warn("Queued message flush failed", err);
           if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
           continue;
@@ -3369,6 +3452,34 @@ export default function ChatApp() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const onError = (event: ErrorEvent) => {
+      reportClientError({
+        code: "WINDOW_ERROR",
+        message: event.message || "Unhandled browser error",
+        clientVersion: versionLabel,
+        details: {
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+        },
+      });
+    };
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      reportClientError({
+        code: "UNHANDLED_REJECTION",
+        message: errorMessage(event.reason),
+        clientVersion: versionLabel,
+      });
+    };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    return () => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
+  }, [versionLabel]);
 
   useEffect(() => {
     activeRoomIdRef.current = activeRoomId;
