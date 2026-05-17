@@ -585,36 +585,6 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
-            <div className="border border-border/50 bg-background/60 p-5">
-              <div className="font-mono text-xs text-primary tracking-widest mb-4">CRYPTOGRAPHIC ROLES</div>
-              <div className="space-y-3">
-                {CRYPTO_ROLES.map((item) => (
-                  <div key={item.name} className="grid grid-cols-[auto_1fr] gap-3 border border-border/40 bg-card/25 p-4">
-                    <div className="text-primary">{item.icon}</div>
-                    <div>
-                      <div className="font-mono text-sm font-semibold">{item.name}</div>
-                      <div className="font-mono text-[10px] text-muted-foreground mt-1">{item.expanded}</div>
-                      <p className="font-mono text-xs text-muted-foreground leading-relaxed mt-2">{item.role}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="border border-border/50 bg-background/60 p-5">
-              <div className="font-mono text-xs text-primary tracking-widest mb-4">WHAT THIS DOES DIFFERENTLY</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {DISTRIBUTION_DEFENSES.map((item) => (
-                  <div key={item.title} className="border border-border/40 bg-card/25 p-4">
-                    <div className="text-primary mb-3">{item.icon}</div>
-                    <div className="font-mono text-sm font-semibold mb-2">{item.title}</div>
-                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className="border border-border/50 bg-background/60 p-5">
             <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start mb-8">
               <div>
@@ -676,6 +646,69 @@ export default function Landing() {
                     {item.label}
                     <ExternalLink className="w-3 h-3" />
                   </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 border border-amber-500/35 bg-amber-500/5 p-5">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-5 items-start">
+              <div>
+                <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">QUORUM DECAY PREVIEW</div>
+                <h3 className="font-mono text-xl md:text-2xl font-bold leading-tight mb-3">What decay looks like when time wins.</h3>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                  Experimental rooms show decay evidence instead of normal message text after real time expires. A copied key, rolled-back phone clock, or fake single server clock is not enough to bring the message back.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
+                <div className="border border-primary/30 bg-primary/5 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ScanFace className="w-4 h-4 text-primary" />
+                    <span className="font-mono text-[10px] text-primary tracking-widest">LIVE REVEAL</span>
+                  </div>
+                  <p className="font-mono text-sm text-foreground leading-relaxed">Face ID confirms you. One message appears.</p>
+                  <p className="font-mono text-xs text-muted-foreground mt-3">"Meet at 8. Delete after view."</p>
+                </div>
+                <div className="hidden md:flex items-center justify-center">
+                  <ChevronRight className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="border border-amber-500/40 bg-background/70 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TimerOff className="w-4 h-4 text-amber-500" />
+                    <span className="font-mono text-[10px] text-amber-500 tracking-widest">DECAYED / QUORUM EVIDENCE</span>
+                  </div>
+                  <p className="font-mono text-sm text-foreground leading-relaxed">Real time expires. The message turns into evidence.</p>
+                  <p className="font-mono text-xs break-all text-muted-foreground mt-3">9f?2a1c# 0d|e88b! af77/31c $e09%4bb</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-10">
+            <div className="border border-border/50 bg-background/60 p-5">
+              <div className="font-mono text-xs text-primary tracking-widest mb-4">CRYPTOGRAPHIC ROLES</div>
+              <div className="space-y-3">
+                {CRYPTO_ROLES.map((item) => (
+                  <div key={item.name} className="grid grid-cols-[auto_1fr] gap-3 border border-border/40 bg-card/25 p-4">
+                    <div className="text-primary">{item.icon}</div>
+                    <div>
+                      <div className="font-mono text-sm font-semibold">{item.name}</div>
+                      <div className="font-mono text-[10px] text-muted-foreground mt-1">{item.expanded}</div>
+                      <p className="font-mono text-xs text-muted-foreground leading-relaxed mt-2">{item.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border border-border/50 bg-background/60 p-5">
+              <div className="font-mono text-xs text-primary tracking-widest mb-4">WHAT THIS DOES DIFFERENTLY</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {DISTRIBUTION_DEFENSES.map((item) => (
+                  <div key={item.title} className="border border-border/40 bg-card/25 p-4">
+                    <div className="text-primary mb-3">{item.icon}</div>
+                    <div className="font-mono text-sm font-semibold mb-2">{item.title}</div>
+                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
+                  </div>
                 ))}
               </div>
             </div>
