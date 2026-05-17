@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import {
   Shield,
@@ -877,12 +877,14 @@ function RoomView({
   onBack,
   codenameForUser,
   roomCodename,
+  onSensitiveRevealChange,
 }: {
   room: Room;
   currentUserId: string;
   onBack: () => void;
   codenameForUser: (id: string) => string;
   roomCodename: string;
+  onSensitiveRevealChange: (active: boolean) => void;
 }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
@@ -961,6 +963,10 @@ function RoomView({
       document.removeEventListener("contextmenu", block);
     };
   }, []);
+
+  useEffect(() => {
+    return () => onSensitiveRevealChange(false);
+  }, [onSensitiveRevealChange]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1054,6 +1060,7 @@ function RoomView({
     }
     revealTokenRef.current += 1;
     setRevealedSenderId(null);
+    onSensitiveRevealChange(false);
     setHeldPlaintext((current) => {
       if (!current) return null;
       return { id: current.id, text: "" };
@@ -1063,6 +1070,7 @@ function RoomView({
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
     if (event.pointerType === "touch") return;
+    onSensitiveRevealChange(true);
     activeRevealRef.current = { id: msg.id, input: "mouse", released: false, painted: false };
     event.currentTarget.setPointerCapture?.(event.pointerId);
     void revealMsg(msg);
@@ -1076,6 +1084,7 @@ function RoomView({
   const startTouchMessageReveal = (event: React.TouchEvent<HTMLButtonElement>, msg: Message) => {
     event.preventDefault();
     event.stopPropagation();
+    onSensitiveRevealChange(true);
     touchRevealActiveRef.current = true;
     activeRevealRef.current = { id: msg.id, input: "touch", released: false, painted: false };
     void revealMsg(msg);
@@ -1289,6 +1298,7 @@ export default function ChatApp() {
   const autoKeyRepairAttemptedRef = useRef(false);
   const captureWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeRoomIdRef = useRef<string | null>(null);
+  const sensitiveRevealActiveRef = useRef(false);
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
@@ -1302,6 +1312,14 @@ export default function ChatApp() {
   const { data: me } = useGetAuthMe();
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
   const uploadKeys = usePostKeysUpload();
+
+  const setSensitiveReveal = useCallback((active: boolean) => {
+    sensitiveRevealActiveRef.current = active;
+    if (!active) {
+      flashBaselineRef.current = null;
+      flashStreakRef.current = 0;
+    }
+  }, []);
 
   const enablePush = async () => {
     const token = getToken();
@@ -1633,6 +1651,11 @@ export default function ChatApp() {
 
         flashScanIntervalRef.current = setInterval(() => {
           if (!videoRef.current) return;
+          if (!sensitiveRevealActiveRef.current) {
+            flashBaselineRef.current = null;
+            flashStreakRef.current = 0;
+            return;
+          }
           const flash = scanCameraFlash(videoRef.current);
           const roomId = activeRoomIdRef.current;
           if (roomId && flash.metrics) {
@@ -2034,6 +2057,7 @@ export default function ChatApp() {
             onBack={() => setActiveRoomId(null)}
             codenameForUser={codenameForUser}
             roomCodename={codenameForRoom(activeRoom.id)}
+            onSensitiveRevealChange={setSensitiveReveal}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
