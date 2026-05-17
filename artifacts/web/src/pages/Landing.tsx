@@ -142,6 +142,41 @@ const HERO_FEATURES = [
   { icon: <Fingerprint className="w-4 h-4" />, label: "Handle plus passkey access, no typed password field" },
 ];
 
+const DECAY_TIMELINE = [
+  {
+    minute: "14:00",
+    state: "ONE MINUTE LEFT",
+    color: "text-primary",
+    border: "border-primary/35",
+    copy: "Sixteen chunks are still readable after Face ID. The room is warning that quorum time is almost out.",
+    chunks: ["Meet", "at", "the", "north", "gate", "after", "lights", "drop.", "Bring", "the", "sealed", "drive", "and", "use", "code", "7429."],
+  },
+  {
+    minute: "15:00",
+    state: "EXPIRY HIT",
+    color: "text-amber-500",
+    border: "border-amber-500/40",
+    copy: "Real time expires. Quorum evidence lands. Half the chunks are already replaced by deterministic decay noise.",
+    chunks: ["Meet", "at", "the", "north", "9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "Bring", "the", "sealed", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2", "7429."],
+  },
+  {
+    minute: "16:00",
+    state: "QUORUM LOCKED",
+    color: "text-amber-500",
+    border: "border-amber-500/50",
+    copy: "A copied key, fake server clock, or rolled-back phone clock cannot restore the chunks without live time agreement.",
+    chunks: ["9f?2a1c#", "0d|e88b!", "north", "6a7/ff0?", "c19|2ed#", "2b$e0a7", "af77/31c", "$e09%4bb", "Bring", "77?aac0", "1e|d9f4", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2"],
+  },
+  {
+    minute: "17:00",
+    state: "FULL DECAY EVIDENCE",
+    color: "text-destructive",
+    border: "border-destructive/45",
+    copy: "All sixteen chunks are now evidence. The old message shape remains, but the readable key path is gone.",
+    chunks: ["9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "6a7/ff0?", "c19|2ed#", "2b$e0a7", "77?aac0", "1e|d9f4", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2", "ab0%7c!", "f41/9e?", "d8|22#0"],
+  },
+];
+
 const CRYPTO_ROLES = [
   {
     icon: <Key className="w-5 h-5" />,
@@ -651,39 +686,6 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="mt-4 border border-amber-500/35 bg-amber-500/5 p-5">
-            <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-5 items-start">
-              <div>
-                <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">QUORUM DECAY PREVIEW</div>
-                <h3 className="font-mono text-xl md:text-2xl font-bold leading-tight mb-3">What decay looks like when time wins.</h3>
-                <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-                  Experimental rooms show decay evidence instead of normal message text after real time expires. A copied key, rolled-back phone clock, or fake single server clock is not enough to bring the message back.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
-                <div className="border border-primary/30 bg-primary/5 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ScanFace className="w-4 h-4 text-primary" />
-                    <span className="font-mono text-[10px] text-primary tracking-widest">LIVE REVEAL</span>
-                  </div>
-                  <p className="font-mono text-sm text-foreground leading-relaxed">Face ID confirms you. One message appears.</p>
-                  <p className="font-mono text-xs text-muted-foreground mt-3">"Meet at 8. Delete after view."</p>
-                </div>
-                <div className="hidden md:flex items-center justify-center">
-                  <ChevronRight className="w-5 h-5 text-amber-500" />
-                </div>
-                <div className="border border-amber-500/40 bg-background/70 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <TimerOff className="w-4 h-4 text-amber-500" />
-                    <span className="font-mono text-[10px] text-amber-500 tracking-widest">DECAYED / QUORUM EVIDENCE</span>
-                  </div>
-                  <p className="font-mono text-sm text-foreground leading-relaxed">Real time expires. The message turns into evidence.</p>
-                  <p className="font-mono text-xs break-all text-muted-foreground mt-3">9f?2a1c# 0d|e88b! af77/31c $e09%4bb</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-10">
             <div className="border border-border/50 bg-background/60 p-5">
               <div className="font-mono text-xs text-primary tracking-widest mb-4">CRYPTOGRAPHIC ROLES</div>
@@ -725,6 +727,59 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
+          </div>
+
+          <div className="mt-10 border border-amber-500/35 bg-amber-500/5 p-5 md:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.75fr_1.25fr] gap-6 items-start mb-6">
+              <div>
+                <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">QUORUM DECAY PREVIEW</div>
+                <h3 className="font-mono text-2xl md:text-4xl font-bold leading-tight mb-4">A 15-minute message decays into evidence, chunk by chunk.</h3>
+                <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                  Experimental quorum decay models a message as many protected pieces. At minute 14 it still reveals with biometrics. At minute 15 real time wins. By minute 17, all 16 chunks are garbled evidence instead of readable text.
+                </p>
+              </div>
+              <div className="border border-border/50 bg-background/70 p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { icon: <ScanFace className="w-4 h-4" />, label: "Biometric reveal", copy: "Face ID or fingerprint gates the live plaintext." },
+                    { icon: <Server className="w-4 h-4" />, label: "Time quorum", copy: "Multiple clocks agree that real time has passed." },
+                    { icon: <TimerOff className="w-4 h-4" />, label: "Chunk decay", copy: "Copied keys age out into deterministic noise." },
+                  ].map((item) => (
+                    <div key={item.label} className="border border-border/40 bg-card/25 p-3">
+                      <div className="text-amber-500 mb-2">{item.icon}</div>
+                      <div className="font-mono text-xs font-bold text-foreground mb-1">{item.label}</div>
+                      <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">{item.copy}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-3">
+              {DECAY_TIMELINE.map((item) => (
+                <div key={item.minute} className={`border ${item.border} bg-background/65 p-4`}>
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <div className={`font-mono text-xl font-bold ${item.color}`}>{item.minute}</div>
+                      <div className={`font-mono text-[10px] tracking-widest ${item.color}`}>{item.state}</div>
+                    </div>
+                    <div className="font-mono text-[10px] text-muted-foreground">16 CHUNKS</div>
+                  </div>
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed min-h-14 mb-4">{item.copy}</p>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {item.chunks.map((chunk, index) => {
+                      const decayed = /[?#|$%\\!/]/.test(chunk);
+                      return (
+                        <div key={`${item.minute}-${index}`} className={`min-h-10 border px-1.5 py-1 font-mono text-[10px] leading-tight break-all ${decayed ? "border-amber-500/30 bg-amber-500/10 text-amber-500" : "border-primary/25 bg-primary/5 text-foreground"}`}>
+                          <span className="block text-[8px] text-muted-foreground/70 mb-0.5">{String(index + 1).padStart(2, "0")}</span>
+                          {chunk}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
