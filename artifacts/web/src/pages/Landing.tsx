@@ -201,6 +201,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Account identity",
     icon: <Fingerprint className="w-5 h-5" />,
+    quantumShieldLead: "We do not store your readable handle.",
+    signalLead: "Downside: phone-number registration still exists.",
+    imessageLead: "Downside: identity is tied to Apple account routing.",
     quantumShield: "You type a handle locally, then Face ID, Touch ID, Windows Hello, or your passkey provider proves it is really you. The app sends a deterministic handle hash for exact lookup. We store that lookup hash, the passkey public key, and a device session. We do not receive your readable handle, face, fingerprint, device passcode, typed password, or passkey private key.",
     signal: "You start with a phone number. A username can let new people contact you without seeing that number, and Signal's PIN/Secure Value Recovery helps restore profile, contacts, and groups privately.",
     imessage: "You sign in with Apple ID and reachable phone numbers or email addresses. Apple coordinates which devices can receive your iMessages.",
@@ -209,6 +212,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Initial key establishment",
     icon: <Key className="w-5 h-5" />,
+    quantumShieldLead: "Every message gets a fresh post-quantum wrapped key.",
+    signalLead: "Downside: setup is hybrid, not our full triple stack.",
+    imessageLead: "Downside: Apple controls the device directory.",
     quantumShield: "When you send a message, the app creates a fresh message key and wraps it to each recipient device with ML-KEM-1024. The server carries the package but should not have the key needed to read it.",
     signal: "When a Signal chat starts, PQXDH mixes classical X25519 with post-quantum Kyber-derived secret material. The goal is to make today's captured setup traffic useless to a future quantum computer.",
     imessage: "When supported Apple devices talk, PQ3 adds post-quantum key material to iMessage setup so recorded traffic is harder to decrypt later.",
@@ -217,6 +223,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Ongoing conversation security",
     icon: <Shield className="w-5 h-5" />,
+    quantumShieldLead: "Tampering is rejected before plaintext exists.",
+    signalLead: "Downside: post-quantum signing is not this message package model.",
+    imessageLead: "Downside: post-quantum confidentiality is not the same as visible verification.",
     quantumShield: "Before your device decrypts, it verifies the message package with ML-DSA-87. If the ciphertext, wrapped keys, room, sender, or algorithm fields were changed, the message is rejected instead of shown.",
     signal: "Signal continuously ratchets keys as the chat continues, so compromise at one moment should not automatically reveal every past and future message.",
     imessage: "Apple describes PQ3 as protecting both the setup and the ongoing conversation, with rekeying as messages continue between supported devices.",
@@ -225,6 +234,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Metadata and routing",
     icon: <Server className="w-5 h-5" />,
+    quantumShieldLead: "We say exactly what metadata still exists.",
+    signalLead: "Downside: minimized metadata is not zero metadata.",
+    imessageLead: "Downside: Apple infrastructure coordinates delivery.",
     quantumShield: "Our server sees operational records: ciphertext, room membership, wrapped keys, delivery state, sessions, handle lookup hashes, and push tokens. That is why the product calls out metadata as an audit target.",
     signal: "Signal works hard to reduce server-visible metadata, including private contact and group recovery designs, but some timing, network, registration, and delivery facts can still exist around the system.",
     imessage: "Apple infrastructure handles account lookup, device lookup, delivery, push, sync choices, and account/device coordination for iMessage.",
@@ -233,6 +245,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Plaintext exposure on screen",
     icon: <EyeOff className="w-5 h-5" />,
+    quantumShieldLead: "Plaintext only appears while you deliberately reveal it.",
+    signalLead: "Downside: local capture protection depends on platform support.",
+    imessageLead: "Downside: screenshots and previews are mostly device settings.",
     quantumShield: "You hold to reveal one message at a time. Let go, switch tabs, scroll, background the app, trigger capture warnings, or point another camera at the screen and the chat hides again.",
     signal: "Signal can protect local use with app lock, screen security, disappearing messages, and notification privacy where the operating system supports it.",
     imessage: "iMessage relies on Apple device protections like lock screen settings, notification privacy, Focus, and device-level screenshot/backup behavior.",
@@ -241,6 +256,9 @@ const PROTOCOL_COMPARISON = [
   {
     stage: "Time decay and deletion",
     icon: <TimerOff className="w-5 h-5" />,
+    quantumShieldLead: "Expired keys turn stored ciphertext into noise.",
+    signalLead: "Downside: disappearing messages are retention, not recall.",
+    imessageLead: "Downside: deletion depends on sync, devices, and backups.",
     quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. After expiry, the usable local key is destroyed; leftover server ciphertext should be unreadable noise.",
     signal: "Signal disappearing messages remove messages after a timer, but recipients or compromised devices may already have copied or captured them.",
     imessage: "iMessage deletion depends on the sender's devices, recipient devices, sync state, retention settings, and backups.",
@@ -506,12 +524,13 @@ export default function Landing() {
                       <div className="font-mono text-sm font-bold">{row.stage}</div>
                     </div>
                     {[
-                      { label: "QuantumShield", copy: row.quantumShield },
-                      { label: "Signal", copy: row.signal },
-                      { label: "iMessage", copy: row.imessage },
+                      { label: "QuantumShield", headline: row.quantumShieldLead, copy: row.quantumShield, tone: "benefit" },
+                      { label: "Signal", headline: row.signalLead, copy: row.signal, tone: "risk" },
+                      { label: "iMessage", headline: row.imessageLead, copy: row.imessage, tone: "risk" },
                     ].map((item) => (
                       <div key={item.label} className="border-b xl:border-b-0 xl:border-r last:border-r-0 border-border/40 p-4">
                         <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.label.toUpperCase()}</div>
+                        <div className={`font-mono text-sm font-bold leading-snug mb-3 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{item.headline}</div>
                         <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
                       </div>
                     ))}
