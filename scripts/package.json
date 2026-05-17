@@ -8,11 +8,15 @@
     "smoke:api-behavior": "tsx ./src/smoke-api-behavior.ts",
     "smoke:web-chat": "tsx ./src/smoke-web-chat.ts",
     "smoke:pwa-static": "tsx ./src/smoke-pwa-static.ts",
+    "e2e:api-chat": "tsx ./e2e-api-chat.ts",
     "smoke": "pnpm run smoke:api-behavior && pnpm run smoke:web-chat && pnpm run smoke:pwa-static",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@noble/post-quantum": "^0.6.1",
     "@types/node": "catalog:",
+    "@workspace/db": "workspace:*",
+    "drizzle-orm": "catalog:",
     "tsx": "catalog:"
   }
 }

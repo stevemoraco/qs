@@ -846,9 +846,18 @@ importers:
 
   scripts:
     devDependencies:
+      '@noble/post-quantum':
+        specifier: ^0.6.1
+        version: 0.6.1
       '@types/node':
         specifier: 'catalog:'
         version: 25.8.0
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../lib/db
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@types/pg@8.20.0)(pg@8.20.0)
       tsx:
         specifier: 'catalog:'
         version: 4.22.0

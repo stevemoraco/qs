@@ -12,7 +12,7 @@ import {
   X,
   Search,
   ArrowLeft,
-  Github,
+  Code2 as Github,
   Fingerprint,
   KeyRound,
   Settings,
@@ -2590,8 +2590,17 @@ function RoomView({
           optimistic,
         ]);
       } catch (err) {
-        setSendError(`Server did not accept the message. It is still queued and will retry. ${errorMessage(err)}`);
-        setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
+        if (isUnrecoverableQueuedSendError(err)) {
+          await deleteOutboxEntry(queued.id).catch(() => {});
+          window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+          setQueuedMessages((current) => current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature));
+          setOfflineMessages((current) => current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature));
+          setSendError(`Message rejected and discarded: ${errorMessage(err)}. The room membership or your local signing key has changed since this device last synced. Refresh the chat and try sending again.`);
+          setInput(text);
+        } else {
+          setSendError(`Server did not accept the message. It is still queued and will retry. ${errorMessage(err)}`);
+          setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
+        }
       }
     } catch (err) {
       setSendError(err instanceof Error ? err.message : "Could not send message.");

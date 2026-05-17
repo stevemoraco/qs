@@ -310,7 +310,25 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     .where(eq(roomMembersTable.roomId, roomId));
   const expectedRecipientIds = new Set(roomMemberRows.map((member) => member.userId));
   if (!isValidRecipientEncryptedKeys(recipientEncryptedKeys, expectedRecipientIds)) {
-    res.status(400).json({ error: "recipientEncryptedKeys must include exactly one wrapped key for each current room member" });
+    const providedRecipientIds = recipientEncryptedKeys && typeof recipientEncryptedKeys === "object" && !Array.isArray(recipientEncryptedKeys)
+      ? Object.keys(recipientEncryptedKeys as Record<string, unknown>)
+      : [];
+    logger.warn({
+      roomId,
+      senderId: req.userId,
+      expectedMemberCount: expectedRecipientIds.size,
+      providedRecipientCount: providedRecipientIds.length,
+      includesSender: providedRecipientIds.includes(req.userId!),
+    }, "Rejected message with mismatched recipient key fanout");
+    res.status(400).json({
+      error: "recipientEncryptedKeys must include exactly one wrapped key for each current room member",
+      code: "RECIPIENT_KEYS_MEMBER_MISMATCH",
+      details: {
+        expectedMemberCount: expectedRecipientIds.size,
+        providedRecipientCount: providedRecipientIds.length,
+        includesSender: providedRecipientIds.includes(req.userId!),
+      },
+    });
     return;
   }
   const [sender] = await db

@@ -112,6 +112,20 @@ const checks: Check[] = [
       "or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))",
     ]),
   },
+  {
+    name: "API responses and generated client bypass browser caching",
+    pass: includesAll(authRoute, [
+      "genericPasskeyError",
+    ]) && includesAll(await readFile(path.join(root, "artifacts/api-server/src/app.ts"), "utf8"), [
+      "app.disable(\"etag\")",
+      "Cache-Control",
+      "no-store, max-age=0",
+      "app.use(\"/api\"",
+    ]) && includesAll(await readFile(path.join(root, "lib/api-client-react/src/custom-fetch.ts"), "utf8"), [
+      "function isApiRequest",
+      "init.cache ?? (isApiRequest(input) ? \"no-store\" : undefined)",
+    ]),
+  },
 ];
 
 report(checks);

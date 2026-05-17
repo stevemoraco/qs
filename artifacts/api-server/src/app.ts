@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type ErrorRequestHandler, type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -6,6 +6,7 @@ import { logger } from "./lib/logger";
 import { startPushNotificationWorker } from "./routes/push";
 
 const app: Express = express();
+app.disable("etag");
 
 function allowedOrigins(): string[] {
   return (process.env["CORS_ORIGINS"] ?? "")
@@ -36,6 +37,12 @@ app.use((_req, res, next) => {
   if (process.env.NODE_ENV === "production") {
     res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   }
+  next();
+});
+
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Pragma", "no-cache");
   next();
 });
 
@@ -78,6 +85,27 @@ app.use(express.urlencoded({ extended: true, limit: "64kb" }));
 
 app.use("/api", router);
 
-startPushNotificationWorker();
+const apiErrorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  const status = typeof err?.status === "number" && err.status >= 400 && err.status < 600
+    ? err.status
+    : 500;
+  logger.error({
+    err,
+    method: req.method,
+    path: req.path,
+    statusCode: status,
+  }, "API request failed");
+  if (res.headersSent) return;
+  res.status(status).json({
+    error: status === 500 ? "Internal server error" : "Request failed",
+    code: status === 500 ? "INTERNAL_SERVER_ERROR" : "REQUEST_FAILED",
+  });
+};
+
+app.use("/api", apiErrorHandler);
+
+if (process.env["QS_DISABLE_BACKGROUND_WORKERS"] !== "1") {
+  startPushNotificationWorker();
+}
 
 export default app;

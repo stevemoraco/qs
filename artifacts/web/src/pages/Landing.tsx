@@ -5,7 +5,7 @@ import {
   Lock,
   Eye,
   Clock,
-  Github,
+  Code2 as Github,
   Zap,
   Key,
   Cpu,

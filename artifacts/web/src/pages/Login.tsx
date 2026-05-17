@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
-import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
+import { Shield, AlertCircle, Code2 as Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
 import {
   clearLocalPlatformPasskeyLink,
   enrollDeviceVerification,

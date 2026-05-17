@@ -78,6 +78,17 @@ function resolveUrl(input: RequestInfo | URL): string {
   return input.url;
 }
 
+function isApiRequest(input: RequestInfo | URL): boolean {
+  try {
+    const url = resolveUrl(input);
+    if (url.startsWith("/api/")) return true;
+    if (url === "/api") return true;
+    return new URL(url, "http://localhost").pathname.startsWith("/api/");
+  } catch {
+    return false;
+  }
+}
+
 function mergeHeaders(...sources: Array<HeadersInit | undefined>): Headers {
   const headers = new Headers();
 
@@ -360,7 +371,8 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const cache = init.cache ?? (isApiRequest(input) ? "no-store" : undefined);
+  const response = await fetch(input, { ...init, method, headers, ...(cache ? { cache } : {}) });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
