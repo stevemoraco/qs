@@ -59,3 +59,8 @@ Thumbs.db
 
 # Uploaded prompt/session assets are local-only and may contain private data.
 attached_assets/
+
+# GitHub Actions workflows — the Replit OAuth integration lacks the `workflow`
+# scope, so commits touching these files get rejected on push. Manage them
+# directly on GitHub or via a token with `workflow` scope.
+.github/workflows/
