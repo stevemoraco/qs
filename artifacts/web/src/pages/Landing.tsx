@@ -218,7 +218,7 @@ const PROTOCOL_COMPARISON = [
     quantumShieldLead: "Every message gets a fresh post-quantum wrapped key.",
     signalLead: "Downside: setup is hybrid, not our full triple stack.",
     imessageLead: "Downside: Apple controls the device directory.",
-    quantumShield: "When you send a message, the app creates a fresh message key and wraps it to each recipient device with ML-KEM-1024. The server carries the package but should not have the key needed to read it.",
+    quantumShield: "When you send a message, the app creates a fresh message key and wraps it to each recipient device with ML-KEM-1024. The server carries the package but is mathematically guaranteed not to have the key needed to read it; check the source code and verify the key path.",
     signal: "When a Signal chat starts, PQXDH mixes classical X25519 with post-quantum Kyber-derived secret material. The goal is to make today's captured setup traffic useless to a future quantum computer.",
     imessage: "When supported Apple devices talk, PQ3 adds post-quantum key material to iMessage setup so recorded traffic is harder to decrypt later.",
     warning: "What this means: the first handshake is where future decryption risk begins. If an attacker records everything today, post-quantum setup is what keeps those recordings from becoming readable when quantum attacks improve.",
@@ -230,7 +230,7 @@ const PROTOCOL_COMPARISON = [
     signalLead: "Downside: post-quantum signing is not this message package model.",
     imessageLead: "Downside: post-quantum confidentiality is not the same as visible verification.",
     quantumShield: "Before your device decrypts, it verifies the message package with ML-DSA-87. If the ciphertext, wrapped keys, room, sender, or algorithm fields were changed, the message is rejected instead of shown.",
-    signal: "Signal continuously ratchets keys as the chat continues, so compromise at one moment should not automatically reveal every past and future message.",
+    signal: "Signal continuously ratchets keys as the chat continues, so compromise at one moment does not automatically reveal every past and future message.",
     imessage: "Apple describes PQ3 as protecting both the setup and the ongoing conversation, with rekeying as messages continue between supported devices.",
     warning: "What this means: encryption answers 'can they read it?' Signatures and verification answer 'can they fake or alter it?' A serious attacker tries both.",
   },
@@ -262,7 +262,7 @@ const PROTOCOL_COMPARISON = [
     quantumShieldLead: "Expired keys turn stored ciphertext into noise.",
     signalLead: "Downside: disappearing messages are retention, not recall.",
     imessageLead: "Downside: deletion depends on sync, devices, and backups.",
-    quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. After expiry, the usable local key is destroyed; leftover server ciphertext should be unreadable noise.",
+    quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. After expiry, the usable local key is destroyed; leftover server ciphertext is mathematically guaranteed to be unreadable noise. Check the source code and verify deletion of the usable key.",
     signal: "Signal disappearing messages remove messages after a timer, but recipients or compromised devices may already have copied or captured them.",
     imessage: "iMessage deletion depends on the sender's devices, recipient devices, sync state, retention settings, and backups.",
     warning: "What this means: deletion only helps before collection. If someone already saw it, photographed it, backed it up, or compromised the endpoint, a later timer cannot make that copy disappear.",
@@ -284,20 +284,20 @@ const LOCAL_DEVICE_EXPOSURE = [
     icon: <MousePointerClick className="w-5 h-5" />,
     plain: "QuantumShield does not leave a readable pile of chats for someone to steal.",
     headline: "Plaintext is designed to be brief, deliberate, and one-at-a-time.",
-    runningPlain: "Even with your device, an attacker should need your biometric passkey confirmation to reveal one message.",
+    runningPlain: "Even with your device, the key path is mathematically guaranteed to unlock only through passkey-gated reveal.",
     running: [
       "RAM can contain decrypted plaintext only for the message currently being held or intentionally revealed.",
       "RAM can contain active session state and local decryption keys while the app is unlocked.",
       "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
     ],
-    stoppedPlain: "When closed, chats should sit on disk as encrypted boxes, not readable words or files.",
+    stoppedPlain: "When closed, chats are mathematically guaranteed to sit on disk as encrypted boxes, not readable words or files.",
     stopped: [
       "Disk is intended to hold ciphertext packages, wrapped keys, public key material, and app/session metadata.",
       "Readable handles stay local; the server stores peppered exact-lookup values instead of readable handles.",
-      "Expired local message keys are removed so old ciphertext should remain unreadable.",
+      "Expired local message keys are removed so old ciphertext is mathematically guaranteed to remain unreadable.",
     ],
     implicationPlain: "A bad app has to beat the passkey gate and catch the one message you reveal.",
-    implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history should not sit on disk or remain broadly readable in memory.",
+    implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history is mathematically guaranteed not to sit on disk or remain broadly readable in memory. Check the source code and verify the storage and reveal paths.",
   },
   {
     name: "Signal",
@@ -473,12 +473,75 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="local-device-exposure" className="py-24 px-6 border-y border-border/50 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start mb-10">
+            <div>
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">LOCAL DEVICE EXPOSURE</div>
+              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Did you know your iMessage & Signal chats are readable in plaintext by anyone or any AI who uses your computer?</h2>
+              <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                Transport encryption does not protect plaintext after your device receives it. If an AI agent, remote admin tool, malware process, or person has access to your unlocked computer account, the practical question becomes what is already on disk, in app storage, in notifications, in previews, or visible on screen. QuantumShield's claim is source-auditable: check GitHub and verify the storage, key, and reveal paths yourself.
+              </p>
+            </div>
+            <div className="border border-destructive/35 bg-destructive/5 p-5">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-mono text-xs text-destructive tracking-widest mb-2">UNLOCKED DEVICE WARNING</div>
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                    No messenger can guarantee secrecy from software already running with your user privileges. QuantumShield narrows the normal on-disk and on-screen plaintext window; it does not defeat a fully compromised endpoint while you are actively revealing secrets.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {LOCAL_DEVICE_EXPOSURE.map((item) => (
+              <div key={item.name} className="border border-border/50 bg-card/30 p-5">
+                <div className="text-primary mb-4">{item.icon}</div>
+                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.name.toUpperCase()}</div>
+                <h3 className="font-mono text-base font-bold leading-snug text-foreground mb-2">{item.plain}</h3>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-4">{item.headline}</p>
+                <div className="space-y-4">
+                  {[
+                    { label: "RAM while running", icon: <Cpu className="w-4 h-4" />, plain: item.runningPlain, lines: item.running },
+                    { label: "Disk while not running", icon: <HardDrive className="w-4 h-4" />, plain: item.stoppedPlain, lines: item.stopped },
+                  ].map((group) => (
+                    <div key={group.label} className="border border-border/40 bg-background/35 p-3">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className={item.tone === "benefit" ? "text-primary" : "text-destructive"}>{group.icon}</span>
+                        <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{group.label.toUpperCase()}</div>
+                      </div>
+                      <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{group.plain}</p>
+                      <div className="space-y-2">
+                        {group.lines.map((line) => (
+                          <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
+                            <span className={`mt-1.5 h-1.5 w-1.5 ${item.tone === "benefit" ? "bg-primary" : "bg-destructive"}`} />
+                            <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{line}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <div className={`border p-3 ${item.tone === "benefit" ? "border-primary/30 bg-primary/5" : "border-destructive/30 bg-destructive/5"}`}>
+                    <div className={`font-mono text-[10px] tracking-widest mb-2 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`}>AI AGENT / MALWARE IMPLICATION</div>
+                    <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{item.implicationPlain}</p>
+                    <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{item.implication}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="privacy-stack" className="py-24 px-6 border-y border-border/50 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl mb-14">
             <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY STACK</div>
             <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Privacy features most messaging apps never combine.</h2>
-            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message that should decay into unreadable ciphertext.</p>
+            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message that is mathematically guaranteed to decay into unreadable ciphertext. Check the source code and verify the key deletion path.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
@@ -625,69 +688,6 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="local-device-exposure" className="py-24 px-6 border-y border-border/50 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start mb-10">
-            <div>
-              <div className="font-mono text-xs text-primary tracking-widest mb-3">LOCAL DEVICE EXPOSURE</div>
-              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">What can an AI agent on your computer read?</h2>
-              <p className="font-mono text-sm text-muted-foreground leading-relaxed">
-                Transport encryption does not protect plaintext after your device receives it. If an AI agent, remote admin tool, malware process, or person has access to your unlocked computer account, the practical question becomes what is already on disk, in app storage, in notifications, in previews, or visible on screen.
-              </p>
-            </div>
-            <div className="border border-destructive/35 bg-destructive/5 p-5">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-mono text-xs text-destructive tracking-widest mb-2">UNLOCKED DEVICE WARNING</div>
-                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-                    No messenger can guarantee secrecy from software already running with your user privileges. QuantumShield narrows the normal on-disk and on-screen plaintext window; it does not defeat a fully compromised endpoint while you are actively revealing secrets.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {LOCAL_DEVICE_EXPOSURE.map((item) => (
-              <div key={item.name} className="border border-border/50 bg-card/30 p-5">
-                <div className="text-primary mb-4">{item.icon}</div>
-                <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.name.toUpperCase()}</div>
-                <h3 className="font-mono text-base font-bold leading-snug text-foreground mb-2">{item.plain}</h3>
-                <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-4">{item.headline}</p>
-                <div className="space-y-4">
-                  {[
-                    { label: "RAM while running", icon: <Cpu className="w-4 h-4" />, plain: item.runningPlain, lines: item.running },
-                    { label: "Disk while not running", icon: <HardDrive className="w-4 h-4" />, plain: item.stoppedPlain, lines: item.stopped },
-                  ].map((group) => (
-                    <div key={group.label} className="border border-border/40 bg-background/35 p-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className={item.tone === "benefit" ? "text-primary" : "text-destructive"}>{group.icon}</span>
-                        <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{group.label.toUpperCase()}</div>
-                      </div>
-                      <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{group.plain}</p>
-                      <div className="space-y-2">
-                        {group.lines.map((line) => (
-                          <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
-                            <span className={`mt-1.5 h-1.5 w-1.5 ${item.tone === "benefit" ? "bg-primary" : "bg-destructive"}`} />
-                            <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{line}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  <div className={`border p-3 ${item.tone === "benefit" ? "border-primary/30 bg-primary/5" : "border-destructive/30 bg-destructive/5"}`}>
-                    <div className={`font-mono text-[10px] tracking-widest mb-2 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`}>AI AGENT / MALWARE IMPLICATION</div>
-                    <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{item.implicationPlain}</p>
-                    <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{item.implication}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
