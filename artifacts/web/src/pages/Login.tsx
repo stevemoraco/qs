@@ -14,6 +14,7 @@ import {
   setDevicePasscode,
   setLastHandle,
   setToken,
+  storeKeyPair,
 } from "@/lib/auth";
 import { ensurePushSubscription } from "@/lib/pwa";
 
@@ -21,6 +22,40 @@ const GITHUB_URL = "https://github.com/stevemoraco/qs";
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let value = "";
+  for (const byte of bytes) value += String.fromCharCode(byte);
+  return btoa(value);
+}
+
+async function createAndUploadMessageKeyBundle(token: string): Promise<void> {
+  const [{ ml_kem1024 }, { ml_dsa87 }] = await Promise.all([
+    import("@noble/post-quantum/ml-kem.js"),
+    import("@noble/post-quantum/ml-dsa.js"),
+  ]);
+  const kem = ml_kem1024.keygen();
+  const dsa = ml_dsa87.keygen();
+  const kemSignature = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
+  const bundle = {
+    kemPublicKey: bytesToBase64(kem.publicKey),
+    dsaPublicKey: bytesToBase64(dsa.publicKey),
+    kemSignature: bytesToBase64(kemSignature),
+  };
+  storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
+  const response = await fetch("/api/keys/upload", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(bundle),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(data?.error ?? "Could not publish this device message keys.");
+  }
 }
 
 const LOGIN_PRIVACY_FEATURES = [
@@ -106,6 +141,7 @@ export default function Login() {
       setToken(data.token);
       setAuthHandle(data.authHandle);
       setDevicePasscode(passcode);
+      await createAndUploadMessageKeyBundle(data.token);
       await ensurePushSubscription(data.token);
       setLocation("/app", { replace: true });
     } catch (err: unknown) {

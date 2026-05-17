@@ -17,6 +17,8 @@ import { Feather } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
+import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePostAuthLogin } from "@workspace/api-client-react";
@@ -31,6 +33,37 @@ function hashIdentityCode(value: string): string {
   const normalized = normalizeCodeInput(value);
   if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
   return bytesToHex(sha256(new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`)));
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let value = "";
+  for (const byte of bytes) value += String.fromCharCode(byte);
+  return btoa(value);
+}
+
+async function createAndUploadMessageKeyBundle(token: string, storeKeyPair: (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => Promise<void>): Promise<void> {
+  const kem = ml_kem1024.keygen();
+  const dsa = ml_dsa87.keygen();
+  const kemSignature = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
+  const kemPk = bytesToBase64(kem.publicKey);
+  const dsaPk = bytesToBase64(dsa.publicKey);
+  await storeKeyPair(bytesToBase64(kem.secretKey), kemPk, bytesToBase64(dsa.secretKey), dsaPk);
+  const res = await fetch(Platform.OS === "web" ? "/api/keys/upload" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/keys/upload`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      kemPublicKey: kemPk,
+      dsaPublicKey: dsaPk,
+      kemSignature: bytesToBase64(kemSignature),
+    }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null) as { error?: string } | null;
+    throw new Error(data?.error ?? "Could not publish this device message keys.");
+  }
 }
 
 const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; label: string }> = [
@@ -67,7 +100,7 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getDevicePasscode, getLastHandle, setAuthHandle, setDevicePasscode, setLastHandle, setToken } = useAuth();
+  const { getDevicePasscode, getLastHandle, setAuthHandle, setDevicePasscode, setLastHandle, setToken, storeKeyPair } = useAuth();
 
   const [handle, setHandle] = useState("");
   const [error, setError] = useState("");
@@ -148,6 +181,7 @@ export default function LoginScreen() {
       await setToken(data.token);
       await setAuthHandle(data.authHandle);
       await setDevicePasscode(passcode);
+      await createAndUploadMessageKeyBundle(data.token, storeKeyPair);
       setLinkCode("");
       const meUrl = Platform.OS === "web" ? "/api/auth/me" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/me`;
       const meRes = await fetch(meUrl, {

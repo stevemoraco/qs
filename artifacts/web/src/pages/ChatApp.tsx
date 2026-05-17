@@ -368,23 +368,12 @@ function AuditRow({ label, value, mono = false }: { label: string; value: string
 }
 
 function useOnlineStatus(): boolean {
-  const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+  const [online, setOnline] = useState(true);
   useEffect(() => {
     let cancelled = false;
     const checkServer = async () => {
-      if (!navigator.onLine) {
-        if (!cancelled) setOnline(false);
-        return;
-      }
-      try {
-        const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 2500);
-        const response = await fetch("/api/healthz", { signal: controller.signal, cache: "no-store" });
-        window.clearTimeout(timeout);
-        if (!cancelled) setOnline(response.ok);
-      } catch {
-        if (!cancelled) setOnline(false);
-      }
+      const reachable = await apiReachable();
+      if (!cancelled) setOnline(reachable);
     };
     const update = () => void checkServer();
     void checkServer();
@@ -399,6 +388,18 @@ function useOnlineStatus(): boolean {
     };
   }, []);
   return online;
+}
+
+async function apiReachable(timeoutMs = 2500): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    const response = await fetch("/api/healthz", { signal: controller.signal, cache: "no-store" });
+    window.clearTimeout(timeout);
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 function readTrustedKeyBundles(): Record<string, string> {
@@ -504,6 +505,52 @@ function encodeWrappedKeys(values: string[]): RecipientEncryptedKeyValue | null 
   return unique.length === 1 ? unique[0] : unique;
 }
 
+function recipientEncryptedKeySignatureVariants(keys: RecipientEncryptedKeys): RecipientEncryptedKeys[] {
+  const variants: RecipientEncryptedKeys[] = [keys];
+  const seen = new Set([JSON.stringify(keys)]);
+
+  const addVariant = (variant: RecipientEncryptedKeys) => {
+    const fingerprint = JSON.stringify(variant);
+    if (!seen.has(fingerprint)) {
+      seen.add(fingerprint);
+      variants.push(variant);
+    }
+  };
+
+  const parsedArrays: RecipientEncryptedKeys = {};
+  let parsedArraysChanged = false;
+  for (const [userId, value] of Object.entries(keys)) {
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value) as unknown;
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) {
+          parsedArrays[userId] = parsed;
+          parsedArraysChanged = true;
+          continue;
+        }
+      } catch {
+        // Legacy single wrapped-key string.
+      }
+    }
+    parsedArrays[userId] = value;
+  }
+  if (parsedArraysChanged) addVariant(parsedArrays);
+
+  const stringifiedArrays: RecipientEncryptedKeys = {};
+  let stringifiedArraysChanged = false;
+  for (const [userId, value] of Object.entries(keys)) {
+    if (Array.isArray(value)) {
+      stringifiedArrays[userId] = JSON.stringify(value);
+      stringifiedArraysChanged = true;
+    } else {
+      stringifiedArrays[userId] = value;
+    }
+  }
+  if (stringifiedArraysChanged) addVariant(stringifiedArrays);
+
+  return variants;
+}
+
 async function wrapMessageKeyForUserDevices(userId: string, rawMessageKey: Uint8Array): Promise<RecipientEncryptedKeyValue | null> {
   const bundles = await getTrustedKeyBundles(userId);
   const wrapped = await Promise.all(
@@ -592,69 +639,55 @@ async function signMessagePayload(input: {
 
 async function verifyMessageSignature(roomId: string, msg: Message): Promise<boolean> {
   if (!msg.signature) return false;
-  if (msg.senderDsaPublicKey) {
-    try {
-      if (ml_dsa87.verify(
-        base64ToBytes(msg.signature),
-        messageSignaturePayload({
-          roomId,
-          senderId: msg.senderId,
-          ciphertext: msg.ciphertext,
-          nonce: msg.nonce,
-          algorithm: msg.algorithm,
-          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-        }),
-        base64ToBytes(msg.senderDsaPublicKey),
-      )) {
-        return true;
+  const verifyWithDsaPublicKey = (dsaPublicKey: string): boolean => {
+    for (const recipientEncryptedKeys of recipientEncryptedKeySignatureVariants(msg.recipientEncryptedKeys ?? {})) {
+      try {
+        if (ml_dsa87.verify(
+          base64ToBytes(msg.signature!),
+          messageSignaturePayload({
+            roomId,
+            senderId: msg.senderId,
+            ciphertext: msg.ciphertext,
+            nonce: msg.nonce,
+            algorithm: msg.algorithm,
+            recipientEncryptedKeys,
+          }),
+          base64ToBytes(dsaPublicKey),
+        )) {
+          return true;
+        }
+      } catch {
+        // Try the next migration variant or signing key.
       }
-    } catch {
-      // Continue through local and latest bundle checks.
     }
+    return false;
+  };
+
+  if (msg.senderDsaPublicKey) {
+    if (verifyWithDsaPublicKey(msg.senderDsaPublicKey)) return true;
   }
   const localDsaPublicKey = getDsaPublicKey();
   if (localDsaPublicKey) {
-    try {
-      if (ml_dsa87.verify(
-        base64ToBytes(msg.signature),
-        messageSignaturePayload({
-          roomId,
-          senderId: msg.senderId,
-          ciphertext: msg.ciphertext,
-          nonce: msg.nonce,
-          algorithm: msg.algorithm,
-          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-        }),
-        base64ToBytes(localDsaPublicKey),
-      )) {
-        return true;
-      }
-    } catch {
-      // Fall through to the fetched sender bundle.
-    }
+    if (verifyWithDsaPublicKey(localDsaPublicKey)) return true;
   }
   try {
     const bundle = await getTrustedKeyBundle(msg.senderId);
     if (!bundle?.dsaPublicKey) return false;
-    return ml_dsa87.verify(
-      base64ToBytes(msg.signature),
-      messageSignaturePayload({
-        roomId,
-        senderId: msg.senderId,
-        ciphertext: msg.ciphertext,
-        nonce: msg.nonce,
-        algorithm: msg.algorithm,
-        recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-      }),
-      base64ToBytes(bundle.dsaPublicKey)
-    );
+    return verifyWithDsaPublicKey(bundle.dsaPublicKey);
   } catch {
     return false;
   }
 }
 
 function normalizeWrappedKeyCandidates(wrappedValue: RecipientEncryptedKeyValue): string[] {
-  return Array.isArray(wrappedValue) ? wrappedValue : [wrappedValue];
+  if (Array.isArray(wrappedValue)) return wrappedValue;
+  try {
+    const parsed = JSON.parse(wrappedValue) as unknown;
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) return parsed;
+  } catch {
+    // Legacy single wrapped-key string.
+  }
+  return [wrappedValue];
 }
 
 async function unwrapSingleMessageKeyForMe(wrappedValue: string, kemSecretKeys: Uint8Array[]): Promise<CryptoKey | null> {
@@ -2133,7 +2166,7 @@ function RoomView({
       query: {
         queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id),
         enabled: online,
-        refetchInterval: () => randomRefetchInterval(17000, 73000),
+        refetchInterval: 2500,
       },
     }
   );
@@ -2319,7 +2352,8 @@ function RoomView({
     setIsSending(true);
     let rawKey: Uint8Array | null = null;
     try {
-      if (!online && room.memberCount > 1 && members.length < room.memberCount) {
+      const canReachServer = online || await apiReachable();
+      if (!canReachServer && room.memberCount > 1 && members.length < room.memberCount) {
         setSendError("This room's member list is not cached yet. Reconnect once before sending offline.");
         setInput(text);
         return;
@@ -2329,7 +2363,7 @@ function RoomView({
       const { ciphertext, nonce } = encrypted;
       const messageKey = encrypted.rawKey;
       rawKey = messageKey;
-      const freshMembers = online ? await getRoomsRoomIdMembers(room.id).catch(() => members) : members;
+      const freshMembers = canReachServer ? await getRoomsRoomIdMembers(room.id).catch(() => members) : members;
       const recipientIds = Array.from(new Set([currentUserId, ...freshMembers.map((member) => member.id)]));
       const recipientEncryptedKeys: RecipientEncryptedKeys = {};
       await Promise.all(
@@ -2386,7 +2420,7 @@ function RoomView({
       const queuedMessage = outboxEntryToMessage(queued, currentUserId);
       setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
       setOfflineMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
-      if (!online) {
+      if (!canReachServer) {
         return;
       }
 

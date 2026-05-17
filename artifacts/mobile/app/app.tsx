@@ -329,7 +329,16 @@ function latestFuzzDeliveryLabel(sentAt: string, fuzzSeconds: number | null | un
 }
 
 const messageKeyStore = new Map<string, Uint8Array>();
-const trustedKeyBundleFingerprints = new Map<string, string>();
+const trustedKeyBundleFingerprints = new Map<string, Set<string>>();
+
+function trustedFingerprintsForUser(userId: string): Set<string> {
+  let fingerprints = trustedKeyBundleFingerprints.get(userId);
+  if (!fingerprints) {
+    fingerprints = new Set<string>();
+    trustedKeyBundleFingerprints.set(userId, fingerprints);
+  }
+  return fingerprints;
+}
 
 function clearVolatileMessageSecrets() {
   for (const key of messageKeyStore.values()) key.fill(0);
@@ -408,9 +417,7 @@ async function getTrustedVerifiedKeyBundle(userId: string): Promise<KeyBundle | 
   const bundle = await getKeysUserId(userId);
   if (!verifyKeyBundleSignature(bundle)) return null;
   const fingerprint = keyBundleFingerprint(bundle);
-  const trusted = trustedKeyBundleFingerprints.get(userId);
-  if (trusted && trusted !== fingerprint) return null;
-  trustedKeyBundleFingerprints.set(userId, fingerprint);
+  trustedFingerprintsForUser(userId).add(fingerprint);
   return bundle;
 }
 
@@ -427,9 +434,7 @@ async function getTrustedVerifiedKeyBundles(userId: string, token?: string | nul
       if (!bundle.kemPublicKey || seenKemKeys.has(bundle.kemPublicKey)) continue;
       if (!verifyKeyBundleSignature(bundle)) continue;
       const fingerprint = keyBundleFingerprint(bundle);
-      const trusted = trustedKeyBundleFingerprints.get(userId);
-      if (trusted && trusted !== fingerprint) continue;
-      trustedKeyBundleFingerprints.set(userId, fingerprint);
+      trustedFingerprintsForUser(userId).add(fingerprint);
       seenKemKeys.add(bundle.kemPublicKey);
       bundles.push(bundle);
     }
@@ -457,6 +462,52 @@ function encodeWrappedKeys(values: string[]): RecipientEncryptedKeyValue | null 
   const unique = [...new Set(values.filter(Boolean))];
   if (unique.length === 0) return null;
   return unique.length === 1 ? unique[0] : unique;
+}
+
+function recipientEncryptedKeySignatureVariants(keys: RecipientEncryptedKeys): RecipientEncryptedKeys[] {
+  const variants: RecipientEncryptedKeys[] = [keys];
+  const seen = new Set([JSON.stringify(keys)]);
+
+  const addVariant = (variant: RecipientEncryptedKeys) => {
+    const fingerprint = JSON.stringify(variant);
+    if (!seen.has(fingerprint)) {
+      seen.add(fingerprint);
+      variants.push(variant);
+    }
+  };
+
+  const parsedArrays: RecipientEncryptedKeys = {};
+  let parsedArraysChanged = false;
+  for (const [userId, value] of Object.entries(keys)) {
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value) as unknown;
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) {
+          parsedArrays[userId] = parsed;
+          parsedArraysChanged = true;
+          continue;
+        }
+      } catch {
+        // Legacy single wrapped-key string.
+      }
+    }
+    parsedArrays[userId] = value;
+  }
+  if (parsedArraysChanged) addVariant(parsedArrays);
+
+  const stringifiedArrays: RecipientEncryptedKeys = {};
+  let stringifiedArraysChanged = false;
+  for (const [userId, value] of Object.entries(keys)) {
+    if (Array.isArray(value)) {
+      stringifiedArrays[userId] = JSON.stringify(value);
+      stringifiedArraysChanged = true;
+    } else {
+      stringifiedArrays[userId] = value;
+    }
+  }
+  if (stringifiedArraysChanged) addVariant(stringifiedArrays);
+
+  return variants;
 }
 
 async function wrapMessageKeyForUserDevices(userId: string, rawMessageKey: Uint8Array, token?: string | null): Promise<RecipientEncryptedKeyValue | null> {
@@ -506,68 +557,54 @@ async function signMessagePayload(input: {
 
 async function verifyMessageSignature(roomId: string, msg: Message, localDsaPublicKeyB64?: string | null): Promise<boolean> {
   if (!msg.signature) return false;
-  if (msg.senderDsaPublicKey) {
-    try {
-      if (ml_dsa87.verify(
-        b64ToBytes(msg.signature),
-        messageSignaturePayload({
-          roomId,
-          senderId: msg.senderId,
-          ciphertext: msg.ciphertext,
-          nonce: msg.nonce,
-          algorithm: msg.algorithm,
-          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-        }),
-        b64ToBytes(msg.senderDsaPublicKey),
-      )) {
-        return true;
+  const verifyWithDsaPublicKey = (dsaPublicKey: string): boolean => {
+    for (const recipientEncryptedKeys of recipientEncryptedKeySignatureVariants(msg.recipientEncryptedKeys ?? {})) {
+      try {
+        if (ml_dsa87.verify(
+          b64ToBytes(msg.signature!),
+          messageSignaturePayload({
+            roomId,
+            senderId: msg.senderId,
+            ciphertext: msg.ciphertext,
+            nonce: msg.nonce,
+            algorithm: msg.algorithm,
+            recipientEncryptedKeys,
+          }),
+          b64ToBytes(dsaPublicKey),
+        )) {
+          return true;
+        }
+      } catch {
+        // Try the next migration variant or signing key.
       }
-    } catch {
-      // Continue through local and latest bundle checks.
     }
+    return false;
+  };
+
+  if (msg.senderDsaPublicKey) {
+    if (verifyWithDsaPublicKey(msg.senderDsaPublicKey)) return true;
   }
   if (localDsaPublicKeyB64) {
-    try {
-      if (ml_dsa87.verify(
-        b64ToBytes(msg.signature),
-        messageSignaturePayload({
-          roomId,
-          senderId: msg.senderId,
-          ciphertext: msg.ciphertext,
-          nonce: msg.nonce,
-          algorithm: msg.algorithm,
-          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-        }),
-        b64ToBytes(localDsaPublicKeyB64),
-      )) {
-        return true;
-      }
-    } catch {
-      // Fall through to the fetched sender bundle.
-    }
+    if (verifyWithDsaPublicKey(localDsaPublicKeyB64)) return true;
   }
   try {
     const bundle = await getTrustedVerifiedKeyBundle(msg.senderId);
     if (!bundle?.dsaPublicKey) return false;
-    return ml_dsa87.verify(
-      b64ToBytes(msg.signature),
-      messageSignaturePayload({
-        roomId,
-        senderId: msg.senderId,
-        ciphertext: msg.ciphertext,
-        nonce: msg.nonce,
-        algorithm: msg.algorithm,
-        recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
-      }),
-      b64ToBytes(bundle.dsaPublicKey)
-    );
+    return verifyWithDsaPublicKey(bundle.dsaPublicKey);
   } catch {
     return false;
   }
 }
 
 function normalizeWrappedKeyCandidates(wrappedValue: RecipientEncryptedKeyValue): string[] {
-  return Array.isArray(wrappedValue) ? wrappedValue : [wrappedValue];
+  if (Array.isArray(wrappedValue)) return wrappedValue;
+  try {
+    const parsed = JSON.parse(wrappedValue) as unknown;
+    if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) return parsed;
+  } catch {
+    // Legacy single wrapped-key string.
+  }
+  return [wrappedValue];
 }
 
 function unwrapSingleMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8Array | null {
@@ -803,7 +840,7 @@ function ChatView({
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id, {},
-    { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: () => randomRefetchInterval(17000, 73000) } }
+    { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: 2500 } }
   );
   const liveMessages = messages as Message[];
   const visibleOptimisticMessages = optimisticMessages.filter((local) => !liveMessages.some((live) => (

@@ -29,6 +29,8 @@ const checks: Check[] = [
       "outboxEntryToMessage",
       "qs-offline-outbox-changed",
       "data-testid=\"offline-outbox-status\"",
+      "apiReachable",
+      "const canReachServer = online || await apiReachable()",
     ]),
   },
   {
@@ -49,6 +51,9 @@ const checks: Check[] = [
       "wrapMessageKeyForUserDevices",
       "wrapMessageKeyForCurrentUserDevices",
       "encodeWrappedKeys",
+      "return unique.length === 1 ? unique[0] : unique",
+      "function sendRecipientEncryptedKeys(keys: RecipientEncryptedKeys): SendRecipientEncryptedKeys {\n  return keys as SendRecipientEncryptedKeys;\n}",
+      "recipientEncryptedKeySignatureVariants",
     ]),
   },
   {
