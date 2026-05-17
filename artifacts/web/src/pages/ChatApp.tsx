@@ -200,6 +200,11 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
 }
 
+function isUnrecoverableQueuedSendError(err: unknown): boolean {
+  const message = errorMessage(err);
+  return /recipientEncryptedKeys must include exactly one wrapped key for each current room member|Invalid message signature|Not a member of this room/i.test(message);
+}
+
 function formatAuditTime(value: string, timeZone?: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "unavailable";
@@ -2464,8 +2469,23 @@ function RoomView({
       const { ciphertext, nonce } = encrypted;
       const messageKey = encrypted.rawKey;
       rawKey = messageKey;
-      const freshMembers = canReachServer ? await getRoomsRoomIdMembers(room.id).catch(() => members) : members;
-      const recipientIds = Array.from(new Set([currentUserId, ...freshMembers.map((member) => member.id)]));
+      let sendMembers = members;
+      if (canReachServer) {
+        try {
+          sendMembers = await getRoomsRoomIdMembers(room.id);
+        } catch (err) {
+          setSendError(`Could not refresh the current room member list from the server. Message was not queued. ${errorMessage(err)}`);
+          setInput(text);
+          return;
+        }
+      }
+      const recipientIds = Array.from(new Set(sendMembers.map((member) => member.id)));
+      if (!recipientIds.includes(currentUserId)) recipientIds.push(currentUserId);
+      if (!canReachServer && room.memberCount > 1 && recipientIds.length < room.memberCount) {
+        setSendError("This room's member list is not cached yet. Reconnect once before sending offline.");
+        setInput(text);
+        return;
+      }
       const recipientEncryptedKeys: RecipientEncryptedKeys = {};
       await Promise.all(
         recipientIds.map(async (userId) => {
@@ -3159,6 +3179,10 @@ export default function ChatApp() {
           qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(entry.roomId) });
           qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
         } catch (err) {
+          if (isUnrecoverableQueuedSendError(err)) {
+            await deleteOutboxEntry(entry.id);
+            window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+          }
           console.warn("Queued message flush failed", err);
           if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
           continue;

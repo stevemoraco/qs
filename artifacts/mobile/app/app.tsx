@@ -926,8 +926,16 @@ function ChatView({
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
     try {
-      const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
-      const recipientIds = Array.from(new Set([myId, ...freshMembers.map((member) => member.id)]));
+      let freshMembers = members;
+      try {
+        freshMembers = await getRoomsRoomIdMembers(room.id);
+      } catch {
+        setSendError("Could not refresh the current room member list from the server. Message was not queued.");
+        setInput(text);
+        return;
+      }
+      const recipientIds = Array.from(new Set(freshMembers.map((member) => member.id)));
+      if (!recipientIds.includes(myId)) recipientIds.push(myId);
       const recipientEncryptedKeys: RecipientEncryptedKeys = {};
       await Promise.all(
         recipientIds.map(async (userId) => {

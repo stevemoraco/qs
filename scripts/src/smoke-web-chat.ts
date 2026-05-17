@@ -35,6 +35,14 @@ const checks: Check[] = [
     ]),
   },
   {
+    name: "online send requires fresh authoritative room members before queueing",
+    pass: has(chatApp, [
+      "Could not refresh the current room member list from the server. Message was not queued.",
+      "sendMembers = await getRoomsRoomIdMembers(room.id)",
+      "const recipientIds = Array.from(new Set(sendMembers.map((member) => member.id)))",
+    ]),
+  },
+  {
     name: "send path signs message package and requires recipient wrapped keys",
     pass: has(chatApp, [
       "recipientEncryptedKeys",
@@ -63,6 +71,7 @@ const checks: Check[] = [
       "senderDsaPublicKeyForSignedPayload",
       "entry.senderDsaPublicKey ?? await senderDsaPublicKeyForSignedPayload",
       "Queued message flush failed",
+      "isUnrecoverableQueuedSendError",
       "continue;",
     ]),
   },
