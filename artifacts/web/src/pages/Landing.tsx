@@ -156,7 +156,7 @@ const DECAY_TIMELINE = [
     state: "EXPIRY HIT",
     color: "text-amber-500",
     border: "border-amber-500/40",
-    copy: "Real time expires. Quorum evidence lands. Half the chunks are already replaced by deterministic decay noise.",
+    copy: "Real time expires. Even if keys are compromised, half the chunks are already replaced by deterministic decay noise.",
     chunks: ["Meet", "at", "the", "north", "9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "Bring", "the", "sealed", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2", "7429."],
   },
   {
@@ -164,7 +164,7 @@ const DECAY_TIMELINE = [
     state: "QUORUM LOCKED",
     color: "text-amber-500",
     border: "border-amber-500/50",
-    copy: "A copied key, fake server clock, or rolled-back phone clock cannot restore the chunks without live time agreement.",
+    copy: "A copied key, fake server clock, or rolled-back phone clock cannot backtrack the chunks without live Sybil-resistant time agreement.",
     chunks: ["9f?2a1c#", "0d|e88b!", "north", "6a7/ff0?", "c19|2ed#", "2b$e0a7", "af77/31c", "$e09%4bb", "Bring", "77?aac0", "1e|d9f4", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2"],
   },
   {
@@ -172,7 +172,7 @@ const DECAY_TIMELINE = [
     state: "FULL DECAY EVIDENCE",
     color: "text-destructive",
     border: "border-destructive/45",
-    copy: "All sixteen chunks are now evidence. The old message shape remains, but the readable key path is gone.",
+    copy: "All sixteen chunks are now decayed. Even compromised keys cannot backtrack the message once quorum time has moved on.",
     chunks: ["9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "6a7/ff0?", "c19|2ed#", "2b$e0a7", "77?aac0", "1e|d9f4", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2", "ab0%7c!", "f41/9e?", "d8|22#0"],
   },
 ];
@@ -255,7 +255,7 @@ const PROTOCOL_COMPARISON = [
     quantumShieldLead: "Every message gets its own key, fuzzed timing, and quorum time decay.",
     signalLead: "a powerful attacker can still study who started talking and when.",
     imessageLead: "Apple helps decide which devices get each message.",
-    quantumShield: "When you send a message, the app gives it a fresh key and can blur the exact send time with random delivery fuzz. In experimental decay rooms, messages carry quorum time evidence from multiple independent time checks, so the app follows real time instead of trusting one phone clock or one server clock. The server carries the package but is mathematically guaranteed not to have the key needed to read it; check the source code and verify the key path.",
+    quantumShield: "When you send a message, the app gives it a fresh key and can blur the exact send time with random delivery fuzz. In experimental decay rooms, messages carry Sybil-resistant quorum time checks, so the app follows real time instead of trusting one phone clock or one server clock. The server carries the package but is mathematically guaranteed not to have the key needed to read it; check the source code and verify the key path.",
     signal: "When a Signal chat starts, PQXDH mixes classical X25519 with post-quantum Kyber-derived secret material. The goal is to make today's captured setup traffic useless to a future quantum computer.",
     imessage: "When supported Apple devices talk, PQ3 adds post-quantum key material to iMessage setup so recorded traffic is harder to decrypt later.",
     warning: "What this means: the first handshake is where future decryption risk begins. If an attacker records everything today, post-quantum setup is what keeps those recordings from becoming readable when quantum attacks improve.",
@@ -299,7 +299,7 @@ const PROTOCOL_COMPARISON = [
     quantumShieldLead: "Quorum decay makes stolen keys go stale when real time expires.",
     signalLead: "disappearing later does not erase what someone already copied.",
     imessageLead: "deleting in one place may not delete every synced or backed-up copy.",
-    quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. In standard decay, clients purge local message keys and the API wipes wrapped key envelopes after expiry. In experimental quorum decay, expired messages become garbled decay evidence right on time: reveal depends on live, Sybil-resistant time agreement, not a copied key, a rolled-back device clock, or one fake server clock. Leftover server ciphertext is mathematically guaranteed to be unreadable noise without a usable key path. Check the source code and verify the timed key purge.",
+    quantumShield: "You choose whether the timer starts when a message is first viewed or immediately when sent. In standard decay, clients purge local message keys and the API wipes wrapped key envelopes after expiry. In experimental quorum decay, even if keys are compromised, the message cannot be backtracked after real time expires: reveal depends on live, Sybil-resistant time agreement, not a copied key, a rolled-back device clock, or one fake server clock. Leftover server ciphertext is mathematically guaranteed to be unreadable noise without a usable key path. Check the source code and verify the timed key purge.",
     signal: "Signal disappearing messages remove messages after a timer, but recipients or compromised devices may already have copied or captured them.",
     imessage: "iMessage deletion depends on the sender's devices, recipient devices, sync state, retention settings, and backups.",
     warning: "What this means: deletion only helps before collection. If someone already saw it, photographed it, backed it up, or compromised the endpoint, a later timer cannot make that copy disappear.",
@@ -733,9 +733,9 @@ export default function Landing() {
             <div className="grid grid-cols-1 lg:grid-cols-[0.75fr_1.25fr] gap-6 items-start mb-6">
               <div>
                 <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">QUORUM DECAY PREVIEW</div>
-                <h3 className="font-mono text-2xl md:text-4xl font-bold leading-tight mb-4">A 15-minute message decays into evidence, chunk by chunk.</h3>
+                <h3 className="font-mono text-2xl md:text-4xl font-bold leading-tight mb-4">A 15-minute message becomes unreadable, chunk by chunk.</h3>
                 <p className="font-mono text-sm text-muted-foreground leading-relaxed">
-                  Experimental quorum decay models a message as many protected pieces. At minute 14 it still reveals with biometrics. At minute 15 real time wins. By minute 17, all 16 chunks are garbled evidence instead of readable text.
+                  Experimental quorum decay models a message as many protected pieces. At minute 14 it still reveals with biometrics. At minute 15 real time wins. By minute 17, all 16 chunks are unreadable even if keys are compromised, because Sybil-resistant time cannot be backtracked.
                 </p>
               </div>
               <div className="border border-border/50 bg-background/70 p-4">
@@ -743,7 +743,7 @@ export default function Landing() {
                   {[
                     { icon: <ScanFace className="w-4 h-4" />, label: "Biometric reveal", copy: "Face ID or fingerprint gates the live plaintext." },
                     { icon: <Server className="w-4 h-4" />, label: "Time quorum", copy: "Multiple clocks agree that real time has passed." },
-                    { icon: <TimerOff className="w-4 h-4" />, label: "Chunk decay", copy: "Copied keys age out into deterministic noise." },
+                    { icon: <TimerOff className="w-4 h-4" />, label: "Chunk decay", copy: "Even compromised keys age out into deterministic noise." },
                   ].map((item) => (
                     <div key={item.label} className="border border-border/40 bg-card/25 p-3">
                       <div className="text-amber-500 mb-2">{item.icon}</div>
