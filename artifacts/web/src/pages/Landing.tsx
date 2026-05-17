@@ -125,7 +125,7 @@ const PRIVACY_FEATURES = [
 ];
 
 const HERO_FEATURES = [
-  { icon: <Camera className="w-4 h-4" />, label: "Selfie camera sees another device taking a picture, locks chat + warns them" },
+  { icon: <Camera className="w-4 h-4" />, label: "Selfie camera sees another device or screenshot flash, locks chat + warns them" },
   { icon: <MousePointerClick className="w-4 h-4" />, label: "Hold-to-reveal messages that rehide on release" },
   { icon: <TimerOff className="w-4 h-4" />, label: "TTL starts after first view or immediately on send" },
   { icon: <EyeOff className="w-4 h-4" />, label: "Blur, tab, print, and background privacy shield" },

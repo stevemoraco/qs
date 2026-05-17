@@ -51,6 +51,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
 const PRIVACY_ALERT_THROTTLE_MS = 60_000;
+const FLASH_SCAN_MS = 250;
+const FLASH_ALERT_THROTTLE_MS = 15_000;
+const FLASH_FRAME_WIDTH = 48;
+const FLASH_FRAME_HEIGHT = 32;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -207,7 +211,7 @@ function CameraScanStatus({
         <div className="absolute left-4 right-4 top-full z-50 mt-2 border border-primary/30 bg-background/95 p-4 shadow-xl backdrop-blur">
           <p className="font-mono text-xs tracking-widest text-primary mb-2">WHY THE CAMERA IS ON</p>
           <p className="font-mono text-xs text-muted-foreground leading-relaxed">
-            QuantumShield uses your front camera locally to look for nearby recording devices pointed at the screen. Frames are processed on this device for privacy-shield decisions and are not uploaded or attached to messages.
+            QuantumShield uses your front camera locally to look for nearby recording devices pointed at the screen and sudden screen-flash reflections that may indicate a screenshot. Frames are processed on this device for privacy-shield decisions and are not uploaded or attached to messages.
           </p>
         </div>
       )}
@@ -1287,6 +1291,10 @@ export default function ChatApp() {
   const captureWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeRoomIdRef = useRef<string | null>(null);
   const lastPrivacyAlertAtRef = useRef(0);
+  const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const flashBaselineRef = useRef<number | null>(null);
+  const lastFlashAlertAtRef = useRef(0);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1476,6 +1484,39 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
+  const scanCameraFlash = (video: HTMLVideoElement): boolean => {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return false;
+
+    const canvas = flashCanvasRef.current ?? document.createElement("canvas");
+    if (!flashCanvasRef.current) {
+      canvas.width = FLASH_FRAME_WIDTH;
+      canvas.height = FLASH_FRAME_HEIGHT;
+      flashCanvasRef.current = canvas;
+    }
+
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return false;
+    ctx.drawImage(video, 0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT);
+    const data = ctx.getImageData(0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT).data;
+
+    let luminanceTotal = 0;
+    let brightPixels = 0;
+    const pixelCount = FLASH_FRAME_WIDTH * FLASH_FRAME_HEIGHT;
+    for (let i = 0; i < data.length; i += 4) {
+      const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+      luminanceTotal += lum;
+      if (lum > 215) brightPixels += 1;
+    }
+
+    const avg = luminanceTotal / pixelCount;
+    const brightRatio = brightPixels / pixelCount;
+    const baseline = flashBaselineRef.current ?? avg;
+    const delta = avg - baseline;
+    const isFlash = avg > 120 && delta > 42 && brightRatio > 0.12;
+    flashBaselineRef.current = isFlash ? baseline : baseline * 0.92 + avg * 0.08;
+    return isFlash;
+  };
+
   const unlockPrivacyShield = async (source: "auto" | "manual" = "manual") => {
     setPrivacyShield((current) => ({ ...current, error: undefined }));
     setIsUnlockingPrivacy(true);
@@ -1597,6 +1638,18 @@ export default function ChatApp() {
         setCameraStatus("clear");
         setCameraStatusDetail("ON-DEVICE");
 
+        flashScanIntervalRef.current = setInterval(() => {
+          if (!videoRef.current || scanCameraFlash(videoRef.current) === false) return;
+          const now = Date.now();
+          if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
+          lastFlashAlertAtRef.current = now;
+          lockForCaptureAttempt("Possible screenshot flash reflected in the selfie camera. Secure content was hidden.");
+          const roomId = activeRoomIdRef.current;
+          if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
+          setCameraStatus("threat");
+          setCameraStatusDetail("FLASH GUARD");
+        }, FLASH_SCAN_MS);
+
         detectionIntervalRef.current = setInterval(async () => {
           if (!videoRef.current) return;
           try {
@@ -1629,6 +1682,7 @@ export default function ChatApp() {
     return () => {
       mounted = false;
       if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
+      if (flashScanIntervalRef.current) clearInterval(flashScanIntervalRef.current);
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
   }, []);
