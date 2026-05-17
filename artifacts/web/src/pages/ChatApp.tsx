@@ -1788,6 +1788,7 @@ function RoomView({
   const touchRevealActiveRef = useRef(false);
   const activeRevealRef = useRef<{ id: string; input: "mouse" | "touch"; released: boolean; painted: boolean } | null>(null);
   const revealFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mouseRevealHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: liveMessages = [] } = useGetRoomsRoomIdMessages(
     room.id,
@@ -2143,6 +2144,10 @@ function RoomView({
       clearTimeout(revealFallbackTimerRef.current);
       revealFallbackTimerRef.current = null;
     }
+    if (mouseRevealHideTimerRef.current) {
+      clearTimeout(mouseRevealHideTimerRef.current);
+      mouseRevealHideTimerRef.current = null;
+    }
     revealTokenRef.current += 1;
     setRevealedSenderId(null);
     onSensitiveRevealChange(false);
@@ -2155,20 +2160,26 @@ function RoomView({
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
     if (event.pointerType === "touch") return;
+    if (mouseRevealHideTimerRef.current) {
+      clearTimeout(mouseRevealHideTimerRef.current);
+      mouseRevealHideTimerRef.current = null;
+    }
     onSensitiveRevealChange(true);
     activeRevealRef.current = { id: msg.id, input: "mouse", released: false, painted: false };
-    if (event.type === "pointerdown") {
-      try {
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-      } catch {
-        // Hover reveal has no active pointer capture to bind.
-      }
-    }
     void revealMsg(msg);
   };
 
   const endPointerMessageReveal = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "touch" || touchRevealActiveRef.current) return;
+    if (event.type === "pointerup") return;
+    if (event.type === "pointerleave") {
+      if (mouseRevealHideTimerRef.current) clearTimeout(mouseRevealHideTimerRef.current);
+      mouseRevealHideTimerRef.current = setTimeout(() => {
+        clearEphemeralSecrets();
+        hideRevealedMsg();
+      }, 120);
+      return;
+    }
     clearEphemeralSecrets();
     hideRevealedMsg();
   };
@@ -2338,7 +2349,6 @@ function RoomView({
                       onPointerUp={endPointerMessageReveal}
                       onPointerCancel={endPointerMessageReveal}
                       onPointerLeave={endPointerMessageReveal}
-                      onLostPointerCapture={endPointerMessageReveal}
                       onTouchStart={(event) => startTouchMessageReveal(event, msg as Message)}
                       onTouchEnd={endTouchMessageReveal}
                       onTouchCancel={endTouchMessageReveal}
