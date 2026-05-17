@@ -2160,6 +2160,10 @@ function RoomView({
 
   const startMessageReveal = (event: React.PointerEvent<HTMLButtonElement>, msg: Message) => {
     if (event.pointerType === "touch") return;
+    startMouseMessageReveal(msg);
+  };
+
+  const startMouseMessageReveal = (msg: Message) => {
     if (mouseRevealHideTimerRef.current) {
       clearTimeout(mouseRevealHideTimerRef.current);
       mouseRevealHideTimerRef.current = null;
@@ -2169,17 +2173,17 @@ function RoomView({
     void revealMsg(msg);
   };
 
+  const endMouseMessageReveal = () => {
+    if (mouseRevealHideTimerRef.current) clearTimeout(mouseRevealHideTimerRef.current);
+    mouseRevealHideTimerRef.current = setTimeout(() => {
+      clearEphemeralSecrets();
+      hideRevealedMsg();
+    }, 120);
+  };
+
   const endPointerMessageReveal = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "touch" || touchRevealActiveRef.current) return;
     if (event.type === "pointerup") return;
-    if (event.type === "pointerleave") {
-      if (mouseRevealHideTimerRef.current) clearTimeout(mouseRevealHideTimerRef.current);
-      mouseRevealHideTimerRef.current = setTimeout(() => {
-        clearEphemeralSecrets();
-        hideRevealedMsg();
-      }, 120);
-      return;
-    }
     clearEphemeralSecrets();
     hideRevealedMsg();
   };
@@ -2321,6 +2325,8 @@ function RoomView({
                       ? "bg-primary/10 border-primary/30 text-foreground"
                       : "bg-card border-border/50 text-foreground"
                   }`}
+                  onMouseEnter={() => startMouseMessageReveal(msg as Message)}
+                  onMouseLeave={endMouseMessageReveal}
                 >
                   {expired && !experimentalDecay ? (
                     <p className="font-mono text-xs text-muted-foreground italic">
@@ -2343,12 +2349,7 @@ function RoomView({
                     <button
                       type="button"
                       onPointerDown={(event) => startMessageReveal(event, msg as Message)}
-                      onPointerEnter={(event) => {
-                        if (event.pointerType === "mouse") startMessageReveal(event, msg as Message);
-                      }}
                       onPointerUp={endPointerMessageReveal}
-                      onPointerCancel={endPointerMessageReveal}
-                      onPointerLeave={endPointerMessageReveal}
                       onTouchStart={(event) => startTouchMessageReveal(event, msg as Message)}
                       onTouchEnd={endTouchMessageReveal}
                       onTouchCancel={endTouchMessageReveal}
@@ -2488,7 +2489,7 @@ export default function ChatApp() {
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
-  const { data: liveMe } = useGetAuthMe({ query: { queryKey: getGetAuthMeQueryKey(), enabled: online } });
+  const { data: liveMe, error: liveMeError } = useGetAuthMe({ query: { queryKey: getGetAuthMeQueryKey(), enabled: online } });
   const { data: liveRooms } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), enabled: online, refetchInterval: () => randomRefetchInterval(28000, 97000) } });
   const uploadKeys = usePostKeysUpload();
   const [offlineMe, setOfflineMe] = useState<OfflineMe | null>(() => loadOfflineMe());
@@ -2496,6 +2497,16 @@ export default function ChatApp() {
   const [outboxCount, setOutboxCount] = useState(0);
   const me = (online ? liveMe : offlineMe) ?? liveMe ?? offlineMe;
   const rooms = (online && liveRooms ? liveRooms : offlineRooms) as Room[];
+
+  useEffect(() => {
+    const status = typeof liveMeError === "object" && liveMeError && "status" in liveMeError
+      ? Number((liveMeError as { status?: unknown }).status)
+      : null;
+    if (!online || status !== 401) return;
+    clearToken();
+    setPrivacyShield({ active: false, reason: "" });
+    setLocation("/login");
+  }, [liveMeError, online, setLocation]);
 
   const refreshSessionForKeyUpload = async (): Promise<void> => {
     const handle = normalizeCodeInput(getLastHandle() ?? privacyHandle ?? "");
