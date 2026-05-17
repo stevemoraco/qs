@@ -44,6 +44,7 @@ import {
   type IdentityCode,
   type SendMessageRequest,
   customFetch,
+  ApiError,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearEphemeralSecrets, clearToken, getDsaPublicKey, getDsaPublicKeysAsync, getKemSecretKeysAsync, getLastHandle, getLocalKeyPairAsync, getToken, getUnsealedHandleLabels, hashIdentityCode, isFreshLoginVerificationValid, linkLocalPlatformPasskey, loginWithPasskey, rememberAssociatedHandle, rememberUnsealedHandle, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
@@ -249,6 +250,16 @@ function reportClientError(input: {
 function isUnrecoverableQueuedSendError(err: unknown): boolean {
   const message = errorMessage(err);
   return /recipientEncryptedKeys must include exactly one wrapped key for each current room member|Invalid message signature|Not a member of this room/i.test(message);
+}
+
+function isMemberMismatchError(err: unknown): boolean {
+  if (err instanceof ApiError) {
+    if (err.status === 400) {
+      const data = err.data as { code?: string } | null;
+      if (data?.code === "RECIPIENT_KEYS_MEMBER_MISMATCH") return true;
+    }
+  }
+  return /recipientEncryptedKeys must include exactly one wrapped key for each current room member/i.test(errorMessage(err));
 }
 
 function formatAuditTime(value: string, timeZone?: string): string {
@@ -2622,8 +2633,7 @@ function RoomView({
         createdAt: sentAt,
         localFuzzing: !!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0,
       });
-      try {
-        const sentMessage = await postQueuedMessage(queued);
+      const applySendSuccess = (sentMessage: Message) => {
         qc.setQueryData<Message[]>(getGetRoomsRoomIdMessagesQueryKey(room.id), (current = []) => {
           if (current.some((msg) => msg.id === sentMessage.id || (msg.signature && msg.signature === sentMessage.signature))) {
             return current;
@@ -2634,6 +2644,67 @@ function RoomView({
           ...current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature),
           optimistic,
         ]);
+      };
+
+      const rebuildForFreshMembers = async (): Promise<OfflineOutboxEntry> => {
+        const freshMembers = await getRoomsRoomIdMembers(room.id);
+        cacheRoomMembers(room.id, freshMembers).catch(() => {});
+        const freshRecipientIds = Array.from(new Set(freshMembers.map((member) => member.id)));
+        if (!freshRecipientIds.includes(currentUserId)) {
+          throw new Error("This account is no longer a current member of this room.");
+        }
+        const freshRecipientEncryptedKeys: RecipientEncryptedKeys = {};
+        await Promise.all(
+          freshRecipientIds.map(async (userId) => {
+            const wrapped = userId === currentUserId
+              ? await wrapMessageKeyForCurrentUserDevices(userId, messageKey)
+              : await wrapMessageKeyForUserDevices(userId, messageKey);
+            if (wrapped) freshRecipientEncryptedKeys[userId] = wrapped;
+          })
+        );
+        if (!freshRecipientEncryptedKeys[currentUserId]) {
+          throw new Error("This device's local decrypt key is missing or out of sync.");
+        }
+        const missing = freshRecipientIds.filter((userId) => !freshRecipientEncryptedKeys[userId]);
+        if (missing.length > 0) {
+          throw new Error(`Could not encrypt for every current room member after refresh (missing ${missing.length}).`);
+        }
+        const freshSignature = await signMessagePayload({
+          roomId: room.id,
+          senderId: currentUserId,
+          ciphertext,
+          nonce,
+          algorithm: CIPHER_SUITE,
+          recipientEncryptedKeys: freshRecipientEncryptedKeys,
+        });
+        if (!freshSignature) {
+          throw new Error("This device does not have a local signing key.");
+        }
+        const refreshedAt = new Date().toISOString();
+        const refreshedEntry: OfflineOutboxEntry = {
+          ...queued,
+          signature: freshSignature,
+          senderDsaPublicKey: await senderDsaPublicKeyForSignedPayload({
+            roomId: room.id,
+            senderId: currentUserId,
+            ciphertext,
+            nonce,
+            algorithm: CIPHER_SUITE,
+            recipientEncryptedKeys: freshRecipientEncryptedKeys,
+            signature: freshSignature,
+          }) ?? getDsaPublicKey(),
+          recipientEncryptedKeys: freshRecipientEncryptedKeys,
+          availableAt: refreshedAt,
+        };
+        await deleteOutboxEntry(queued.id).catch(() => {});
+        await enqueueOutbox(refreshedEntry);
+        window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+        return refreshedEntry;
+      };
+
+      try {
+        const sentMessage = await postQueuedMessage(queued);
+        applySendSuccess(sentMessage);
       } catch (err) {
         reportClientError({
           code: errorCode(err) ?? "SEND_MESSAGE_REJECTED",
@@ -2649,6 +2720,30 @@ function RoomView({
             online: canReachServer,
           },
         });
+        if (isMemberMismatchError(err)) {
+          try {
+            const refreshedEntry = await rebuildForFreshMembers();
+            const sentMessage = await postQueuedMessage(refreshedEntry);
+            applySendSuccess(sentMessage);
+            return;
+          } catch (retryErr) {
+            reportClientError({
+              code: errorCode(retryErr) ?? "SEND_MESSAGE_AUTOHEAL_FAILED",
+              message: errorMessage(retryErr),
+              method: "POST",
+              path: `/api/rooms/${room.id}/messages`,
+              statusCode: errorStatus(retryErr),
+              details: { roomId: room.id, autoHealAttempt: true },
+            });
+            await deleteOutboxEntry(queued.id).catch(() => {});
+            window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+            setQueuedMessages((current) => current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature));
+            setOfflineMessages((current) => current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature));
+            setSendError(`Auto-heal retry failed after membership refresh: ${errorMessage(retryErr)}. Refresh the chat and try again.`);
+            setInput(text);
+            return;
+          }
+        }
         if (isUnrecoverableQueuedSendError(err)) {
           await deleteOutboxEntry(queued.id).catch(() => {});
           window.dispatchEvent(new Event("qs-offline-outbox-changed"));
