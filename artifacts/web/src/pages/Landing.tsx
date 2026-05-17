@@ -133,7 +133,9 @@ const PRIVACY_FEATURES = [
 
 const HERO_FEATURES = [
   { icon: <Camera className="w-4 h-4" />, label: "Selfie camera sees another device or screenshot flash, locks chat + warns them" },
+  { icon: <ScanFace className="w-4 h-4" />, label: "Face ID or fingerprint needed to reveal each message" },
   { icon: <MousePointerClick className="w-4 h-4" />, label: "Hold-to-reveal messages that rehide on release" },
+  { icon: <Server className="w-4 h-4" />, label: "Quorum decay makes copied keys go stale on real time" },
   { icon: <TimerOff className="w-4 h-4" />, label: "TTL starts after first view or immediately on send" },
   { icon: <EyeOff className="w-4 h-4" />, label: "Blur, tab, print, and background privacy shield" },
   { icon: <UserX className="w-4 h-4" />, label: "Codenamed users and rooms until deliberate reveal" },
