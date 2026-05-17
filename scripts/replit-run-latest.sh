@@ -36,6 +36,7 @@ wait_for_url() {
 
 echo "Stopping stale API/PWA preview processes..."
 kill_matching "pnpm --filter @workspace/api-server run start"
+kill_matching "pnpm --filter @workspace/api-server run dev"
 kill_matching "node --enable-source-maps ./dist/index.mjs"
 kill_matching "pnpm --filter @workspace/web run dev"
 kill_matching "pnpm --filter @workspace/web run serve"
@@ -61,6 +62,10 @@ PORT="$API_PORT" pnpm --filter @workspace/api-server run start &
 API_PID=$!
 
 wait_for_url "${API_URL}/api/healthz" "API"
+if ! kill -0 "$API_PID" 2>/dev/null; then
+  echo "API process exited before verification completed." >&2
+  exit 1
+fi
 
 echo "Starting built PWA preview on ${WEB_URL}..."
 PORT="$WEB_PORT" API_PROXY_TARGET="$API_URL" pnpm --filter @workspace/web run serve &
@@ -68,6 +73,10 @@ WEB_PID=$!
 
 wait_for_url "${WEB_URL}" "PWA"
 wait_for_url "${WEB_URL}/api/version" "PWA API proxy"
+if ! kill -0 "$WEB_PID" 2>/dev/null; then
+  echo "PWA preview process exited before verification completed." >&2
+  exit 1
+fi
 
 INDEX_HTML="$(curl -fsS "${WEB_URL}")"
 INDEX_JS="$(node -e '
