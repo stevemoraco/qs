@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, messagesTable, roomMembersTable, roomsTable } from "@workspace/db";
-import { eq, and, lt, desc, ne, inArray, isNull } from "drizzle-orm";
+import { eq, and, lt, desc, ne, inArray, isNull, lte } from "drizzle-orm";
+import { randomInt } from "crypto";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
@@ -41,7 +42,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       message: messagesTable,
     })
     .from(messagesTable)
-    .where(eq(messagesTable.roomId, roomId))
+    .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, new Date())))
     .orderBy(desc(messagesTable.createdAt))
     .limit(limit);
 
@@ -57,7 +58,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
           message: messagesTable,
         })
         .from(messagesTable)
-        .where(and(eq(messagesTable.roomId, roomId), lt(messagesTable.createdAt, beforeMsg.createdAt)))
+        .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, new Date()), lt(messagesTable.createdAt, beforeMsg.createdAt)))
         .orderBy(desc(messagesTable.createdAt))
         .limit(limit);
     }
@@ -91,6 +92,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       signature: r.message.signature,
       recipientEncryptedKeys: r.message.recipientEncryptedKeys,
       expiresAt: r.message.expiresAt ?? (firstViewedIds.includes(r.message.id) ? viewedExpiresAt : null),
+      availableAt: r.message.availableAt,
       createdAt: r.message.createdAt,
     }));
 
@@ -120,13 +122,17 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   const { ciphertext, nonce, algorithm, signature, recipientEncryptedKeys, ttlSeconds } = parse.data;
 
   const [room] = await db
-    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode })
+    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode, deliveryFuzzSeconds: roomsTable.deliveryFuzzSeconds })
     .from(roomsTable)
     .where(eq(roomsTable.id, roomId))
     .limit(1);
 
   const effectiveTtl = ttlSeconds ?? room?.ttlSeconds ?? null;
-  const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(Date.now() + effectiveTtl * 1000) : null;
+  const now = Date.now();
+  const fuzzSeconds = Math.max(0, room?.deliveryFuzzSeconds ?? 0);
+  const fuzzDelaySeconds = fuzzSeconds > 0 ? randomInt(0, fuzzSeconds + 1) : 0;
+  const availableAt = new Date(now + fuzzDelaySeconds * 1000);
+  const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(availableAt.getTime() + effectiveTtl * 1000) : null;
 
   const [message] = await db
     .insert(messagesTable)
@@ -139,12 +145,13 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       signature: signature ?? null,
       recipientEncryptedKeys: recipientEncryptedKeys ?? null,
       expiresAt,
+      availableAt,
     })
     .returning();
 
   await db
     .update(roomsTable)
-    .set({ lastMessageAt: new Date() })
+    .set({ lastMessageAt: availableAt })
     .where(eq(roomsTable.id, roomId));
 
   const recipients = await db
@@ -159,7 +166,9 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     tag: `room-${roomId}`,
   };
 
-  void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
+  if (fuzzDelaySeconds === 0) {
+    void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
+  }
 
   res.status(201).json({
     id: message.id,
@@ -172,6 +181,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     signature: message.signature,
     recipientEncryptedKeys: message.recipientEncryptedKeys,
     expiresAt: message.expiresAt,
+    availableAt: message.availableAt,
     createdAt: message.createdAt,
   });
 });

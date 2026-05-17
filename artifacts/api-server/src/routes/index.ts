@@ -9,6 +9,7 @@ import statsRouter from "./stats";
 import pushRouter from "./push";
 import leadsRouter from "./leads";
 import identityCodesRouter from "./identity-codes";
+import timeRouter from "./time";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(statsRouter);
 router.use(pushRouter);
 router.use(leadsRouter);
 router.use(identityCodesRouter);
+router.use(timeRouter);
 
 export default router;

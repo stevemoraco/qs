@@ -209,6 +209,8 @@ export interface Room {
   ttlSeconds?: number | null;
   /** Whether TTL starts when a message is first viewed or when it is sent. */
   ttlMode?: RoomTtlMode;
+  /** Random server-side delivery delay window in seconds. */
+  deliveryFuzzSeconds?: number;
   createdAt: string;
   members?: User[] | null;
 }
@@ -240,6 +242,8 @@ export interface CreateRoomRequest {
   ttlSeconds?: number | null;
   /** Whether TTL starts when a message is first viewed or when it is sent. */
   ttlMode?: CreateRoomRequestTtlMode;
+  /** Random server-side delivery delay window in seconds. */
+  deliveryFuzzSeconds?: number;
 }
 
 /**
@@ -263,6 +267,7 @@ export interface Message {
   /** Map of userId to their ML-KEM encapsulated message key */
   recipientEncryptedKeys?: MessageRecipientEncryptedKeys;
   expiresAt?: string | null;
+  availableAt?: string | null;
   createdAt: string;
 }
 
@@ -323,4 +328,3 @@ export type GetRoomsRoomIdMessagesParams = {
 before?: string;
 limit?: number;
 };
-

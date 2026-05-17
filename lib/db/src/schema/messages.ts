@@ -16,6 +16,7 @@ export const messagesTable = pgTable("messages", {
   signature: text("signature"),
   recipientEncryptedKeys: jsonb("recipient_encrypted_keys"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
+  availableAt: timestamp("available_at", { withTimezone: true }).defaultNow().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

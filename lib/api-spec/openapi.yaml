@@ -879,6 +879,10 @@ components:
           enum: [after_view, after_send]
           default: after_view
           description: Whether TTL starts when a message is first viewed or when it is sent.
+        deliveryFuzzSeconds:
+          type: integer
+          default: 1680
+          description: Random server-side delivery delay window in seconds.
         createdAt:
           type: string
           format: date-time
@@ -911,6 +915,10 @@ components:
           enum: [after_view, after_send]
           default: after_view
           description: Whether TTL starts when a message is first viewed or when it is sent.
+        deliveryFuzzSeconds:
+          type: integer
+          default: 1680
+          description: Random server-side delivery delay window in seconds.
 
     Message:
       type: object
@@ -945,6 +953,10 @@ components:
           additionalProperties:
             type: string
         expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        availableAt:
           type: string
           format: date-time
           nullable: true

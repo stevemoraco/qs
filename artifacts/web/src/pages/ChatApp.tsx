@@ -157,6 +157,7 @@ type Room = {
   lastMessageAt?: string | null;
   ttlSeconds?: number | null;
   ttlMode?: "after_view" | "after_send";
+  deliveryFuzzSeconds?: number | null;
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -170,6 +171,7 @@ type Message = {
   signature?: string | null;
   recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
+  availableAt?: string | null;
   createdAt: string;
 };
 
@@ -235,6 +237,23 @@ const CODE_NAMES = [
   "Ion", "Junction", "Keystone", "Lumen", "Matrix", "Nova", "Obsidian", "Pulse",
   "Quartz", "Relay", "Signal", "Trace", "Unit", "Vector", "Ward", "Zenith",
 ];
+
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
+const DELIVERY_FUZZ_OPTIONS = [
+  { label: "89 sec", value: 89 },
+  { label: "7 minutes", value: 420 },
+  { label: "28 minutes", value: 1680 },
+  { label: "73 minutes", value: 4380 },
+  { label: "5h 47m", value: 20820 },
+  { label: "29 hours", value: 104400 },
+  { label: "8d 3h", value: 702000 },
+  { label: "33 days", value: 2851200 },
+  { label: "409 days", value: 35337600 },
+];
+
+function randomRefetchInterval(minMs: number, maxMs: number): number {
+  return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
+}
 
 function createSessionCodenameFactory() {
   const names = [...CODE_NAMES];
@@ -366,6 +385,7 @@ function NewRoomDialog({
   const [type, setType] = useState<"direct" | "group">("direct");
   const [ttl, setTtl] = useState<number | null>(300);
   const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
+  const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -398,6 +418,7 @@ function NewRoomDialog({
         memberIds: selectedIds,
         ttlSeconds: ttl,
         ttlMode,
+        deliveryFuzzSeconds,
       },
     });
   };
@@ -481,6 +502,21 @@ function NewRoomDialog({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">DELIVERY FUZZ</label>
+            <select
+              value={deliveryFuzzSeconds}
+              onChange={(e) => setDeliveryFuzzSeconds(Number(e.target.value))}
+              className="w-full bg-background border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:border-primary/60"
+              data-testid="select-delivery-fuzz"
+            >
+              {DELIVERY_FUZZ_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <p className="font-mono text-xs text-muted-foreground mt-1">Server releases each message at a random time inside this window. Default is 28 minutes.</p>
           </div>
 
           <div>
@@ -1013,7 +1049,7 @@ function RoomView({
     {
       query: {
         queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id),
-        refetchInterval: 3000,
+        refetchInterval: () => randomRefetchInterval(17000, 73000),
       },
     }
   );
@@ -1445,7 +1481,7 @@ export default function ChatApp() {
   const qc = useQueryClient();
 
   const { data: me } = useGetAuthMe();
-  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
+  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: () => randomRefetchInterval(28000, 97000) } });
   const uploadKeys = usePostKeysUpload();
 
   const setSensitiveReveal = useCallback((active: boolean) => {

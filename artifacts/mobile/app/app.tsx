@@ -51,6 +51,22 @@ import * as LocalAuthentication from "expo-local-authentication";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
+const DELIVERY_FUZZ_OPTIONS = [
+  { label: "89 sec", v: 89 },
+  { label: "7 min", v: 420 },
+  { label: "28 min", v: 1680 },
+  { label: "73 min", v: 4380 },
+  { label: "5h 47m", v: 20820 },
+  { label: "29h", v: 104400 },
+  { label: "8d 3h", v: 702000 },
+  { label: "33d", v: 2851200 },
+  { label: "409d", v: 35337600 },
+];
+
+function randomRefetchInterval(minMs: number, maxMs: number): number {
+  return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
+}
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -82,6 +98,7 @@ type Room = {
   lastMessageAt?: string | null;
   ttlSeconds?: number | null;
   ttlMode?: "after_view" | "after_send";
+  deliveryFuzzSeconds?: number | null;
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -95,6 +112,7 @@ type Message = {
   signature?: string | null;
   recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
+  availableAt?: string | null;
   createdAt: string;
 };
 
@@ -472,7 +490,7 @@ function ChatView({
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id, {},
-    { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: 3000 } }
+    { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: () => randomRefetchInterval(17000, 73000) } }
   );
 
   useEffect(() => {
@@ -688,6 +706,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const [type, setType] = useState<"direct" | "group">("direct");
   const [ttl, setTtl] = useState<number | null>(300);
   const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
+  const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
@@ -703,7 +722,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
         onClose();
-        setName(""); setSearch(""); setSelected([]); setTtl(300); setTtlMode("after_view");
+        setName(""); setSearch(""); setSelected([]); setTtl(300); setTtlMode("after_view"); setDeliveryFuzzSeconds(DEFAULT_DELIVERY_FUZZ_SECONDS);
       },
     },
   });
@@ -736,6 +755,16 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
               </TouchableOpacity>
             ))}
           </View>
+
+          <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>DELIVERY FUZZ</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
+            {DELIVERY_FUZZ_OPTIONS.map((o) => (
+              <TouchableOpacity key={o.v} onPress={() => setDeliveryFuzzSeconds(o.v)} style={[styles.ttlBtn, { borderColor: deliveryFuzzSeconds === o.v ? colors.primary : colors.border }, deliveryFuzzSeconds === o.v && { backgroundColor: `${colors.primary}20` }]} testID={`button-fuzz-${o.v}`}>
+                <Text style={[styles.ttlBtnText, { color: deliveryFuzzSeconds === o.v ? colors.primary : colors.mutedForeground }]}>{o.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <Text style={[styles.codeMeta, { color: colors.mutedForeground, marginTop: 6 }]}>Each message releases at a random point inside this window. Default is 28 minutes.</Text>
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>MESSAGE EXPIRY (TTL)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
@@ -777,7 +806,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             );
           })}
 
-          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl, ttlMode } })} disabled={createRoom.isPending} testID="button-create-room">
+          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl, ttlMode, deliveryFuzzSeconds } })} disabled={createRoom.isPending} testID="button-create-room">
             {createRoom.isPending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.createBtnText, { color: colors.background }]}>CREATE ENCRYPTED CHANNEL</Text>}
           </TouchableOpacity>
         </ScrollView>
@@ -1182,7 +1211,7 @@ export default function AppScreen() {
   const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
 
   const { data: me } = useGetAuthMe();
-  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: 5000 } });
+  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: () => randomRefetchInterval(28000, 97000) } });
 
   const logout = usePostAuthLogout({
     mutation: { onSuccess: async () => { await clearAuth(); router.replace("/login"); } },

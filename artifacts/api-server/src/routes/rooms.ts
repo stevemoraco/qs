@@ -7,6 +7,7 @@ import { requireAuth, type AuthRequest } from "../middlewares/auth";
 const router = Router();
 const DEFAULT_ROOM_TTL_SECONDS = 300;
 const DEFAULT_ROOM_TTL_MODE = "after_view";
+const DEFAULT_DELIVERY_FUZZ_SECONDS = 1680;
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
@@ -66,6 +67,7 @@ router.get("/rooms", requireAuth, async (req: AuthRequest, res) => {
       memberCount: Number(memberCount),
       ttlSeconds: room.ttlSeconds,
       ttlMode: room.ttlMode,
+      deliveryFuzzSeconds: room.deliveryFuzzSeconds,
       lastMessageAt: room.lastMessageAt,
       createdAt: room.createdAt,
       members: members.map((m) => publicUser(m.user)),
@@ -82,7 +84,7 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
 
-  const { name, type, memberIds, ttlSeconds, ttlMode } = parse.data;
+  const { name, type, memberIds, ttlSeconds, ttlMode, deliveryFuzzSeconds } = parse.data;
   const allMemberIds = Array.from(new Set([req.userId!, ...(memberIds ?? [])]));
 
   const [room] = await db
@@ -92,6 +94,7 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
       type,
       ttlSeconds: ttlSeconds ?? DEFAULT_ROOM_TTL_SECONDS,
       ttlMode: ttlMode ?? DEFAULT_ROOM_TTL_MODE,
+      deliveryFuzzSeconds: deliveryFuzzSeconds ?? DEFAULT_DELIVERY_FUZZ_SECONDS,
     })
     .returning();
 
@@ -111,6 +114,7 @@ router.post("/rooms", requireAuth, async (req: AuthRequest, res) => {
     memberCount: Number(memberCount),
     ttlSeconds: room.ttlSeconds,
     ttlMode: room.ttlMode,
+    deliveryFuzzSeconds: room.deliveryFuzzSeconds,
     lastMessageAt: room.lastMessageAt,
     createdAt: room.createdAt,
     members: null,
@@ -160,6 +164,7 @@ router.get("/rooms/:roomId", requireAuth, async (req: AuthRequest, res) => {
     memberCount: Number(memberCount),
     ttlSeconds: room.ttlSeconds,
     ttlMode: room.ttlMode,
+    deliveryFuzzSeconds: room.deliveryFuzzSeconds,
     lastMessageAt: room.lastMessageAt,
     createdAt: room.createdAt,
     members: members.map((m) => publicUser(m.user)),
