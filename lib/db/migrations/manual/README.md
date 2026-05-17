@@ -4,9 +4,17 @@ Use these scripts for production or shared databases when `drizzle-kit push` rep
 
 `drizzle-kit push` is still useful for disposable development databases, but it can offer destructive choices such as truncating a table before adding a constraint. Do not accept truncation for production data.
 
-## Current Pending Manual Migration
+## Current Pending Manual Migrations
 
-Run this for the `device_credentials.credential_id` unique constraint:
+Run this first for the durable push notification job queue:
+
+```sh
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f lib/db/migrations/manual/20260517_push_notification_jobs.sql
+```
+
+It creates the additive `push_notification_jobs` table and indexes used by the API push worker. It does not rewrite or truncate existing data.
+
+Then run this for the `device_credentials.credential_id` unique constraint:
 
 ```sh
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f lib/db/migrations/manual/20260517_device_credentials_credential_id_unique.sql
@@ -18,4 +26,10 @@ After running it, verify with:
 
 ```sh
 psql "$DATABASE_URL" -c "select conname, pg_get_constraintdef(oid) from pg_constraint where conname = 'device_credentials_credential_id_unique';"
+```
+
+Verify the push queue table with:
+
+```sh
+psql "$DATABASE_URL" -c "\d public.push_notification_jobs"
 ```
