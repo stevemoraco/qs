@@ -51,10 +51,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
 const PRIVACY_ALERT_THROTTLE_MS = 60_000;
-const FLASH_SCAN_MS = 150;
+const FLASH_SCAN_MS = 100;
 const FLASH_ALERT_THROTTLE_MS = 12_000;
-const FLASH_FRAME_WIDTH = 56;
-const FLASH_FRAME_HEIGHT = 36;
+const FLASH_FRAME_WIDTH = 64;
+const FLASH_FRAME_HEIGHT = 40;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1293,7 +1293,7 @@ export default function ChatApp() {
   const lastPrivacyAlertAtRef = useRef(0);
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const flashBaselineRef = useRef<number | null>(null);
+  const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
   const flashStreakRef = useRef(0);
   const lastFlashAlertAtRef = useRef(0);
   const cameraStreamRef = useRef<MediaStream | null>(null);
@@ -1504,21 +1504,37 @@ export default function ChatApp() {
 
     let luminanceTotal = 0;
     let brightPixels = 0;
+    let veryBrightPixels = 0;
+    let peak = 0;
     const pixelCount = FLASH_FRAME_WIDTH * FLASH_FRAME_HEIGHT;
     for (let i = 0; i < data.length; i += 4) {
       const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
       luminanceTotal += lum;
-      if (lum > 215) brightPixels += 1;
+      if (lum > 190) brightPixels += 1;
+      if (lum > 235) veryBrightPixels += 1;
+      if (lum > peak) peak = lum;
     }
 
     const avg = luminanceTotal / pixelCount;
     const brightRatio = brightPixels / pixelCount;
-    const baseline = flashBaselineRef.current ?? avg;
-    const delta = avg - baseline;
-    const candidate = avg > 105 && delta > 32 && brightRatio > 0.08;
+    const veryBrightRatio = veryBrightPixels / pixelCount;
+    const baseline = flashBaselineRef.current ?? { avg, brightRatio, peak };
+    const avgDelta = avg - baseline.avg;
+    const brightDelta = brightRatio - baseline.brightRatio;
+    const peakDelta = peak - baseline.peak;
+    const globalFlash = avgDelta > 26 && brightDelta > 0.04 && avg > 75;
+    const localizedFlash = peakDelta > 42 && brightDelta > 0.026 && veryBrightRatio > 0.01;
+    const brightBloom = veryBrightRatio > 0.055 && brightDelta > 0.02 && avgDelta > 12;
+    const candidate = globalFlash || localizedFlash || brightBloom;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
     const isFlash = flashStreakRef.current >= 2;
-    flashBaselineRef.current = candidate ? baseline : baseline * 0.92 + avg * 0.08;
+    flashBaselineRef.current = candidate
+      ? baseline
+      : {
+          avg: baseline.avg * 0.9 + avg * 0.1,
+          brightRatio: baseline.brightRatio * 0.9 + brightRatio * 0.1,
+          peak: baseline.peak * 0.86 + peak * 0.14,
+        };
     if (isFlash) flashStreakRef.current = 0;
     return isFlash;
   };
