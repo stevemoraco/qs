@@ -4,6 +4,7 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 const TOKEN_KEY = "qs_token";
 const AUTH_HANDLE_KEY = "qs_auth_handle";
+const LAST_HANDLE_KEY = "qs_last_handle";
 const DEVICE_PASSCODE_KEY = "qs_device_passcode";
 const KEM_SK_KEY = "qs_kem_sk";
 const KEM_PK_KEY = "qs_kem_pk";
@@ -17,6 +18,8 @@ type AuthContextType = {
   setToken: (t: string) => Promise<void>;
   getAuthHandle: () => Promise<string | null>;
   setAuthHandle: (h: string) => Promise<void>;
+  getLastHandle: () => Promise<string | null>;
+  setLastHandle: (h: string) => Promise<void>;
   getDevicePasscode: () => Promise<string | null>;
   setDevicePasscode: (p: string) => Promise<void>;
   clearAuth: () => Promise<void>;
@@ -57,6 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(AUTH_HANDLE_KEY, h);
   }, []);
 
+  const getLastHandle = useCallback(() => AsyncStorage.getItem(LAST_HANDLE_KEY), []);
+
+  const setLastHandle = useCallback(async (h: string) => {
+    await AsyncStorage.setItem(LAST_HANDLE_KEY, h);
+  }, []);
+
   const getDevicePasscode = useCallback(() => AsyncStorage.getItem(DEVICE_PASSCODE_KEY), []);
 
   const setDevicePasscode = useCallback(async (p: string) => {
@@ -91,6 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken,
         getAuthHandle,
         setAuthHandle,
+        getLastHandle,
+        setLastHandle,
         getDevicePasscode,
         setDevicePasscode,
         clearAuth,

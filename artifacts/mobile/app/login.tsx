@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { getDevicePasscode, setAuthHandle, setDevicePasscode, setToken } = useAuth();
+  const { getDevicePasscode, getLastHandle, setAuthHandle, setDevicePasscode, setLastHandle, setToken } = useAuth();
 
   const [handle, setHandle] = useState("");
   const [error, setError] = useState("");
@@ -68,24 +68,37 @@ export default function LoginScreen() {
       onSuccess: async (data) => {
         await setToken(data.token);
         await setAuthHandle(data.authHandle);
+        await setLastHandle(normalizeCodeInput(handle));
         router.replace("/app");
       },
       onError: () => {
-        setError("Invalid handle or passcode");
+        setError("This device is not linked for that handle. Link it with an invite from an active PWA session.");
       },
     },
   });
+
+  useEffect(() => {
+    getLastHandle().then((savedHandle) => {
+      if (savedHandle) setHandle(savedHandle);
+    });
+  }, [getLastHandle]);
 
   const handleLogin = async () => {
     setError("");
     const normalizedHandle = normalizeCodeInput(handle);
     if (!normalizedHandle) {
-      setError("Enter your handle.");
+      setError("Enter your handle once. This device will remember it after linking.");
       return;
     }
     const passcode = await getDevicePasscode();
     if (!passcode) {
-      setError("No local device access key found. Link this device with an invite.");
+      setError("No linked Expo device key found. Create an invite in the PWA, then link this device.");
+      return;
+    }
+    try {
+      await verifyDevice("Use linked QuantumShield device");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Device verification failed.");
       return;
     }
     login.mutate({ data: { handle: normalizedHandle, passcode } });
@@ -124,6 +137,13 @@ export default function LoginScreen() {
       await setToken(data.token);
       await setAuthHandle(data.authHandle);
       await setDevicePasscode(passcode);
+      const meUrl = Platform.OS === "web" ? "/api/auth/me" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/me`;
+      const meRes = await fetch(meUrl, {
+        headers: { Authorization: `Bearer ${data.token}` },
+      });
+      const me = await meRes.json().catch(() => null) as { primaryCode?: string | null; username?: string | null } | null;
+      const savedHandle = normalizeCodeInput(me?.primaryCode ?? me?.username ?? "");
+      if (savedHandle && savedHandle !== "sealed") await setLastHandle(savedHandle);
       router.replace("/app");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not link this device with that invite.");
@@ -149,7 +169,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={[s.title, { color: colors.foreground }]}>ACCESS TERMINAL</Text>
-        <Text style={[s.subtitle, { color: colors.mutedForeground }]}>Authenticate to access encrypted channels</Text>
+        <Text style={[s.subtitle, { color: colors.mutedForeground }]}>Use a linked Expo device key, or link this device with an invite from the PWA</Text>
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.label, { color: colors.mutedForeground }]}>HANDLE</Text>
@@ -157,7 +177,7 @@ export default function LoginScreen() {
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
             value={handle}
             onChangeText={setHandle}
-            placeholder="@your-handle"
+            placeholder="@marlin"
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="none"
             autoComplete="username"
@@ -180,7 +200,7 @@ export default function LoginScreen() {
             {isLoading ? (
               <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={[s.btnText, { color: colors.background }]}>LOG IN</Text>
+              <Text style={[s.btnText, { color: colors.background }]}>USE LINKED DEVICE</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -191,7 +211,7 @@ export default function LoginScreen() {
 
         <View style={[s.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[s.ethosLabel, { color: colors.primary }]}>LINK THIS DEVICE</Text>
-          <Text style={[s.securityText, { color: colors.mutedForeground, marginBottom: 12 }]}>Use a one-use invite code from an existing device. Public handles are for chat discovery, not login.</Text>
+          <Text style={[s.securityText, { color: colors.mutedForeground, marginBottom: 12 }]}>PWA passkeys stay bound to the browser origin. To use Expo Go, create a one-use invite in the PWA and link this device once.</Text>
           <TextInput
             style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
             value={linkCode}

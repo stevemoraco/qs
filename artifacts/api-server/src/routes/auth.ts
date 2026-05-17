@@ -516,39 +516,44 @@ router.post("/auth/login", async (req, res) => {
     return;
   }
 
-  const [row] = await db
-    .select({ code: identityCodesTable, user: usersTable })
+  const rows = await db
+    .select({ code: identityCodesTable, user: usersTable, credential: deviceCredentialsTable })
     .from(identityCodesTable)
     .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
+    .innerJoin(deviceCredentialsTable, eq(deviceCredentialsTable.userId, usersTable.id))
     .where(
       and(
         eq(identityCodesTable.code, normalizedHandle),
         eq(identityCodesTable.kind, "alias"),
         eq(identityCodesTable.active, true),
+        isNull(deviceCredentialsTable.revokedAt),
         or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
       )
-    )
-    .limit(1);
+    );
 
-  const user = row?.user;
-  const passwordHash = user?.passwordHash;
-
-  if (!user || !passwordHash) {
+  if (rows.length === 0) {
     recordLoginFailure(throttleKey);
     res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
 
-  const valid = await argon2.verify(passwordHash, passcode);
-  if (!valid) {
+  let validRow: (typeof rows)[number] | null = null;
+  for (const row of rows) {
+    if (await argon2.verify(row.credential.passwordHash, passcode)) {
+      validRow = row;
+      break;
+    }
+  }
+
+  if (!validRow) {
     recordLoginFailure(throttleKey);
     res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
 
   loginFailures.delete(throttleKey);
-  const token = await createSession(user.id);
-  res.json(authUser(user, generateAuthHandle(), token, normalizedHandle, normalizedHandle));
+  const token = await createSession(validRow.user.id);
+  res.json(authUser(validRow.user, generateAuthHandle(), token, normalizedHandle, normalizedHandle));
 });
 
 router.post("/auth/link-device", async (req, res) => {
