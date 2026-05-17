@@ -1541,12 +1541,10 @@ export default function ChatApp() {
     const brightBloom = veryBrightRatio > 0.028 && brightDelta > 0.01 && avgDelta > 7;
     const dimPeakFlash = peakDelta > 42 && avgDelta > 0.35 && avg > 1 && brightDelta > -0.01;
     const dimPeakCandidate = peakDelta > 36 && avgDelta > 0.25 && avg > 1 && brightDelta > -0.01;
-    const ultraDimPeakFlash = avg <= 2.5 && peak > 40 && peakDelta > 20 && avgDelta > -0.5 && brightDelta > -0.01;
-    const ultraDimPeakCandidate = avg <= 2.5 && peak > 35 && peakDelta > 18 && avgDelta > -0.5 && brightDelta > -0.01;
     const strongFlash = avgDelta > 34 || brightDelta > 0.075 || (peakDelta > 44 && veryBrightRatio > 0.01);
-    const candidate = globalFlash || localizedFlash || brightBloom || dimPeakCandidate || ultraDimPeakCandidate;
+    const candidate = globalFlash || localizedFlash || brightBloom || dimPeakCandidate;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
-    const isFlash = strongFlash || dimPeakFlash || ultraDimPeakFlash || flashStreakRef.current >= 2;
+    const isFlash = strongFlash || dimPeakFlash || flashStreakRef.current >= 2;
     flashBaselineRef.current = candidate
       ? baseline
       : {
@@ -1571,8 +1569,6 @@ export default function ChatApp() {
         strongFlash,
         dimPeakFlash,
         dimPeakCandidate,
-        ultraDimPeakFlash,
-        ultraDimPeakCandidate,
         triggered: isFlash,
         streak: flashStreakRef.current,
         scanMs: FLASH_SCAN_MS,
