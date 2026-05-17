@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, Redirect } from "wouter";
 import {
   Shield,
@@ -22,6 +22,10 @@ import {
   MonitorOff,
   Fingerprint,
   UserX,
+  Globe,
+  Server,
+  ScanFace,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getGetStatsOverviewQueryKey,
@@ -133,6 +137,85 @@ const HERO_FEATURES = [
   { icon: <Fingerprint className="w-4 h-4" />, label: "Handle plus passkey access, no typed password field" },
 ];
 
+const CRYPTO_ROLES = [
+  {
+    icon: <Key className="w-5 h-5" />,
+    name: "ML-KEM-1024",
+    expanded: "Module-Lattice-Based Key Encapsulation Mechanism",
+    role: "Wraps each fresh message key to each recipient device using post-quantum lattice math.",
+  },
+  {
+    icon: <Shield className="w-5 h-5" />,
+    name: "ML-DSA-87",
+    expanded: "Module-Lattice-Based Digital Signature Algorithm",
+    role: "Signs message packages and key bundles so tampering is rejected before plaintext can exist.",
+  },
+  {
+    icon: <Lock className="w-5 h-5" />,
+    name: "AES-256-GCM",
+    expanded: "Advanced Encryption Standard, 256-bit key, Galois Counter Mode",
+    role: "Encrypts the message body itself with authenticated symmetric encryption.",
+  },
+  {
+    icon: <Fingerprint className="w-5 h-5" />,
+    name: "Argon2id",
+    expanded: "Argon2 identity-hybrid password hashing mode",
+    role: "Hardens account secrets against guessing. It protects auth, not the message payload.",
+  },
+];
+
+const DISTRIBUTION_DEFENSES = [
+  {
+    icon: <Globe className="w-5 h-5" />,
+    title: "No App Store gate",
+    copy: "The PWA ships instantly from the open repo. Auditors can inspect, fork, self-host, and verify behavior without waiting for store review.",
+  },
+  {
+    icon: <Fingerprint className="w-5 h-5" />,
+    title: "Platform passkeys",
+    copy: "Login uses the browser platform authenticator, so supported devices route account access through Face ID, Touch ID, Windows Hello, device passcode, and secure hardware-backed key storage.",
+  },
+  {
+    icon: <MousePointerClick className="w-5 h-5" />,
+    title: "Plaintext by intent only",
+    copy: "Encrypted messages do not render as plaintext until a deliberate hold or tap. Release, blur, scroll, or backgrounding clears the reveal.",
+  },
+  {
+    icon: <ScanFace className="w-5 h-5" />,
+    title: "Physical capture awareness",
+    copy: "Camera-based local checks look for another recording device or screen-flash reflection while sensitive content is revealed.",
+  },
+  {
+    icon: <MonitorOff className="w-5 h-5" />,
+    title: "Browser-exposed capture events",
+    copy: "Print, clipboard, visibility, focus, and screenshot-key-adjacent events lock the privacy shield where browsers expose those signals.",
+  },
+  {
+    icon: <Server className="w-5 h-5" />,
+    title: "Server sees ciphertext",
+    copy: "The API stores encrypted message packages and wrapped keys. Message plaintext and private post-quantum identity keys stay client-side.",
+  },
+];
+
+const ADVERSARY_WARNINGS = [
+  {
+    title: "Identifiers and social graph",
+    copy: "Phone numbers, email handles, contact discovery, group membership, delivery routing, and account directories can expose who talks to whom even when message bodies are encrypted. QuantumShield masks names in the interface, but auditors should still pressure-test server-visible room membership and timing metadata.",
+  },
+  {
+    title: "Classical authentication is a quantum-era weak point",
+    copy: "A protocol can use post-quantum encryption for confidentiality while still using classical signatures or classical identity authentication. That can protect old ciphertext from future decryption, but it does not make identity/authentication post-quantum against an active adversary with a contemporaneous quantum computer.",
+  },
+  {
+    title: "Historical logs change the threat model",
+    copy: "If an adversary has complete network access and keeps long-term logs, they may not need plaintext today. They can preserve ciphertext, routing metadata, timestamps, device identifiers, push tokens, and retry patterns, then analyze or attack them later as cryptography, endpoints, or servers fail.",
+  },
+  {
+    title: "Disappearing messages are not magic deletion",
+    copy: "Time decay only works if the usable decryption key disappears before the adversary obtains it. If plaintext was screenshotted, photographed, backed up, logged, copied, or decrypted on a compromised endpoint, no cryptographic expiry can recover that exposure.",
+  },
+];
+
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const SECURITY_URL = `${GITHUB_URL}/security`;
 const ISSUES_URL = `${GITHUB_URL}/issues`;
@@ -212,6 +295,7 @@ export default function Landing() {
             <div className="hidden md:flex items-center gap-4 mr-6">
               <a href="#features" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
               <a href="#privacy-stack" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">PRIVACY</a>
+              <a href="#security-model" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">MODEL</a>
               <a href="#ethos" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">ETHOS</a>
               <a href="#security" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">SECURITY</a>
               <a href="#community" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">COMMUNITY</a>
@@ -271,6 +355,119 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
+          </div>
+        </div>
+      </section>
+
+      <section id="security-model" className="py-24 px-6 border-y border-border/50 bg-card/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start mb-12">
+            <div>
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">SECURITY MODEL / DISTRIBUTION</div>
+              <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">
+                Native-grade account entry. Web-speed auditability.
+              </h2>
+              <p className="font-mono text-sm text-muted-foreground leading-relaxed mb-5">
+                QuantumShield uses passkeys so account access is mediated by the same class of platform authenticator native apps rely on. On supported Apple hardware, that means Face ID, Touch ID, device passcode policy, Keychain, and Secure Enclave-backed protection for the private passkey material.
+              </p>
+              <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                The point is not to ask the browser for native-only powers. The point is to design defenses that work everywhere the web can run: post-quantum message packages, deliberate reveal, local capture awareness, and open distribution that auditors can inspect immediately.
+              </p>
+            </div>
+            <div className="border border-primary/25 bg-background/70 p-5">
+              <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+                {[
+                  { icon: <MousePointerClick className="w-5 h-5" />, label: "Hold" },
+                  { icon: <Shield className="w-5 h-5" />, label: "Verify" },
+                  { icon: <Lock className="w-5 h-5" />, label: "Decrypt" },
+                ].map((step, index) => (
+                  <Fragment key={step.label}>
+                    <div className="border border-border/60 bg-card/40 p-4 min-h-28 flex flex-col items-center justify-center text-center">
+                      <div className="text-primary mb-3">{step.icon}</div>
+                      <div className="font-mono text-xs tracking-widest">{step.label}</div>
+                      <div className="font-mono text-[10px] text-muted-foreground mt-2 leading-snug">
+                        {index === 0 ? "User intent" : index === 1 ? "Post-quantum signature" : "Temporary plaintext"}
+                      </div>
+                    </div>
+                    {index < 2 && <ChevronRight className="w-4 h-4 text-primary/70" />}
+                  </Fragment>
+                ))}
+              </div>
+              <div className="mt-4 border border-border/50 bg-card/30 p-4">
+                <div className="font-mono text-[10px] tracking-widest text-primary mb-2">MESSAGE PACKAGE</div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="border border-border/40 px-3 py-2 font-mono text-[10px] text-muted-foreground">AES ciphertext</div>
+                  <div className="border border-border/40 px-3 py-2 font-mono text-[10px] text-muted-foreground">ML-KEM wrapped keys</div>
+                  <div className="border border-border/40 px-3 py-2 font-mono text-[10px] text-muted-foreground">ML-DSA signature</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+            <div className="border border-border/50 bg-background/60 p-5">
+              <div className="font-mono text-xs text-primary tracking-widest mb-4">CRYPTOGRAPHIC ROLES</div>
+              <div className="space-y-3">
+                {CRYPTO_ROLES.map((item) => (
+                  <div key={item.name} className="grid grid-cols-[auto_1fr] gap-3 border border-border/40 bg-card/25 p-4">
+                    <div className="text-primary">{item.icon}</div>
+                    <div>
+                      <div className="font-mono text-sm font-semibold">{item.name}</div>
+                      <div className="font-mono text-[10px] text-muted-foreground mt-1">{item.expanded}</div>
+                      <p className="font-mono text-xs text-muted-foreground leading-relaxed mt-2">{item.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border border-border/50 bg-background/60 p-5">
+              <div className="font-mono text-xs text-primary tracking-widest mb-4">WHAT THIS DOES DIFFERENTLY</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {DISTRIBUTION_DEFENSES.map((item) => (
+                  <div key={item.title} className="border border-border/40 bg-card/25 p-4">
+                    <div className="text-primary mb-3">{item.icon}</div>
+                    <div className="font-mono text-sm font-semibold mb-2">{item.title}</div>
+                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { name: "QuantumShield", copy: "Post-quantum key wrapping plus post-quantum signatures, hold-to-reveal plaintext, camera/capture-aware privacy shield, and open web distribution." },
+              { name: "Signal", copy: "Post-quantum key agreement for sessions and local screen security on supported platforms, but not this post-quantum message-signature layer or front-camera recording-device awareness." },
+              { name: "iMessage", copy: "Post-quantum confidentiality in Apple PQ3 with deep native integration, but message authentication remains classical and Messages does not expose this camera-aware reveal model." },
+            ].map((item) => (
+              <div key={item.name} className="border border-border/50 bg-background/50 p-5">
+                <div className="font-mono text-sm font-bold mb-3">{item.name}</div>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 border border-destructive/35 bg-destructive/5 p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <div>
+                <div className="font-mono text-xs text-destructive tracking-widest">EXPLICIT ADVERSARY WARNINGS</div>
+                <p className="font-mono text-xs text-muted-foreground mt-1">
+                  Assume the adversary has complete network visibility, server-side historical logs, and years to correlate what they cannot decrypt today.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {ADVERSARY_WARNINGS.map((warning) => (
+                <div key={warning.title} className="border border-destructive/25 bg-background/70 p-4">
+                  <div className="flex items-start gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                    <div className="font-mono text-sm font-semibold text-foreground">{warning.title}</div>
+                  </div>
+                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">{warning.copy}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
