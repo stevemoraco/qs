@@ -439,13 +439,6 @@ function ChatView({
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
     (async () => {
       try {
-        await ScreenCapture.preventScreenCaptureAsync("quantumshield-chat");
-      } catch {}
-      if (!mounted) {
-        ScreenCapture.allowScreenCaptureAsync("quantumshield-chat").catch(() => {});
-        return;
-      }
-      try {
         sub = ScreenCapture.addScreenshotListener(() => {
           if (!mounted) return;
           setScreenshotAlert(true);
@@ -460,7 +453,6 @@ function ChatView({
       mounted = false;
       if (hideTimer) clearTimeout(hideTimer);
       sub?.remove();
-      ScreenCapture.allowScreenCaptureAsync("quantumshield-chat").catch(() => {});
     };
   }, []);
 
