@@ -58,6 +58,26 @@ function isValidVapidPublicKey(key: string): boolean {
   }
 }
 
+function decodeBase64Url(value: string): Buffer {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  return Buffer.from(padded, "base64");
+}
+
+function vapidPairMatches(publicKey: string, privateKey: string): boolean {
+  try {
+    const publicBytes = decodeBase64Url(publicKey);
+    const privateBytes = decodeBase64Url(privateKey);
+    if (privateBytes.length !== 32) return false;
+
+    const verifier = createECDH("prime256v1");
+    verifier.setPrivateKey(privateBytes);
+    return verifier.getPublicKey().equals(publicBytes);
+  } catch {
+    return false;
+  }
+}
+
 export function configureWebPush(): boolean {
   const publicKey = normalizeVapidKey(process.env["VAPID_PUBLIC_KEY"]);
   const privateKey = normalizeVapidKey(process.env["VAPID_PRIVATE_KEY"]);
@@ -66,6 +86,10 @@ export function configureWebPush(): boolean {
   if (!publicKey || !privateKey || !subject) return false;
   if (!isValidVapidPublicKey(publicKey)) {
     logger.error({ length: publicKey.length }, "Push notification skipped: VAPID public key is not a valid P-256 public key");
+    return false;
+  }
+  if (!vapidPairMatches(publicKey, privateKey)) {
+    logger.error("Push notification skipped: VAPID public/private keys do not match");
     return false;
   }
 
@@ -125,6 +149,11 @@ router.get("/push/vapid-public-key", (_req, res) => {
   }
   if (!isValidVapidPublicKey(key)) {
     res.status(503).json({ error: "VAPID public key is not a valid P-256 public key" });
+    return;
+  }
+  const privateKey = normalizeVapidKey(process.env["VAPID_PRIVATE_KEY"]);
+  if (!privateKey || !vapidPairMatches(key, privateKey)) {
+    res.status(503).json({ error: "VAPID public/private keys do not match" });
     return;
   }
   res.json({ publicKey: key });
