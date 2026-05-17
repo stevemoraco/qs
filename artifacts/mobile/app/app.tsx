@@ -68,7 +68,10 @@ async function verifyDevice(promptMessage: string): Promise<void> {
     fallbackLabel: "",
     disableDeviceFallback: true,
   });
-  if (!result.success) throw new Error("Device verification was not completed.");
+  if (!result.success) {
+    const reason = result.error ? ` (${result.error})` : "";
+    throw new Error(`Face ID or biometric verification did not complete${reason}.`);
+  }
 }
 
 type Room = {
@@ -360,11 +363,12 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
   );
 }
 
-function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealStart, onRevealEnd }: {
+function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, onRevealStart, onRevealEnd }: {
   msg: Message;
   isOwn: boolean;
   colors: ReturnType<typeof useColors>;
   plaintext?: string;
+  error?: string;
   senderLabel: string;
   onRevealStart: () => void;
   onRevealEnd: () => void;
@@ -401,6 +405,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, senderLabel, onRevealSta
             )}
           </TouchableOpacity>
         )}
+        {!!error && <Text style={[styles.msgError, { color: colors.destructive }]}>{error}</Text>}
         <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{plaintext ? formatTime(msg.createdAt) : "TIME SEALED"}</Text>
       </View>
     </View>
@@ -428,6 +433,8 @@ function ChatView({
   const { getKemSecretKey, getDsaSecretKey } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
+  const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
+  const [sendError, setSendError] = useState("");
   const [screenshotAlert, setScreenshotAlert] = useState(false);
   const [revealRoomName, setRevealRoomName] = useState(false);
   const revealTokenRef = useRef(0);
@@ -488,12 +495,24 @@ function ChatView({
   });
 
   const sendMsg = usePostRoomsRoomIdMessages({
-    mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) }) },
+    mutation: {
+      onSuccess: () => {
+        setSendError("");
+        qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) });
+      },
+      onError: () => setSendError("Message send failed. Check the connection and try again."),
+    },
   });
 
   const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
+    setSendError("");
+    const dsaSecretKey = await getDsaSecretKey();
+    if (!dsaSecretKey) {
+      setSendError("This Expo install can log in but does not have the account message signing key. Create the account on this device or transfer keys before sending.");
+      return;
+    }
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
     const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
@@ -506,14 +525,16 @@ function ChatView({
       })
     );
     if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
+      setSendError("Could not encrypt this message for every room member. Ask everyone to refresh their key bundle.");
       setInput(text);
       return;
     }
     const signature = await signMessagePayload(
       { roomId: room.id, senderId: myId, ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys },
-      await getDsaSecretKey()
+      dsaSecretKey
     );
     if (!signature) {
+      setSendError("Could not sign this message on this device.");
       setInput(text);
       return;
     }
@@ -525,8 +546,17 @@ function ChatView({
 
   const revealMessage = async (msg: Message) => {
     const revealToken = ++revealTokenRef.current;
+    setRevealError((current) => (current?.id === msg.id ? null : current));
     const verified = await verifyMessageSignature(room.id, msg);
-    if (!verified) return;
+    if (!verified) {
+      if (revealToken === revealTokenRef.current) {
+        setRevealError({
+          id: msg.id,
+          text: msg.signature ? "Message signature could not be verified." : "This message was not signed by a verified sender key.",
+        });
+      }
+      return;
+    }
     let key = messageKeyStore.get(msg.id);
     if (!key && msg.recipientEncryptedKeys?.[myId]) {
       const kemSecretKey = await getKemSecretKey();
@@ -535,12 +565,26 @@ function ChatView({
         if (key) messageKeyStore.set(msg.id, key);
       }
     }
-    if (!key) return;
+    if (!key) {
+      if (revealToken === revealTokenRef.current) {
+        setRevealError({
+          id: msg.id,
+          text: msg.recipientEncryptedKeys?.[myId]
+            ? "No local decrypt key on this Expo install. Link/login did not transfer message keys."
+            : "This message was not encrypted for this device.",
+        });
+      }
+      return;
+    }
     try {
       const plaintext = await decryptMsg(msg.ciphertext, msg.nonce, key);
       if (revealToken !== revealTokenRef.current) return;
       setHeldPlaintext({ id: msg.id, text: plaintext });
-    } catch {}
+    } catch {
+      if (revealToken === revealTokenRef.current) {
+        setRevealError({ id: msg.id, text: "Could not decrypt this message on this device." });
+      }
+    }
   };
 
   const hideRevealedMessage = () => {
@@ -583,12 +627,14 @@ function ChatView({
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => {
           const plaintext = heldPlaintext?.id === item.id ? heldPlaintext.text : undefined;
+          const error = revealError?.id === item.id ? revealError.text : undefined;
           return (
             <MessageBubble
               msg={item as Message}
               isOwn={item.senderId === myId}
               colors={colors}
               plaintext={plaintext}
+              error={error}
               senderLabel={codenameForUser(item.senderId)}
               onRevealStart={() => revealMessage(item as Message)}
               onRevealEnd={hideRevealedMessage}
@@ -609,19 +655,22 @@ function ChatView({
         scrollEnabled={!!messages.length}
       />
 
-      <View style={[styles.inputBar, { borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}> 
-        <TextInput
-          style={[styles.msgInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Message — encrypted client-side..."
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          testID="input-message"
-        />
-        <TouchableOpacity onPress={handleSend} disabled={!input.trim() || sendMsg.isPending} style={[styles.sendBtn, { backgroundColor: colors.primary }, (!input.trim() || sendMsg.isPending) && { opacity: 0.4 }]} testID="button-send">
-          <Feather name="send" size={16} color={colors.background} />
-        </TouchableOpacity>
+      <View style={[styles.inputArea, { borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+        {!!sendError && <Text style={[styles.sendError, { color: colors.destructive }]}>{sendError}</Text>}
+        <View style={styles.inputBar}>
+          <TextInput
+            style={[styles.msgInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground }]}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Message — encrypted client-side..."
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            testID="input-message"
+          />
+          <TouchableOpacity onPress={handleSend} disabled={!input.trim() || sendMsg.isPending} style={[styles.sendBtn, { backgroundColor: colors.primary }, (!input.trim() || sendMsg.isPending) && { opacity: 0.4 }]} testID="button-send">
+            <Feather name="send" size={16} color={colors.background} />
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -1345,13 +1394,16 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: "80%", borderWidth: 1, padding: 10 },
   senderName: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 0.5, marginBottom: 4 },
   msgText: { fontFamily: "Inter_400Regular", fontSize: 14, lineHeight: 20 },
+  msgError: { fontFamily: "Inter_400Regular", fontSize: 11, lineHeight: 16, marginTop: 6 },
   encryptedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   msgTime: { fontFamily: "Inter_400Regular", fontSize: 10, marginTop: 4, textAlign: "right" },
   emptyChat: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 40 },
   emptyChatText: { fontFamily: "Inter_500Medium", fontSize: 14 },
   emptyChatSub: { fontFamily: "Inter_400Regular", fontSize: 12 },
-  inputBar: { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingTop: 8, borderTopWidth: 1, gap: 8 },
+  inputArea: { borderTopWidth: 1, paddingHorizontal: 12, paddingTop: 8 },
+  inputBar: { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   msgInput: { flex: 1, borderWidth: 1, borderRadius: 0, paddingHorizontal: 12, paddingVertical: 10, fontFamily: "Inter_400Regular", fontSize: 14, maxHeight: 100 },
+  sendError: { fontFamily: "Inter_400Regular", fontSize: 11, lineHeight: 15, marginBottom: 6 },
   sendBtn: { width: 42, height: 42, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   modal: { flex: 1 },
   modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1 },

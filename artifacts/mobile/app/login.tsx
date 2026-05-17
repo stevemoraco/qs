@@ -49,7 +49,10 @@ async function verifyDevice(promptMessage: string): Promise<void> {
     fallbackLabel: "",
     disableDeviceFallback: true,
   });
-  if (!result.success) throw new Error("Device verification was not completed.");
+  if (!result.success) {
+    const reason = result.error ? ` (${result.error})` : "";
+    throw new Error(`Face ID or biometric verification did not complete${reason}.`);
+  }
 }
 
 export default function LoginScreen() {
