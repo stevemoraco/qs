@@ -16,6 +16,7 @@ import {
   Fingerprint,
   KeyRound,
   Settings,
+  CameraOff,
 } from "lucide-react";
 import {
   useGetRooms,
@@ -48,6 +49,7 @@ import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
+const CAPTURE_WARNING_MS = 8000;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1265,6 +1267,7 @@ export default function ChatApp() {
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
+  const [captureWarning, setCaptureWarning] = useState<string | null>(null);
   const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
   const [privacyNeedsHandle, setPrivacyNeedsHandle] = useState(() => !getLastHandle());
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
@@ -1280,6 +1283,7 @@ export default function ChatApp() {
   const privacyAutoUnlockAttemptedRef = useRef(false);
   const revealNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoKeyRepairAttemptedRef = useRef(false);
+  const captureWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1426,6 +1430,29 @@ export default function ChatApp() {
     });
   };
 
+  const warnCaptureAttempt = (reason: string) => {
+    setCaptureWarning(reason);
+    if (captureWarningTimerRef.current) clearTimeout(captureWarningTimerRef.current);
+    captureWarningTimerRef.current = setTimeout(() => setCaptureWarning(null), CAPTURE_WARNING_MS);
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification("QuantumShield privacy shield activated", {
+          body: "A capture-related browser event was detected. Message content was hidden.",
+          tag: "quantumshield-capture-warning",
+          silent: true,
+        });
+      } catch {
+        // Notification delivery is best-effort and varies across installed PWAs.
+      }
+    }
+  };
+
+  const lockForCaptureAttempt = (reason: string) => {
+    lockPrivacyShield(reason);
+    warnCaptureAttempt(reason);
+  };
+
   const unlockPrivacyShield = async (source: "auto" | "manual" = "manual") => {
     setPrivacyShield((current) => ({ ...current, error: undefined }));
     setIsUnlockingPrivacy(true);
@@ -1481,20 +1508,45 @@ export default function ChatApp() {
       if (document.hidden) lockPrivacyShield("App was backgrounded.");
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "PrintScreen") {
-        lockPrivacyShield("Screenshot key was detected.");
+      const key = event.key.toLowerCase();
+      const isPrintScreen = key === "printscreen";
+      const isMacScreenshotCombo = event.metaKey && event.shiftKey && ["3", "4", "5"].includes(key);
+      if (isPrintScreen || isMacScreenshotCombo) {
+        event.preventDefault();
+        event.stopPropagation();
+        lockForCaptureAttempt("Screenshot shortcut was detected. Secure content was hidden.");
       }
     };
+    const handlePrint = (event: Event) => {
+      event.preventDefault();
+      lockForCaptureAttempt("Print or save-to-PDF was detected. Secure content was hidden.");
+    };
+    const handleCopy = (event: ClipboardEvent) => {
+      event.preventDefault();
+      lockForCaptureAttempt("Clipboard access was blocked. Secure content was hidden.");
+    };
+    const handlePageHide = () => lockPrivacyShield("App page was hidden by the browser.");
 
     window.addEventListener("blur", shield);
-    window.addEventListener("beforeprint", shield);
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("beforeprint", handlePrint);
+    window.addEventListener("afterprint", handlePrint);
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    window.addEventListener("keyup", handleKeyDown, { capture: true });
+    document.addEventListener("copy", handleCopy);
+    document.addEventListener("cut", handleCopy);
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
+      if (captureWarningTimerRef.current) clearTimeout(captureWarningTimerRef.current);
       window.removeEventListener("blur", shield);
-      window.removeEventListener("beforeprint", shield);
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("beforeprint", handlePrint);
+      window.removeEventListener("afterprint", handlePrint);
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+      window.removeEventListener("keyup", handleKeyDown, { capture: true });
+      document.removeEventListener("copy", handleCopy);
+      document.removeEventListener("cut", handleCopy);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
@@ -1600,6 +1652,15 @@ export default function ChatApp() {
         </div>
       )}
       <CameraScanStatus status={cameraStatus} detail={cameraStatusDetail} />
+      {captureWarning && (
+        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 flex items-start gap-2" data-testid="capture-warning">
+          <CameraOff className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] tracking-widest text-destructive">CAPTURE GUARD TRIGGERED</p>
+            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{captureWarning}</p>
+          </div>
+        </div>
+      )}
       {pushStatus && !pushStatus.ok && (
         <div className="border-b border-primary/20 bg-primary/5 px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2" data-testid="push-status-warning">
           <div className="flex-1 min-w-0">
