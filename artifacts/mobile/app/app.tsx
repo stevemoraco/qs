@@ -559,11 +559,14 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
           {room.ttlSeconds && (
             <Text style={[styles.roomSub, { color: colors.primary }]}>· {room.ttlMode === "after_send" ? "TTL after send" : "TTL after view"}</Text>
           )}
-          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && revealName && (
             <Text style={[styles.roomSub, { color: "#f59e0b" }]}>· fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
           )}
-          <Text style={[styles.roomSub, { color: room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
-            · {room.decayMode === EXPERIMENTAL_DECAY_MODE ? "Quorum decay ACTIVE" : "Decay standard"}
+          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && !revealName && (
+            <Text style={[styles.roomSub, { color: "#f59e0b" }]}>· fuzz sealed</Text>
+          )}
+          <Text style={[styles.roomSub, { color: revealName && room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
+            · {revealName ? (room.decayMode === EXPERIMENTAL_DECAY_MODE ? "Quorum decay ACTIVE" : "Decay standard") : "decay sealed"}
           </Text>
         </View>
       </View>
@@ -636,9 +639,14 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, deca
             )}
           </TouchableOpacity>
         )}
-        {!!fuzzLabel && (
+        {!!fuzzLabel && plaintext && (
           <Text style={[styles.msgError, { color: "#f59e0b" }]}>
             Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
+          </Text>
+        )}
+        {!!fuzzLabel && !plaintext && (
+          <Text style={[styles.msgError, { color: "#f59e0b" }]}>
+            Fuzzing metadata sealed. Hold to reveal delivery window.
           </Text>
         )}
         {!!error && <Text style={[styles.msgError, { color: colors.destructive }]}>{error}</Text>}
@@ -966,13 +974,13 @@ function ChatView({
           {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
             <View style={styles.chatMetaRow}>
               <Feather name="clock" size={10} color="#f59e0b" />
-              <Text style={[styles.cipherText, { color: "#f59e0b" }]}>fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
+              <Text style={[styles.cipherText, { color: "#f59e0b" }]}>{revealRoomName ? `fuzz ${formatShortDuration(room.deliveryFuzzSeconds)}` : "FUZZ SEALED"}</Text>
             </View>
           )}
           <View style={styles.chatMetaRow}>
-            <Feather name="shield" size={10} color={room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground} />
-            <Text style={[styles.cipherText, { color: room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
-              {room.decayMode === EXPERIMENTAL_DECAY_MODE ? "QUORUM DECAY ACTIVE" : "DECAY STANDARD"}
+            <Feather name="shield" size={10} color={revealRoomName && room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground} />
+            <Text style={[styles.cipherText, { color: revealRoomName && room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
+              {revealRoomName ? (room.decayMode === EXPERIMENTAL_DECAY_MODE ? "QUORUM DECAY ACTIVE" : "DECAY STANDARD") : "DECAY SEALED"}
             </Text>
           </View>
         </View>
