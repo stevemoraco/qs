@@ -1487,8 +1487,9 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
-  const scanCameraFlash = (video: HTMLVideoElement): boolean => {
-    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return false;
+  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; detail: string } => {
+    const noFlash = { triggered: false, detail: "" };
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return noFlash;
 
     const canvas = flashCanvasRef.current ?? document.createElement("canvas");
     if (!flashCanvasRef.current) {
@@ -1498,7 +1499,7 @@ export default function ChatApp() {
     }
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return false;
+    if (!ctx) return noFlash;
     ctx.drawImage(video, 0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT);
     const data = ctx.getImageData(0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT).data;
 
@@ -1522,12 +1523,13 @@ export default function ChatApp() {
     const avgDelta = avg - baseline.avg;
     const brightDelta = brightRatio - baseline.brightRatio;
     const peakDelta = peak - baseline.peak;
-    const globalFlash = avgDelta > 26 && brightDelta > 0.04 && avg > 75;
-    const localizedFlash = peakDelta > 42 && brightDelta > 0.026 && veryBrightRatio > 0.01;
-    const brightBloom = veryBrightRatio > 0.055 && brightDelta > 0.02 && avgDelta > 12;
+    const globalFlash = avgDelta > 31 && brightDelta > 0.05 && avg > 82;
+    const localizedFlash = peakDelta > 48 && brightDelta > 0.03 && veryBrightRatio > 0.018;
+    const brightBloom = veryBrightRatio > 0.07 && brightDelta > 0.026 && avgDelta > 16;
+    const strongFlash = avgDelta > 52 || brightDelta > 0.13 || (peakDelta > 76 && veryBrightRatio > 0.026);
     const candidate = globalFlash || localizedFlash || brightBloom;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
-    const isFlash = flashStreakRef.current >= 2;
+    const isFlash = strongFlash || flashStreakRef.current >= 2;
     flashBaselineRef.current = candidate
       ? baseline
       : {
@@ -1536,7 +1538,10 @@ export default function ChatApp() {
           peak: baseline.peak * 0.86 + peak * 0.14,
         };
     if (isFlash) flashStreakRef.current = 0;
-    return isFlash;
+    return {
+      triggered: isFlash,
+      detail: `FLASH A+${avgDelta.toFixed(0)} B+${(brightDelta * 100).toFixed(1)} P+${peakDelta.toFixed(0)} V${(veryBrightRatio * 100).toFixed(1)}%`,
+    };
   };
 
   const stopCamera = () => {
@@ -1596,7 +1601,9 @@ export default function ChatApp() {
         setCameraStatusDetail("ON-DEVICE");
 
         flashScanIntervalRef.current = setInterval(() => {
-          if (!videoRef.current || scanCameraFlash(videoRef.current) === false) return;
+          if (!videoRef.current) return;
+          const flash = scanCameraFlash(videoRef.current);
+          if (!flash.triggered) return;
           const now = Date.now();
           if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
           lastFlashAlertAtRef.current = now;
@@ -1604,7 +1611,7 @@ export default function ChatApp() {
           const roomId = activeRoomIdRef.current;
           if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
           setCameraStatus("threat");
-          setCameraStatusDetail("FLASH GUARD");
+          setCameraStatusDetail(`FLASH GUARD / ${flash.detail}`);
         }, FLASH_SCAN_MS);
 
         detectionIntervalRef.current = setInterval(async () => {
