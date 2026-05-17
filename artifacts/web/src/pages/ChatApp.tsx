@@ -50,6 +50,7 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
+const PRIVACY_ALERT_THROTTLE_MS = 60_000;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1284,6 +1285,8 @@ export default function ChatApp() {
   const revealNameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoKeyRepairAttemptedRef = useRef(false);
   const captureWarningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeRoomIdRef = useRef<string | null>(null);
+  const lastPrivacyAlertAtRef = useRef(0);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1412,6 +1415,26 @@ export default function ChatApp() {
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
+  useEffect(() => {
+    activeRoomIdRef.current = activeRoomId;
+  }, [activeRoomId]);
+
+  const sendPrivacyAlert = async (roomId: string, label: string) => {
+    const token = getToken();
+    if (!token) return;
+    const now = Date.now();
+    if (now - lastPrivacyAlertAtRef.current < PRIVACY_ALERT_THROTTLE_MS) return;
+    lastPrivacyAlertAtRef.current = now;
+    await fetch(`/api/rooms/${roomId}/privacy-alert`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reason: label }),
+    }).catch(() => undefined);
+  };
+
   const codenameForUser = (id: string) => codenameFor(`user:${id}`);
   const codenameForRoom = (id: string) => codenameFor(`room:${id}`);
   const scheduleNameReveal = (id: string) => {
@@ -1580,7 +1603,11 @@ export default function ChatApp() {
             const threats = await detector.detect(videoRef.current);
             const strongest = threats.sort((a, b) => b.score - a.score)[0];
             setCameraStatus(strongest ? "threat" : "clear");
-            if (strongest) lockPrivacyShield(`Recording device detected: ${strongest.label}.`);
+            if (strongest) {
+              lockPrivacyShield(`Another device may be photographing this screen: ${strongest.label}.`);
+              const roomId = activeRoomIdRef.current;
+              if (roomId) void sendPrivacyAlert(roomId, strongest.label);
+            }
             setCameraStatusDetail(
               strongest
                 ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}%`

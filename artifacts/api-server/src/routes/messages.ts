@@ -174,6 +174,37 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   });
 });
 
+router.post("/rooms/:roomId/privacy-alert", requireAuth, async (req: AuthRequest, res) => {
+  const roomId = routeParam(req.params.roomId);
+
+  const membership = await db
+    .select()
+    .from(roomMembersTable)
+    .where(and(eq(roomMembersTable.roomId, roomId), eq(roomMembersTable.userId, req.userId!)))
+    .limit(1);
+
+  if (membership.length === 0) {
+    res.status(403).json({ error: "Not a member of this room" });
+    return;
+  }
+
+  const recipients = await db
+    .select({ userId: roomMembersTable.userId })
+    .from(roomMembersTable)
+    .where(and(eq(roomMembersTable.roomId, roomId), ne(roomMembersTable.userId, req.userId!)));
+
+  const notificationPayload = {
+    title: "QuantumShield",
+    body: "A privacy shield was triggered in one of your chats.",
+    url: "/app",
+    tag: `privacy-${roomId}`,
+  };
+
+  void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
+
+  res.status(202).json({ ok: true });
+});
+
 router.delete("/rooms/:roomId/messages/:messageId", requireAuth, async (req: AuthRequest, res) => {
   const messageId = routeParam(req.params.messageId);
 
