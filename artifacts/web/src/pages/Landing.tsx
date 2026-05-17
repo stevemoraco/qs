@@ -282,21 +282,23 @@ const LOCAL_DEVICE_EXPOSURE = [
     name: "QuantumShield",
     tone: "benefit",
     icon: <MousePointerClick className="w-5 h-5" />,
-    plain: "QuantumShield does not leave a readable pile of chats for someone, malware, or an AI agent to steal.",
-    headline: "Plaintext is designed to be brief, deliberate, and one-at-a-time.",
-    runningPlain: "Even with your device, the key path is mathematically guaranteed to unlock only through passkey-gated reveal.",
+    plain: "With QuantumShield, they need your face or fingerprint to read each message.",
+    headline: "Every reveal is deliberate, one message at a time, and passkey-gated on supported devices.",
+    runningPlain: "Even if someone gets your device, they still have to pass the biometric check for each message reveal.",
     running: [
       "RAM can contain decrypted plaintext only for the message currently being held or intentionally revealed.",
       "RAM can contain active session state and local decryption keys while the app is unlocked.",
       "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
+      "The design keeps usable reveal behind passkey-gated device authentication, even against malware or an AI agent using the device.",
     ],
-    stoppedPlain: "When closed, chats are mathematically guaranteed to sit on disk as encrypted boxes, not readable words or files someone can instantly copy or upload.",
+    stoppedPlain: "If someone copies local files, steals local keys, or uploads device data, they get encrypted packages instead of a readable chat history.",
     stopped: [
       "Disk is intended to hold ciphertext packages, wrapped keys, public key material, and app/session metadata.",
       "Readable handles stay local; the server stores peppered exact-lookup values instead of readable handles.",
       "Expired local message keys are removed so old ciphertext is mathematically guaranteed to remain unreadable.",
+      "A quantum computer that breaks classical encryption still does not turn expired ciphertext into readable messages without the destroyed usable key.",
     ],
-    implicationPlain: "A bad app has to beat the passkey gate and catch the one message you reveal.",
+    implicationPlain: "A bad actor has to beat your Face ID, Touch ID, or device biometric check for the one message being revealed.",
     implication: "QuantumShield is designed so local keys are protected by passkey-gated device authentication, plaintext appears only for the message currently being held or intentionally revealed, and normal chat history is mathematically guaranteed not to sit on disk or remain broadly readable in memory where a bad actor could silently copy or upload it. Check the source code and verify the storage and reveal paths.",
   },
   {
@@ -513,7 +515,7 @@ export default function Landing() {
                         <span className={item.tone === "benefit" ? "text-primary" : "text-destructive"}>{group.icon}</span>
                         <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{group.label.toUpperCase()}</div>
                       </div>
-                      <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{group.plain}</p>
+                      <p className={`font-mono text-sm leading-snug mb-2 ${item.name === "QuantumShield" ? "text-muted-foreground/80" : "font-bold text-foreground"}`}>{group.plain}</p>
                       <div className="space-y-2">
                         {group.lines.map((line) => (
                           <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
@@ -526,7 +528,7 @@ export default function Landing() {
                   ))}
                   <div className={`border p-3 ${item.tone === "benefit" ? "border-primary/30 bg-primary/5" : "border-destructive/30 bg-destructive/5"}`}>
                     <div className={`font-mono text-[10px] tracking-widest mb-2 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`}>AI AGENT / MALWARE IMPLICATION</div>
-                    <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{item.implicationPlain}</p>
+                    <p className={`font-mono text-sm leading-snug mb-2 ${item.name === "QuantumShield" ? "text-muted-foreground/80" : "font-bold text-foreground"}`}>{item.implicationPlain}</p>
                     <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{item.implication}</p>
                   </div>
                 </div>
