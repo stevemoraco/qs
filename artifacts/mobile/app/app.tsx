@@ -65,8 +65,8 @@ async function verifyDevice(promptMessage: string): Promise<void> {
 
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
-    fallbackLabel: "Use device passcode",
-    disableDeviceFallback: false,
+    fallbackLabel: "",
+    disableDeviceFallback: true,
   });
   if (!result.success) throw new Error("Device verification was not completed.");
 }
@@ -798,6 +798,18 @@ function formatExpiry(expiresAt?: string | null): string {
   return `${abs} / ${days > 0 ? `${days}d ${hours}h` : hours > 0 ? `${hours}h ${mins}m` : `${mins}m`} remaining`;
 }
 
+type DeviceSession = {
+  id: string;
+  label: string;
+  current: boolean;
+  createdAt: string;
+  expiresAt: string;
+};
+
+function formatSessionTime(value: string): string {
+  return new Date(value).toLocaleString();
+}
+
 function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   visible: boolean;
   onClose: () => void;
@@ -809,7 +821,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   const qc = useQueryClient();
   const { getDevicePasscode, setAuthHandle, setToken } = useAuth();
   const [revealed, setRevealed] = useState(false);
-  const [deviceCount, setDeviceCount] = useState<number | null>(null);
+  const [deviceSessions, setDeviceSessions] = useState<DeviceSession[] | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
   const [newTtl, setNewTtl] = useState(315360000);
@@ -837,10 +849,10 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (mounted && data && typeof data.activeDeviceCount === "number") setDeviceCount(data.activeDeviceCount);
+        if (mounted && data && Array.isArray(data.sessions)) setDeviceSessions(data.sessions as DeviceSession[]);
       })
       .catch(() => {
-        if (mounted) setDeviceCount(null);
+        if (mounted) setDeviceSessions(null);
       });
     return () => {
       mounted = false;
@@ -935,19 +947,40 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
         </View>
 
         <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
-          <View style={[styles.profileBlock, { borderColor: colors.border, backgroundColor: colors.card }]}> 
+          <TouchableOpacity
+            delayLongPress={120}
+            onPressIn={() => setRevealed(true)}
+            onLongPress={() => setRevealed(true)}
+            onPressOut={() => setRevealed(false)}
+            activeOpacity={0.85}
+            style={[styles.profileBlock, { borderColor: colors.border, backgroundColor: colors.card }]}
+            testID="button-hold-reveal-profile"
+          >
             <View style={[styles.avatarSm, { backgroundColor: me.avatarColor ?? colors.primary }]}> 
               <Text style={styles.avatarText}>{codename[0]}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <TouchableOpacity delayLongPress={120} onLongPress={() => setRevealed(true)} onPressOut={() => setRevealed(false)} activeOpacity={0.85} testID="button-hold-reveal-profile">
-                <Text style={[styles.meUsername, { color: colors.foreground }]}>{revealed ? (me.displayName ?? me.username) : codename}</Text>
-              </TouchableOpacity>
+              <Text style={[styles.meUsername, { color: colors.foreground }]}>{revealed ? (me.displayName ?? me.username) : codename}</Text>
               <Text style={[styles.meHandle, { color: colors.mutedForeground }]}>
-                {revealed ? `${deviceCount ?? "..."} active linked device session${deviceCount === 1 ? "" : "s"}` : "Hold to reveal device links"}
+                {revealed ? `${deviceSessions?.length ?? "..."} active login session${deviceSessions?.length === 1 ? "" : "s"}` : "Hold this row to reveal login sessions"}
               </Text>
+              {revealed && (
+                <View style={styles.sessionList}>
+                  {(deviceSessions ?? []).map((session, index) => (
+                    <View key={session.id} style={[styles.sessionCard, { borderColor: colors.border, backgroundColor: colors.background }]}>
+                      <View style={styles.sessionHeader}>
+                        <Text style={[styles.sessionTitle, { color: colors.foreground }]}>{session.current ? "THIS DEVICE" : session.label.toUpperCase()}</Text>
+                        <Text style={[styles.sessionMeta, { color: colors.mutedForeground }]}>#{String(index + 1).padStart(2, "0")}</Text>
+                      </View>
+                      <Text style={[styles.sessionMeta, { color: colors.mutedForeground }]}>CREATED {formatSessionTime(session.createdAt)}</Text>
+                      <Text style={[styles.sessionMeta, { color: colors.mutedForeground }]}>EXPIRES {formatSessionTime(session.expiresAt)}</Text>
+                    </View>
+                  ))}
+                  {deviceSessions && deviceSessions.length === 0 && <Text style={[styles.sessionMeta, { color: colors.mutedForeground }]}>No active login sessions found.</Text>}
+                </View>
+              )}
             </View>
-          </View>
+          </TouchableOpacity>
 
           <Text style={[styles.label, { color: colors.mutedForeground }]}>CREATE HANDLE / INVITE</Text>
           <TextInput
@@ -1325,6 +1358,11 @@ const styles = StyleSheet.create({
   modalTitle: { fontFamily: "Inter_700Bold", fontSize: 14, letterSpacing: 2 },
   modalBody: { padding: 16 },
   profileBlock: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, padding: 12, marginBottom: 18 },
+  sessionList: { gap: 8, marginTop: 10 },
+  sessionCard: { borderWidth: 1, padding: 10 },
+  sessionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 },
+  sessionTitle: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
+  sessionMeta: { fontFamily: "Inter_400Regular", fontSize: 10, lineHeight: 15 },
   label: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3, marginBottom: 8 },
   errorText: { fontFamily: "Inter_400Regular", fontSize: 12, marginTop: 8 },
   input: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10, fontFamily: "Inter_400Regular", fontSize: 14 },

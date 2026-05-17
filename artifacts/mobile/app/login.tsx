@@ -46,8 +46,8 @@ async function verifyDevice(promptMessage: string): Promise<void> {
 
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
-    fallbackLabel: "Use device passcode",
-    disableDeviceFallback: false,
+    fallbackLabel: "",
+    disableDeviceFallback: true,
   });
   if (!result.success) throw new Error("Device verification was not completed.");
 }

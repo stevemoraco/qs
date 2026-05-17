@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, usersTable, sessionsTable, leadsTable, identityCodesTable, deviceCredentialsTable } from "@workspace/db";
-import { and, count, eq, gt, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, isNull, or } from "drizzle-orm";
 import argon2 from "argon2";
 import { createHash, randomBytes } from "crypto";
 import {
@@ -654,8 +654,27 @@ router.get("/auth/devices", requireAuth, async (req: AuthRequest, res) => {
     .from(sessionsTable)
     .where(and(eq(sessionsTable.userId, req.userId!), gt(sessionsTable.expiresAt, new Date())));
 
+  const token = req.headers.authorization!.slice(7);
+  const sessions = await db
+    .select({
+      id: sessionsTable.id,
+      createdAt: sessionsTable.createdAt,
+      expiresAt: sessionsTable.expiresAt,
+      token: sessionsTable.token,
+    })
+    .from(sessionsTable)
+    .where(and(eq(sessionsTable.userId, req.userId!), gt(sessionsTable.expiresAt, new Date())))
+    .orderBy(desc(sessionsTable.createdAt));
+
   res.json({
     activeDeviceCount: row?.count ?? 0,
+    sessions: sessions.map((session, index) => ({
+      id: session.id,
+      label: session.token === token ? "This session" : `Session ${index + 1}`,
+      current: session.token === token,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+    })),
   });
 });
 

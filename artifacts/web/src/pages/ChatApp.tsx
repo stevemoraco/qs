@@ -615,8 +615,20 @@ function formatExpiry(expiresAt?: string | null): string {
   return `${abs} / ${remaining}`;
 }
 
-function useDeviceCount(enabled: boolean) {
-  const [count, setCount] = useState<number | null>(null);
+type DeviceSession = {
+  id: string;
+  label: string;
+  current: boolean;
+  createdAt: string;
+  expiresAt: string;
+};
+
+function formatSessionTime(value: string): string {
+  return new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+function useDeviceSessions(enabled: boolean) {
+  const [sessions, setSessions] = useState<DeviceSession[] | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -628,19 +640,19 @@ function useDeviceCount(enabled: boolean) {
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (mounted && data && typeof data.activeDeviceCount === "number") {
-          setCount(data.activeDeviceCount);
+        if (mounted && data && Array.isArray(data.sessions)) {
+          setSessions(data.sessions as DeviceSession[]);
         }
       })
       .catch(() => {
-        if (mounted) setCount(null);
+        if (mounted) setSessions(null);
       });
     return () => {
       mounted = false;
     };
   }, [enabled]);
 
-  return count;
+  return sessions;
 }
 
 function ProfilePanel({
@@ -670,7 +682,7 @@ function ProfilePanel({
     isLastActiveHandle: boolean;
     stage: number;
   } | null>(null);
-  const deviceCount = useDeviceCount(revealed);
+  const deviceSessions = useDeviceSessions(revealed);
   const { data: codes = [] } = useGetIdentityCodes();
   const sortedCodes = [...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`));
   const activeHandleCount = codes.filter((code) => code.kind === "alias" && code.active).length;
@@ -764,28 +776,45 @@ function ProfilePanel({
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="border border-border/50 bg-background/50 p-4">
+          <div
+            className="border border-border/50 bg-background/50 p-4"
+            onPointerEnter={() => setRevealed(true)}
+            onPointerLeave={() => setRevealed(false)}
+            onPointerDown={() => setRevealed(true)}
+            onPointerUp={() => setRevealed(false)}
+            onPointerCancel={() => setRevealed(false)}
+            data-testid="button-hold-reveal-profile"
+          >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-mono text-xs font-bold" style={{ backgroundColor: me.avatarColor ?? "#06b6d4" }}>
                 {codename[0]}
               </div>
               <div className="min-w-0">
-                <button
-                  type="button"
-                  onPointerDown={() => setRevealed(true)}
-                  onPointerUp={() => setRevealed(false)}
-                  onPointerCancel={() => setRevealed(false)}
-                  onPointerLeave={() => setRevealed(false)}
-                  className="font-mono text-sm font-semibold hover:text-primary"
-                  data-testid="button-hold-reveal-profile"
-                >
+                <div className="font-mono text-sm font-semibold">
                   {revealed ? (me.displayName ?? me.username) : codename}
-                </button>
+                </div>
                 <p className="font-mono text-xs text-muted-foreground mt-1">
-                  {revealed ? `${deviceCount ?? "..."} active linked device session${deviceCount === 1 ? "" : "s"}` : "Hold to reveal device links"}
+                  {revealed ? `${deviceSessions?.length ?? "..."} active login session${deviceSessions?.length === 1 ? "" : "s"}` : "Hover or hold this row to reveal login sessions"}
                 </p>
               </div>
             </div>
+            {revealed && (
+              <div className="mt-3 space-y-2">
+                {(deviceSessions ?? []).map((session, index) => (
+                  <div key={session.id} className="border border-border/40 bg-card/60 px-3 py-2 font-mono text-[11px] text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2 text-foreground">
+                      <span>{session.current ? "THIS DEVICE" : session.label.toUpperCase()}</span>
+                      <span>#{String(index + 1).padStart(2, "0")}</span>
+                    </div>
+                    <div className="mt-1">CREATED {formatSessionTime(session.createdAt)}</div>
+                    <div>EXPIRES {formatSessionTime(session.expiresAt)}</div>
+                  </div>
+                ))}
+                {deviceSessions && deviceSessions.length === 0 && (
+                  <div className="font-mono text-xs text-muted-foreground">No active login sessions found.</div>
+                )}
+              </div>
+            )}
           </div>
 
           <form onSubmit={submitCode} className="border border-border/50 bg-background/50 p-4 space-y-3">
