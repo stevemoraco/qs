@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { execSync } from "node:child_process";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const rawPort = process.env.PORT ?? "5173";
@@ -14,9 +15,19 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 const apiProxyTarget = process.env.API_PROXY_TARGET ?? "http://localhost:8080";
+const clientCommit = (() => {
+  try {
+    return execSync("git rev-parse --short HEAD", { cwd: path.resolve(import.meta.dirname, "..", ".."), encoding: "utf8" }).trim();
+  } catch {
+    return "unknown";
+  }
+})();
 
 export default defineConfig({
   base: basePath,
+  define: {
+    __QS_CLIENT_COMMIT__: JSON.stringify(clientCommit),
+  },
   plugins: [
     react(),
     tailwindcss(),

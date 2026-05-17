@@ -84,6 +84,15 @@ const checks: Check[] = [
     ]),
   },
   {
+    name: "message send accepts authenticated embedded device signing keys",
+    pass: includesAll(messagesRoute, [
+      "senderDsaCandidates.add(senderDsaPublicKey)",
+      "const verifiedSenderDsaPublicKey",
+      "INVALID_MESSAGE_SIGNATURE",
+      "senderDsaPublicKey: senderDsaPublicKey ?? sender?.dsaPublicKey ?? null",
+    ]),
+  },
+  {
     name: "experimental quorum decay purges wrapped keys on read/timer",
     pass: includesAll(messagesRoute, [
       "EXPERIMENTAL_QUORUM_DECAY",

@@ -70,6 +70,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const VERSION_LABEL_FALLBACK = "VERSION";
+declare const __QS_CLIENT_COMMIT__: string;
+const CLIENT_COMMIT = typeof __QS_CLIENT_COMMIT__ === "string" ? __QS_CLIENT_COMMIT__ : "unknown";
 const CAPTURE_WARNING_MS = 8000;
 const FLASH_SCAN_MS = 60;
 const FLASH_FRAME_WIDTH = 64;
@@ -245,12 +247,12 @@ function versionLabelFromIso(value: string): string {
   return `v${part("year")}.${part("month")}.${part("day")}.${part("hour")}.${part("minute")}${part("dayPeriod").toUpperCase()}.${part("timeZoneName")}`;
 }
 
-function VersionBadge({ label, onClick, className = "" }: { label: string; onClick: () => void; className?: string }) {
+function VersionBadge({ label, onClick, className = "", mismatch = false }: { label: string; onClick: () => void; className?: string; mismatch?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`font-mono text-[10px] leading-none text-muted-foreground hover:text-primary transition-colors ${className}`}
+      className={`font-mono text-[10px] leading-none transition-colors ${mismatch ? "text-destructive hover:text-destructive" : "text-muted-foreground hover:text-primary"} ${className}`}
       data-testid="button-version-audit"
     >
       {label}
@@ -297,6 +299,7 @@ function VersionAuditModal({ open, onClose }: { open: boolean; onClose: () => vo
   };
   const boot = audit?.git.boot;
   const publishUtc = audit?.publishTimeUtc ?? "";
+  const clientServerMismatch = !!boot?.shortCommit && boot.shortCommit !== CLIENT_COMMIT;
 
   return (
     <div className="fixed inset-0 z-[120] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -316,11 +319,12 @@ function VersionAuditModal({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="text-muted-foreground">Loading version audit...</div>
           ) : audit ? (
             <>
-              <div className={`border p-3 ${audit.latestCodeRunning ? "border-primary/40 bg-primary/5 text-primary" : "border-amber-500/40 bg-amber-500/10 text-amber-500"}`}>
-                {audit.latestCodeRunning ? "LATEST CODE RUNNING" : "VERSION MISMATCH OR UNCOMMITTED WORKSPACE"}
+              <div className={`border p-3 ${audit.latestCodeRunning && !clientServerMismatch ? "border-primary/40 bg-primary/5 text-primary" : "border-destructive/40 bg-destructive/10 text-destructive"}`}>
+                {audit.latestCodeRunning && !clientServerMismatch ? "LATEST CODE RUNNING" : "VERSION MISMATCH OR UNCOMMITTED WORKSPACE"}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <AuditRow label="commit" value={`${boot?.shortCommit ?? "unknown"} / ${boot?.commitSubject ?? "unknown"}`} />
+                <AuditRow label="client bundle" value={CLIENT_COMMIT} />
                 <AuditRow label="package" value={audit.packageVersion} />
                 <AuditRow label="mountain publish" value={formatAuditTime(publishUtc, "America/Denver")} />
                 <AuditRow label="utc publish" value={formatAuditTime(publishUtc, "UTC")} />
@@ -2869,6 +2873,7 @@ export default function ChatApp() {
   const [showProfile, setShowProfile] = useState(false);
   const [showVersionAudit, setShowVersionAudit] = useState(false);
   const [versionLabel, setVersionLabel] = useState(VERSION_LABEL_FALLBACK);
+  const [versionMismatch, setVersionMismatch] = useState(false);
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [captureWarning, setCaptureWarning] = useState<string | null>(null);
   const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
@@ -3185,7 +3190,11 @@ export default function ChatApp() {
     fetch("/api/version", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() as Promise<VersionAudit> : null))
       .then((audit) => {
-        if (!cancelled && audit) setVersionLabel(audit.displayVersion || versionLabelFromIso(audit.publishTimeUtc));
+        if (!cancelled && audit) {
+          const label = audit.displayVersion || versionLabelFromIso(audit.publishTimeUtc);
+          setVersionLabel(label);
+          setVersionMismatch(audit.git.boot.shortCommit !== CLIENT_COMMIT || !audit.latestCodeRunning);
+        }
       })
       .catch(() => {
         if (!cancelled) setVersionLabel(VERSION_LABEL_FALLBACK);
@@ -3609,6 +3618,7 @@ export default function ChatApp() {
             label={versionLabel}
             onClick={() => setShowVersionAudit(true)}
             className="absolute left-4 top-4"
+            mismatch={versionMismatch}
           />
           <button
             type="button"
@@ -3726,7 +3736,7 @@ export default function ChatApp() {
             </div>
             <div className="flex flex-col leading-none">
               <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
-              <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mt-1 text-left" />
+              <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mt-1 text-left" mismatch={versionMismatch} />
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -3890,7 +3900,7 @@ export default function ChatApp() {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <h2 className="font-mono font-bold text-xl tracking-tight mb-3">QuantumShield</h2>
-            <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mb-4" />
+            <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mb-4" mismatch={versionMismatch} />
             <p className="font-mono text-sm text-muted-foreground max-w-sm mb-2">
               Select a channel or create a new encrypted conversation
             </p>
