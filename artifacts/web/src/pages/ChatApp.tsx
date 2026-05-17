@@ -3361,7 +3361,16 @@ export default function ChatApp() {
             signature: entry.signature,
           });
           if (!senderDsaPublicKey) {
-            console.warn("Queued message is missing a locally verifiable sender signing key.");
+            const ageMs = Date.now() - new Date(entry.createdAt).getTime();
+            const ORPHAN_GRACE_MS = 5 * 60 * 1000;
+            if (ageMs > ORPHAN_GRACE_MS) {
+              console.warn(`Discarding queued message ${entry.id} (${Math.round(ageMs / 1000)}s old): no local signing key can verify it on this device.`);
+              await deleteOutboxEntry(entry.id);
+              window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+              if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
+            } else {
+              console.warn("Queued message is missing a locally verifiable sender signing key; will retry and discard after 5m if still unavailable.");
+            }
             continue;
           }
           await postRoomsRoomIdMessages(entry.roomId, {
