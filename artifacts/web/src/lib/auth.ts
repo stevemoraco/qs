@@ -408,6 +408,17 @@ export function getDsaPublicKey(): string | null {
   return localStorage.getItem(DSA_PK_KEY);
 }
 
+export async function getDsaPublicKeysAsync(): Promise<string[]> {
+  await hydrateKeyPairFromIndexedDb();
+  const keys: string[] = [];
+  const current = getDsaPublicKey();
+  if (current) keys.push(current);
+  for (const historical of await readHistoricalKeyPairs()) {
+    if (historical.dsaPublicKey && !keys.includes(historical.dsaPublicKey)) keys.push(historical.dsaPublicKey);
+  }
+  return keys;
+}
+
 export function getLocalKeyPair(): {
   kemSecretKey: Uint8Array | null;
   kemPublicKey: Uint8Array | null;

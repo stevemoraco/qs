@@ -11,6 +11,7 @@ const KEM_SK_KEY = "qs_kem_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const DSA_PK_KEY = "qs_dsa_pk";
+const HISTORICAL_KEYRING_KEY = "qs_historical_keyring_v1";
 const SECRET_KEYS = [TOKEN_KEY, AUTH_HANDLE_KEY, DEVICE_PASSCODE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY];
 
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
@@ -72,10 +73,53 @@ type AuthContextType = {
   clearAuth: () => Promise<void>;
   storeKeyPair: (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => Promise<void>;
   getKemSecretKey: () => Promise<string | null>;
+  getKemSecretKeys: () => Promise<string[]>;
   getKemPublicKey: () => Promise<string | null>;
   getDsaSecretKey: () => Promise<string | null>;
   getDsaPublicKey: () => Promise<string | null>;
+  getDsaPublicKeys: () => Promise<string[]>;
 };
+
+type HistoricalKeyPair = {
+  kemSecretKey: string;
+  kemPublicKey: string;
+  dsaSecretKey: string;
+  dsaPublicKey: string;
+  storedAt: string;
+};
+
+async function readHistoricalKeyPairs(): Promise<HistoricalKeyPair[]> {
+  try {
+    const raw = await getSecret(HISTORICAL_KEYRING_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is HistoricalKeyPair => (
+      !!item &&
+      typeof item.kemSecretKey === "string" &&
+      typeof item.kemPublicKey === "string" &&
+      typeof item.dsaSecretKey === "string" &&
+      typeof item.dsaPublicKey === "string" &&
+      typeof item.storedAt === "string"
+    ));
+  } catch {
+    return [];
+  }
+}
+
+async function preserveKeyPairForHistory(): Promise<void> {
+  const [kemSecretKey, kemPublicKey, dsaSecretKey, dsaPublicKey] = await Promise.all([
+    getSecret(KEM_SK_KEY),
+    getSecret(KEM_PK_KEY),
+    getSecret(DSA_SK_KEY),
+    getSecret(DSA_PK_KEY),
+  ]);
+  if (!kemSecretKey || !kemPublicKey || !dsaSecretKey || !dsaPublicKey) return;
+  const history = await readHistoricalKeyPairs();
+  if (!history.some((item) => item.kemPublicKey === kemPublicKey && item.dsaPublicKey === dsaPublicKey)) {
+    history.push({ kemSecretKey, kemPublicKey, dsaSecretKey, dsaPublicKey, storedAt: new Date().toISOString() });
+    await setSecret(HISTORICAL_KEYRING_KEY, JSON.stringify(history.slice(-8)));
+  }
+}
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -142,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const storeKeyPair = useCallback(async (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => {
+    await preserveKeyPairForHistory();
     await Promise.all([
       setSecret(KEM_SK_KEY, kemSk),
       setSecret(KEM_PK_KEY, kemPk),
@@ -151,9 +196,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getKemSecretKey = useCallback(() => getSecret(KEM_SK_KEY), []);
+  const getKemSecretKeys = useCallback(async () => {
+    const keys: string[] = [];
+    const current = await getSecret(KEM_SK_KEY);
+    if (current) keys.push(current);
+    for (const historical of await readHistoricalKeyPairs()) {
+      if (historical.kemSecretKey && !keys.includes(historical.kemSecretKey)) keys.push(historical.kemSecretKey);
+    }
+    return keys;
+  }, []);
   const getKemPublicKey = useCallback(() => getSecret(KEM_PK_KEY), []);
   const getDsaSecretKey = useCallback(() => getSecret(DSA_SK_KEY), []);
   const getDsaPublicKey = useCallback(() => getSecret(DSA_PK_KEY), []);
+  const getDsaPublicKeys = useCallback(async () => {
+    const keys: string[] = [];
+    const current = await getSecret(DSA_PK_KEY);
+    if (current) keys.push(current);
+    for (const historical of await readHistoricalKeyPairs()) {
+      if (historical.dsaPublicKey && !keys.includes(historical.dsaPublicKey)) keys.push(historical.dsaPublicKey);
+    }
+    return keys;
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -171,9 +234,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuth,
         storeKeyPair,
         getKemSecretKey,
+        getKemSecretKeys,
         getKemPublicKey,
         getDsaSecretKey,
         getDsaPublicKey,
+        getDsaPublicKeys,
       }}
     >
       {children}

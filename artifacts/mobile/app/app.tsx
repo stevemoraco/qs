@@ -776,7 +776,7 @@ function ChatView({
   securityEpoch: number;
 }) {
   const qc = useQueryClient();
-  const { token, getKemSecretKey, getKemPublicKey, getDsaSecretKey, getDsaPublicKey } = useAuth();
+  const { token, getKemPublicKey, getKemSecretKeys, getDsaSecretKey, getDsaPublicKey, getDsaPublicKeys } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
@@ -998,8 +998,18 @@ function ChatView({
       hideRevealedMessage();
       return;
     }
-    const localDsaPublicKey = msg.senderId === myId ? await getDsaPublicKey() : null;
-    const verified = await verifyMessageSignature(room.id, msg, localDsaPublicKey);
+    const localDsaPublicKeys = msg.senderId === myId ? await getDsaPublicKeys() : [];
+    let verified = false;
+    if (localDsaPublicKeys.length > 0) {
+      for (const localDsaPublicKey of localDsaPublicKeys) {
+        if (await verifyMessageSignature(room.id, msg, localDsaPublicKey)) {
+          verified = true;
+          break;
+        }
+      }
+    } else {
+      verified = await verifyMessageSignature(room.id, msg, null);
+    }
     if (!verified) {
       const legacyMessage = isLegacySignatureGraceMessage(msg);
       if (msg.senderId !== myId && !legacyMessage && revealToken === revealTokenRef.current) {
@@ -1013,10 +1023,12 @@ function ChatView({
     let key = messageKeyStore.get(msg.id);
     let shouldForgetKey = false;
     if (!key && msg.recipientEncryptedKeys?.[myId]) {
-      const kemSecretKey = await getKemSecretKey();
-      if (kemSecretKey) {
+      for (const kemSecretKey of await getKemSecretKeys()) {
         key = unwrapMessageKey(msg.recipientEncryptedKeys[myId], kemSecretKey) ?? undefined;
-        shouldForgetKey = !!key;
+        if (key) {
+          shouldForgetKey = true;
+          break;
+        }
       }
     }
     if (!key) {

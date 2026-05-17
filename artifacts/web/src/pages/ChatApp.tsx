@@ -45,7 +45,7 @@ import {
   type SendMessageRequest,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearEphemeralSecrets, clearToken, getDsaPublicKey, getKemSecretKeysAsync, getLastHandle, getLocalKeyPairAsync, getToken, getUnsealedHandleLabels, hashIdentityCode, isFreshLoginVerificationValid, linkLocalPlatformPasskey, loginWithPasskey, rememberAssociatedHandle, rememberUnsealedHandle, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
+import { clearEphemeralSecrets, clearToken, getDsaPublicKey, getDsaPublicKeysAsync, getKemSecretKeysAsync, getLastHandle, getLocalKeyPairAsync, getToken, getUnsealedHandleLabels, hashIdentityCode, isFreshLoginVerificationValid, linkLocalPlatformPasskey, loginWithPasskey, rememberAssociatedHandle, rememberUnsealedHandle, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
 import { clearBytes, decryptMessage, encryptMessage, importMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
@@ -669,6 +669,9 @@ async function verifyMessageSignature(roomId: string, msg: Message): Promise<boo
   const localDsaPublicKey = getDsaPublicKey();
   if (localDsaPublicKey) {
     if (verifyWithDsaPublicKey(localDsaPublicKey)) return true;
+  }
+  for (const historicalDsaPublicKey of await getDsaPublicKeysAsync()) {
+    if (historicalDsaPublicKey !== localDsaPublicKey && verifyWithDsaPublicKey(historicalDsaPublicKey)) return true;
   }
   try {
     const bundle = await getTrustedKeyBundle(msg.senderId);

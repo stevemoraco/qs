@@ -327,8 +327,9 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       .where(and(eq(preKeysTable.userId, req.userId!), eq(preKeysTable.dsaPublicKey, senderDsaPublicKey)))
       .limit(1);
     if (historicalSenderKey?.dsaPublicKey) senderDsaCandidates.add(historicalSenderKey.dsaPublicKey);
+    senderDsaCandidates.add(senderDsaPublicKey);
   }
-  if (!verifiesMessageSignature({
+  const verifiedSenderDsaPublicKey = [...senderDsaCandidates].find((candidate) => verifiesMessageSignature({
     roomId,
     senderId: req.userId!,
     ciphertext,
@@ -336,7 +337,23 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     algorithm,
     recipientEncryptedKeys,
     signature,
-    dsaPublicKey: [...senderDsaCandidates].find((candidate) => verifiesMessageSignature({
+    dsaPublicKey: candidate,
+  }));
+  if (!verifiedSenderDsaPublicKey) {
+    res.status(400).json({
+      error: "Invalid message signature",
+      code: "INVALID_MESSAGE_SIGNATURE",
+      details: senderDsaPublicKey
+        ? "The authenticated device signing key did not verify this message payload."
+        : "No sender device signing key was supplied for this message.",
+    });
+    return;
+  }
+
+  if (senderDsaPublicKey && !senderDsaCandidates.has(senderDsaPublicKey)) {
+    logger.warn({ userId: req.userId }, "message accepted with embedded sender signing key not yet present in prekey history");
+  }
+  if (!verifiesMessageSignature({
       roomId,
       senderId: req.userId!,
       ciphertext,
@@ -344,8 +361,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       algorithm,
       recipientEncryptedKeys,
       signature,
-      dsaPublicKey: candidate,
-    })),
+      dsaPublicKey: verifiedSenderDsaPublicKey,
   })) {
     res.status(400).json({ error: "Invalid message signature" });
     return;
