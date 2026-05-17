@@ -197,23 +197,63 @@ const DISTRIBUTION_DEFENSES = [
   },
 ];
 
-const ADVERSARY_WARNINGS = [
+const PROTOCOL_COMPARISON = [
   {
-    title: "Identifiers and social graph",
-    copy: "Phone numbers, email handles, contact discovery, group membership, delivery routing, and account directories can expose who talks to whom even when message bodies are encrypted. QuantumShield masks names in the interface, but auditors should still pressure-test server-visible room membership and timing metadata.",
+    stage: "Account identity",
+    icon: <Fingerprint className="w-5 h-5" />,
+    quantumShield: "Handle plus passkey. No typed password field. The handle is the public locator; the private passkey material is mediated by the platform authenticator.",
+    signal: "Signal supports usernames for contact without sharing your phone number, but registration still starts from a phone number. PIN/Secure Value Recovery helps keep contacts and groups private from Signal servers.",
+    imessage: "iMessage is anchored to Apple ID, phone numbers, email addresses, device registration, and Apple's identity directory.",
+    warning: "Nation-state implication: encrypted message bodies do not hide account directories. Phone numbers, emails, handles, device registrations, group joins, and recovery flows can become a durable map of people and organizations.",
   },
   {
-    title: "Classical authentication is a quantum-era weak point",
-    copy: "A protocol can use post-quantum encryption for confidentiality while still using classical signatures or classical identity authentication. That can protect old ciphertext from future decryption, but it does not make identity/authentication post-quantum against an active adversary with a contemporaneous quantum computer.",
+    stage: "Initial key establishment",
+    icon: <Key className="w-5 h-5" />,
+    quantumShield: "Each message uses a fresh symmetric key wrapped to recipient devices with ML-KEM-1024, the finalized NIST lattice-based key encapsulation standard.",
+    signal: "Signal's PQXDH upgrades the X3DH handshake by mixing classical X25519 with post-quantum Kyber-derived shared secret material to resist harvest-now-decrypt-later attacks.",
+    imessage: "Apple's PQ3 adds a post-quantum encryption key to the device key material registered for iMessage and uses it in the conversation setup.",
+    warning: "Nation-state implication: if the first exchange is only classical, a recorded transcript may become readable later. Hybrid and post-quantum setup reduce that risk, but endpoint compromise still wins.",
   },
   {
-    title: "Historical logs change the threat model",
-    copy: "If an adversary has complete network access and keeps long-term logs, they may not need plaintext today. They can preserve ciphertext, routing metadata, timestamps, device identifiers, push tokens, and retry patterns, then analyze or attack them later as cryptography, endpoints, or servers fail.",
+    stage: "Ongoing conversation security",
+    icon: <Shield className="w-5 h-5" />,
+    quantumShield: "Message packages are signed with ML-DSA-87 before recipients unwrap keys or decrypt. Tampering is rejected before plaintext exists.",
+    signal: "Signal is built around the Signal Protocol ratchet. Its public post-quantum work has covered PQXDH and ongoing post-quantum ratchet research/deployment work.",
+    imessage: "Apple describes PQ3 as post-quantum protection for both initial establishment and ongoing rekeying inside supported iMessage conversations.",
+    warning: "Nation-state implication: confidentiality and authentication are separate. Post-quantum encryption protects old content from future decryption; post-quantum signatures matter when an active adversary can forge classical authentication in the future.",
   },
   {
-    title: "Disappearing messages are not magic deletion",
-    copy: "Time decay only works if the usable decryption key disappears before the adversary obtains it. If plaintext was screenshotted, photographed, backed up, logged, copied, or decrypted on a compromised endpoint, no cryptographic expiry can recover that exposure.",
+    stage: "Metadata and routing",
+    icon: <Server className="w-5 h-5" />,
+    quantumShield: "The server stores ciphertext, wrapped keys, delivery state, room membership, account/session records, and push routing data. The product intentionally calls this out for auditors.",
+    signal: "Signal is designed to minimize server knowledge and has private-contact-discovery and sealed-sender style protections, but network timing, registration, delivery, and device linkage can still be observable at some layer.",
+    imessage: "iMessage depends on Apple infrastructure for device lookup, delivery, push, backups/settings choices, and account/device coordination.",
+    warning: "Nation-state implication: with full network access and historical logs, an adversary can preserve timestamps, IPs, device identifiers, push tokens, delivery retries, group events, and account lookups even when content is unreadable.",
   },
+  {
+    stage: "Plaintext exposure on screen",
+    icon: <EyeOff className="w-5 h-5" />,
+    quantumShield: "Messages remain ciphertext in the interface until deliberate hold/tap reveal. Release, blur, scroll, background, camera detection, or capture-adjacent events hide the plaintext.",
+    signal: "Signal can reduce local leakage with app lock, screen security, disappearing messages, and notification privacy, depending on platform support and settings.",
+    imessage: "iMessage inherits Apple device lock screen, notification, Focus, screenshot, backup, and platform privacy controls.",
+    warning: "Nation-state implication: the hardest leak may be the endpoint, not the cipher. Screenshots, a second camera, shoulder surfing, malware, backups, and notification previews can defeat perfect transport encryption.",
+  },
+  {
+    stage: "Time decay and deletion",
+    icon: <TimerOff className="w-5 h-5" />,
+    quantumShield: "TTL can start after first view or immediately on send. When the local usable key is destroyed before capture, remaining server ciphertext is intentionally useless.",
+    signal: "Signal disappearing messages are a retention control, not a guarantee that already delivered plaintext was never copied, photographed, backed up, or compromised.",
+    imessage: "iMessage deletion and retention depend on device state, sync state, backups, recipient devices, and Apple account settings.",
+    warning: "Nation-state implication: deletion is only meaningful before collection. If plaintext or keys reached a compromised endpoint, historical log, backup, screenshot, or external camera, later expiry cannot claw it back.",
+  },
+];
+
+const PROTOCOL_REFERENCES = [
+  { label: "Apple PQ3", href: "https://security.apple.com/blog/imessage-pq3/" },
+  { label: "Signal PQXDH", href: "https://signal.org/blog/pqxdh/" },
+  { label: "Signal post-quantum ratchet", href: "https://signal.org/blog/spqr/" },
+  { label: "Signal usernames", href: "https://support.signal.org/hc/en-us/articles/6712070553754-Phone-Number-Privacy-and-Usernames" },
+  { label: "Signal PIN/SVR", href: "https://support.signal.org/hc/en-us/articles/360007059792-Signal-PIN" },
 ];
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
@@ -434,39 +474,68 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { name: "QuantumShield", copy: "Post-quantum key wrapping plus post-quantum signatures, hold-to-reveal plaintext, camera/capture-aware privacy shield, and open web distribution." },
-              { name: "Signal", copy: "Post-quantum key agreement for sessions and local screen security on supported platforms, but not this post-quantum message-signature layer or front-camera recording-device awareness." },
-              { name: "iMessage", copy: "Post-quantum confidentiality in Apple PQ3 with deep native integration, but message authentication remains classical and Messages does not expose this camera-aware reveal model." },
-            ].map((item) => (
-              <div key={item.name} className="border border-border/50 bg-background/50 p-5">
-                <div className="font-mono text-sm font-bold mb-3">{item.name}</div>
-                <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 border border-destructive/35 bg-destructive/5 p-5">
-            <div className="flex items-center gap-2 mb-5">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
+          <div className="border border-border/50 bg-background/60 p-5">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start mb-8">
               <div>
-                <div className="font-mono text-xs text-destructive tracking-widest">EXPLICIT ADVERSARY WARNINGS</div>
-                <p className="font-mono text-xs text-muted-foreground mt-1">
-                  Assume the adversary has complete network visibility, server-side historical logs, and years to correlate what they cannot decrypt today.
+                <div className="font-mono text-xs text-primary tracking-widest mb-3">SIGNAL / IMESSAGE / QUANTUMSHIELD</div>
+                <h3 className="font-mono font-bold text-2xl md:text-3xl leading-tight mb-4">Where the hard parts actually live.</h3>
+                <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                  The question is not whether a messenger says end-to-end encrypted. The question is what survives when the adversary is a nation-state with complete network access, historical packet logs, server subpoenas or compromise, endpoint malware, and years to wait.
                 </p>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {ADVERSARY_WARNINGS.map((warning) => (
-                <div key={warning.title} className="border border-destructive/25 bg-background/70 p-4">
-                  <div className="flex items-start gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-                    <div className="font-mono text-sm font-semibold text-foreground">{warning.title}</div>
+              <div className="border border-destructive/35 bg-destructive/5 p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-mono text-xs text-destructive tracking-widest mb-2">ASSUME TOTAL COLLECTION</div>
+                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                      Model the attacker as storing every packet, push event, login, device registration, retry, room event, and ciphertext forever. Content encryption helps, but metadata, identity, screenshots, backups, and endpoint exposure are separate battles.
+                    </p>
                   </div>
-                  <p className="font-mono text-xs text-muted-foreground leading-relaxed">{warning.copy}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {PROTOCOL_COMPARISON.map((row, index) => (
+                <div key={row.stage} className="border border-border/50 bg-card/25">
+                  <div className="grid grid-cols-1 xl:grid-cols-[220px_1fr_1fr_1fr]">
+                    <div className="border-b xl:border-b-0 xl:border-r border-border/40 p-4 bg-background/45">
+                      <div className="text-primary mb-3">{row.icon}</div>
+                      <div className="font-mono text-[10px] text-primary tracking-widest mb-2">LAYER {String(index + 1).padStart(2, "0")}</div>
+                      <div className="font-mono text-sm font-bold">{row.stage}</div>
+                    </div>
+                    {[
+                      { label: "QuantumShield", copy: row.quantumShield },
+                      { label: "Signal", copy: row.signal },
+                      { label: "iMessage", copy: row.imessage },
+                    ].map((item) => (
+                      <div key={item.label} className="border-b xl:border-b-0 xl:border-r last:border-r-0 border-border/40 p-4">
+                        <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.label.toUpperCase()}</div>
+                        <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-destructive/25 bg-destructive/5 p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                      <p className="font-mono text-xs text-muted-foreground leading-relaxed">{row.warning}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-6 border border-border/50 bg-card/25 p-4">
+              <div className="font-mono text-xs text-primary tracking-widest mb-3">PUBLIC REFERENCES</div>
+              <div className="flex flex-wrap gap-2">
+                {PROTOCOL_REFERENCES.map((item) => (
+                  <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-background px-3 py-2 font-mono text-[10px] text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors uppercase tracking-widest">
+                    {item.label}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
