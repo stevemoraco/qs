@@ -275,7 +275,7 @@ export interface CreateRoomRequest {
 /**
  * Map of userId to their ML-KEM encapsulated message key
  */
-export type MessageRecipientEncryptedKeys = {[key: string]: string} | null;
+export type MessageRecipientEncryptedKeys = {[key: string]: string | string[]} | null;
 
 export interface MessageDecayAttestationSource {
   id: string;
@@ -327,7 +327,7 @@ export interface Message {
 /**
  * Map of userId to their ML-KEM encapsulated message key
  */
-export type SendMessageRequestRecipientEncryptedKeys = {[key: string]: string} | null;
+export type SendMessageRequestRecipientEncryptedKeys = {[key: string]: string | string[]} | null;
 
 export interface SendMessageRequest {
   ciphertext: string;

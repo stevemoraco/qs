@@ -161,4 +161,40 @@ router.get("/keys/:userId", requireAuth, async (req: AuthRequest, res) => {
   });
 });
 
+router.get("/keys/:userId/devices", requireAuth, async (req: AuthRequest, res) => {
+  const userId = routeParam(req.params.userId);
+
+  if (!(await canReadKeyBundle(req.userId!, userId))) {
+    res.status(404).json({ error: "No pre-key bundles found for this user" });
+    return;
+  }
+
+  const rows = await db
+    .select()
+    .from(preKeysTable)
+    .where(eq(preKeysTable.userId, userId))
+    .orderBy(desc(preKeysTable.createdAt));
+
+  const seenKemKeys = new Set<string>();
+  const bundles = rows
+    .filter((key) => {
+      if (seenKemKeys.has(key.kemPublicKey)) return false;
+      seenKemKeys.add(key.kemPublicKey);
+      return true;
+    })
+    .map((key) => ({
+      kemPublicKey: key.kemPublicKey,
+      dsaPublicKey: key.dsaPublicKey,
+      kemSignature: key.kemSignature,
+      oneTimePreKeys: null,
+    }));
+
+  if (bundles.length === 0) {
+    res.status(404).json({ error: "No pre-key bundles found for this user" });
+    return;
+  }
+
+  res.json({ bundles });
+});
+
 export default router;

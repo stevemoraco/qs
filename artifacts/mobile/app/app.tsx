@@ -159,7 +159,7 @@ type Message = {
   algorithm: string;
   signature?: string | null;
   senderDsaPublicKey?: string | null;
-  recipientEncryptedKeys?: Record<string, string> | null;
+  recipientEncryptedKeys?: RecipientEncryptedKeys | null;
   expiresAt?: string | null;
   decayAttestation?: Record<string, unknown> | null;
   decayedAt?: string | null;
@@ -174,6 +174,9 @@ type WrappedMessageKey = {
   nonce: string;
   wrappedKey: string;
 };
+
+type RecipientEncryptedKeyValue = string | string[];
+type RecipientEncryptedKeys = Record<string, RecipientEncryptedKeyValue>;
 
 function getRoomLabel(room: Room, myId?: string): string {
   if (room.name) return room.name;
@@ -366,7 +369,7 @@ function messageSignaturePayload(input: {
   ciphertext: string;
   nonce: string;
   algorithm: string;
-  recipientEncryptedKeys?: Record<string, string> | null;
+  recipientEncryptedKeys?: RecipientEncryptedKeys | null;
 }): Uint8Array {
   return new TextEncoder().encode(
     stableJson({
@@ -411,6 +414,33 @@ async function getTrustedVerifiedKeyBundle(userId: string): Promise<KeyBundle | 
   return bundle;
 }
 
+async function getTrustedVerifiedKeyBundles(userId: string, token?: string | null): Promise<KeyBundle[]> {
+  try {
+    const res = await fetch(apiUrl(`/keys/${encodeURIComponent(userId)}/devices`), {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    if (!res.ok) throw new Error("No device key bundles found");
+    const data = await res.json() as { bundles?: KeyBundle[] };
+    const bundles: KeyBundle[] = [];
+    const seenKemKeys = new Set<string>();
+    for (const bundle of data.bundles ?? []) {
+      if (!bundle.kemPublicKey || seenKemKeys.has(bundle.kemPublicKey)) continue;
+      if (!verifyKeyBundleSignature(bundle)) continue;
+      const fingerprint = keyBundleFingerprint(bundle);
+      const trusted = trustedKeyBundleFingerprints.get(userId);
+      if (trusted && trusted !== fingerprint) continue;
+      trustedKeyBundleFingerprints.set(userId, fingerprint);
+      seenKemKeys.add(bundle.kemPublicKey);
+      bundles.push(bundle);
+    }
+    if (bundles.length > 0) return bundles;
+  } catch {
+    // Fall through to the legacy latest-bundle path.
+  }
+  const bundle = await getTrustedVerifiedKeyBundle(userId);
+  return bundle ? [bundle] : [];
+}
+
 async function encryptMsg(text: string): Promise<{ ciphertext: string; nonce: string; key: Uint8Array }> {
   const key = randomBytes(32);
   const nonce = randomBytes(12);
@@ -423,11 +453,19 @@ async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): P
   return new TextDecoder().decode(pt);
 }
 
-async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
+function encodeWrappedKeys(values: string[]): RecipientEncryptedKeyValue | null {
+  const unique = [...new Set(values.filter(Boolean))];
+  if (unique.length === 0) return null;
+  return unique.length === 1 ? unique[0] : unique;
+}
+
+async function wrapMessageKeyForUserDevices(userId: string, rawMessageKey: Uint8Array, token?: string | null): Promise<RecipientEncryptedKeyValue | null> {
   try {
-    const bundle = await getTrustedVerifiedKeyBundle(userId);
-    if (!bundle?.kemPublicKey) return null;
-    return wrapMessageKeyForKemPublicKey(bundle.kemPublicKey, rawMessageKey);
+    const bundles = await getTrustedVerifiedKeyBundles(userId, token);
+    const wrapped = await Promise.all(
+      bundles.map((bundle) => bundle.kemPublicKey ? wrapMessageKeyForKemPublicKey(bundle.kemPublicKey, rawMessageKey) : null),
+    );
+    return encodeWrappedKeys(wrapped.filter((value): value is string => !!value));
   } catch {
     return null;
   }
@@ -459,7 +497,7 @@ async function signMessagePayload(input: {
   ciphertext: string;
   nonce: string;
   algorithm: string;
-  recipientEncryptedKeys: Record<string, string>;
+  recipientEncryptedKeys: RecipientEncryptedKeys;
 }, dsaSecretKeyB64: string | null): Promise<string | null> {
   if (!dsaSecretKeyB64) return null;
   const signature = ml_dsa87.sign(messageSignaturePayload(input), b64ToBytes(dsaSecretKeyB64));
@@ -528,7 +566,11 @@ async function verifyMessageSignature(roomId: string, msg: Message, localDsaPubl
   }
 }
 
-function unwrapMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8Array | null {
+function normalizeWrappedKeyCandidates(wrappedValue: RecipientEncryptedKeyValue): string[] {
+  return Array.isArray(wrappedValue) ? wrappedValue : [wrappedValue];
+}
+
+function unwrapSingleMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8Array | null {
   try {
     const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
     const sharedSecret = ml_kem1024.decapsulate(b64ToBytes(wrapped.kemCiphertext), b64ToBytes(kemSecretKeyB64));
@@ -540,6 +582,14 @@ function unwrapMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8A
   } catch {
     return null;
   }
+}
+
+function unwrapMessageKey(wrappedValue: RecipientEncryptedKeyValue, kemSecretKeyB64: string): Uint8Array | null {
+  for (const candidate of normalizeWrappedKeyCandidates(wrappedValue)) {
+    const key = unwrapSingleMessageKey(candidate, kemSecretKeyB64);
+    if (key) return key;
+  }
+  return null;
 }
 
 function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: {
@@ -689,7 +739,7 @@ function ChatView({
   securityEpoch: number;
 }) {
   const qc = useQueryClient();
-  const { getKemSecretKey, getKemPublicKey, getDsaSecretKey, getDsaPublicKey } = useAuth();
+  const { token, getKemSecretKey, getKemPublicKey, getDsaSecretKey, getDsaPublicKey } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
@@ -841,13 +891,16 @@ function ChatView({
     try {
       const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
       const recipientIds = Array.from(new Set([myId, ...freshMembers.map((member) => member.id)]));
-      const recipientEncryptedKeys: Record<string, string> = {};
+      const recipientEncryptedKeys: RecipientEncryptedKeys = {};
       await Promise.all(
         recipientIds.map(async (userId) => {
           const localKemPublicKey = userId === myId ? await getKemPublicKey() : null;
-          const wrapped = localKemPublicKey
-            ? await wrapMessageKeyForKemPublicKey(localKemPublicKey, key)
-            : await wrapMessageKeyForUser(userId, key);
+          const wrapped = userId === myId && localKemPublicKey
+            ? encodeWrappedKeys([
+                await wrapMessageKeyForKemPublicKey(localKemPublicKey, key),
+                ...normalizeWrappedKeyCandidates(await wrapMessageKeyForUserDevices(userId, key, token) ?? []),
+              ].filter((value): value is string => !!value))
+            : await wrapMessageKeyForUserDevices(userId, key, token);
           if (wrapped) recipientEncryptedKeys[userId] = wrapped;
         })
       );

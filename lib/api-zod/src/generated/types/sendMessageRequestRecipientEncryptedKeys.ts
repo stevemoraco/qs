@@ -9,4 +9,4 @@
 /**
  * Map of userId to their ML-KEM encapsulated message key
  */
-export type SendMessageRequestRecipientEncryptedKeys = {[key: string]: string} | null;
+export type SendMessageRequestRecipientEncryptedKeys = {[key: string]: string | string[]} | null;

@@ -11,6 +11,9 @@ export type OfflineRoom = {
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
+export type RecipientEncryptedKeyValue = string | string[];
+export type RecipientEncryptedKeys = Record<string, RecipientEncryptedKeyValue>;
+
 export type OfflineMessage = {
   id: string;
   senderId: string;
@@ -20,7 +23,7 @@ export type OfflineMessage = {
   algorithm: string;
   signature?: string | null;
   senderDsaPublicKey?: string | null;
-  recipientEncryptedKeys?: Record<string, string> | null;
+  recipientEncryptedKeys?: RecipientEncryptedKeys | null;
   expiresAt?: string | null;
   decayedAt?: string | null;
   decayAttestation?: Record<string, unknown> | null;
@@ -51,7 +54,7 @@ export type OfflineOutboxEntry = {
   algorithm: string;
   signature: string;
   senderDsaPublicKey?: string | null;
-  recipientEncryptedKeys: Record<string, string>;
+  recipientEncryptedKeys: RecipientEncryptedKeys;
   ttlSeconds?: number | null;
   createdAt: string;
   availableAt?: string | null;

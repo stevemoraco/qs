@@ -23,11 +23,12 @@ function report(checks: Check[]): void {
   }
 }
 
-const [pushRoute, roomsRoute, messagesRoute, authRoute] = await Promise.all([
+const [pushRoute, roomsRoute, messagesRoute, authRoute, keysRoute] = await Promise.all([
   readFile(path.join(root, "artifacts/api-server/src/routes/push.ts"), "utf8"),
   readFile(path.join(root, "artifacts/api-server/src/routes/rooms.ts"), "utf8"),
   readFile(path.join(root, "artifacts/api-server/src/routes/messages.ts"), "utf8"),
   readFile(path.join(root, "artifacts/api-server/src/routes/auth.ts"), "utf8"),
+  readFile(path.join(root, "artifacts/api-server/src/routes/keys.ts"), "utf8"),
 ]);
 
 const checks: Check[] = [
@@ -67,6 +68,19 @@ const checks: Check[] = [
       "eq(messagesTable.signature, signature!)",
       "randomInt(0, fuzzSeconds + 1)",
       "notificationPayload",
+    ]),
+  },
+  {
+    name: "message send accepts multi-device wrapped keys per member",
+    pass: includesAll(messagesRoute, [
+      "type RecipientEncryptedKeyValue = string | string[]",
+      "function isValidWrappedKeyValue",
+      "Array.isArray(value)",
+      "recipientEncryptedKeys",
+    ]) && includesAll(keysRoute, [
+      "router.get(\"/keys/:userId/devices\"",
+      "seenKemKeys",
+      "bundles",
     ]),
   },
   {

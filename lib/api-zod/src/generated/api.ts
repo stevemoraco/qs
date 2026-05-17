@@ -425,7 +425,7 @@ export const GetRoomsRoomIdMessagesResponseItem = zod.object({
   "algorithm": zod.string().describe('Cipher suite: AES-256-GCM+ML-KEM-1024+ML-DSA-87'),
   "signature": zod.string().nullish().describe('Base64-encoded ML-DSA-87 signature over ciphertext'),
   "senderDsaPublicKey": zod.string().nullish().describe('Base64-encoded ML-DSA-87 public key used to verify this message signature.'),
-  "recipientEncryptedKeys": zod.record(zod.string(), zod.string()).nullish().describe('Map of userId to their ML-KEM encapsulated message key'),
+  "recipientEncryptedKeys": zod.record(zod.string(), zod.union([zod.string(), zod.array(zod.string())])).nullish().describe('Map of userId to one or more ML-KEM encapsulated message keys for that user devices'),
   "decayAttestation": MessageDecayAttestation.nullish().describe('Server-signed quorum clock attestation for experimental decay rooms.'),
   "decayedAt": zod.coerce.date().nullish(),
   "expiresAt": zod.coerce.date().nullish(),
@@ -448,7 +448,7 @@ export const PostRoomsRoomIdMessagesBody = zod.object({
   "algorithm": zod.string(),
   "signature": zod.string().nullish(),
   "senderDsaPublicKey": zod.string().nullish().describe('Base64-encoded ML-DSA-87 public key used to verify this message signature.'),
-  "recipientEncryptedKeys": zod.record(zod.string(), zod.string()).nullish().describe('Map of userId to their ML-KEM encapsulated message key'),
+  "recipientEncryptedKeys": zod.record(zod.string(), zod.union([zod.string(), zod.array(zod.string())])).nullish().describe('Map of userId to one or more ML-KEM encapsulated message keys for that user devices'),
   "ttlSeconds": zod.number().nullish()
 })
 

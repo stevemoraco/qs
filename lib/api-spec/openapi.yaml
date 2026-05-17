@@ -1022,9 +1022,13 @@ components:
         recipientEncryptedKeys:
           type: object
           nullable: true
-          description: Map of userId to their ML-KEM encapsulated message key
+          description: Map of userId to one or more ML-KEM encapsulated message keys for that user's devices
           additionalProperties:
-            type: string
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
         decayAttestation:
           $ref: "#/components/schemas/MessageDecayAttestation"
           nullable: true
@@ -1065,9 +1069,13 @@ components:
         recipientEncryptedKeys:
           type: object
           nullable: true
-          description: Map of userId to their ML-KEM encapsulated message key
+          description: Map of userId to one or more ML-KEM encapsulated message keys for that user's devices
           additionalProperties:
-            type: string
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
         ttlSeconds:
           type: integer
           nullable: true

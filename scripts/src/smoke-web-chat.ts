@@ -41,6 +41,17 @@ const checks: Check[] = [
     ]),
   },
   {
+    name: "send path wraps each user message key for all linked devices",
+    pass: has(chatApp, [
+      "getTrustedKeyBundles",
+      "/api/keys/",
+      "/devices",
+      "wrapMessageKeyForUserDevices",
+      "wrapMessageKeyForCurrentUserDevices",
+      "encodeWrappedKeys",
+    ]),
+  },
+  {
     name: "reveal path verifies sender signature before decrypting non-legacy messages",
     pass:
       has(chatApp, [
@@ -71,7 +82,8 @@ const checks: Check[] = [
       clearEphemeralSecretsBody.includes("clearPrivateKeyCache()") &&
       !clearEphemeralSecretsBody.includes("localStorage.removeItem(KEM_SK_KEY)") &&
       !clearEphemeralSecretsBody.includes("localStorage.removeItem(DSA_SK_KEY)") &&
-      chatApp.includes("await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])"),
+      chatApp.includes("await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])") &&
+      chatApp.includes("normalizeWrappedKeyCandidates"),
   },
   {
     name: "offline vault has durable stores for rooms, messages, members, keys, and outbox",

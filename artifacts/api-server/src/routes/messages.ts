@@ -56,17 +56,26 @@ function validDurationSeconds(value: number | null | undefined, max: number): bo
   return Number.isSafeInteger(value) && value >= 0 && value <= max;
 }
 
+type RecipientEncryptedKeyValue = string | string[];
+type RecipientEncryptedKeys = Record<string, RecipientEncryptedKeyValue>;
+
+function isValidWrappedKeyValue(value: unknown): value is RecipientEncryptedKeyValue {
+  if (typeof value === "string") return value.length > 0 && value.length <= MAX_WRAPPED_KEY_LENGTH;
+  if (!Array.isArray(value) || value.length === 0 || value.length > 16) return false;
+  return value.every((item) => typeof item === "string" && item.length > 0 && item.length <= MAX_WRAPPED_KEY_LENGTH);
+}
+
 function isValidRecipientEncryptedKeys(
   value: unknown,
   expectedUserIds: Set<string>,
-): value is Record<string, string> {
+): value is RecipientEncryptedKeys {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const keys = Object.entries(value);
   if (keys.length !== expectedUserIds.size) return false;
 
   for (const [userId, wrappedKey] of keys) {
     if (!expectedUserIds.has(userId)) return false;
-    if (typeof wrappedKey !== "string" || wrappedKey.length === 0 || wrappedKey.length > MAX_WRAPPED_KEY_LENGTH) return false;
+    if (!isValidWrappedKeyValue(wrappedKey)) return false;
   }
 
   return true;
@@ -87,7 +96,7 @@ function messageSignaturePayload(input: {
   ciphertext: string;
   nonce: string;
   algorithm: string;
-  recipientEncryptedKeys: Record<string, string>;
+  recipientEncryptedKeys: RecipientEncryptedKeys;
 }): Uint8Array {
   return new TextEncoder().encode(
     stableJson({
@@ -131,7 +140,7 @@ function verifiesMessageSignature(input: {
   ciphertext: string;
   nonce: string;
   algorithm: string;
-  recipientEncryptedKeys: Record<string, string>;
+  recipientEncryptedKeys: RecipientEncryptedKeys;
   signature: string | null | undefined;
   dsaPublicKey: string | null | undefined;
 }): boolean {
