@@ -39,7 +39,11 @@ kill_matching "pnpm --filter @workspace/api-server run start"
 kill_matching "node --enable-source-maps ./dist/index.mjs"
 kill_matching "pnpm --filter @workspace/web run dev"
 kill_matching "pnpm --filter @workspace/web run serve"
+kill_matching "pnpm --filter @workspace/mobile run dev"
+kill_matching "pnpm --filter @workspace/mockup-sandbox run dev"
+kill_matching "expo start"
 kill_matching "vite --config vite.config.ts"
+kill_matching "vite.js dev"
 sleep 1
 
 echo "Building API and PWA for ${HEAD_SHORT}..."
