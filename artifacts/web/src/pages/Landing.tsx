@@ -282,51 +282,63 @@ const LOCAL_DEVICE_EXPOSURE = [
     name: "QuantumShield",
     tone: "benefit",
     icon: <MousePointerClick className="w-5 h-5" />,
+    plain: "QuantumShield tries not to leave readable chats lying around.",
     headline: "Plaintext is designed to be brief, deliberate, and one-at-a-time.",
+    runningPlain: "While open, only the message you choose should be readable.",
     running: [
       "RAM can contain decrypted plaintext only for the message currently being held or intentionally revealed.",
       "RAM can contain active session state and local decryption keys while the app is unlocked.",
       "Release, blur, background, scroll, privacy shield, or capture detection clears visible plaintext.",
     ],
+    stoppedPlain: "When closed, old chats should look like locked boxes, not notes.",
     stopped: [
       "Disk is intended to hold ciphertext packages, wrapped keys, public key material, and app/session metadata.",
       "Readable handles stay local; the server stores peppered exact-lookup values instead of readable handles.",
       "Expired local message keys are removed so old ciphertext should remain unreadable.",
     ],
+    implicationPlain: "A bad app has to catch the tiny moment when you reveal something.",
     implication: "An AI agent or malware running as your user has the best chance only during the reveal window or by stealing local keys. It should not find a normal plaintext chat archive waiting on disk.",
   },
   {
     name: "Signal",
     tone: "risk",
     icon: <Database className="w-5 h-5" />,
+    plain: "Signal Desktop keeps local chat data so it can reopen your history.",
     headline: "Desktop history and attachments exist as a local app dataset.",
+    runningPlain: "While open, Signal has to read chats to show them to you.",
     running: [
       "RAM can contain the messages, contacts, attachments, previews, and keys the desktop app is actively using.",
       "The app must decrypt content locally to render conversations and attachments.",
       "Screen security/app lock reduce casual exposure but do not hide content from malware already running as you.",
     ],
+    stoppedPlain: "When closed, the desktop app still keeps a local record it can reopen.",
     stopped: [
       "Disk can contain Signal Desktop's local encrypted database, attachment files/state, preferences, and key material needed by the desktop client.",
       "The database is not a simple plaintext file, but the desktop app must retain enough local material to reopen your history.",
       "OS account compromise, backups, screenshots, exports, and notification artifacts can still matter.",
     ],
+    implicationPlain: "A bad app may attack your computer instead of breaking Signal's network encryption.",
     implication: "A local AI agent or malware with your user privileges may not need to break Signal's network encryption; it can target the desktop app's local dataset, live process, screen, clipboard, notifications, or backups.",
   },
   {
     name: "iMessage",
     tone: "risk",
     icon: <FolderSearch className="w-5 h-5" />,
+    plain: "iMessage on a Mac keeps message history your Mac can search and reopen.",
     headline: "Mac message history and attachments are ordinary local targets.",
+    runningPlain: "While open, your Mac can show messages, files, previews, and alerts.",
     running: [
       "RAM can contain open conversations, rendered plaintext, attachments, notification state, and account/device sync state.",
       "The Messages app and system services can render searchable conversation history on your unlocked Mac.",
       "Anything visible to the user can also be visible to screen-reading malware, screenshots, remote control tools, or a local agent.",
     ],
+    stoppedPlain: "When closed, history and attachments can still live on your Mac.",
     stopped: [
       "Disk commonly contains Messages history under the user Library Messages database and attachment folders.",
       "Disk may also expose contacts, handles, previews, Spotlight/search artifacts, caches, and backup-derived copies depending on settings.",
       "iCloud settings, local retention, backups, FileVault, device lock state, and Advanced Data Protection change the exposure.",
     ],
+    implicationPlain: "A bad app or person on your Mac can look for the local copy.",
     implication: "A local AI agent or person with access to your unlocked Mac account can often inspect the endpoint record directly. Transport encryption is already over by the time messages are stored and rendered locally.",
   },
 ];
@@ -645,22 +657,24 @@ export default function Landing() {
               <div key={item.name} className="border border-border/50 bg-card/30 p-5">
                 <div className="text-primary mb-4">{item.icon}</div>
                 <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.name.toUpperCase()}</div>
-                <h3 className={`font-mono text-lg font-bold leading-snug mb-4 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{item.headline}</h3>
+                <h3 className="font-mono text-base font-bold leading-snug text-foreground mb-2">{item.plain}</h3>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-4">{item.headline}</p>
                 <div className="space-y-4">
                   {[
-                    { label: "RAM while running", icon: <Cpu className="w-4 h-4" />, lines: item.running },
-                    { label: "Disk while not running", icon: <HardDrive className="w-4 h-4" />, lines: item.stopped },
+                    { label: "RAM while running", icon: <Cpu className="w-4 h-4" />, plain: item.runningPlain, lines: item.running },
+                    { label: "Disk while not running", icon: <HardDrive className="w-4 h-4" />, plain: item.stoppedPlain, lines: item.stopped },
                   ].map((group) => (
                     <div key={group.label} className="border border-border/40 bg-background/35 p-3">
                       <div className="flex items-center gap-2 mb-3">
                         <span className={item.tone === "benefit" ? "text-primary" : "text-destructive"}>{group.icon}</span>
                         <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{group.label.toUpperCase()}</div>
                       </div>
+                      <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{group.plain}</p>
                       <div className="space-y-2">
                         {group.lines.map((line) => (
                           <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
                             <span className={`mt-1.5 h-1.5 w-1.5 ${item.tone === "benefit" ? "bg-primary" : "bg-destructive"}`} />
-                            <p className="font-mono text-xs text-muted-foreground leading-relaxed">{line}</p>
+                            <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{line}</p>
                           </div>
                         ))}
                       </div>
@@ -668,7 +682,8 @@ export default function Landing() {
                   ))}
                   <div className={`border p-3 ${item.tone === "benefit" ? "border-primary/30 bg-primary/5" : "border-destructive/30 bg-destructive/5"}`}>
                     <div className={`font-mono text-[10px] tracking-widest mb-2 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`}>AI AGENT / MALWARE IMPLICATION</div>
-                    <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.implication}</p>
+                    <p className="font-mono text-sm font-bold text-foreground leading-snug mb-2">{item.implicationPlain}</p>
+                    <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{item.implication}</p>
                   </div>
                 </div>
               </div>
