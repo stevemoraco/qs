@@ -157,7 +157,7 @@ const DECAY_TIMELINE = [
     color: "text-amber-500",
     border: "border-amber-500/40",
     copy: "Real time expires. Even if keys are compromised, half the chunks are already replaced by deterministic decay noise.",
-    chunks: ["Meet", "at", "the", "north", "9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "Bring", "the", "sealed", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2", "7429."],
+    chunks: ["Meet", "at", "the", "north", "9f?2a1c#", "0d|e88b!", "af77/31c", "$e09%4bb", "Bring", "the", "sealed", "drive", "71\\e#0f?", "c0%9|aa1", "3b!41/de", "88#d0f2"],
   },
   {
     minute: "16:00",
