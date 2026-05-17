@@ -255,6 +255,7 @@ export const GetUsersUserIdResponse = zod.object({
  * @summary List rooms for the current user
  */
 export const getRoomsResponseTtlModeDefault = `after_view`;
+export const getRoomsResponseDecayModeDefault = `standard`;
 
 export const GetRoomsResponseItem = zod.object({
   "id": zod.string(),
@@ -265,6 +266,7 @@ export const GetRoomsResponseItem = zod.object({
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
   "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.'),
+  "decayMode": zod.enum(['standard', 'experimental_quorum_decay']).default(getRoomsResponseDecayModeDefault).describe('Optional experimental quorum-decay policy tier. Standard is the default.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
@@ -284,6 +286,7 @@ export const GetRoomsResponse = zod.array(GetRoomsResponseItem)
  * @summary Create a new room
  */
 export const postRoomsBodyTtlModeDefault = `after_view`;
+export const postRoomsBodyDecayModeDefault = `standard`;
 
 export const PostRoomsBody = zod.object({
   "name": zod.string().nullish(),
@@ -291,7 +294,8 @@ export const PostRoomsBody = zod.object({
   "memberIds": zod.array(zod.string()),
   "ttlSeconds": zod.number().nullish().describe('Message TTL in seconds. Keys are destroyed after this period.'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(postRoomsBodyTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
-  "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.')
+  "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.'),
+  "decayMode": zod.enum(['standard', 'experimental_quorum_decay']).default(postRoomsBodyDecayModeDefault).describe('Optional experimental quorum-decay policy tier. Standard is the default.')
 })
 
 
@@ -303,6 +307,7 @@ export const GetRoomsRoomIdParams = zod.object({
 })
 
 export const getRoomsRoomIdResponseTtlModeDefault = `after_view`;
+export const getRoomsRoomIdResponseDecayModeDefault = `standard`;
 
 export const GetRoomsRoomIdResponse = zod.object({
   "id": zod.string(),
@@ -313,6 +318,7 @@ export const GetRoomsRoomIdResponse = zod.object({
   "ttlSeconds": zod.number().nullish().describe('Message TTL — keys destroyed after this period'),
   "ttlMode": zod.enum(['after_view', 'after_send']).default(getRoomsRoomIdResponseTtlModeDefault).describe('Whether TTL starts when a message is first viewed or when it is sent.'),
   "deliveryFuzzSeconds": zod.number().default(89).describe('Random server-side delivery delay window in seconds.'),
+  "decayMode": zod.enum(['standard', 'experimental_quorum_decay']).default(getRoomsRoomIdResponseDecayModeDefault).describe('Optional experimental quorum-decay policy tier. Standard is the default.'),
   "createdAt": zod.coerce.date(),
   "members": zod.array(zod.object({
   "id": zod.string(),
@@ -389,6 +395,26 @@ export const GetRoomsRoomIdMessagesQueryParams = zod.object({
   "limit": zod.coerce.number().default(getRoomsRoomIdMessagesQueryLimitDefault)
 })
 
+export const MessageDecayAttestation = zod.object({
+  "version": zod.literal(1),
+  "sampledAt": zod.string(),
+  "serverFallbackEpochMs": zod.number(),
+  "synthesizedAt": zod.string(),
+  "synthesizedEpochMs": zod.number(),
+  "synthesisMode": zod.enum(['quorum_median', 'server_fallback']),
+  "quorumSize": zod.number(),
+  "quorumSpreadMs": zod.number(),
+  "minQuorumSources": zod.number(),
+  "sources": zod.array(zod.object({
+    "id": zod.string(),
+    "url": zod.string(),
+    "ok": zod.boolean(),
+    "epochMs": zod.number().optional()
+  })),
+  "degraded": zod.boolean(),
+  "signature": zod.string()
+})
+
 export const GetRoomsRoomIdMessagesResponseItem = zod.object({
   "id": zod.string(),
   "roomId": zod.string(),
@@ -398,7 +424,10 @@ export const GetRoomsRoomIdMessagesResponseItem = zod.object({
   "nonce": zod.string().describe('Base64-encoded 96-bit nonce'),
   "algorithm": zod.string().describe('Cipher suite: AES-256-GCM+ML-KEM-1024+ML-DSA-87'),
   "signature": zod.string().nullish().describe('Base64-encoded ML-DSA-87 signature over ciphertext'),
+  "senderDsaPublicKey": zod.string().nullish().describe('Base64-encoded ML-DSA-87 public key used to verify this message signature.'),
   "recipientEncryptedKeys": zod.record(zod.string(), zod.string()).nullish().describe('Map of userId to their ML-KEM encapsulated message key'),
+  "decayAttestation": MessageDecayAttestation.nullish().describe('Server-signed quorum clock attestation for experimental decay rooms.'),
+  "decayedAt": zod.coerce.date().nullish(),
   "expiresAt": zod.coerce.date().nullish(),
   "availableAt": zod.coerce.date().nullish(),
   "createdAt": zod.coerce.date()

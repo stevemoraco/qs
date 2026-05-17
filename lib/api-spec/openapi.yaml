@@ -883,6 +883,11 @@ components:
           type: integer
           default: 89
           description: Random server-side delivery delay window in seconds.
+        decayMode:
+          type: string
+          enum: [standard, experimental_quorum_decay]
+          default: standard
+          description: Optional experimental quorum-decay policy tier. Standard is the default.
         createdAt:
           type: string
           format: date-time
@@ -919,6 +924,70 @@ components:
           type: integer
           default: 89
           description: Random server-side delivery delay window in seconds.
+        decayMode:
+          type: string
+          enum: [standard, experimental_quorum_decay]
+          default: standard
+          description: Optional experimental quorum-decay policy tier. Standard is the default.
+
+    MessageDecayAttestation:
+      type: object
+      required:
+        - version
+        - sampledAt
+        - serverFallbackEpochMs
+        - synthesizedAt
+        - synthesizedEpochMs
+        - synthesisMode
+        - quorumSize
+        - quorumSpreadMs
+        - minQuorumSources
+        - sources
+        - degraded
+        - signature
+      properties:
+        version:
+          type: integer
+          enum: [1]
+        sampledAt:
+          type: string
+          format: date-time
+        serverFallbackEpochMs:
+          type: number
+        synthesizedAt:
+          type: string
+          format: date-time
+        synthesizedEpochMs:
+          type: number
+        synthesisMode:
+          type: string
+          enum: [quorum_median, server_fallback]
+          description: Public-source quorum median when enough sources agree, otherwise server fallback.
+        quorumSize:
+          type: integer
+        quorumSpreadMs:
+          type: number
+        minQuorumSources:
+          type: integer
+        sources:
+          type: array
+          items:
+            type: object
+            required: [id, url, ok]
+            properties:
+              id:
+                type: string
+              url:
+                type: string
+              ok:
+                type: boolean
+              epochMs:
+                type: number
+        degraded:
+          type: boolean
+        signature:
+          type: string
+          description: Server HMAC over the quorum clock attestation payload.
 
     Message:
       type: object
@@ -946,12 +1015,24 @@ components:
           type: string
           nullable: true
           description: Base64-encoded ML-DSA-87 signature over ciphertext
+        senderDsaPublicKey:
+          type: string
+          nullable: true
+          description: Base64-encoded ML-DSA-87 public key used to verify this message signature.
         recipientEncryptedKeys:
           type: object
           nullable: true
           description: Map of userId to their ML-KEM encapsulated message key
           additionalProperties:
             type: string
+        decayAttestation:
+          $ref: "#/components/schemas/MessageDecayAttestation"
+          nullable: true
+          description: Server-signed quorum clock attestation for experimental decay rooms.
+        decayedAt:
+          type: string
+          format: date-time
+          nullable: true
         expiresAt:
           type: string
           format: date-time

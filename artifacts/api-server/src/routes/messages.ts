@@ -1,14 +1,21 @@
 import { Router } from "express";
-import { db, messagesTable, roomMembersTable, roomsTable } from "@workspace/db";
-import { eq, and, lt, desc, ne, inArray, isNull, lte } from "drizzle-orm";
+import { db, messagesTable, roomMembersTable, roomsTable, usersTable } from "@workspace/db";
+import { eq, and, lt, desc, ne, inArray, isNull, isNotNull, lte, or } from "drizzle-orm";
 import { randomInt } from "crypto";
+import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
 import { logger } from "../lib/logger";
-import { appendFile } from "fs/promises";
+import { createTimeQuorumAttestation, type TimeQuorumAttestation } from "../lib/time-quorum";
 
 const router = Router();
+const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
+const MAX_MESSAGE_TTL_SECONDS = 35_337_600;
+const MAX_DELIVERY_FUZZ_SECONDS = 35_337_600;
+const MAX_WRAPPED_KEY_LENGTH = 16_384;
+const EXPIRED_KEY_PURGE_INTERVAL_MS = 30_000;
+const EXPERIMENTAL_QUORUM_DECAY = "experimental_quorum_decay";
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
@@ -23,6 +30,132 @@ function scheduleNotification(delaySeconds: number, task: () => Promise<unknown>
     void task();
   }, delaySeconds * 1000);
   timer.unref?.();
+}
+
+async function purgeExpiredMessageKeys(attestation?: TimeQuorumAttestation): Promise<void> {
+  try {
+    const decayAttestation = attestation ?? await createTimeQuorumAttestation();
+    const quorumNow = new Date(decayAttestation.synthesizedEpochMs);
+    const expiredExperimentalRows = await db
+      .select({ id: messagesTable.id })
+      .from(messagesTable)
+      .innerJoin(roomsTable, eq(messagesTable.roomId, roomsTable.id))
+      .where(and(
+        lte(messagesTable.expiresAt, quorumNow),
+        or(isNotNull(messagesTable.recipientEncryptedKeys), isNull(messagesTable.decayedAt)),
+        eq(roomsTable.decayMode, EXPERIMENTAL_QUORUM_DECAY),
+      ));
+
+    if (expiredExperimentalRows.length > 0) {
+      await db
+        .update(messagesTable)
+        .set({ recipientEncryptedKeys: null, decayedAt: quorumNow, decayAttestation })
+        .where(inArray(messagesTable.id, expiredExperimentalRows.map((row) => row.id)));
+    }
+  } catch (error) {
+    logger.warn({ error }, "Failed to purge expired message keys");
+  }
+}
+
+const expiredKeyPurgeTimer = setInterval(() => {
+  void purgeExpiredMessageKeys();
+}, EXPIRED_KEY_PURGE_INTERVAL_MS);
+expiredKeyPurgeTimer.unref?.();
+
+function validDurationSeconds(value: number | null | undefined, max: number): boolean {
+  if (value === null || value === undefined) return true;
+  return Number.isSafeInteger(value) && value >= 0 && value <= max;
+}
+
+function isValidRecipientEncryptedKeys(
+  value: unknown,
+  expectedUserIds: Set<string>,
+): value is Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const keys = Object.entries(value);
+  if (keys.length !== expectedUserIds.size) return false;
+
+  for (const [userId, wrappedKey] of keys) {
+    if (!expectedUserIds.has(userId)) return false;
+    if (typeof wrappedKey !== "string" || wrappedKey.length === 0 || wrappedKey.length > MAX_WRAPPED_KEY_LENGTH) return false;
+  }
+
+  return true;
+}
+
+function stableJson(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  return `{${Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableJson((value as Record<string, unknown>)[key])}`)
+    .join(",")}}`;
+}
+
+function messageSignaturePayload(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  recipientEncryptedKeys: Record<string, string>;
+}): Uint8Array {
+  return new TextEncoder().encode(
+    stableJson({
+      v: 1,
+      purpose: "quantumshield.chat.message",
+      roomId: input.roomId,
+      senderId: input.senderId,
+      ciphertext: input.ciphertext,
+      nonce: input.nonce,
+      algorithm: input.algorithm,
+      recipientEncryptedKeys: input.recipientEncryptedKeys,
+    }),
+  );
+}
+
+type MessageRow = typeof messagesTable.$inferSelect;
+
+function messageResponse(message: MessageRow) {
+  return {
+    id: message.id,
+    roomId: message.roomId,
+    senderId: message.senderId,
+    senderUsername: null,
+    ciphertext: message.ciphertext,
+    nonce: message.nonce,
+    algorithm: message.algorithm,
+    signature: message.signature,
+    senderDsaPublicKey: message.senderDsaPublicKey,
+    recipientEncryptedKeys: message.recipientEncryptedKeys,
+    decayAttestation: message.decayAttestation,
+    decayedAt: message.decayedAt,
+    expiresAt: message.expiresAt,
+    availableAt: message.availableAt,
+    createdAt: message.createdAt,
+  };
+}
+
+function verifiesMessageSignature(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  recipientEncryptedKeys: Record<string, string>;
+  signature: string | null | undefined;
+  dsaPublicKey: string | null | undefined;
+}): boolean {
+  if (!input.signature || !input.dsaPublicKey) return false;
+  try {
+    return ml_dsa87.verify(
+      new Uint8Array(Buffer.from(input.signature, "base64")),
+      messageSignaturePayload(input),
+      new Uint8Array(Buffer.from(input.dsaPublicKey, "base64")),
+    );
+  } catch {
+    return false;
+  }
 }
 
 router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res) => {
@@ -43,17 +176,26 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
   const before = req.query.before as string | undefined;
 
   const [room] = await db
-    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode })
+    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode, decayMode: roomsTable.decayMode })
     .from(roomsTable)
     .where(eq(roomsTable.id, roomId))
     .limit(1);
+
+  const isExperimentalQuorumDecay = room?.decayMode === EXPERIMENTAL_QUORUM_DECAY;
+  const readAttestation = isExperimentalQuorumDecay ? await createTimeQuorumAttestation() : null;
+  const serverNow = readAttestation ? new Date(readAttestation.synthesizedEpochMs) : new Date();
+  if (readAttestation) {
+    await purgeExpiredMessageKeys(readAttestation);
+  } else {
+    void purgeExpiredMessageKeys();
+  }
 
   let query = db
     .select({
       message: messagesTable,
     })
     .from(messagesTable)
-    .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, new Date())))
+    .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, serverNow)))
     .orderBy(desc(messagesTable.createdAt))
     .limit(limit);
 
@@ -61,7 +203,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
     const [beforeMsg] = await db
       .select({ createdAt: messagesTable.createdAt })
       .from(messagesTable)
-      .where(eq(messagesTable.id, before))
+      .where(and(eq(messagesTable.id, before), eq(messagesTable.roomId, roomId)))
       .limit(1);
     if (beforeMsg) {
       query = db
@@ -69,7 +211,7 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
           message: messagesTable,
         })
         .from(messagesTable)
-        .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, new Date()), lt(messagesTable.createdAt, beforeMsg.createdAt)))
+        .where(and(eq(messagesTable.roomId, roomId), lte(messagesTable.availableAt, serverNow), lt(messagesTable.createdAt, beforeMsg.createdAt)))
         .orderBy(desc(messagesTable.createdAt))
         .limit(limit);
     }
@@ -77,9 +219,8 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
 
   const rows = await query;
 
-  const now = new Date();
-  const visibleRows = rows.filter((r) => !r.message.expiresAt || r.message.expiresAt > now);
-  const viewedExpiresAt = room?.ttlSeconds && room.ttlMode === "after_view" ? new Date(now.getTime() + room.ttlSeconds * 1000) : null;
+  const visibleRows = isExperimentalQuorumDecay ? rows : rows.filter((r) => !r.message.expiresAt || r.message.expiresAt > serverNow);
+  const viewedExpiresAt = room?.ttlSeconds && room.ttlMode === "after_view" ? new Date(serverNow.getTime() + room.ttlSeconds * 1000) : null;
   const firstViewedIds = viewedExpiresAt
     ? visibleRows.filter((r) => !r.message.expiresAt && r.message.senderId !== req.userId).map((r) => r.message.id)
     : [];
@@ -87,7 +228,10 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
   if (firstViewedIds.length > 0) {
     await db
       .update(messagesTable)
-      .set({ expiresAt: viewedExpiresAt })
+      .set({
+        expiresAt: viewedExpiresAt,
+        ...(readAttestation ? { decayAttestation: readAttestation } : {}),
+      })
       .where(and(inArray(messagesTable.id, firstViewedIds), isNull(messagesTable.expiresAt)));
   }
 
@@ -101,7 +245,10 @@ router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res)
       nonce: r.message.nonce,
       algorithm: r.message.algorithm,
       signature: r.message.signature,
+      senderDsaPublicKey: r.message.senderDsaPublicKey,
       recipientEncryptedKeys: r.message.recipientEncryptedKeys,
+      decayAttestation: firstViewedIds.includes(r.message.id) && readAttestation ? readAttestation : r.message.decayAttestation,
+      decayedAt: r.message.decayedAt,
       expiresAt: r.message.expiresAt ?? (firstViewedIds.includes(r.message.id) ? viewedExpiresAt : null),
       availableAt: r.message.availableAt,
       createdAt: r.message.createdAt,
@@ -131,16 +278,74 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   }
 
   const { ciphertext, nonce, algorithm, signature, recipientEncryptedKeys, ttlSeconds } = parse.data;
+  if (algorithm !== CIPHER_SUITE) {
+    res.status(400).json({ error: "Unsupported message algorithm" });
+    return;
+  }
+  if (!validDurationSeconds(ttlSeconds, MAX_MESSAGE_TTL_SECONDS)) {
+    res.status(400).json({ error: "Invalid message TTL" });
+    return;
+  }
 
   const [room] = await db
-    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode, deliveryFuzzSeconds: roomsTable.deliveryFuzzSeconds })
+    .select({ ttlSeconds: roomsTable.ttlSeconds, ttlMode: roomsTable.ttlMode, deliveryFuzzSeconds: roomsTable.deliveryFuzzSeconds, decayMode: roomsTable.decayMode })
     .from(roomsTable)
     .where(eq(roomsTable.id, roomId))
     .limit(1);
 
+  if (!room || !validDurationSeconds(room.ttlSeconds, MAX_MESSAGE_TTL_SECONDS) || !validDurationSeconds(room.deliveryFuzzSeconds, MAX_DELIVERY_FUZZ_SECONDS)) {
+    res.status(400).json({ error: "Invalid room TTL configuration" });
+    return;
+  }
+
+  const roomMemberRows = await db
+    .select({ userId: roomMembersTable.userId })
+    .from(roomMembersTable)
+    .where(eq(roomMembersTable.roomId, roomId));
+  const expectedRecipientIds = new Set(roomMemberRows.map((member) => member.userId));
+  if (!isValidRecipientEncryptedKeys(recipientEncryptedKeys, expectedRecipientIds)) {
+    res.status(400).json({ error: "recipientEncryptedKeys must include exactly one wrapped key for each current room member" });
+    return;
+  }
+  const [sender] = await db
+    .select({ dsaPublicKey: usersTable.dsaPublicKey })
+    .from(usersTable)
+    .where(eq(usersTable.id, req.userId!))
+    .limit(1);
+  if (!verifiesMessageSignature({
+    roomId,
+    senderId: req.userId!,
+    ciphertext,
+    nonce,
+    algorithm,
+    recipientEncryptedKeys,
+    signature,
+    dsaPublicKey: sender?.dsaPublicKey,
+  })) {
+    res.status(400).json({ error: "Invalid message signature" });
+    return;
+  }
+
+  const [existingMessage] = await db
+    .select()
+    .from(messagesTable)
+    .where(and(eq(messagesTable.roomId, roomId), eq(messagesTable.senderId, req.userId!), eq(messagesTable.signature, signature!)))
+    .limit(1);
+  if (existingMessage) {
+    res.status(200).json(messageResponse(existingMessage));
+    return;
+  }
+
   const effectiveTtl = ttlSeconds ?? room?.ttlSeconds ?? null;
-  const now = Date.now();
-  const fuzzSeconds = Math.max(0, room?.deliveryFuzzSeconds ?? 0);
+  const decayAttestation: TimeQuorumAttestation | null = room.decayMode === EXPERIMENTAL_QUORUM_DECAY
+    ? await createTimeQuorumAttestation()
+    : null;
+  const now = decayAttestation?.synthesizedEpochMs ?? Date.now();
+  const fuzzSeconds = Math.max(0, room.deliveryFuzzSeconds);
+  if (room.ttlMode === "after_send" && effectiveTtl && fuzzSeconds >= effectiveTtl) {
+    res.status(400).json({ error: "Delivery fuzz must be shorter than after-send TTL" });
+    return;
+  }
   const fuzzDelaySeconds = fuzzSeconds > 0 ? randomInt(0, fuzzSeconds + 1) : 0;
   const availableAt = new Date(now + fuzzDelaySeconds * 1000);
   const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(availableAt.getTime() + effectiveTtl * 1000) : null;
@@ -152,9 +357,11 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       senderId: req.userId!,
       ciphertext,
       nonce,
-      algorithm: algorithm ?? "AES-256-GCM+ML-KEM-1024+ML-DSA-87",
+      algorithm,
       signature: signature ?? null,
-      recipientEncryptedKeys: recipientEncryptedKeys ?? null,
+      senderDsaPublicKey: sender?.dsaPublicKey ?? null,
+      recipientEncryptedKeys,
+      decayAttestation,
       expiresAt,
       availableAt,
       createdAt: availableAt,
@@ -180,20 +387,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
 
   scheduleNotification(fuzzDelaySeconds, () => Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload))));
 
-  res.status(201).json({
-    id: message.id,
-    roomId: message.roomId,
-    senderId: message.senderId,
-    senderUsername: null,
-    ciphertext: message.ciphertext,
-    nonce: message.nonce,
-    algorithm: message.algorithm,
-    signature: message.signature,
-    recipientEncryptedKeys: message.recipientEncryptedKeys,
-    expiresAt: message.expiresAt,
-    availableAt: message.availableAt,
-    createdAt: message.createdAt,
-  });
+  res.status(201).json(messageResponse(message));
 });
 
 router.post("/rooms/:roomId/privacy-alert", requireAuth, async (req: AuthRequest, res) => {
@@ -241,12 +435,6 @@ router.post("/rooms/:roomId/privacy-debug", requireAuth, async (req: AuthRequest
     return;
   }
 
-  const metrics = typeof req.body === "object" && req.body ? req.body : {};
-  logger.info({ userId: req.userId, roomId, metrics }, "Privacy camera flash debug");
-  void appendFile(
-    "/tmp/quantumshield-flash-debug.log",
-    `${JSON.stringify({ ts: new Date().toISOString(), userId: req.userId, roomId, metrics })}\n`,
-  ).catch((err) => logger.warn({ err }, "Could not write privacy flash debug log"));
   res.status(202).json({ ok: true });
 });
 

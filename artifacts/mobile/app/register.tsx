@@ -60,10 +60,9 @@ export default function RegisterScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setLastHandle, setToken, storeKeyPair } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, setAuthHandle, setDevicePasscode, setLastHandle, setToken, storeKeyPair } = useAuth();
 
   const [handle, setHandle] = useState("");
-  const [passcode] = useState(() => generateDevicePasscode());
   const [error, setError] = useState("");
   const [step, setStep] = useState<Step>("idle");
 
@@ -83,6 +82,7 @@ export default function RegisterScreen() {
       if (!/^[a-z0-9][a-z0-9_-]{1,31}$/.test(normalizedHandle)) {
         throw new Error("Handle must be 2-32 letters, numbers, underscores, or dashes.");
       }
+      const passcode = generateDevicePasscode();
       setStep("keygen");
       const { ml_kem1024 } = await import("@noble/post-quantum/ml-kem.js");
       const { ml_dsa87 } = await import("@noble/post-quantum/ml-dsa.js");
@@ -108,6 +108,7 @@ export default function RegisterScreen() {
       await storeKeyPair(kemSkB64, kemPkB64, dsaSkB64, dsaPkB64);
       await setToken(authData.token);
       await setAuthHandle(authData.authHandle);
+      await setDevicePasscode(passcode);
       await setLastHandle(normalizedHandle);
 
       setStep("upload");

@@ -7,6 +7,7 @@
  */
 import type { RoomTtlMode } from './roomTtlMode';
 import type { RoomType } from './roomType';
+import type { RoomDecayMode } from './roomDecayMode';
 import type { User } from './user';
 
 export interface Room {
@@ -19,6 +20,10 @@ export interface Room {
   ttlSeconds?: number | null;
   /** Whether TTL starts when a message is first viewed or when it is sent. */
   ttlMode?: RoomTtlMode;
+  /** Random server-side delivery delay window in seconds. */
+  deliveryFuzzSeconds?: number;
+  /** Optional experimental quorum-decay policy tier. Standard is the default. */
+  decayMode?: RoomDecayMode;
   createdAt: Date;
   members?: User[] | null;
 }

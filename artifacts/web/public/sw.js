@@ -1,23 +1,63 @@
 /* QuantumShield Service Worker */
-const CACHE_NAME = "quantumshield-v2";
+const CACHE_NAME = "quantumshield-v4";
 const MODEL_CACHE_NAME = "quantumshield-models-v1";
 const MODEL_HOSTS = ["huggingface.co", "storage.googleapis.com", "tfhub.dev"];
 const MODEL_HOST_SUFFIXES = [".huggingface.co", ".hf.co", ".xethub.hf.co"];
+const APP_SHELL = [
+  "/",
+  "/app",
+  "/index.html",
+  "/manifest.webmanifest",
+  "/favicon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
+];
 
 function isModelHost(hostname) {
   return MODEL_HOSTS.includes(hostname) || MODEL_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
 }
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL).catch(() => undefined)),
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((names) => Promise.all(
+      names
+        .filter((name) => name !== CACHE_NAME && name !== MODEL_CACHE_NAME)
+        .map((name) => caches.delete(name)),
+    )),
+  );
 });
 
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
+  if (event.request.method !== "GET") return;
+
+  if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put("/", copy.clone());
+              cache.put("/app", copy);
+            });
+          }
+          return response;
+        })
+        .catch(async () => (await caches.match("/app")) || (await caches.match("/index.html")) || Response.error()),
+    );
+    return;
+  }
+
   const isModelRequest =
     isModelHost(url.hostname) ||
     url.pathname.includes("/resolve/") ||
@@ -25,10 +65,10 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith(".wasm") ||
     (url.pathname.endsWith(".json") && url.pathname.includes("model"));
 
-  if (!isModelRequest || event.request.method !== "GET") return;
+  if (!isModelRequest && url.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.open(MODEL_CACHE_NAME).then(async (cache) => {
+    caches.open(isModelRequest ? MODEL_CACHE_NAME : CACHE_NAME).then(async (cache) => {
       const cached = await cache.match(event.request);
       if (cached) return cached;
 

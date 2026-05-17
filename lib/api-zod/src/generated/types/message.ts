@@ -7,6 +7,28 @@
  */
 import type { MessageRecipientEncryptedKeys } from './messageRecipientEncryptedKeys';
 
+export interface MessageDecayAttestationSource {
+  id: string;
+  url: string;
+  ok: boolean;
+  epochMs?: number;
+}
+
+export interface MessageDecayAttestation {
+  version: 1;
+  sampledAt: string;
+  serverFallbackEpochMs: number;
+  synthesizedAt: string;
+  synthesizedEpochMs: number;
+  synthesisMode: 'quorum_median' | 'server_fallback';
+  quorumSize: number;
+  quorumSpreadMs: number;
+  minQuorumSources: number;
+  sources: MessageDecayAttestationSource[];
+  degraded: boolean;
+  signature: string;
+}
+
 export interface Message {
   id: string;
   roomId: string;
@@ -20,8 +42,14 @@ export interface Message {
   algorithm: string;
   /** Base64-encoded ML-DSA-87 signature over ciphertext */
   signature?: string | null;
+  /** Base64-encoded ML-DSA-87 public key used to verify this message signature. */
+  senderDsaPublicKey?: string | null;
   /** Map of userId to their ML-KEM encapsulated message key */
   recipientEncryptedKeys?: MessageRecipientEncryptedKeys;
+  /** Server-signed quorum clock attestation for experimental decay rooms. */
+  decayAttestation?: MessageDecayAttestation | null;
+  decayedAt?: Date | null;
   expiresAt?: Date | null;
+  availableAt?: Date | null;
   createdAt: Date;
 }

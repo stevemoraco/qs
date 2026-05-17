@@ -29,6 +29,8 @@ import {
   HardDrive,
   FolderSearch,
   Database,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   getGetStatsOverviewQueryKey,
@@ -386,6 +388,46 @@ const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const SECURITY_URL = `${GITHUB_URL}/security`;
 const ISSUES_URL = `${GITHUB_URL}/issues`;
 const PULLS_URL = `${GITHUB_URL}/pulls`;
+const LANDING_NAV = [
+  { href: "#home", label: "HOME", className: "text-primary hover:text-primary/80" },
+  { href: "#local-device-exposure", label: "EXPOSURE", className: "text-destructive hover:text-destructive/80" },
+  { href: "#security-model", label: "MODEL", className: "text-primary hover:text-primary/80" },
+  { href: "#problem", label: "PROBLEM", className: "text-destructive hover:text-destructive/80" },
+  { href: "#privacy-stack", label: "PRIVACY", className: "text-primary hover:text-primary/80" },
+  { href: "#cryptographic-roles", label: "MATH" },
+  { href: "#quorum-decay", label: "AUTO-EXPIRE" },
+  { href: "#ethos", label: "ETHOS", className: "text-foreground hover:text-foreground/80" },
+  { href: "#threat-model", label: "THREATS" },
+  { href: "#open-source", label: "SOURCE" },
+  { href: "#community", label: "COMMUNITY" },
+];
+const getNavIndicatorColor = (className = "") => {
+  if (className.includes("destructive")) return "bg-red-700";
+  if (className.includes("primary")) return "bg-primary";
+  if (className.includes("foreground")) return "bg-foreground";
+  return "bg-zinc-400";
+};
+const getActiveNavTextColor = (className = "") => {
+  if (className.includes("foreground")) return "text-black";
+  if (className.includes("destructive") || className.includes("primary")) return "text-white";
+  return "text-black";
+};
+const LANDING_SCROLLBAR_SECTIONS = [
+  { id: "home", color: "hsl(var(--primary))" },
+  { id: "local-device-exposure", color: "hsl(var(--destructive))" },
+  { id: "security-model", color: "hsl(var(--primary))" },
+  { id: "problem", color: "hsl(var(--destructive))" },
+  { id: "privacy-stack", color: "hsl(var(--primary))" },
+  { id: "cryptographic-roles", color: "hsl(var(--primary))" },
+  { id: "quorum-decay", color: "rgb(245 158 11)" },
+  { id: "ethos", color: "hsl(var(--primary))" },
+  { id: "features", color: "hsl(var(--primary))" },
+  { id: "security", color: "hsl(var(--primary))" },
+  { id: "threat-model", color: "hsl(var(--destructive))" },
+  { id: "open-source", color: "hsl(var(--primary))" },
+  { id: "comparison-recap", color: "hsl(var(--destructive))" },
+  { id: "community", color: "hsl(var(--primary))" },
+];
 
 type InviteStep = 1 | 2 | 3;
 
@@ -407,10 +449,143 @@ const emptyInviteProfile: InviteProfile = {
 
 export default function Landing() {
   const authenticated = isAuthenticated();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState("home");
   const { data: stats } = useGetStatsOverview<StatsOverview>({
     query: { queryKey: getGetStatsOverviewQueryKey(), enabled: false },
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scrollbarTrackRef = useRef<HTMLDivElement>(null);
+  const scrollbarDraggingRef = useRef(false);
+  const scrollbarProgressRef = useRef(0);
+  const scrollbarPointerIdRef = useRef<number | null>(null);
+  const scrollbarThumbOffsetRef = useRef(22);
+  const scrollbarRafRef = useRef<number | null>(null);
+  const activeSectionIdRef = useRef("home");
+
+  const scrollToSection = (href: string) => {
+    setMobileMenuOpen(false);
+    const target = document.querySelector(href);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", href);
+    }
+  };
+
+  const getScrollbarMetrics = () => {
+    const track = scrollbarTrackRef.current;
+    if (!track) return null;
+
+    const rect = track.getBoundingClientRect();
+    const pageHeight = Math.max(window.innerHeight, document.documentElement.scrollHeight);
+    const pageRatio = Math.min(1, window.innerHeight / pageHeight);
+    const thumbHeight = Math.max(44, rect.height * Math.max(0.12, pageRatio));
+    const travel = Math.max(1, rect.height - thumbHeight);
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+    return { rect, thumbHeight, travel, maxScroll };
+  };
+
+  const scrollPageFromScrollbarPointer = (clientY: number) => {
+    const metrics = getScrollbarMetrics();
+    if (!metrics) return;
+
+    const progress = Math.min(1, Math.max(0, (clientY - metrics.rect.top - scrollbarThumbOffsetRef.current) / metrics.travel));
+    window.scrollTo({ top: progress * metrics.maxScroll, behavior: "auto" });
+  };
+
+  const startScrollbarDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    const metrics = getScrollbarMetrics();
+    if (!metrics) return;
+
+    event.preventDefault();
+    scrollbarDraggingRef.current = true;
+    scrollbarPointerIdRef.current = event.pointerId;
+    event.currentTarget.dataset.dragging = "true";
+
+    const currentThumbTop = scrollbarProgressRef.current * metrics.travel;
+    const pointerOffset = event.clientY - metrics.rect.top - currentThumbTop;
+    scrollbarThumbOffsetRef.current = pointerOffset >= 0 && pointerOffset <= metrics.thumbHeight
+      ? pointerOffset
+      : metrics.thumbHeight / 2;
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    scrollPageFromScrollbarPointer(event.clientY);
+  };
+
+  const updateScrollbarDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!scrollbarDraggingRef.current || scrollbarPointerIdRef.current !== event.pointerId) return;
+    event.preventDefault();
+    scrollPageFromScrollbarPointer(event.clientY);
+  };
+
+  const stopScrollbarDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (scrollbarPointerIdRef.current !== event.pointerId) return;
+
+    scrollbarDraggingRef.current = false;
+    scrollbarPointerIdRef.current = null;
+    delete event.currentTarget.dataset.dragging;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  useEffect(() => {
+    if (authenticated) return;
+    const root = document.documentElement;
+    const sections = LANDING_SCROLLBAR_SECTIONS.map((section) => ({
+      ...section,
+      element: document.getElementById(section.id),
+    })).filter((section): section is typeof section & { element: HTMLElement } => Boolean(section.element));
+
+    const updateScrollbarColor = () => {
+      const probeY = Math.min(window.innerHeight * 0.35, 280);
+      const active = [...sections].reverse().find((section) => {
+        const rect = section.element.getBoundingClientRect();
+        return rect.top <= probeY && rect.bottom > probeY;
+      }) ?? [...sections].reverse().find((section) => section.element.getBoundingClientRect().top <= probeY) ?? sections[0];
+
+      if (active) {
+        root.style.setProperty("--qs-scrollbar-thumb", active.color);
+        if (activeSectionIdRef.current !== active.id) {
+          activeSectionIdRef.current = active.id;
+          setActiveSectionId(active.id);
+        }
+      }
+
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const progress = window.scrollY / maxScroll;
+      const pageRatio = Math.min(1, window.innerHeight / Math.max(window.innerHeight, document.documentElement.scrollHeight));
+      scrollbarProgressRef.current = progress;
+      root.style.setProperty("--qs-scrollbar-progress", String(progress));
+      root.style.setProperty("--qs-scrollbar-size", String(Math.max(0.12, pageRatio)));
+    };
+
+    const scheduleScrollbarUpdate = () => {
+      if (scrollbarRafRef.current !== null) return;
+      scrollbarRafRef.current = window.requestAnimationFrame(() => {
+        scrollbarRafRef.current = null;
+        updateScrollbarColor();
+      });
+    };
+
+    updateScrollbarColor();
+    window.addEventListener("scroll", scheduleScrollbarUpdate, { passive: true });
+    window.addEventListener("resize", scheduleScrollbarUpdate);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleScrollbarUpdate);
+      window.removeEventListener("resize", scheduleScrollbarUpdate);
+      if (scrollbarRafRef.current !== null) {
+        window.cancelAnimationFrame(scrollbarRafRef.current);
+        scrollbarRafRef.current = null;
+      }
+      root.style.removeProperty("--qs-scrollbar-thumb");
+      root.style.removeProperty("--qs-scrollbar-progress");
+      root.style.removeProperty("--qs-scrollbar-size");
+    };
+  }, [authenticated]);
 
   useEffect(() => {
     if (authenticated) return;
@@ -448,7 +623,31 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden scroll-smooth">
+      <div
+        ref={scrollbarTrackRef}
+        className="group/scrollbar pointer-events-none fixed right-1.5 top-18 bottom-4 z-40 w-5 touch-none md:pointer-events-auto md:right-3 md:top-20 md:bottom-6 md:w-6 md:cursor-ns-resize"
+        role="scrollbar"
+        aria-label="Page scroll"
+        aria-orientation="vertical"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(scrollbarProgressRef.current * 100)}
+        onPointerDown={startScrollbarDrag}
+        onPointerMove={updateScrollbarDrag}
+        onPointerUp={stopScrollbarDrag}
+        onPointerCancel={stopScrollbarDrag}
+      >
+        <div className="absolute inset-y-0 right-1 md:right-1.5 w-px bg-border/70" />
+        <div
+          className="absolute right-0 w-3 md:w-4 bg-[var(--qs-scrollbar-thumb)] shadow-[0_0_18px_color-mix(in_srgb,var(--qs-scrollbar-thumb)_45%,transparent)] transition-colors duration-200 group-data-[dragging=true]/scrollbar:transition-none"
+          style={{
+            height: "max(44px, calc(var(--qs-scrollbar-size, 0.16) * 100%))",
+            top: "calc(var(--qs-scrollbar-progress, 0) * (100% - max(44px, calc(var(--qs-scrollbar-size, 0.16) * 100%))))",
+            clipPath: "polygon(0 10%, 100% 0, 100% 90%, 0 100%)",
+          }}
+        />
+      </div>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -458,22 +657,65 @@ export default function Landing() {
             <span className="font-mono font-bold tracking-widest text-sm">QUANTUMSHIELD</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="hidden md:flex items-center gap-4 mr-6">
-              <a href="#features" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
-              <a href="#security-model" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">MODEL</a>
-              <a href="#privacy-stack" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">PRIVACY</a>
-              <a href="#ethos" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">ETHOS</a>
-              <a href="#security" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">SECURITY</a>
-              <a href="#community" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">COMMUNITY</a>
-              <a href="#open-source" className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">OPEN SOURCE</a>
+            <div className="hidden xl:flex items-center gap-1.5 mr-4">
+              {LANDING_NAV.map((item) => {
+                const isActive = activeSectionId === item.href.slice(1);
+                const indicatorColor = getNavIndicatorColor(item.className);
+                const activeTextColor = getActiveNavTextColor(item.className);
+
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      scrollToSection(item.href);
+                    }}
+                    className={`group/nav-item relative isolate px-2.5 py-2 text-[10px] font-mono transition-colors ${isActive && activeTextColor ? activeTextColor : item.className ?? "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 top-1 bottom-1 -z-10 transition-opacity duration-[2800ms] group-hover/nav-item:opacity-45 group-hover/nav-item:duration-150 ${isActive ? `${indicatorColor} opacity-100` : "bg-muted-foreground opacity-0"}`}
+                      style={{ clipPath: "polygon(8% 0, 100% 0, 92% 100%, 0 100%)" }}
+                    />
+                    <span className="relative">{item.label}</span>
+                  </a>
+                );
+              })}
             </div>
-            <Link href="/login"><button className="font-mono text-xs px-4 py-2 border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">LOGIN</button></Link>
-            <Link href="/register"><button className="font-mono text-xs px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all ml-2">GET ACCESS</button></Link>
+            <Link href="/login"><button className="font-mono text-[10px] sm:text-xs px-3 sm:px-4 py-2 border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">LOGIN</button></Link>
+            <Link href="/register"><button className="font-mono text-[10px] sm:text-xs px-3 sm:px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all ml-1 sm:ml-2">GET ACCESS</button></Link>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              className="xl:hidden inline-flex h-10 w-10 items-center justify-center border border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+              data-testid="button-mobile-nav"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="xl:hidden border-t border-border/50 bg-background/95 backdrop-blur-md" data-testid="mobile-nav-menu">
+            <div className="max-w-7xl mx-auto px-6 py-4 grid grid-cols-1 gap-2">
+              {LANDING_NAV.map((item) => (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => scrollToSection(item.href)}
+                  className={`border border-border/60 bg-card/30 px-3 py-3 text-left font-mono text-xs hover:border-primary/50 ${item.className ?? "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden scroll-mt-16">
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-30" style={{ pointerEvents: "none" }} />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4 pt-8 md:pt-7">
@@ -512,7 +754,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="local-device-exposure" className="py-24 px-6 border-y border-border/50 bg-background">
+      <section id="local-device-exposure" className="py-24 px-6 border-y border-border/50 bg-background scroll-mt-16">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start mb-10">
             <div>
@@ -575,7 +817,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="security-model" className="py-24 px-6 border-y border-border/50 bg-card/20">
+      <section id="security-model" className="py-24 px-6 border-y border-border/50 bg-card/20 scroll-mt-16">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start mb-12">
             <div>
@@ -620,7 +862,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="border border-border/50 bg-background/60 p-5">
+          <div id="problem" className="border border-border/50 bg-background/60 p-5 scroll-mt-16">
             <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-6 items-start mb-8">
               <div>
                 <div className="font-mono text-xs text-primary tracking-widest mb-3">SIGNAL / IMESSAGE / QUANTUMSHIELD</div>
@@ -686,8 +928,22 @@ export default function Landing() {
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <section id="privacy-stack" className="py-24 px-6 border-y border-border/50 bg-background scroll-mt-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-3xl mb-14">
+            <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY STACK</div>
+            <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Privacy features most messaging apps never combine.</h2>
+            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message whose usable key path expires into unreadable ciphertext. Check the source code and verify the timed key purge.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-10">
-            <div className="border border-border/50 bg-background/60 p-5">
+            <div id="cryptographic-roles" className="border border-border/50 bg-background/60 p-5 scroll-mt-16">
               <div className="font-mono text-xs text-primary tracking-widest mb-4">CRYPTOGRAPHIC ROLES</div>
               <div className="space-y-3">
                 {CRYPTO_ROLES.map((item) => (
@@ -715,25 +971,15 @@ export default function Landing() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section id="privacy-stack" className="py-24 px-6 border-y border-border/50 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mb-14">
-            <div className="font-mono text-xs text-primary tracking-widest mb-3">PRIVACY STACK</div>
-            <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Privacy features most messaging apps never combine.</h2>
-            <p className="font-mono text-sm text-muted-foreground leading-relaxed">QuantumShield is built around the moment of exposure: the camera watching the screen, the unfocused tab, the screenshot key, the shoulder glance, and the stale message whose usable key path expires into unreadable ciphertext. Check the source code and verify the timed key purge.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {PRIVACY_FEATURES.map((feature) => <div key={feature.title} className="border border-border/50 bg-card/30 p-5"><div className="text-primary mb-4">{feature.icon}</div><h3 className="font-mono text-sm font-semibold mb-3">{feature.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{feature.desc}</p></div>)}
-          </div>
-
-          <div className="mt-10 border border-amber-500/35 bg-amber-500/5 p-5 md:p-6">
+          <div id="quorum-decay" className="mt-10 border border-amber-500/35 bg-amber-500/5 p-5 md:p-6 scroll-mt-16">
             <div className="grid grid-cols-1 lg:grid-cols-[0.75fr_1.25fr] gap-6 items-start mb-6">
               <div>
-                <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">QUORUM DECAY PREVIEW</div>
+                <div className="font-mono text-xs text-amber-500 tracking-widest mb-3">AUTO-EXPIRE / QUORUM DECAY PREVIEW</div>
                 <h3 className="font-mono text-2xl md:text-4xl font-bold leading-tight mb-4">A 15-minute message becomes unreadable, chunk by chunk.</h3>
+                <p className="font-mono text-sm text-muted-foreground leading-relaxed mb-4">
+                  Almost every security app handles expiry by checking whether a condition is still true, then deleting keys when it is not. That works only if the server and client honestly enforce the check and actually destroy the key material.
+                </p>
                 <p className="font-mono text-sm text-muted-foreground leading-relaxed">
                   Experimental quorum decay models a message as many protected pieces. At minute 14 it still reveals with biometrics. At minute 15 real time wins. By minute 17, all 16 chunks are unreadable even if keys are compromised, because Sybil-resistant time cannot be backtracked.
                 </p>
@@ -784,17 +1030,51 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="ethos" className="py-24 px-6 border-y border-border/50 bg-card/20"><div className="max-w-5xl mx-auto"><div className="font-mono text-xs text-primary tracking-widest mb-4">ETHOS / EXPERIMENT</div><h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-8">What is the most secure ideal form of truly ephemeral digital communication?</h2><div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start"><p className="font-mono text-sm md:text-base text-muted-foreground leading-relaxed">QuantumShield is our working answer to that question. The mission is to build communication software where messages can be encrypted for the quantum era, revealed only with deliberate user intent, and made practically useless after expiry. We are testing whether communities can rely on open, auditable software for private coordination without asking anyone to trust a black box.</p><div className="border border-border/50 bg-background/50 p-6"><p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">The experiment is public by design: inspect the code, challenge the threat model, report weak assumptions, and help us move closer to dependable ephemeral messaging.</p><div className="flex flex-col sm:flex-row lg:flex-col gap-3"><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-xs px-5 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Github className="w-4 h-4" />SOURCE</a><a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs px-5 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase"><Bug className="w-4 h-4" />AUDIT</a></div></div></div></div></section>
+      <section id="ethos" className="py-24 px-6 border-y border-border/50 bg-card/20 scroll-mt-16"><div className="max-w-5xl mx-auto"><div className="font-mono text-xs text-primary tracking-widest mb-4">ETHOS / EXPERIMENT</div><h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-8">What is the most secure ideal form of truly ephemeral digital communication?</h2><div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-start"><p className="font-mono text-sm md:text-base text-muted-foreground leading-relaxed">QuantumShield is our working answer to that question. The mission is to build communication software where messages can be encrypted for the quantum era, revealed only with deliberate user intent, and made practically useless after expiry. We are testing whether communities can rely on open, auditable software for private coordination without asking anyone to trust a black box.</p><div className="border border-border/50 bg-background/50 p-6"><p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">The experiment is public by design: inspect the code, challenge the threat model, report weak assumptions, and help us move closer to dependable ephemeral messaging.</p><div className="flex flex-col sm:flex-row lg:flex-col gap-3"><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 border border-border text-foreground font-mono text-xs px-5 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Github className="w-4 h-4" />SOURCE</a><a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-mono text-xs px-5 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase"><Bug className="w-4 h-4" />AUDIT</a></div></div></div></div></section>
 
-      <section id="features" className="py-24 px-6 border-t border-border/50"><div className="max-w-7xl mx-auto"><div className="text-center mb-16"><div className="font-mono text-xs text-primary tracking-widest mb-3">CAPABILITIES</div><h2 className="font-mono font-bold text-3xl md:text-4xl">Security without compromise</h2><p className="font-mono text-sm text-muted-foreground mt-4 max-w-xl mx-auto">Every feature was designed assuming your adversary has a quantum computer.</p></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{FEATURES.map((f) => <div key={f.title} className="border border-border/50 bg-card/30 p-6 hover:border-primary/30 hover:bg-card/60 transition-all group"><div className="text-primary mb-4 group-hover:scale-110 transition-transform w-fit">{f.icon}</div><h3 className="font-mono font-semibold text-sm tracking-wide mb-3">{f.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{f.desc}</p></div>)}</div></div></section>
+      <section id="features" className="py-24 px-6 border-t border-border/50 scroll-mt-16"><div className="max-w-7xl mx-auto"><div className="text-center mb-16"><div className="font-mono text-xs text-primary tracking-widest mb-3">CAPABILITIES</div><h2 className="font-mono font-bold text-3xl md:text-4xl">Security without compromise</h2><p className="font-mono text-sm text-muted-foreground mt-4 max-w-xl mx-auto">Every feature was designed assuming your adversary has a quantum computer.</p></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{FEATURES.map((f) => <div key={f.title} className="border border-border/50 bg-card/30 p-6 hover:border-primary/30 hover:bg-card/60 transition-all group"><div className="text-primary mb-4 group-hover:scale-110 transition-transform w-fit">{f.icon}</div><h3 className="font-mono font-semibold text-sm tracking-wide mb-3">{f.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed">{f.desc}</p></div>)}</div></div></section>
 
-      <section id="security" className="py-24 px-6 bg-card/20 border-y border-border/50"><div className="max-w-7xl mx-auto"><div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"><div><div className="font-mono text-xs text-primary tracking-widest mb-3">CRYPTOGRAPHIC STACK</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">Every layer verified.<br />Every key quantum-safe.</h2><p className="font-mono text-sm text-muted-foreground mb-8 leading-relaxed">QuantumShield uses only NIST-finalized post-quantum algorithms. No experimental schemes. No proprietary curves. Pure, auditable, open-standard cryptography.</p><p className="font-mono text-sm text-muted-foreground leading-relaxed">When a message expires, clients purge local message keys and the API wipes wrapped key envelopes. The ciphertext can remain on the server — permanently locked. No court order, no quantum computer, no brute force attack can recover it without a usable key path.</p></div><div className="space-y-2">{ALGORITHMS.map((alg) => <div key={alg.name} className="flex items-center justify-between border border-border/50 bg-card/50 px-5 py-4" data-testid={`algo-${alg.name}`}><div><div className="font-mono font-bold text-sm">{alg.name}</div><div className="font-mono text-xs text-muted-foreground">{alg.spec} — {alg.type}</div></div><div className="flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full animate-pulse" /><span className="font-mono text-xs text-primary">{alg.status}</span></div></div>)}<div className="border border-border/50 bg-card/50 px-5 py-4 font-mono text-xs text-muted-foreground leading-relaxed"><span className="text-primary">// </span>Triple-layer: PQ key exchange + PQ signatures + AES-256-GCM. Breaking one layer is mathematically insufficient.</div></div></div></div></section>
+      <section id="security" className="py-24 px-6 bg-card/20 border-y border-border/50 scroll-mt-16"><div className="max-w-7xl mx-auto"><div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"><div><div className="font-mono text-xs text-primary tracking-widest mb-3">CRYPTOGRAPHIC STACK</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">Every layer verified.<br />Every key quantum-safe.</h2><p className="font-mono text-sm text-muted-foreground mb-8 leading-relaxed">QuantumShield uses only NIST-finalized post-quantum algorithms. No experimental schemes. No proprietary curves. Pure, auditable, open-standard cryptography.</p><p className="font-mono text-sm text-muted-foreground leading-relaxed">When a message expires, clients purge local message keys and the API wipes wrapped key envelopes. The ciphertext can remain on the server — permanently locked. No court order, no quantum computer, no brute force attack can recover it without a usable key path.</p></div><div className="space-y-2">{ALGORITHMS.map((alg) => <div key={alg.name} className="flex items-center justify-between border border-border/50 bg-card/50 px-5 py-4" data-testid={`algo-${alg.name}`}><div><div className="font-mono font-bold text-sm">{alg.name}</div><div className="font-mono text-xs text-muted-foreground">{alg.spec} — {alg.type}</div></div><div className="flex items-center gap-2"><span className="w-2 h-2 bg-primary rounded-full animate-pulse" /><span className="font-mono text-xs text-primary">{alg.status}</span></div></div>)}<div className="border border-border/50 bg-card/50 px-5 py-4 font-mono text-xs text-muted-foreground leading-relaxed"><span className="text-primary">// </span>Triple-layer: PQ key exchange + PQ signatures + AES-256-GCM. Breaking one layer is mathematically insufficient.</div></div></div></div></section>
 
-      <section className="py-24 px-6 border-t border-border/50"><div className="max-w-7xl mx-auto"><div className="text-center mb-16"><div className="font-mono text-xs text-primary tracking-widest mb-3">THREAT MODEL</div><h2 className="font-mono font-bold text-3xl md:text-4xl">Designed for worst-case adversaries</h2></div><div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[{ threat: "Quantum Computer", defense: "ML-KEM-1024 + ML-DSA-87 resist known quantum attacks including Shor's algorithm." }, { threat: "Physical Observation", defense: "On-device camera detection blanks the screen when a recording device enters the frame." }, { threat: "Screenshot / Screen Recording", defense: "PWAs cannot receive true iOS or Chrome screenshot callbacks. QuantumShield minimizes exposure with hold-to-reveal, blur/background shielding, print/clipboard blocking, browser capture warnings, and camera-based recording-device detection." }, { threat: "Server Compromise", defense: "End-to-end encrypted. The server sees only ciphertext — never plaintext. Ever." }, { threat: "Retroactive Decryption", defense: "Expired message keys and wrapped key envelopes are purged on a timer. Old ciphertext is cryptographically irrecoverable without a usable key path." }, { threat: "Supply Chain Attack", defense: "Fully open source. Every dependency is auditable. Run your own server." }].map((t) => <div key={t.threat} className="border border-border/50 bg-card/30 p-6"><div className="flex items-center gap-2 mb-3"><Zap className="w-4 h-4 text-destructive" /><span className="font-mono text-xs font-semibold text-destructive">{t.threat}</span></div><p className="font-mono text-xs text-muted-foreground leading-relaxed">{t.defense}</p></div>)}</div></div></section>
+      <section id="threat-model" className="py-24 px-6 border-t border-border/50 scroll-mt-16"><div className="max-w-7xl mx-auto"><div className="text-center mb-16"><div className="font-mono text-xs text-primary tracking-widest mb-3">THREAT MODEL</div><h2 className="font-mono font-bold text-3xl md:text-4xl">Designed for worst-case adversaries</h2></div><div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[{ threat: "Quantum Computer", defense: "ML-KEM-1024 + ML-DSA-87 resist known quantum attacks including Shor's algorithm." }, { threat: "Physical Observation", defense: "On-device camera detection blanks the screen when a recording device enters the frame." }, { threat: "Screenshot / Screen Recording", defense: "PWAs cannot receive true iOS or Chrome screenshot callbacks. QuantumShield minimizes exposure with hold-to-reveal, blur/background shielding, print/clipboard blocking, browser capture warnings, and camera-based recording-device detection." }, { threat: "Server Compromise", defense: "End-to-end encrypted. The server sees only ciphertext — never plaintext. Ever." }, { threat: "Retroactive Decryption", defense: "Expired message keys and wrapped key envelopes are purged on a timer. Old ciphertext is cryptographically irrecoverable without a usable key path." }, { threat: "Supply Chain Attack", defense: "Fully open source. Every dependency is auditable. Run your own server." }].map((t) => <div key={t.threat} className="border border-border/50 bg-card/30 p-6"><div className="flex items-center gap-2 mb-3"><Zap className="w-4 h-4 text-destructive" /><span className="font-mono text-xs font-semibold text-destructive">{t.threat}</span></div><p className="font-mono text-xs text-muted-foreground leading-relaxed">{t.defense}</p></div>)}</div></div></section>
 
-      <section id="open-source" className="py-24 px-6 bg-card/20 border-y border-border/50"><div className="max-w-4xl mx-auto text-center"><div className="font-mono text-xs text-primary tracking-widest mb-3">OPEN SOURCE</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">No black boxes.<br />No trust required.</h2><p className="font-mono text-sm text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">QuantumShield is 100% open source. Audit every cryptographic primitive. Run your own server. Verify that your keys never leave your device. Security through transparency — the only kind that matters.</p><div className="flex flex-col sm:flex-row gap-3 justify-center"><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Github className="w-4 h-4" />VIEW SOURCE</a><a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Bug className="w-4 h-4" />SECURITY</a><Link href="/register"><button className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-mono text-sm px-8 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase"><Cpu className="w-4 h-4" />TRY NOW</button></Link></div></div></section>
+      <section id="open-source" className="py-24 px-6 bg-card/20 border-y border-border/50 scroll-mt-16"><div className="max-w-4xl mx-auto text-center"><div className="font-mono text-xs text-primary tracking-widest mb-3">OPEN SOURCE</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">No black boxes.<br />No trust required.</h2><p className="font-mono text-sm text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">QuantumShield is 100% open source. Audit every cryptographic primitive. Run your own server. Verify that your keys never leave your device. Security through transparency — the only kind that matters.</p><div className="flex flex-col sm:flex-row gap-3 justify-center"><a href={GITHUB_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Github className="w-4 h-4" />VIEW SOURCE</a><a href={SECURITY_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-mono text-sm px-8 py-3 hover:border-primary/50 transition-all tracking-widest uppercase"><Bug className="w-4 h-4" />SECURITY</a><Link href="/register"><button className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-mono text-sm px-8 py-3 hover:bg-primary/90 transition-all tracking-widest uppercase"><Cpu className="w-4 h-4" />TRY NOW</button></Link></div></div></section>
 
-      <section id="community" className="py-24 px-6 border-y border-border/50"><div className="max-w-7xl mx-auto"><div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-start"><div><div className="font-mono text-xs text-primary tracking-widest mb-3">CALL FOR REVIEW</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">Auditors, builders, and privacy engineers wanted.</h2><p className="font-mono text-sm text-muted-foreground mb-10 leading-relaxed max-w-2xl">QuantumShield needs independent review, reproducible builds, threat-model pressure, protocol critique, and careful implementation work. If you can break assumptions, harden defaults, document risk, or improve the client experience, start here.</p><div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[{ icon: <Bug className="w-5 h-5" />, title: "Security auditors", copy: "Review auth, crypto boundaries, key storage, API validation, and build provenance.", href: SECURITY_URL, label: "Disclosure" }, { icon: <Users className="w-5 h-5" />, title: "Contributors", copy: "Open focused issues, send small PRs, improve tests, and help keep the workspace maintainable.", href: ISSUES_URL, label: "Issues" }, { icon: <Github className="w-5 h-5" />, title: "Maintainers", copy: "Review pull requests, tighten docs, triage dependency updates, and expand CI coverage.", href: PULLS_URL, label: "Pull requests" }].map((item) => <a key={item.title} href={item.href} target="_blank" rel="noreferrer" className="border border-border/50 bg-card/30 p-5 hover:border-primary/40 hover:bg-card/60 transition-all"><div className="text-primary mb-4">{item.icon}</div><h3 className="font-mono font-semibold text-sm mb-3">{item.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">{item.copy}</p><span className="inline-flex items-center gap-2 font-mono text-xs text-primary uppercase tracking-widest">{item.label}<ExternalLink className="w-3 h-3" /></span></a>)}</div></div><MailingListSignup /></div></div></section>
+      <section id="comparison-recap" className="py-24 px-6 border-y border-border/50 bg-card/20 scroll-mt-16">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
+          <div>
+            <div className="font-mono text-xs text-destructive tracking-widest mb-3">COMPARISON RECAP</div>
+            <h2 className="font-mono font-bold text-3xl md:text-5xl leading-tight mb-5">Private messengers still leave too much readable at the edge.</h2>
+            <p className="font-mono text-sm text-muted-foreground leading-relaxed mb-6">
+              End-to-end encryption protects transport. It does not automatically protect rendered plaintext, local history, notification previews, linked devices, backups, handles, timing, or a compromised endpoint after delivery.
+            </p>
+            <button
+              type="button"
+              onClick={() => scrollToSection("#problem")}
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-mono text-xs tracking-widest px-5 py-3 hover:bg-primary/90 transition-all"
+            >
+              COMPARE SIGNAL / IMESSAGE / QUANTUMSHIELD
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { icon: <Database className="w-5 h-5" />, title: "Local history", copy: "Readable app databases, attachments, notifications, and search indexes become ordinary endpoint targets." },
+              { icon: <Eye className="w-5 h-5" />, title: "Rendered plaintext", copy: "Once a message is visible, malware, remote tools, screenshots, or a person at the screen can capture it." },
+              { icon: <Globe className="w-5 h-5" />, title: "Metadata", copy: "Timing, retries, push events, identifiers, and room activity can still map social behavior." },
+              { icon: <TimerOff className="w-5 h-5" />, title: "Stale secrets", copy: "Old ciphertext should become useless when real time moves on, even if key material is later copied." },
+            ].map((item) => (
+              <div key={item.title} className="border border-border/50 bg-background/55 p-5">
+                <div className="text-destructive mb-4">{item.icon}</div>
+                <h3 className="font-mono text-sm font-semibold mb-3">{item.title}</h3>
+                <p className="font-mono text-xs text-muted-foreground leading-relaxed">{item.copy}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="community" className="py-24 px-6 border-y border-border/50 scroll-mt-16"><div className="max-w-7xl mx-auto"><div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-start"><div><div className="font-mono text-xs text-primary tracking-widest mb-3">CALL FOR REVIEW</div><h2 className="font-mono font-bold text-3xl md:text-4xl mb-6">Auditors, builders, and privacy engineers wanted.</h2><p className="font-mono text-sm text-muted-foreground mb-10 leading-relaxed max-w-2xl">QuantumShield needs independent review, reproducible builds, threat-model pressure, protocol critique, and careful implementation work. If you can break assumptions, harden defaults, document risk, or improve the client experience, start here.</p><div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[{ icon: <Bug className="w-5 h-5" />, title: "Security auditors", copy: "Review auth, crypto boundaries, key storage, API validation, and build provenance.", href: SECURITY_URL, label: "Disclosure" }, { icon: <Users className="w-5 h-5" />, title: "Contributors", copy: "Open focused issues, send small PRs, improve tests, and help keep the workspace maintainable.", href: ISSUES_URL, label: "Issues" }, { icon: <Github className="w-5 h-5" />, title: "Maintainers", copy: "Review pull requests, tighten docs, triage dependency updates, and expand CI coverage.", href: PULLS_URL, label: "Pull requests" }].map((item) => <a key={item.title} href={item.href} target="_blank" rel="noreferrer" className="border border-border/50 bg-card/30 p-5 hover:border-primary/40 hover:bg-card/60 transition-all"><div className="text-primary mb-4">{item.icon}</div><h3 className="font-mono font-semibold text-sm mb-3">{item.title}</h3><p className="font-mono text-xs text-muted-foreground leading-relaxed mb-5">{item.copy}</p><span className="inline-flex items-center gap-2 font-mono text-xs text-primary uppercase tracking-widest">{item.label}<ExternalLink className="w-3 h-3" /></span></a>)}</div></div><MailingListSignup /></div></div></section>
 
       <footer className="py-10 px-6 border-t border-border/50"><div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4"><div className="flex items-center gap-2"><div className="w-5 h-5 bg-primary flex items-center justify-center"><Shield className="w-3 h-3 text-primary-foreground" /></div><span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span></div><p className="font-mono text-xs text-muted-foreground">ML-KEM-1024 + ML-DSA-87 + AES-256-GCM — NIST FIPS 203/204/197 Compliant</p></div></footer>
     </div>

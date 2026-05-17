@@ -37,7 +37,7 @@ const PRIVACY_FEATURES: Array<{ icon: ComponentProps<typeof Feather>["name"]; la
   { icon: "camera", label: "Front-camera detection for nearby recording devices" },
   { icon: "mouse-pointer", label: "Messages decrypt only while held, one at a time" },
   { icon: "user-x", label: "Usernames and rooms stay codenamed until reveal" },
-  { icon: "clock", label: "TTL keys are purged so old ciphertext becomes noise" },
+  { icon: "clock", label: "TTL keys and wrapped key envelopes expire into noise" },
   { icon: "eye-off", label: "Blur and background shields hide secure content" },
   { icon: "monitor", label: "Screenshot, screen-capture, and print friction" },
   { icon: "key", label: "Alias and invite codes scope discovery and access" },
@@ -148,6 +148,7 @@ export default function LoginScreen() {
       await setToken(data.token);
       await setAuthHandle(data.authHandle);
       await setDevicePasscode(passcode);
+      setLinkCode("");
       const meUrl = Platform.OS === "web" ? "/api/auth/me" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/me`;
       const meRes = await fetch(meUrl, {
         headers: { Authorization: `Bearer ${data.token}` },

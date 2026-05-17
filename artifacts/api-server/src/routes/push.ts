@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db, pushSubscriptionsTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import webPush from "web-push";
-import { createECDH } from "crypto";
+import { createECDH, createHash } from "crypto";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 
@@ -17,6 +17,13 @@ const PUSH_HOST_PATTERNS = [
   /\.push\.apple\.com$/,
   /\.web\.push\.apple\.com$/,
 ];
+
+function pseudonymousUserId(userId: string): string {
+  return createHash("sha256")
+    .update(`push-log-v1:${process.env["LOG_PSEUDONYM_PEPPER"] ?? process.env["SESSION_SECRET"] ?? "dev"}:${userId}`)
+    .digest("hex")
+    .slice(0, 12);
+}
 
 function isValidPushEndpoint(raw: string): boolean {
   let url: URL;
@@ -109,7 +116,7 @@ export async function notifyUser(userId: string, payload: { title: string; body:
     .where(eq(pushSubscriptionsTable.userId, userId));
 
   if (subscriptions.length === 0) {
-    logger.info({ userId }, "Push notification skipped: user has no subscriptions");
+    logger.info({ userRef: pseudonymousUserId(userId) }, "Push notification skipped: user has no subscriptions");
     return;
   }
 
@@ -130,7 +137,7 @@ export async function notifyUser(userId: string, payload: { title: string; body:
         const statusCode = (err as { statusCode?: number }).statusCode;
         if (statusCode === 404 || statusCode === 410) {
           await db.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.endpoint, sub.endpoint));
-          logger.info({ userId, statusCode }, "Deleted expired push subscription");
+          logger.info({ userRef: pseudonymousUserId(userId), statusCode }, "Deleted expired push subscription");
         } else {
           logger.warn({ err, statusCode }, "Push notification delivery failed");
         }
@@ -138,7 +145,7 @@ export async function notifyUser(userId: string, payload: { title: string; body:
     }),
   );
   const failed = results.filter((result) => result.status === "rejected").length;
-  logger.info({ userId, subscriptions: subscriptions.length, failed }, "Push notification delivery attempted");
+  logger.info({ userRef: pseudonymousUserId(userId), subscriptions: subscriptions.length, failed }, "Push notification delivery attempted");
 }
 
 router.get("/push/vapid-public-key", (_req, res) => {
@@ -160,7 +167,7 @@ router.get("/push/vapid-public-key", (_req, res) => {
 });
 
 router.post("/push/subscribe", requireAuth, async (req: AuthRequest, res) => {
-  const { endpoint, keys, userAgent } = req.body ?? {};
+  const { endpoint, keys } = req.body ?? {};
 
   if (typeof endpoint !== "string" || !keys || typeof keys.p256dh !== "string" || typeof keys.auth !== "string") {
     res.status(400).json({ error: "Invalid push subscription payload" });
@@ -185,7 +192,7 @@ router.post("/push/subscribe", requireAuth, async (req: AuthRequest, res) => {
         userId: req.user!.id,
         p256dh: keys.p256dh,
         auth: keys.auth,
-        userAgent: typeof userAgent === "string" ? userAgent : null,
+        userAgent: null,
       })
       .where(eq(pushSubscriptionsTable.endpoint, endpoint));
   } else {
@@ -194,11 +201,11 @@ router.post("/push/subscribe", requireAuth, async (req: AuthRequest, res) => {
       endpoint,
       p256dh: keys.p256dh,
       auth: keys.auth,
-      userAgent: typeof userAgent === "string" ? userAgent : null,
+      userAgent: null,
     });
   }
 
-  logger.info({ userId: req.user!.id, updated: existing.length > 0 }, "Push subscription saved");
+  logger.info({ userRef: pseudonymousUserId(req.user!.id), updated: existing.length > 0 }, "Push subscription saved");
   res.status(201).json({ ok: true });
 });
 

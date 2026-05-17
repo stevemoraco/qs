@@ -183,7 +183,6 @@ export async function ensurePushSubscription(authToken: string): Promise<PushSub
       body: JSON.stringify({
         endpoint: json.endpoint,
         keys: json.keys,
-        userAgent: navigator.userAgent,
       }),
     });
     if (!res.ok) {

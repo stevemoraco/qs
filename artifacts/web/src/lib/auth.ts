@@ -6,6 +6,9 @@ const AUTH_HANDLE_COOKIE = "qs_auth_handle";
 const LAST_HANDLE_COOKIE = "qs_last_handle";
 const DEVICE_PASSCODE_KEY = "qs_device_passcode";
 const WEBAUTHN_CREDENTIAL_KEY = "qs_webauthn_credential";
+const FRESH_LOGIN_VERIFIED_UNTIL_KEY = "qs_fresh_login_verified_until";
+const ASSOCIATED_HANDLES_KEY = "qs_associated_handles";
+const UNSEALED_HANDLE_LABELS_KEY = "qs_unsealed_handle_labels";
 const KEM_SK_KEY = "qs_kem_sk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const KEM_PK_KEY = "qs_kem_pk";
@@ -14,6 +17,42 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 400;
 const KEY_DB_NAME = "quantumshield-keyring";
 const KEY_DB_STORE = "keys";
 const KEY_DB_VERSION = 1;
+const PRIVATE_KEY_CACHE_MS = 2 * 60 * 1000;
+
+const privateKeyCache = new Map<string, { value: Uint8Array; expiresAt: number }>();
+
+function isPrivateKey(key: string): boolean {
+  return key === KEM_SK_KEY || key === DSA_SK_KEY;
+}
+
+function cachePrivateKey(key: string, value: Uint8Array): Uint8Array {
+  const previous = privateKeyCache.get(key);
+  previous?.value.fill(0);
+  const copy = new Uint8Array(value);
+  privateKeyCache.set(key, { value: copy, expiresAt: Date.now() + PRIVATE_KEY_CACHE_MS });
+  return new Uint8Array(copy);
+}
+
+function getCachedPrivateKey(key: string): Uint8Array | null {
+  const cached = privateKeyCache.get(key);
+  if (!cached) return null;
+  if (cached.expiresAt <= Date.now()) {
+    cached.value.fill(0);
+    privateKeyCache.delete(key);
+    return null;
+  }
+  cached.expiresAt = Date.now() + PRIVATE_KEY_CACHE_MS;
+  return new Uint8Array(cached.value);
+}
+
+function clearPrivateKeyCache(): void {
+  for (const cached of privateKeyCache.values()) cached.value.fill(0);
+  privateKeyCache.clear();
+}
+
+function isSessionOnlyValue(key: string): boolean {
+  return key === TOKEN_KEY || key === AUTH_HANDLE_KEY;
+}
 
 function bytesToBase64(bytes: Uint8Array): string {
   let value = "";
@@ -64,19 +103,43 @@ function clearCookie(name: string): void {
 }
 
 function getPersistentValue(key: string, cookieName: string): string | null {
+  if (isSessionOnlyValue(key)) {
+    const sessionValue = sessionStorage.getItem(key);
+    if (sessionValue) return sessionValue;
+  }
   const localValue = localStorage.getItem(key);
-  if (localValue) return localValue;
+  if (localValue) {
+    if (isSessionOnlyValue(key)) {
+      sessionStorage.setItem(key, localValue);
+      localStorage.removeItem(key);
+    }
+    return localValue;
+  }
   const cookieValue = getCookie(cookieName);
-  if (cookieValue) localStorage.setItem(key, cookieValue);
+  if (cookieValue) {
+    if (isSessionOnlyValue(key)) {
+      sessionStorage.setItem(key, cookieValue);
+      clearCookie(cookieName);
+    } else {
+      localStorage.setItem(key, cookieValue);
+    }
+  }
   return cookieValue;
 }
 
 function setPersistentValue(key: string, cookieName: string, value: string): void {
-  localStorage.setItem(key, value);
-  setCookie(cookieName, value);
+  if (isSessionOnlyValue(key)) {
+    sessionStorage.setItem(key, value);
+    localStorage.removeItem(key);
+    clearCookie(cookieName);
+  } else {
+    localStorage.setItem(key, value);
+    setCookie(cookieName, value);
+  }
 }
 
 function clearPersistentValue(key: string, cookieName: string): void {
+  sessionStorage.removeItem(key);
   localStorage.removeItem(key);
   clearCookie(cookieName);
 }
@@ -107,7 +170,64 @@ export function getLastHandle(): string | null {
 }
 
 export function setLastHandle(handle: string): void {
-  setPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE, handle);
+  const normalized = normalizeIdentityHandle(handle);
+  setPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE, normalized);
+  rememberAssociatedHandle(normalized);
+}
+
+export function rememberAssociatedHandle(handle: string): void {
+  const normalized = normalizeIdentityHandle(handle);
+  if (!normalized || /^[a-f0-9]{64}$/.test(normalized)) return;
+  const handles = new Set(getAssociatedHandles());
+  handles.add(normalized);
+  localStorage.setItem(ASSOCIATED_HANDLES_KEY, JSON.stringify([...handles].sort((a, b) => a.length - b.length || a.localeCompare(b))));
+}
+
+export function getAssociatedHandles(): string[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ASSOCIATED_HANDLES_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((value): value is string => typeof value === "string")
+      .map(normalizeIdentityHandle)
+      .filter((value) => value && !/^[a-f0-9]{64}$/.test(value));
+  } catch {
+    return [];
+  }
+}
+
+export function getPreferredPasskeyHandle(fallback = ""): string {
+  const normalizedFallback = normalizeIdentityHandle(fallback);
+  const handles = [...getAssociatedHandles(), normalizedFallback].filter(Boolean);
+  return handles.sort((a, b) => a.length - b.length || a.localeCompare(b))[0] ?? normalizedFallback;
+}
+
+export function rememberUnsealedHandle(codeId: string, handle: string): void {
+  const normalized = normalizeIdentityHandle(handle);
+  if (!codeId || !normalized || /^[a-f0-9]{64}$/.test(normalized)) return;
+  const labels = getUnsealedHandleLabels();
+  labels[codeId] = normalized;
+  localStorage.setItem(UNSEALED_HANDLE_LABELS_KEY, JSON.stringify(labels));
+  rememberAssociatedHandle(normalized);
+}
+
+export function getUnsealedHandleLabels(): Record<string, string> {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(UNSEALED_HANDLE_LABELS_KEY) ?? "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .filter((entry): entry is [string, string] => typeof entry[0] === "string" && typeof entry[1] === "string")
+        .map(([id, handle]) => [id, normalizeIdentityHandle(handle)])
+        .filter(([, handle]) => handle && !/^[a-f0-9]{64}$/.test(handle))
+    );
+  } catch {
+    return {};
+  }
+}
+
+export function getUnsealedHandle(codeId: string): string | null {
+  return getUnsealedHandleLabels()[codeId] ?? null;
 }
 
 export function getDevicePasscode(): string | null {
@@ -116,6 +236,17 @@ export function getDevicePasscode(): string | null {
 
 export function setDevicePasscode(passcode: string): void {
   localStorage.setItem(DEVICE_PASSCODE_KEY, passcode);
+}
+
+export function markFreshLoginVerified(durationMs = 15000): void {
+  sessionStorage.setItem(FRESH_LOGIN_VERIFIED_UNTIL_KEY, String(Date.now() + durationMs));
+}
+
+export function isFreshLoginVerificationValid(): boolean {
+  const until = Number(sessionStorage.getItem(FRESH_LOGIN_VERIFIED_UNTIL_KEY) ?? "0");
+  if (until > Date.now()) return true;
+  sessionStorage.removeItem(FRESH_LOGIN_VERIFIED_UNTIL_KEY);
+  return false;
 }
 
 export function generateDevicePasscode(): string {
@@ -143,7 +274,7 @@ export async function enrollDeviceVerification(): Promise<void> {
   crypto.getRandomValues(challenge);
   crypto.getRandomValues(userId);
 
-  const credential = await navigator.credentials.create({
+  const credential = await runWebAuthnCeremony(() => navigator.credentials.create({
     publicKey: {
       challenge,
       rp: { name: "QuantumShield" },
@@ -161,7 +292,7 @@ export async function enrollDeviceVerification(): Promise<void> {
       timeout: 60000,
       attestation: "none",
     },
-  });
+  }));
 
   if (!(credential instanceof PublicKeyCredential)) {
     throw new Error("Device verification was not created.");
@@ -183,7 +314,7 @@ export async function verifyDevice(): Promise<void> {
   const challenge = new Uint8Array(32);
   crypto.getRandomValues(challenge);
 
-  await navigator.credentials.get({
+  await runWebAuthnCeremony(() => navigator.credentials.get({
     publicKey: {
       challenge,
       allowCredentials: [
@@ -195,11 +326,17 @@ export async function verifyDevice(): Promise<void> {
       userVerification: "required",
       timeout: 60000,
     },
-  });
+  }));
 }
 
 export function clearToken(): void {
   clearPersistentValue(TOKEN_KEY, TOKEN_COOKIE);
+}
+
+export function clearEphemeralSecrets(): void {
+  clearPrivateKeyCache();
+  localStorage.removeItem(KEM_SK_KEY);
+  localStorage.removeItem(DSA_SK_KEY);
 }
 
 export function isAuthenticated(): boolean {
@@ -212,14 +349,14 @@ export function storeKeyPair(
   dsaSk: Uint8Array,
   dsaPk: Uint8Array
 ): void {
-  localStorage.setItem(KEM_SK_KEY, bytesToBase64(kemSk));
   localStorage.setItem(KEM_PK_KEY, bytesToBase64(kemPk));
-  localStorage.setItem(DSA_SK_KEY, bytesToBase64(dsaSk));
   localStorage.setItem(DSA_PK_KEY, bytesToBase64(dsaPk));
+  localStorage.removeItem(KEM_SK_KEY);
+  localStorage.removeItem(DSA_SK_KEY);
+  cachePrivateKey(KEM_SK_KEY, kemSk);
+  cachePrivateKey(DSA_SK_KEY, dsaSk);
   void storeKeyPairInIndexedDb({
-    [KEM_SK_KEY]: bytesToBase64(kemSk),
     [KEM_PK_KEY]: bytesToBase64(kemPk),
-    [DSA_SK_KEY]: bytesToBase64(dsaSk),
     [DSA_PK_KEY]: bytesToBase64(dsaPk),
   });
 }
@@ -269,12 +406,21 @@ export function getDsaSecretKey(): Uint8Array | null {
 }
 
 function getStoredBytes(key: string): Uint8Array | null {
+  if (isPrivateKey(key)) {
+    const cached = getCachedPrivateKey(key);
+    if (cached) return cached;
+  }
   const v = localStorage.getItem(key);
   if (!v) return null;
-  return base64ToBytes(v);
+  const bytes = base64ToBytes(v);
+  if (!isPrivateKey(key)) return bytes;
+  localStorage.removeItem(key);
+  return cachePrivateKey(key, bytes);
 }
 
 async function getStoredBytesAsync(key: string): Promise<Uint8Array | null> {
+  const existing = getStoredBytes(key);
+  if (existing) return existing;
   await hydrateKeyPairFromIndexedDb();
   return getStoredBytes(key);
 }
@@ -304,6 +450,20 @@ async function storeKeyPairInIndexedDb(values: Record<string, string>): Promise<
   db.close();
 }
 
+async function deletePrivateKeysFromIndexedDb(): Promise<void> {
+  const db = await openKeyDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(KEY_DB_STORE, "readwrite");
+    tx.objectStore(KEY_DB_STORE).delete(KEM_SK_KEY);
+    tx.objectStore(KEY_DB_STORE).delete(DSA_SK_KEY);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.onabort = () => resolve();
+  });
+  db.close();
+}
+
 export async function hydrateKeyPairFromIndexedDb(): Promise<boolean> {
   const db = await openKeyDb();
   if (!db) return false;
@@ -326,11 +486,15 @@ export async function hydrateKeyPairFromIndexedDb(): Promise<boolean> {
 
   let hydrated = false;
   for (const key of keys) {
-    if (!localStorage.getItem(key) && values[key]) {
+    if (isPrivateKey(key) && values[key]) {
+      localStorage.removeItem(key);
+      hydrated = true;
+    } else if (!localStorage.getItem(key) && values[key]) {
       localStorage.setItem(key, values[key]);
       hydrated = true;
     }
   }
+  void deletePrivateKeysFromIndexedDb();
   return hydrated;
 }
 
@@ -344,6 +508,7 @@ export function clearAll(): void {
   localStorage.removeItem(KEM_PK_KEY);
   localStorage.removeItem(DSA_SK_KEY);
   localStorage.removeItem(DSA_PK_KEY);
+  clearPrivateKeyCache();
   if (typeof indexedDB !== "undefined") indexedDB.deleteDatabase(KEY_DB_NAME);
 }
 
@@ -354,7 +519,7 @@ export async function linkDeviceWithInvite(code: string, passcode: string): Prom
     body: JSON.stringify({
       code,
       passcode,
-      deviceLabel: navigator.userAgent.slice(0, 80),
+      deviceLabel: "Web device",
     }),
   });
 
@@ -379,6 +544,74 @@ async function jsonFetch<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
+function responseErrorMessage(data: { error?: string } | null, fallback: string): string {
+  if (typeof data?.error === "string" && data.error.trim()) return data.error;
+  return fallback;
+}
+
+async function authedJsonFetch<T>(url: string, body: unknown, token = getToken()): Promise<T> {
+  if (!token) throw new Error("You must be logged in to link a local passkey.");
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "authorization": `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null) as T & { error?: string } | null;
+  if (!res.ok) {
+    throw new Error(responseErrorMessage(data, `${res.status} ${res.statusText || "Request failed"}`));
+  }
+  return data as T;
+}
+
+function devicePasskeyLabel(): string {
+  const handle = getPreferredPasskeyHandle();
+  if (handle) return handle;
+  const device = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    ? "iPhone"
+    : /android/i.test(navigator.userAgent)
+      ? "Android"
+      : /mac/i.test(navigator.userAgent)
+        ? "Mac"
+        : /win/i.test(navigator.userAgent)
+          ? "Windows"
+          : "Device";
+  return `Passkey from ${device} ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+}
+
+function withLocalPasskeyDisplayName<T extends { user: { name: string; displayName: string } }>(optionsJSON: T, displayName: string): T {
+  return {
+    ...optionsJSON,
+    user: {
+      ...optionsJSON.user,
+      name: displayName,
+      displayName,
+    },
+  };
+}
+
+let webAuthnInFlight = false;
+
+async function runWebAuthnCeremony<T>(fn: () => Promise<T>): Promise<T> {
+  if (webAuthnInFlight) {
+    throw new Error("A passkey prompt is already open. Complete or cancel it before trying again.");
+  }
+  webAuthnInFlight = true;
+  try {
+    return await fn();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (/abort signal|aborted|operation was aborted/i.test(message)) {
+      throw new Error("The passkey prompt was interrupted. Try again after the page finishes loading.");
+    }
+    throw err;
+  } finally {
+    webAuthnInFlight = false;
+  }
+}
+
 export async function registerWithPasskey(input: {
   handle: string;
   kemPublicKey: string;
@@ -386,10 +619,10 @@ export async function registerWithPasskey(input: {
   leadEmail?: string;
 }): Promise<{ token: string; authHandle: string }> {
   const handleHash = await hashIdentityCode(input.handle);
-  const options = await jsonFetch<Parameters<typeof startRegistration>[0]>("/api/auth/passkey/register/options", {
+  const optionsJSON = await jsonFetch<Parameters<typeof startRegistration>[0]["optionsJSON"]>("/api/auth/passkey/register/options", {
     handle: handleHash,
   });
-  const response = await startRegistration(options);
+  const response = await runWebAuthnCeremony(() => startRegistration({ optionsJSON: withLocalPasskeyDisplayName(optionsJSON, devicePasskeyLabel()) }));
   return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/register/verify", {
     handle: handleHash,
     response,
@@ -401,11 +634,54 @@ export async function registerWithPasskey(input: {
 
 export async function loginWithPasskey(handle: string): Promise<{ token: string; authHandle: string }> {
   const handleHash = await hashIdentityCode(handle);
-  const options = await jsonFetch<Parameters<typeof startAuthentication>[0]>("/api/auth/passkey/login/options", { handle: handleHash });
-  const response = await startAuthentication(options);
+  const optionsJSON = await jsonFetch<Parameters<typeof startAuthentication>[0]["optionsJSON"]>("/api/auth/passkey/login/options", { handle: handleHash });
+  const response = await runWebAuthnCeremony(() => startAuthentication({ optionsJSON }));
   return jsonFetch<{ token: string; authHandle: string }>("/api/auth/passkey/login/verify", {
     handle: handleHash,
     response,
   });
 }
-import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
+
+function localPlatformPasskeyKey(handle: string): string {
+  return `qs_platform_passkey_linked:${window.location.hostname}:${normalizeIdentityHandle(handle)}`;
+}
+
+export function clearLocalPlatformPasskeyLink(handle: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(localPlatformPasskeyKey(handle));
+}
+
+export async function localPlatformPasskeyAvailable(): Promise<boolean> {
+  return platformAuthenticatorIsAvailable().catch(() => false);
+}
+
+export async function linkLocalPlatformPasskey(token: string, label = "Desktop passkey", handle = ""): Promise<void> {
+  const optionsJSON = await authedJsonFetch<Parameters<typeof startRegistration>[0]["optionsJSON"]>("/api/auth/passkey/add/options", {}, token);
+  const passkeyLabel = label || devicePasskeyLabel();
+  const response = await runWebAuthnCeremony(() => startRegistration({ optionsJSON: withLocalPasskeyDisplayName(optionsJSON, passkeyLabel) }));
+  await authedJsonFetch<{ ok: boolean }>("/api/auth/passkey/add/verify", { response, label: passkeyLabel }, token);
+}
+
+export async function maybeLinkLocalPlatformPasskey(handle: string, token: string, options: { force?: boolean } = {}): Promise<"linked" | "already-linked" | "skipped-mobile" | "skipped-unavailable"> {
+  if (typeof window === "undefined") return "skipped-unavailable";
+  if (window.matchMedia("(max-width: 767px)").matches) return "skipped-mobile";
+  const storageKey = localPlatformPasskeyKey(handle);
+  if (!options.force && localStorage.getItem(storageKey) === "1") return "already-linked";
+  if (!(await localPlatformPasskeyAvailable())) return "skipped-unavailable";
+
+  await new Promise((resolve) => window.setTimeout(resolve, 600));
+  try {
+    await linkLocalPlatformPasskey(token, devicePasskeyLabel(), handle);
+    localStorage.setItem(storageKey, "1");
+    return "linked";
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (/already linked|previously registered|already registered|excluded/i.test(message)) {
+      localStorage.setItem(storageKey, "1");
+      return "already-linked";
+    }
+    throw err;
+  }
+}
+
+import { platformAuthenticatorIsAvailable, startAuthentication, startRegistration } from "@simplewebauthn/browser";

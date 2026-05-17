@@ -18,16 +18,18 @@ import {
   Settings,
   CameraOff,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import {
   useGetRooms,
   getGetRoomsQueryKey,
   usePostRooms,
   useGetAuthMe,
+  getGetAuthMeQueryKey,
   usePostAuthLogout,
   useGetRoomsRoomIdMessages,
   getGetRoomsRoomIdMessagesQueryKey,
-  usePostRoomsRoomIdMessages,
+  postRoomsRoomIdMessages,
   useGetRoomsRoomIdMembers,
   getRoomsRoomIdMembers,
   getKeysUserId,
@@ -42,12 +44,27 @@ import {
   type IdentityCode,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearToken, getKemSecretKeyAsync, getLastHandle, getLocalKeyPairAsync, getToken, hashIdentityCode, loginWithPasskey, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
-import { encryptMessage, importMessageKey, storeMessageKey, getMessageKey, decryptMessage, deleteMessageKey, CIPHER_SUITE } from "@/lib/crypto";
+import { clearEphemeralSecrets, clearToken, getDsaPublicKey, getKemSecretKeyAsync, getLastHandle, getLocalKeyPairAsync, getToken, getUnsealedHandleLabels, hashIdentityCode, isFreshLoginVerificationValid, linkLocalPlatformPasskey, loginWithPasskey, rememberAssociatedHandle, rememberUnsealedHandle, setAuthHandle, setLastHandle, setToken, storeKeyPair, verifyDevice } from "@/lib/auth";
+import { clearBytes, decryptMessage, encryptMessage, importMessageKey, CIPHER_SUITE } from "@/lib/crypto";
 import { getFrameThreatDetector } from "@/lib/on-device-vision";
 import { ml_kem1024 } from "@noble/post-quantum/ml-kem.js";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
+import {
+  cacheRoomMembers,
+  cacheRoomMessages,
+  cacheRooms,
+  cacheTrustedKeyBundle,
+  createLocalOutboxId,
+  deleteOutboxEntry,
+  enqueueOutbox,
+  getCachedRoomMembers,
+  getCachedRoomMessages,
+  getCachedRooms,
+  getCachedTrustedKeyBundle,
+  getOutboxEntries,
+  type OfflineOutboxEntry,
+} from "@/lib/offline-vault";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
@@ -55,6 +72,10 @@ const FLASH_SCAN_MS = 60;
 const FLASH_FRAME_WIDTH = 64;
 const FLASH_FRAME_HEIGHT = 40;
 const FLASH_DEBUG_SEND_MS = 500;
+const KEY_BUNDLE_TRUST_KEY = "qs_trusted_key_bundles_v1";
+const KEY_BUNDLE_WARNING_KEY = "qs_key_bundle_warning_v1";
+const OFFLINE_ME_KEY = "qs_offline_me_v1";
+const LEGACY_SIGNATURE_GRACE_BEFORE_MS = Date.parse("2026-05-17T09:42:00Z");
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -74,25 +95,181 @@ function base64ToBytes(value: string): Uint8Array {
   return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
 }
 
+type KeyBundle = {
+  kemPublicKey?: string | null;
+  dsaPublicKey?: string | null;
+  kemSignature?: string | null;
+};
+
+type OfflineMe = {
+  id: string;
+  username: string;
+  displayName?: string | null;
+  avatarColor?: string | null;
+  kemPublicKey?: string | null;
+  dsaPublicKey?: string | null;
+};
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) as T : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function loadOfflineMe(): OfflineMe | null {
+  return readJson<OfflineMe | null>(OFFLINE_ME_KEY, null);
+}
+
+function saveOfflineMe(me: OfflineMe): void {
+  writeJson(OFFLINE_ME_KEY, me);
+}
+
+function useOnlineStatus(): boolean {
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+  useEffect(() => {
+    let cancelled = false;
+    const checkServer = async () => {
+      if (!navigator.onLine) {
+        if (!cancelled) setOnline(false);
+        return;
+      }
+      try {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 2500);
+        const response = await fetch("/api/healthz", { signal: controller.signal, cache: "no-store" });
+        window.clearTimeout(timeout);
+        if (!cancelled) setOnline(response.ok);
+      } catch {
+        if (!cancelled) setOnline(false);
+      }
+    };
+    const update = () => void checkServer();
+    void checkServer();
+    const interval = window.setInterval(checkServer, 15000);
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+  return online;
+}
+
+function readTrustedKeyBundles(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(KEY_BUNDLE_TRUST_KEY) ?? "{}") as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+function writeTrustedKeyBundles(value: Record<string, string>): void {
+  localStorage.setItem(KEY_BUNDLE_TRUST_KEY, JSON.stringify(value));
+}
+
+async function keyBundleFingerprint(bundle: KeyBundle): Promise<string> {
+  const payload = new TextEncoder().encode(stableJson({
+    v: 1,
+    kemPublicKey: bundle.kemPublicKey ?? "",
+    dsaPublicKey: bundle.dsaPublicKey ?? "",
+    kemSignature: bundle.kemSignature ?? "",
+  }));
+  const digest = await crypto.subtle.digest("SHA-256", payload);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function trustFetchedKeyBundle(userId: string, bundle: KeyBundle): Promise<boolean> {
+  if (!verifyKeyBundleSignature(bundle)) return false;
+  const fingerprint = await keyBundleFingerprint(bundle);
+  const trusted = readTrustedKeyBundles();
+  const previous = trusted[userId];
+  if (previous && previous !== fingerprint) {
+    localStorage.setItem(KEY_BUNDLE_WARNING_KEY, JSON.stringify({
+      userId,
+      previous,
+      current: fingerprint,
+      detectedAt: new Date().toISOString(),
+    }));
+  }
+  if (previous !== fingerprint) {
+    trusted[userId] = fingerprint;
+    writeTrustedKeyBundles(trusted);
+  }
+  await cacheTrustedKeyBundle({ userId, ...bundle, trustedAt: new Date().toISOString() });
+  return true;
+}
+
+async function replaceTrustedKeyBundle(userId: string, bundle: KeyBundle): Promise<void> {
+  if (!verifyKeyBundleSignature(bundle)) return;
+  const trusted = readTrustedKeyBundles();
+  trusted[userId] = await keyBundleFingerprint(bundle);
+  writeTrustedKeyBundles(trusted);
+  await cacheTrustedKeyBundle({ userId, ...bundle, trustedAt: new Date().toISOString() });
+}
+
+async function getTrustedKeyBundle(userId: string): Promise<KeyBundle | null> {
+  try {
+    const bundle = await getKeysUserId(userId);
+    if (!(await trustFetchedKeyBundle(userId, bundle))) return null;
+    return bundle;
+  } catch {
+    const cached = await getCachedTrustedKeyBundle(userId);
+    if (!cached) return null;
+    const bundle = {
+      kemPublicKey: cached.kemPublicKey,
+      dsaPublicKey: cached.dsaPublicKey,
+      kemSignature: cached.kemSignature,
+    };
+    return verifyKeyBundleSignature(bundle) ? bundle : null;
+  }
+}
+
 async function aesGcmKeyFromBytes(bytes: Uint8Array): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", new Uint8Array(bytes).buffer as ArrayBuffer, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
 }
 
 async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
+  const bundle = await getTrustedKeyBundle(userId);
+  return bundle?.kemPublicKey ? wrapMessageKeyForKemPublicKey(base64ToBytes(bundle.kemPublicKey), rawMessageKey) : null;
+}
+
+async function wrapMessageKeyForLocalDevice(rawMessageKey: Uint8Array): Promise<string | null> {
+  const keys = await getLocalKeyPairAsync();
   try {
-    const bundle = await getKeysUserId(userId);
-    if (!verifyKeyBundleSignature(bundle)) return null;
-    const { cipherText, sharedSecret } = ml_kem1024.encapsulate(base64ToBytes(bundle.kemPublicKey));
+    return keys.kemPublicKey ? wrapMessageKeyForKemPublicKey(keys.kemPublicKey, rawMessageKey) : null;
+  } finally {
+    clearBytes(keys.kemSecretKey);
+    clearBytes(keys.dsaSecretKey);
+  }
+}
+
+async function wrapMessageKeyForKemPublicKey(kemPublicKey: Uint8Array, rawMessageKey: Uint8Array): Promise<string | null> {
+  let sharedSecret: Uint8Array | null = null;
+  try {
+    const encapsulated = ml_kem1024.encapsulate(kemPublicKey);
+    sharedSecret = encapsulated.sharedSecret;
     const wrappingKey = await aesGcmKeyFromBytes(sharedSecret);
     const nonce = crypto.getRandomValues(new Uint8Array(12));
     const wrapped = await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce.buffer as ArrayBuffer }, wrappingKey, new Uint8Array(rawMessageKey).buffer as ArrayBuffer);
     return JSON.stringify({
-      kemCiphertext: bytesToBase64(cipherText),
+      kemCiphertext: bytesToBase64(encapsulated.cipherText),
       nonce: bytesToBase64(nonce),
       wrappedKey: bytesToBase64(new Uint8Array(wrapped)),
     } satisfies WrappedMessageKey);
   } catch {
     return null;
+  } finally {
+    clearBytes(sharedSecret);
   }
 }
 
@@ -106,15 +283,61 @@ async function signMessagePayload(input: {
 }): Promise<string | null> {
   const keys = await getLocalKeyPairAsync();
   if (!keys.dsaSecretKey) return null;
-  const signature = ml_dsa87.sign(messageSignaturePayload(input), keys.dsaSecretKey);
-  return bytesToBase64(signature);
+  try {
+    const signature = ml_dsa87.sign(messageSignaturePayload(input), keys.dsaSecretKey);
+    return bytesToBase64(signature);
+  } finally {
+    clearBytes(keys.kemSecretKey);
+    clearBytes(keys.dsaSecretKey);
+  }
 }
 
 async function verifyMessageSignature(roomId: string, msg: Message): Promise<boolean> {
   if (!msg.signature) return false;
+  if (msg.senderDsaPublicKey) {
+    try {
+      if (ml_dsa87.verify(
+        base64ToBytes(msg.signature),
+        messageSignaturePayload({
+          roomId,
+          senderId: msg.senderId,
+          ciphertext: msg.ciphertext,
+          nonce: msg.nonce,
+          algorithm: msg.algorithm,
+          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
+        }),
+        base64ToBytes(msg.senderDsaPublicKey),
+      )) {
+        return true;
+      }
+    } catch {
+      // Continue through local and latest bundle checks.
+    }
+  }
+  const localDsaPublicKey = getDsaPublicKey();
+  if (localDsaPublicKey) {
+    try {
+      if (ml_dsa87.verify(
+        base64ToBytes(msg.signature),
+        messageSignaturePayload({
+          roomId,
+          senderId: msg.senderId,
+          ciphertext: msg.ciphertext,
+          nonce: msg.nonce,
+          algorithm: msg.algorithm,
+          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
+        }),
+        base64ToBytes(localDsaPublicKey),
+      )) {
+        return true;
+      }
+    } catch {
+      // Fall through to the fetched sender bundle.
+    }
+  }
   try {
-    const bundle = await getKeysUserId(msg.senderId);
-    if (!verifyKeyBundleSignature(bundle)) return false;
+    const bundle = await getTrustedKeyBundle(msg.senderId);
+    if (!bundle?.dsaPublicKey) return false;
     return ml_dsa87.verify(
       base64ToBytes(msg.signature),
       messageSignaturePayload({
@@ -135,18 +358,25 @@ async function verifyMessageSignature(roomId: string, msg: Message): Promise<boo
 async function unwrapMessageKeyForMe(wrappedValue: string): Promise<CryptoKey | null> {
   const kemSecretKey = await getKemSecretKeyAsync();
   if (!kemSecretKey) return null;
+  let sharedSecret: Uint8Array | null = null;
+  let rawKey: Uint8Array | null = null;
   try {
     const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
-    const sharedSecret = ml_kem1024.decapsulate(base64ToBytes(wrapped.kemCiphertext), kemSecretKey);
+    sharedSecret = ml_kem1024.decapsulate(base64ToBytes(wrapped.kemCiphertext), kemSecretKey);
     const wrappingKey = await aesGcmKeyFromBytes(sharedSecret);
-    const rawKey = await crypto.subtle.decrypt(
+    const decryptedRawKey = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: base64ToBytes(wrapped.nonce).buffer as ArrayBuffer },
       wrappingKey,
       base64ToBytes(wrapped.wrappedKey).buffer as ArrayBuffer
     );
-    return importMessageKey(new Uint8Array(rawKey));
+    rawKey = new Uint8Array(decryptedRawKey);
+    return importMessageKey(rawKey);
   } catch {
     return null;
+  } finally {
+    clearBytes(kemSecretKey);
+    clearBytes(sharedSecret);
+    clearBytes(rawKey);
   }
 }
 
@@ -159,6 +389,7 @@ type Room = {
   ttlSeconds?: number | null;
   ttlMode?: "after_view" | "after_send";
   deliveryFuzzSeconds?: number | null;
+  decayMode?: "standard" | "experimental_quorum_decay" | null;
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -170,10 +401,15 @@ type Message = {
   nonce: string;
   algorithm: string;
   signature?: string | null;
+  senderDsaPublicKey?: string | null;
   recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
+  decayedAt?: string | null;
+  decayAttestation?: Record<string, unknown> | null;
   availableAt?: string | null;
   createdAt: string;
+  localQueued?: boolean;
+  localFuzzing?: boolean;
 };
 
 type WrappedMessageKey = {
@@ -181,6 +417,53 @@ type WrappedMessageKey = {
   nonce: string;
   wrappedKey: string;
 };
+
+function outboxEntryToMessage(entry: OfflineOutboxEntry, senderId: string): Message {
+  return {
+    id: `offline:${entry.id}`,
+    senderId,
+    senderUsername: null,
+    ciphertext: entry.ciphertext,
+    nonce: entry.nonce,
+    algorithm: entry.algorithm,
+    signature: entry.signature,
+    senderDsaPublicKey: getDsaPublicKey(),
+    recipientEncryptedKeys: entry.recipientEncryptedKeys,
+    expiresAt: null,
+    availableAt: entry.availableAt ?? entry.createdAt,
+    createdAt: entry.createdAt,
+    localQueued: true,
+  };
+}
+
+function localFuzzMessage(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  signature: string;
+  recipientEncryptedKeys: Record<string, string>;
+  createdAt: string;
+}): Message {
+  return {
+    id: `local-fuzz-${crypto.randomUUID()}`,
+    senderId: input.senderId,
+    senderUsername: null,
+    ciphertext: input.ciphertext,
+    nonce: input.nonce,
+    algorithm: input.algorithm,
+    signature: input.signature,
+    senderDsaPublicKey: getDsaPublicKey(),
+    recipientEncryptedKeys: input.recipientEncryptedKeys,
+    decayAttestation: null,
+    decayedAt: null,
+    expiresAt: null,
+    availableAt: input.createdAt,
+    createdAt: input.createdAt,
+    localFuzzing: true,
+  };
+}
 
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
@@ -253,10 +536,19 @@ const DELIVERY_FUZZ_OPTIONS = [
 ];
 
 function formatShortDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds} sec`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
-  if (seconds < 86400) return `${Math.round(seconds / 3600)} hr`;
-  return `${Math.round(seconds / 86400)} days`;
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  if (safeSeconds < 120) return `${safeSeconds}s`;
+  if (safeSeconds < 3600) {
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = safeSeconds % 60;
+    return remainingSeconds ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  }
+  if (safeSeconds < 86400) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${Math.round(safeSeconds / 86400)}d`;
 }
 
 function incompatibleFuzzWarning(ttlSeconds: number | null, ttlMode: "after_view" | "after_send", deliveryFuzzSeconds: number): string | null {
@@ -342,6 +634,42 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+function formatLongDuration(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const days = Math.floor(safeSeconds / 86400);
+  const hours = Math.floor((safeSeconds % 86400) / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainingSeconds = safeSeconds % 60;
+  const parts: string[] = [];
+  if (days) parts.push(`${days} day${days === 1 ? "" : "s"}`);
+  if (hours) parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+  if (minutes) parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+  if (remainingSeconds || parts.length === 0) parts.push(`${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`);
+  return parts.slice(0, 2).join(" ");
+}
+
+function latestFuzzDeliveryLabel(sentAt: string, fuzzSeconds: number | null | undefined, nowMs: number): string | null {
+  if (!fuzzSeconds || fuzzSeconds <= 0) return null;
+  const sentMs = new Date(sentAt).getTime();
+  if (!Number.isFinite(sentMs)) return null;
+  const latestMs = sentMs + fuzzSeconds * 1000;
+  if (latestMs <= nowMs) return null;
+  const remainingSeconds = Math.ceil((latestMs - nowMs) / 1000);
+  const latest = new Date(latestMs);
+  return `${formatLongDuration(fuzzSeconds)} or by ${latest.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })}. Remaining: ${formatLongDuration(remainingSeconds)}`;
+}
+
+function isWithinFuzzWindow(sentAt: string, fuzzSeconds: number | null | undefined, nowMs: number): boolean {
+  if (!fuzzSeconds || fuzzSeconds <= 0) return false;
+  const sentMs = new Date(sentAt).getTime();
+  return Number.isFinite(sentMs) && nowMs < sentMs + fuzzSeconds * 1000;
+}
+
 function TTLLabel({ seconds, mode }: { seconds?: number | null; mode?: "after_view" | "after_send" }) {
   if (!seconds) return null;
   const h = Math.floor(seconds / 3600);
@@ -353,6 +681,106 @@ function TTLLabel({ seconds, mode }: { seconds?: number | null; mode?: "after_vi
       {label}
     </span>
   );
+}
+
+function DecayModeLabel({ mode }: { mode?: Room["decayMode"] }) {
+  const experimental = mode === "experimental_quorum_decay";
+  return (
+    <span className={`font-mono text-[10px] md:text-xs flex items-center gap-1 ${experimental ? "text-amber-500" : "text-muted-foreground"}`}>
+      <Shield className="w-3 h-3" />
+      {experimental ? "QUORUM DECAY ACTIVE" : "DECAY STANDARD"}
+    </span>
+  );
+}
+
+function FuzzLabel({ seconds }: { seconds?: number | null }) {
+  if (!seconds || seconds <= 0) return null;
+  return (
+    <span className="font-mono text-xs text-amber-500/80 flex items-center gap-1">
+      <Clock className="w-3 h-3" />
+      fuzz {formatShortDuration(seconds)}
+    </span>
+  );
+}
+
+function ChatMetaRows({ room }: { room: Room }) {
+  return (
+    <div className="mt-1 space-y-0.5 min-w-0">
+      <div className="flex items-center gap-2 min-w-0">
+        <Shield className="w-3 h-3 text-primary flex-shrink-0" />
+        <span className="font-mono text-[10px] md:text-xs text-primary truncate">{CIPHER_SUITE}</span>
+      </div>
+      {room.ttlSeconds && (
+        <div className="flex items-center gap-2 min-w-0">
+          <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />
+        </div>
+      )}
+      {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+        <div className="flex items-center gap-2 min-w-0">
+          <FuzzLabel seconds={room.deliveryFuzzSeconds} />
+        </div>
+      )}
+      <div className="flex items-center gap-2 min-w-0">
+        <DecayModeLabel mode={room.decayMode} />
+      </div>
+    </div>
+  );
+}
+
+function hashString32(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function deterministicGarbledPreview(msg: Message): string {
+  const alphabet = "0123456789abcdef!?/\\|#$%&";
+  const seed = stableJson({
+    id: msg.id,
+    expiresAt: msg.expiresAt ?? "",
+    decayedAt: msg.decayedAt ?? "",
+    decayAttestation: msg.decayAttestation ?? null,
+    ciphertext: msg.ciphertext,
+  });
+  let state = hashString32(seed);
+  const chunks: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    let chunk = "";
+    for (let j = 0; j < 8; j++) {
+      state = Math.imul(state ^ (state >>> 15), 2246822507) >>> 0;
+      chunk += alphabet[state % alphabet.length];
+    }
+    chunks.push(chunk);
+  }
+  return chunks.join(" ");
+}
+
+function isLegacySignatureGraceMessage(msg: Message): boolean {
+  const createdAtMs = new Date(msg.createdAt).getTime();
+  return Number.isFinite(createdAtMs) && createdAtMs < LEGACY_SIGNATURE_GRACE_BEFORE_MS;
+}
+
+function getDecayEvidence(msg: Message, nowMs: number): { active: boolean; expired: boolean; text: string } {
+  const expiresAtMs = msg.expiresAt ? new Date(msg.expiresAt).getTime() : Number.POSITIVE_INFINITY;
+  const decayedAtMs = msg.decayedAt ? new Date(msg.decayedAt).getTime() : Number.POSITIVE_INFINITY;
+  const expired = Number.isFinite(expiresAtMs) && expiresAtMs <= nowMs;
+  const decayed = Number.isFinite(decayedAtMs) && decayedAtMs <= nowMs;
+  const approaching = Number.isFinite(expiresAtMs) && expiresAtMs > nowMs && expiresAtMs - nowMs <= 30000;
+  const attested = !!msg.decayAttestation;
+  const active = expired || decayed || approaching;
+  const text = decayed
+    ? "DECAYED"
+    : expired
+      ? "EXPIRED"
+      : approaching
+        ? "DECAY IMMINENT"
+        : attested
+          ? "DECAY ATTESTED"
+          : "SEALED";
+  return { active, expired: expired || decayed, text };
 }
 
 function MessageExpiry({ expiresAt, revealed }: { expiresAt: string | null | undefined; revealed: boolean }) {
@@ -399,6 +827,7 @@ function NewRoomDialog({
   const [ttl, setTtl] = useState<number | null>(300);
   const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
   const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
+  const [decayMode, setDecayMode] = useState<"standard" | "experimental_quorum_decay">("standard");
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [searchHash, setSearchHash] = useState("");
@@ -446,6 +875,7 @@ function NewRoomDialog({
         ttlSeconds: ttl,
         ttlMode,
         deliveryFuzzSeconds,
+        decayMode,
       },
     });
   };
@@ -544,6 +974,33 @@ function NewRoomDialog({
               ))}
             </select>
             <p className="font-mono text-xs text-muted-foreground mt-1">Server releases each message at a random time inside this window. Default is 89 seconds.</p>
+          </div>
+
+          <div>
+            <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">DECAY TIER</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: "standard" as const, label: "STANDARD" },
+                { value: "experimental_quorum_decay" as const, label: "EXPERIMENTAL" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setDecayMode(option.value)}
+                  className={`border px-3 py-2 font-mono text-xs ${
+                    decayMode === option.value ? "border-amber-500 bg-amber-500/10 text-amber-500" : "border-border text-muted-foreground hover:border-amber-500/50"
+                  }`}
+                  data-testid={`button-decay-mode-${option.value}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            {decayMode === "experimental_quorum_decay" && (
+              <p className="font-mono text-xs text-amber-500 mt-1">
+                Multiple clocks must attest the time so even if a device, server, or stored keys are compromised after expiry, messages decay. Uses device time, server time, and multiple public clocks.
+              </p>
+            )}
           </div>
 
           {settingsWarning && (
@@ -671,8 +1128,9 @@ function describeCodeKind(kind: "alias" | "invite"): string {
     : "An invite is a public one-use code. Share it with one person or device, and it stops working after it is used, expired, or rolled.";
 }
 
-function displayIdentityCode(code: IdentityCode): string {
-  return code.kind === "alias" ? "SEALED HANDLE" : `#${code.code}`;
+function displayIdentityCode(code: IdentityCode, unsealedHandles: Record<string, string> = {}): string {
+  const unsealed = unsealedHandles[code.id];
+  return code.kind === "alias" ? (unsealed ? `@${unsealed}` : "SEALED HANDLE") : `#${code.code}`;
 }
 
 function formatExpiry(expiresAt?: string | null): string {
@@ -701,7 +1159,7 @@ function formatSessionTime(value: string): string {
   return new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-function useDeviceSessions(enabled: boolean) {
+function useDeviceSessions(enabled: boolean, refreshKey = 0) {
   const [sessions, setSessions] = useState<DeviceSession[] | null>(null);
 
   useEffect(() => {
@@ -724,7 +1182,7 @@ function useDeviceSessions(enabled: boolean) {
     return () => {
       mounted = false;
     };
-  }, [enabled]);
+  }, [enabled, refreshKey]);
 
   return sessions;
 }
@@ -739,11 +1197,20 @@ function ProfilePanel({
   codename: string;
 }) {
   const qc = useQueryClient();
+  const [, setLocation] = useLocation();
   const [revealed, setRevealed] = useState(false);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
   const [newTtl, setNewTtl] = useState<number>(315360000);
+  const [unsealHandle, setUnsealHandle] = useState("");
+  const [unsealStatus, setUnsealStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [unsealedHandles, setUnsealedHandles] = useState<Record<string, string>>(() => getUnsealedHandleLabels());
   const [error, setError] = useState("");
+  const [passkeyStatus, setPasskeyStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [passkeyPending, setPasskeyPending] = useState(false);
+  const [sessionActionStatus, setSessionActionStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [sessionActionPending, setSessionActionPending] = useState<string | null>(null);
+  const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
   const [pendingUpdate, setPendingUpdate] = useState<{
     code: IdentityCode;
     message: string;
@@ -756,8 +1223,14 @@ function ProfilePanel({
     isLastActiveHandle: boolean;
     stage: number;
   } | null>(null);
-  const deviceSessions = useDeviceSessions(revealed);
-  const { data: codes = [] } = useGetIdentityCodes();
+  const deviceSessions = useDeviceSessions(revealed, sessionRefreshKey);
+  const { data: codes = [] } = useGetIdentityCodes({
+    query: {
+      queryKey: getGetIdentityCodesQueryKey(),
+      refetchInterval: revealed ? 2000 : 10000,
+      refetchOnWindowFocus: true,
+    },
+  });
   const sortedCodes = [...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`));
   const activeHandleCount = codes.filter((code) => code.kind === "alias" && code.active).length;
 
@@ -791,6 +1264,7 @@ function ProfilePanel({
   const submitCode = async (e: React.FormEvent) => {
     e.preventDefault();
     const normalized = normalizeCodeInput(newCode);
+    if (newKind === "alias" && normalized) rememberAssociatedHandle(normalized);
     createCode.mutate({
       data: {
         code: newKind === "alias" && normalized ? await hashIdentityCode(normalized) : normalized || null,
@@ -800,6 +1274,112 @@ function ProfilePanel({
         maxUses: newKind === "invite" ? 1 : null,
       },
     });
+  };
+
+  const submitUnsealHandle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = getToken();
+    const normalized = normalizeCodeInput(unsealHandle);
+    if (!token) {
+      setUnsealStatus({ tone: "error", text: "Sign in again before unsealing handles." });
+      return;
+    }
+    if (!normalized) {
+      setUnsealStatus({ tone: "error", text: "Enter a handle to unseal." });
+      return;
+    }
+
+    setUnsealStatus(null);
+    try {
+      const hashed = await hashIdentityCode(normalized);
+      const res = await fetch("/api/identity-codes/unseal", {
+        method: "POST",
+        headers: {
+          "authorization": `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ code: hashed }),
+      });
+      const data = await res.json().catch(() => null) as (IdentityCode & { error?: string }) | null;
+      if (!res.ok || !data?.id) {
+        throw new Error(data?.error ?? "Could not unseal that handle.");
+      }
+      rememberUnsealedHandle(data.id, normalized);
+      setUnsealedHandles(getUnsealedHandleLabels());
+      setUnsealHandle("");
+      setUnsealStatus({ tone: "ok", text: `${normalized} unsealed on this device.` });
+    } catch (err) {
+      setUnsealStatus({ tone: "error", text: err instanceof Error ? err.message : "Could not unseal that handle." });
+    }
+  };
+
+  const addPasskey = async () => {
+    if (passkeyPending) return;
+    const token = getToken();
+    if (!token) {
+      setPasskeyStatus({ tone: "error", text: "Sign in again before adding a passkey." });
+      return;
+    }
+    setPasskeyPending(true);
+    setPasskeyStatus(null);
+    setError("");
+    try {
+      await linkLocalPlatformPasskey(token);
+      setPasskeyStatus({ tone: "ok", text: "New passkey saved for this account." });
+    } catch (err) {
+      setPasskeyStatus({
+        tone: "error",
+        text: err instanceof Error ? err.message : "Could not save a new passkey.",
+      });
+    } finally {
+      setPasskeyPending(false);
+    }
+  };
+
+  const expireSessions = async (body: { sessionId?: string; scope?: "all" | "others" }, pendingKey: string) => {
+    if (sessionActionPending) return;
+    const token = getToken();
+    if (!token) {
+      setSessionActionStatus({ tone: "error", text: "Sign in again before expiring sessions." });
+      return;
+    }
+
+    const isAll = body.scope === "all";
+    const isCurrent = !!body.sessionId && deviceSessions?.find((session) => session.id === body.sessionId)?.current;
+    const confirmText = isAll
+      ? "Expire all sessions, including this one? You will be logged out here too."
+      : isCurrent
+        ? "Expire this current session? You will be logged out."
+        : body.scope === "others"
+          ? "Expire every other active session?"
+          : "Expire this session?";
+    if (!window.confirm(confirmText)) return;
+
+    setSessionActionPending(pendingKey);
+    setSessionActionStatus(null);
+    try {
+      const res = await fetch("/api/auth/sessions/expire", {
+        method: "POST",
+        headers: {
+          "authorization": `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => null) as { ok?: boolean; expiredCurrent?: boolean; error?: string } | null;
+      if (!res.ok) throw new Error(data?.error ?? "Could not expire session.");
+      if (data?.expiredCurrent) {
+        clearToken();
+        setLocation("/login");
+        return;
+      }
+      setSessionActionStatus({ tone: "ok", text: "Session expired." });
+      setSessionRefreshKey((key) => key + 1);
+    } catch (err) {
+      setSessionActionStatus({ tone: "error", text: err instanceof Error ? err.message : "Could not expire session." });
+    } finally {
+      setSessionActionPending(null);
+    }
   };
 
   const requestUpdate = (
@@ -866,7 +1446,7 @@ function ProfilePanel({
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-mono text-xs font-bold" style={{ backgroundColor: me.avatarColor ?? "#06b6d4" }}>
                 {codename[0]}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="font-mono text-sm font-semibold">
                   {revealed ? (me.displayName ?? me.username) : codename}
                 </div>
@@ -874,14 +1454,82 @@ function ProfilePanel({
                   {revealed ? `${deviceSessions?.length ?? "..."} active login session${deviceSessions?.length === 1 ? "" : "s"}` : "Hover or hold this row to reveal login sessions"}
                 </p>
               </div>
+              <button
+                type="button"
+                disabled={passkeyPending}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void addPasskey();
+                }}
+                className="shrink-0 border border-border bg-card/70 p-2 text-muted-foreground hover:border-primary/60 hover:text-primary disabled:opacity-50"
+                aria-label="Create and save a new passkey"
+                title="Create and save a new passkey"
+                data-testid="button-add-settings-passkey"
+              >
+                <KeyRound className="w-4 h-4" />
+              </button>
             </div>
+            {passkeyStatus && (
+              <p className={`mt-3 font-mono text-xs ${passkeyStatus.tone === "ok" ? "text-primary" : "text-destructive"}`}>
+                {passkeyStatus.text}
+              </p>
+            )}
             {revealed && (
               <div className="mt-3 space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    disabled={!!sessionActionPending || !deviceSessions || deviceSessions.filter((session) => !session.current).length === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void expireSessions({ scope: "others" }, "others");
+                    }}
+                    className="inline-flex items-center justify-center gap-2 border border-border bg-card/70 px-3 py-2 font-mono text-[10px] tracking-widest text-muted-foreground hover:border-destructive/50 hover:text-destructive disabled:opacity-50"
+                    data-testid="button-expire-other-sessions"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {sessionActionPending === "others" ? "EXPIRING..." : "EXPIRE OTHERS"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!!sessionActionPending || !deviceSessions || deviceSessions.length === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void expireSessions({ scope: "all" }, "all");
+                    }}
+                    className="inline-flex items-center justify-center gap-2 border border-destructive/40 bg-destructive/10 px-3 py-2 font-mono text-[10px] tracking-widest text-destructive hover:bg-destructive/15 disabled:opacity-50"
+                    data-testid="button-expire-all-sessions"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {sessionActionPending === "all" ? "EXPIRING..." : "EXPIRE ALL"}
+                  </button>
+                </div>
+                {sessionActionStatus && (
+                  <p className={`font-mono text-xs ${sessionActionStatus.tone === "ok" ? "text-primary" : "text-destructive"}`}>
+                    {sessionActionStatus.text}
+                  </p>
+                )}
                 {(deviceSessions ?? []).map((session, index) => (
                   <div key={session.id} className="border border-border/40 bg-card/60 px-3 py-2 font-mono text-[11px] text-muted-foreground">
                     <div className="flex items-center justify-between gap-2 text-foreground">
                       <span>{session.current ? "THIS DEVICE" : session.label.toUpperCase()}</span>
-                      <span>#{String(index + 1).padStart(2, "0")}</span>
+                      <div className="flex items-center gap-2">
+                        <span>#{String(index + 1).padStart(2, "0")}</span>
+                        <button
+                          type="button"
+                          disabled={!!sessionActionPending}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void expireSessions({ sessionId: session.id }, session.id);
+                          }}
+                          className="text-muted-foreground hover:text-destructive disabled:opacity-50"
+                          aria-label={`Expire ${session.current ? "this session" : session.label}`}
+                          title={`Expire ${session.current ? "this session" : session.label}`}
+                          data-testid={`button-expire-session-${session.id}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <div className="mt-1">CREATED {formatSessionTime(session.createdAt)}</div>
                     <div>EXPIRES {formatSessionTime(session.expiresAt)}</div>
@@ -928,6 +1576,34 @@ function ProfilePanel({
 
           <div className="space-y-2">
             <div className="font-mono text-xs text-muted-foreground tracking-widest">YOUR HANDLES / INVITES</div>
+            <form onSubmit={submitUnsealHandle} className="border border-border/50 bg-background/50 p-3 space-y-2">
+              <div className="font-mono text-xs text-primary tracking-widest">UNSEAL A HANDLE ON THIS DEVICE</div>
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed">
+                Enter one of your handles to reveal its local label here. The server still stores only the sealed lookup.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+                <input
+                  value={unsealHandle}
+                  onChange={(e) => setUnsealHandle(e.target.value)}
+                  className="bg-background border border-border px-3 py-2 font-mono text-sm focus:outline-none focus:border-primary/60"
+                  placeholder="@stv"
+                  autoCapitalize="none"
+                  data-testid="input-unseal-handle"
+                />
+                <button
+                  type="submit"
+                  className="border border-primary/40 px-3 py-2 font-mono text-xs tracking-widest text-primary hover:bg-primary/10"
+                  data-testid="button-unseal-handle"
+                >
+                  UNSEAL
+                </button>
+              </div>
+              {unsealStatus && (
+                <p className={`font-mono text-xs ${unsealStatus.tone === "ok" ? "text-primary" : "text-destructive"}`}>
+                  {unsealStatus.text}
+                </p>
+              )}
+            </form>
             {codes.length === 0 && (
               <div className="border border-border/50 bg-background/40 p-4 font-mono text-xs text-muted-foreground">No handles or invite codes yet.</div>
             )}
@@ -935,7 +1611,7 @@ function ProfilePanel({
               <div key={code.id} className="border border-border/50 bg-background/40 p-3 space-y-3" data-testid={`identity-code-${code.id}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-mono text-sm font-semibold">{displayIdentityCode(code)}</div>
+                    <div className="font-mono text-sm font-semibold">{displayIdentityCode(code, unsealedHandles)}</div>
                     <div className="font-mono text-xs text-muted-foreground">
                       {code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses
                     </div>
@@ -944,7 +1620,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${displayIdentityCode(code)}? This changes whether people can discover it.`, code, { active: !code.active })}
+                    onClick={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${displayIdentityCode(code, unsealedHandles)}? This changes whether people can discover it.`, code, { active: !code.active })}
                     className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50 disabled:opacity-50"
                   >
                     {code.active ? "DISABLE" : "ENABLE"}
@@ -954,7 +1630,7 @@ function ProfilePanel({
                   <select
                     value={code.visibilityScope}
                     disabled={updateCode.isPending}
-                    onChange={(e) => requestUpdate(`Change visibility for ${displayIdentityCode(code)} to ${e.target.value.replaceAll("_", " ")}?`, code, { visibilityScope: e.target.value as typeof code.visibilityScope })}
+                    onChange={(e) => requestUpdate(`Change visibility for ${displayIdentityCode(code, unsealedHandles)} to ${e.target.value.replaceAll("_", " ")}?`, code, { visibilityScope: e.target.value as typeof code.visibilityScope })}
                     className="bg-background border border-border px-2 py-2 font-mono text-xs disabled:opacity-50"
                   >
                     {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
@@ -965,7 +1641,7 @@ function ProfilePanel({
                     onChange={(e) => {
                       if (e.target.value) {
                         const label = CODE_TTL_OPTIONS.find((ttl) => ttl.value === Number(e.target.value))?.label ?? e.target.value;
-                        requestUpdate(`Change duration for ${displayIdentityCode(code)} to ${label}?`, code, { ttlSeconds: Number(e.target.value) });
+                        requestUpdate(`Change duration for ${displayIdentityCode(code, unsealedHandles)} to ${label}?`, code, { ttlSeconds: Number(e.target.value) });
                       }
                       e.currentTarget.value = "";
                     }}
@@ -977,7 +1653,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => requestUpdate(`Roll/expire ${displayIdentityCode(code)}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })}
+                    onClick={() => requestUpdate(`Roll/expire ${displayIdentityCode(code, unsealedHandles)}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })}
                     className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive disabled:opacity-50"
                   >
                     ROLL / EXPIRE
@@ -1063,6 +1739,7 @@ function RoomView({
   codenameForUser,
   roomCodename,
   onSensitiveRevealChange,
+  online,
 }: {
   room: Room;
   currentUserId: string;
@@ -1070,12 +1747,14 @@ function RoomView({
   codenameForUser: (id: string) => string;
   roomCodename: string;
   onSensitiveRevealChange: (active: boolean) => void;
+  online: boolean;
 }) {
   const qc = useQueryClient();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
   const [hidden, setHidden] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [revealRoomName, setRevealRoomName] = useState(false);
   const [revealedSenderId, setRevealedSenderId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -1084,28 +1763,116 @@ function RoomView({
   const activeRevealRef = useRef<{ id: string; input: "mouse" | "touch"; released: boolean; painted: boolean } | null>(null);
   const revealFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: messages = [] } = useGetRoomsRoomIdMessages(
+  const { data: liveMessages = [] } = useGetRoomsRoomIdMessages(
     room.id,
     {},
     {
       query: {
         queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id),
+        enabled: online,
         refetchInterval: () => randomRefetchInterval(17000, 73000),
       },
     }
   );
 
-  const { data: members = [] } = useGetRoomsRoomIdMembers(room.id, {
-    query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) },
+  const { data: liveMembers = [] } = useGetRoomsRoomIdMembers(room.id, {
+    query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id), enabled: online },
   });
+  const [offlineMessages, setOfflineMessages] = useState<Message[]>([]);
+  const [offlineMembers, setOfflineMembers] = useState<NonNullable<Room["members"]>>([]);
+  const [queuedMessages, setQueuedMessages] = useState<Message[]>([]);
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const queuedCount = queuedMessages.filter((msg) => msg.localQueued).length;
+  const visibleLiveMessages = liveMessages as Message[];
+  const visibleLocalMessages = queuedMessages.filter((local) => {
+    if (!local.localFuzzing) return true;
+    return !visibleLiveMessages.some((live) => (
+      (local.signature && live.signature === local.signature) ||
+      live.ciphertext === local.ciphertext
+    ));
+  });
+  const messages = online ? [...visibleLiveMessages, ...visibleLocalMessages] : offlineMessages;
+  const members = online ? liveMembers : offlineMembers;
 
-  const sendMessage = usePostRoomsRoomIdMessages({
-    mutation: {
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id) });
-      },
-    },
-  });
+  const postQueuedMessage = async (entry: OfflineOutboxEntry): Promise<Message> => {
+    const message = await postRoomsRoomIdMessages(entry.roomId, {
+      ciphertext: entry.ciphertext,
+      nonce: entry.nonce,
+      algorithm: entry.algorithm,
+      signature: entry.signature,
+      recipientEncryptedKeys: entry.recipientEncryptedKeys,
+      ttlSeconds: entry.ttlSeconds,
+    }) as Message;
+    await deleteOutboxEntry(entry.id);
+    window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+    qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(entry.roomId) });
+    qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
+    return message;
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const [cachedMessages, cachedMembers, outbox] = await Promise.all([
+        getCachedRoomMessages(room.id),
+        getCachedRoomMembers(room.id),
+        getOutboxEntries(),
+      ]);
+      if (cancelled) return;
+      const queued = outbox
+        .filter((entry) => entry.roomId === room.id)
+        .map((entry) => outboxEntryToMessage(entry, currentUserId));
+      setQueuedMessages((current) => [
+        ...queued,
+        ...current.filter((message) => (
+          message.localFuzzing &&
+          !queued.some((queuedMessage) => queuedMessage.signature === message.signature)
+        )),
+      ]);
+      setOfflineMessages([...cachedMessages, ...queued]);
+      setOfflineMembers(cachedMembers);
+    };
+    void load();
+    window.addEventListener("qs-offline-outbox-changed", load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("qs-offline-outbox-changed", load);
+    };
+  }, [currentUserId, room.id]);
+
+  useEffect(() => {
+    if (!online || liveMessages.length === 0) return;
+    let cancelled = false;
+    const save = async () => {
+      await cacheRoomMessages(room.id, liveMessages as Message[]);
+      if (!cancelled) setOfflineMessages([...(liveMessages as Message[]), ...queuedMessages]);
+    };
+    void save();
+    return () => {
+      cancelled = true;
+    };
+  }, [online, liveMessages, queuedMessages, room.id]);
+
+  useEffect(() => {
+    if (!online || queuedMessages.length === 0) return;
+    const fuzzSeconds = room.deliveryFuzzSeconds ?? 0;
+    setQueuedMessages((current) => current.filter((local) => {
+      if (!local.localFuzzing) return true;
+      const hasLiveCopy = (liveMessages as Message[]).some((live) => (
+        (local.signature && live.signature === local.signature) ||
+        live.ciphertext === local.ciphertext
+      ));
+      if (hasLiveCopy) return false;
+      return isWithinFuzzWindow(local.createdAt, Math.max(1, fuzzSeconds), nowMs);
+    }));
+  }, [liveMessages, nowMs, online, queuedMessages.length, room.deliveryFuzzSeconds]);
+
+  useEffect(() => {
+    if (!online || liveMembers.length === 0) return;
+    void cacheRoomMembers(room.id, liveMembers);
+    setOfflineMembers(liveMembers);
+  }, [online, liveMembers, room.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1114,9 +1881,9 @@ function RoomView({
   useEffect(() => {
     const purgeExpiredKeys = () => {
       const now = Date.now();
+      setNowMs(now);
       for (const msg of messages as Message[]) {
         if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= now) {
-          deleteMessageKey(msg.id);
           if (heldPlaintext?.id === msg.id) forceHideRevealedMsg();
         }
       }
@@ -1124,6 +1891,19 @@ function RoomView({
     purgeExpiredKeys();
     const interval = setInterval(purgeExpiredKeys, 1000);
     return () => clearInterval(interval);
+  }, [heldPlaintext?.id, messages]);
+
+  useEffect(() => {
+    if (!heldPlaintext?.id) return;
+    const msg = (messages as Message[]).find((item) => item.id === heldPlaintext.id);
+    if (!msg?.expiresAt) return;
+    const delay = new Date(msg.expiresAt).getTime() - Date.now();
+    if (delay <= 0) {
+      forceHideRevealedMsg();
+      return;
+    }
+    const timeout = setTimeout(forceHideRevealedMsg, delay);
+    return () => clearTimeout(timeout);
   }, [heldPlaintext?.id, messages]);
 
   useEffect(() => {
@@ -1155,76 +1935,137 @@ function RoomView({
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isSending) return;
     const text = input;
     setInput("");
-
-    const { ciphertext, nonce, key, rawKey } = await encryptMessage(text);
-    const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
-    const recipientIds = Array.from(new Set([currentUserId, ...freshMembers.map((member) => member.id)]));
-    const recipientEncryptedKeys: Record<string, string> = {};
-    await Promise.all(
-      recipientIds.map(async (userId) => {
-        const wrapped = await wrapMessageKeyForUser(userId, rawKey);
-        if (wrapped) recipientEncryptedKeys[userId] = wrapped;
-      })
-    );
-    if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
-      setInput(text);
-      return;
-    }
-    const signature = await signMessagePayload({
-      roomId: room.id,
-      senderId: currentUserId,
-      ciphertext,
-      nonce,
-      algorithm: CIPHER_SUITE,
-      recipientEncryptedKeys,
-    });
-    if (!signature) {
-      setInput(text);
-      return;
-    }
-
-    sendMessage.mutate(
-      {
-        roomId: room.id,
-        data: {
-          ciphertext,
-          nonce,
-          algorithm: CIPHER_SUITE,
-          signature,
-          recipientEncryptedKeys,
-          ttlSeconds: room.ttlSeconds,
-        },
-      },
-      {
-        onSuccess: (msg) => {
-          storeMessageKey(msg.id, key);
-        },
+    setSendError("");
+    setIsSending(true);
+    let rawKey: Uint8Array | null = null;
+    try {
+      if (!online && room.memberCount > 1 && members.length < room.memberCount) {
+        setSendError("This room's member list is not cached yet. Reconnect once before sending offline.");
+        setInput(text);
+        return;
       }
-    );
+
+      const encrypted = await encryptMessage(text);
+      const { ciphertext, nonce } = encrypted;
+      const messageKey = encrypted.rawKey;
+      rawKey = messageKey;
+      const freshMembers = online ? await getRoomsRoomIdMembers(room.id).catch(() => members) : members;
+      const recipientIds = Array.from(new Set([currentUserId, ...freshMembers.map((member) => member.id)]));
+      const recipientEncryptedKeys: Record<string, string> = {};
+      await Promise.all(
+        recipientIds.map(async (userId) => {
+          const wrapped = userId === currentUserId
+            ? await wrapMessageKeyForLocalDevice(messageKey)
+            : await wrapMessageKeyForUser(userId, messageKey);
+          if (wrapped) recipientEncryptedKeys[userId] = wrapped;
+        })
+      );
+      if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
+        setSendError("Could not encrypt for every current room member. Refresh the room and try again.");
+        setInput(text);
+        return;
+      }
+      const signature = await signMessagePayload({
+        roomId: room.id,
+        senderId: currentUserId,
+        ciphertext,
+        nonce,
+        algorithm: CIPHER_SUITE,
+        recipientEncryptedKeys,
+      });
+      if (!signature) {
+        setSendError("This device does not have a local signing key. Use LINK FRESH KEYS, then try again.");
+        setInput(text);
+        return;
+      }
+      const sentAt = new Date().toISOString();
+
+      const payload = {
+        ciphertext,
+        nonce,
+        algorithm: CIPHER_SUITE,
+        signature,
+        recipientEncryptedKeys,
+        ttlSeconds: room.ttlSeconds,
+      };
+      const queued: OfflineOutboxEntry = {
+        id: createLocalOutboxId(),
+        roomId: room.id,
+        ...payload,
+        createdAt: sentAt,
+        availableAt: sentAt,
+      };
+      await enqueueOutbox(queued);
+      window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+      const queuedMessage = outboxEntryToMessage(queued, currentUserId);
+      setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
+      setOfflineMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
+      if (!online) {
+        return;
+      }
+
+      const optimistic = room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0
+        ? localFuzzMessage({
+            roomId: room.id,
+            senderId: currentUserId,
+            ciphertext,
+            nonce,
+            algorithm: CIPHER_SUITE,
+            signature,
+            recipientEncryptedKeys,
+            createdAt: sentAt,
+          })
+        : null;
+      try {
+        const sentMessage = await postQueuedMessage(queued);
+        qc.setQueryData<Message[]>(getGetRoomsRoomIdMessagesQueryKey(room.id), (current = []) => {
+          if (current.some((msg) => msg.id === sentMessage.id || (msg.signature && msg.signature === sentMessage.signature))) {
+            return current;
+          }
+          return [...current, sentMessage];
+        });
+        setQueuedMessages((current) => [
+          ...current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature),
+          ...(optimistic ? [optimistic] : []),
+        ]);
+      } catch {
+        setSendError("Server did not accept the message. It is still queued and will retry.");
+        setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
+      }
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Could not send message.");
+      setInput(text);
+    } finally {
+      if (rawKey) clearBytes(rawKey);
+      setIsSending(false);
+    }
   };
 
-  const revealMsg = async (msg: Message, key?: CryptoKey) => {
+  const revealMsg = async (msg: Message) => {
     const revealToken = ++revealTokenRef.current;
     const revealInput = activeRevealRef.current?.id === msg.id ? activeRevealRef.current.input : "mouse";
+    if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= Date.now()) {
+      forceHideRevealedMsg();
+      return;
+    }
     setRevealError((current) => (current?.id === msg.id ? null : current));
     const verified = await verifyMessageSignature(room.id, msg);
     if (!verified) {
-      if (revealToken === revealTokenRef.current) {
+      const legacyMessage = isLegacySignatureGraceMessage(msg);
+      if (msg.senderId !== currentUserId && !legacyMessage && revealToken === revealTokenRef.current) {
         setRevealError({
           id: msg.id,
           text: msg.signature ? "Message signature could not be verified." : "This message was not signed by a verified sender key.",
         });
       }
-      return;
+      if (msg.senderId !== currentUserId && !legacyMessage) return;
     }
-    let k = key ?? getMessageKey(msg.id);
-    if (!k && msg.recipientEncryptedKeys?.[currentUserId]) {
-      k = (await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])) ?? undefined;
-      if (k) storeMessageKey(msg.id, k);
-    }
+    const k = msg.recipientEncryptedKeys?.[currentUserId]
+      ? await unwrapMessageKeyForMe(msg.recipientEncryptedKeys[currentUserId])
+      : null;
     if (!k) {
       if (revealToken === revealTokenRef.current) {
         setRevealError({
@@ -1239,6 +2080,10 @@ function RoomView({
     try {
       const plaintext = await decryptMessage(msg.ciphertext, msg.nonce, k);
       if (revealToken !== revealTokenRef.current) return;
+      if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= Date.now()) {
+        forceHideRevealedMsg();
+        return;
+      }
       if (activeRevealRef.current?.id === msg.id) {
         activeRevealRef.current.painted = true;
       }
@@ -1262,6 +2107,7 @@ function RoomView({
   const forceHideRevealedMsg = () => {
     touchRevealActiveRef.current = false;
     activeRevealRef.current = null;
+    clearEphemeralSecrets();
     hideRevealedMsgNow();
   };
 
@@ -1290,6 +2136,7 @@ function RoomView({
 
   const endPointerMessageReveal = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.pointerType === "touch" || touchRevealActiveRef.current) return;
+    clearEphemeralSecrets();
     hideRevealedMsg();
   };
 
@@ -1312,12 +2159,13 @@ function RoomView({
     }
     activeReveal.released = true;
     touchRevealActiveRef.current = false;
+    clearEphemeralSecrets();
     if (activeReveal.painted) forceHideRevealedMsg();
   };
 
   const isExpired = (expiresAt?: string | null) => {
     if (!expiresAt) return false;
-    return new Date(expiresAt).getTime() < Date.now();
+    return new Date(expiresAt).getTime() <= nowMs;
   };
 
   return (
@@ -1346,18 +2194,20 @@ function RoomView({
                 {revealRoomName ? getRoomLabel(room, currentUserId) : roomCodename}
               </button>
             </h2>
-            <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />
           </div>
-          <div className="flex items-center gap-2 mt-1 min-w-0">
-            <Shield className="w-3 h-3 text-primary flex-shrink-0" />
-            <span className="font-mono text-[10px] md:text-xs text-primary truncate">{CIPHER_SUITE}</span>
-          </div>
+          <ChatMetaRows room={room} />
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <span className="font-mono text-xs text-muted-foreground flex items-center gap-1">
             <Users className="w-3 h-3" />
             {members.length}
           </span>
+          {!online && (
+            <span className="font-mono text-[10px] tracking-widest text-amber-500">OFFLINE</span>
+          )}
+          {queuedCount > 0 && (
+            <span className="font-mono text-[10px] tracking-widest text-primary">{queuedCount} QUEUED</span>
+          )}
         </div>
       </div>
 
@@ -1380,6 +2230,11 @@ function RoomView({
           const plaintext = heldPlaintext?.id === msg.id ? heldPlaintext.text : undefined;
           const error = revealError?.id === msg.id ? revealError.text : undefined;
           const senderLabel = revealedSenderId === msg.senderId ? (msg.senderUsername ?? codenameForUser(msg.senderId)) : codenameForUser(msg.senderId);
+          const experimentalDecay = room.decayMode === "experimental_quorum_decay";
+          const decayEvidence = experimentalDecay ? getDecayEvidence(msg as Message, nowMs) : null;
+          const showGarbledPreview = !!decayEvidence?.active && !plaintext;
+          const blockRevealForDecay = showGarbledPreview && !!decayEvidence?.expired;
+          const fuzzLabel = isOwn && msg.localFuzzing ? latestFuzzDeliveryLabel(msg.createdAt, room.deliveryFuzzSeconds, nowMs) : null;
 
           return (
             <div
@@ -1402,6 +2257,12 @@ function RoomView({
                       {senderLabel}
                     </button>
                   )}
+                  {msg.localQueued && (
+                    <span className="font-mono text-[10px] tracking-widest text-primary">QUEUED</span>
+                  )}
+                  {fuzzLabel && (
+                    <span className="font-mono text-[10px] tracking-widest text-amber-500">FUZZING</span>
+                  )}
                   <MessageExpiry expiresAt={msg.expiresAt} revealed={!!plaintext} />
                 </div>
                 <div
@@ -1411,10 +2272,19 @@ function RoomView({
                       : "bg-card border-border/50 text-foreground"
                   }`}
                 >
-                  {expired ? (
+                  {expired && !experimentalDecay ? (
                     <p className="font-mono text-xs text-muted-foreground italic">
                       Message expired — cryptographically destroyed
                     </p>
+                  ) : blockRevealForDecay ? (
+                    <div>
+                      <p className="font-mono text-[10px] tracking-widest text-amber-500 mb-2">
+                        {decayEvidence?.text} / QUORUM DECAY EVIDENCE
+                      </p>
+                      <p className="font-mono text-xs break-all text-muted-foreground" data-testid={`message-decay-preview-${msg.id}`}>
+                        {deterministicGarbledPreview(msg as Message)}
+                      </p>
+                    </div>
                   ) : (
                     <button
                       type="button"
@@ -1434,6 +2304,15 @@ function RoomView({
                     >
                       {plaintext ? (
                         <span className="font-mono text-sm">{plaintext}</span>
+                      ) : showGarbledPreview ? (
+                        <span>
+                          <span className="block font-mono text-[10px] tracking-widest text-amber-500 mb-2">
+                            {decayEvidence?.text} / QUORUM DECAY EVIDENCE
+                          </span>
+                          <span className="block font-mono text-xs break-all text-muted-foreground hover:text-primary" data-testid={`message-decay-preview-${msg.id}`}>
+                            {deterministicGarbledPreview(msg as Message)}
+                          </span>
+                        </span>
                       ) : (
                         <span className="flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-primary">
                           <Lock className="w-3 h-3" />
@@ -1447,6 +2326,15 @@ function RoomView({
                       {error}
                     </p>
                   )}
+                  {msg.localQueued ? (
+                    <p className="mt-2 font-mono text-[10px] leading-snug text-primary">
+                      Encrypted on this device. It will be sent to the server when you are back online.
+                    </p>
+                  ) : fuzzLabel ? (
+                    <p className="mt-2 font-mono text-[10px] leading-snug text-amber-500">
+                      Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-muted-foreground">
@@ -1462,32 +2350,43 @@ function RoomView({
         <div ref={messagesEndRef} />
       </div>
 
-      <form
-        onSubmit={handleSend}
-        className="flex items-center gap-2 px-4 py-4 border-t border-border/50 flex-shrink-0"
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="flex-1 bg-background border border-border px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-primary/60 transition-colors"
-          placeholder="Type a message — will be encrypted client-side..."
-          data-testid="input-message"
-        />
-        <button
-          type="submit"
-          disabled={sendMessage.isPending || !input.trim()}
-          className="bg-primary text-primary-foreground p-2.5 hover:bg-primary/90 disabled:opacity-50 transition-all"
-          data-testid="button-send"
+      <div className="border-t border-border/50 flex-shrink-0">
+        {sendError && (
+          <div className="border-b border-destructive/25 bg-destructive/10 px-4 py-2 font-mono text-[10px] text-destructive" data-testid="message-send-error">
+            {sendError}
+          </div>
+        )}
+        <form
+          onSubmit={handleSend}
+          className="flex items-center gap-2 px-4 py-4"
         >
-          <Send className="w-4 h-4" />
-        </button>
-      </form>
+          <input
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value);
+              if (sendError) setSendError("");
+            }}
+            className="flex-1 bg-background border border-border px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-primary/60 transition-colors"
+            placeholder="Type a message - will be encrypted client-side..."
+            data-testid="input-message"
+          />
+          <button
+            type="submit"
+            disabled={isSending || !input.trim()}
+            className="bg-primary text-primary-foreground p-2.5 hover:bg-primary/90 disabled:opacity-50 transition-all"
+            data-testid="button-send"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
 
 export default function ChatApp() {
   const [, setLocation] = useLocation();
+  const online = useOnlineStatus();
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [showNewRoom, setShowNewRoom] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -1521,9 +2420,23 @@ export default function ChatApp() {
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
-  const { data: me } = useGetAuthMe();
-  const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: () => randomRefetchInterval(28000, 97000) } });
+  const { data: liveMe } = useGetAuthMe({ query: { queryKey: getGetAuthMeQueryKey(), enabled: online } });
+  const { data: liveRooms } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), enabled: online, refetchInterval: () => randomRefetchInterval(28000, 97000) } });
   const uploadKeys = usePostKeysUpload();
+  const [offlineMe, setOfflineMe] = useState<OfflineMe | null>(() => loadOfflineMe());
+  const [offlineRooms, setOfflineRooms] = useState<Room[]>([]);
+  const [outboxCount, setOutboxCount] = useState(0);
+  const me = (online ? liveMe : offlineMe) ?? liveMe ?? offlineMe;
+  const rooms = (online && liveRooms ? liveRooms : offlineRooms) as Room[];
+
+  const refreshSessionForKeyUpload = async (): Promise<void> => {
+    const handle = normalizeCodeInput(getLastHandle() ?? privacyHandle ?? "");
+    if (!handle) throw new Error("Fresh passkey verification is required before replacing this device key.");
+    const auth = await loginWithPasskey(handle);
+    setToken(auth.token);
+    setAuthHandle(auth.authHandle);
+    setLastHandle(handle);
+  };
 
   const setSensitiveReveal = useCallback((active: boolean) => {
     sensitiveRevealActiveRef.current = active;
@@ -1535,7 +2448,7 @@ export default function ChatApp() {
 
   const enablePush = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !online) return;
     setPushBusy(true);
     try {
       const result = await ensurePushSubscription(token);
@@ -1547,7 +2460,10 @@ export default function ChatApp() {
 
   const relinkPushIfAllowed = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || !online) {
+      if (!online) setPushStatus(null);
+      return;
+    }
     const permission = notificationPermission();
     if (permission === "granted") {
       setPushStatus(await ensurePushSubscription(token));
@@ -1574,47 +2490,145 @@ export default function ChatApp() {
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisibility);
     };
+  }, [online]);
+
+  useEffect(() => {
+    if (!liveMe) return;
+    saveOfflineMe(liveMe);
+    setOfflineMe(liveMe);
+  }, [liveMe]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const [cachedRooms, outbox] = await Promise.all([getCachedRooms(), getOutboxEntries()]);
+      if (cancelled) return;
+      setOfflineRooms(cachedRooms as Room[]);
+      setOutboxCount(outbox.length);
+    };
+    void load();
+    window.addEventListener("qs-offline-outbox-changed", load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("qs-offline-outbox-changed", load);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!online || !liveRooms) return;
+    void cacheRooms(liveRooms as Room[]);
+    setOfflineRooms(liveRooms as Room[]);
+  }, [online, liveRooms]);
+
+  useEffect(() => {
+    if (!online) return;
+    let cancelled = false;
+    const flush = async () => {
+      const entries = await getOutboxEntries();
+      for (const entry of entries) {
+        if (cancelled) return;
+        try {
+          await postRoomsRoomIdMessages(entry.roomId, {
+            ciphertext: entry.ciphertext,
+            nonce: entry.nonce,
+            algorithm: entry.algorithm,
+            signature: entry.signature,
+            recipientEncryptedKeys: entry.recipientEncryptedKeys,
+            ttlSeconds: entry.ttlSeconds,
+          });
+          await deleteOutboxEntry(entry.id);
+          window.dispatchEvent(new Event("qs-offline-outbox-changed"));
+          if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
+          qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(entry.roomId) });
+          qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
+        } catch {
+          if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
+          return;
+        }
+      }
+      if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
+    };
+    void flush();
+    const onFocus = () => void flush();
+    const onPageShow = () => void flush();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void flush();
+    };
+    const interval = window.setInterval(() => void flush(), 30000);
+    window.addEventListener("online", flush);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener("online", flush);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [online, qc]);
 
   const uploadLocalKeys = async () => {
     const keys = await getLocalKeyPairAsync();
-    if (!keys.kemPublicKey || !keys.kemSecretKey || !keys.dsaPublicKey || !keys.dsaSecretKey) {
-      setKeyRepairStatus({
-        ok: false,
-        reason: "Local private keys are missing on this install. Rotate this device to fresh keys for future messages, or use an install that still has the original keys for old messages.",
-      });
-      return false;
-    }
-    const kemSignature = ml_dsa87.sign(keys.kemPublicKey, keys.dsaSecretKey);
-    await uploadKeys.mutateAsync({
-      data: {
+    try {
+      if (!keys.kemPublicKey || !keys.kemSecretKey || !keys.dsaPublicKey || !keys.dsaSecretKey) {
+        setKeyRepairStatus({
+          ok: false,
+          reason: "Local private keys are missing on this install. Rotate this device to fresh keys for future messages, or use an install that still has the original keys for old messages.",
+        });
+        return false;
+      }
+      const kemSignature = ml_dsa87.sign(keys.kemPublicKey, keys.dsaSecretKey);
+      const bundle = {
         kemPublicKey: bytesToBase64(keys.kemPublicKey),
         dsaPublicKey: bytesToBase64(keys.dsaPublicKey),
         kemSignature: bytesToBase64(kemSignature),
-      },
-    });
-    setKeyRepairStatus({ ok: true, reason: "Local key bundle relinked to this account." });
-    return true;
+      };
+      if (me?.dsaPublicKey && me.dsaPublicKey !== bundle.dsaPublicKey) {
+        await refreshSessionForKeyUpload();
+      }
+      await uploadKeys.mutateAsync({
+        data: bundle,
+      });
+      if (me?.id) await replaceTrustedKeyBundle(me.id, bundle);
+      setKeyRepairStatus({ ok: true, reason: "Local key bundle relinked to this account." });
+      return true;
+    } finally {
+      clearBytes(keys.kemSecretKey);
+      clearBytes(keys.dsaSecretKey);
+    }
   };
 
   const rotateLocalKeys = async () => {
     setKeyRepairBusy(true);
+    let kemSecretKey: Uint8Array | null = null;
+    let dsaSecretKey: Uint8Array | null = null;
     try {
       const kem = ml_kem1024.keygen();
       const dsa = ml_dsa87.keygen();
+      kemSecretKey = kem.secretKey;
+      dsaSecretKey = dsa.secretKey;
       const kemSignature = ml_dsa87.sign(kem.publicKey, dsa.secretKey);
+      const bundle = {
+        kemPublicKey: bytesToBase64(kem.publicKey),
+        dsaPublicKey: bytesToBase64(dsa.publicKey),
+        kemSignature: bytesToBase64(kemSignature),
+      };
+      if (me?.dsaPublicKey && me.dsaPublicKey !== bundle.dsaPublicKey) {
+        await refreshSessionForKeyUpload();
+      }
       await uploadKeys.mutateAsync({
-        data: {
-          kemPublicKey: bytesToBase64(kem.publicKey),
-          dsaPublicKey: bytesToBase64(dsa.publicKey),
-          kemSignature: bytesToBase64(kemSignature),
-        },
+        data: bundle,
       });
       storeKeyPair(kem.secretKey, kem.publicKey, dsa.secretKey, dsa.publicKey);
+      if (me?.id) await replaceTrustedKeyBundle(me.id, bundle);
       setKeyRepairStatus({ ok: true, reason: "Fresh keys linked. New messages will encrypt to this install." });
     } catch (err) {
       setKeyRepairStatus({ ok: false, reason: err instanceof Error ? err.message : "Could not rotate keys for this install." });
     } finally {
+      clearBytes(kemSecretKey);
+      clearBytes(dsaSecretKey);
       setKeyRepairBusy(false);
     }
   };
@@ -1623,20 +2637,25 @@ export default function ChatApp() {
     if (!me) return;
     const repairKeys = async () => {
       const keys = await getLocalKeyPairAsync();
-      const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
-      if (!localComplete) {
-        if (!autoKeyRepairAttemptedRef.current) {
-          autoKeyRepairAttemptedRef.current = true;
-          void rotateLocalKeys();
+      try {
+        const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
+        if (!localComplete) {
+          if (!autoKeyRepairAttemptedRef.current) {
+            autoKeyRepairAttemptedRef.current = true;
+            void rotateLocalKeys();
+          }
+          setKeyRepairStatus({
+            ok: false,
+            reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
+          });
+          return;
         }
-        setKeyRepairStatus({
-          ok: false,
-          reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
-        });
-        return;
-      }
-      if (!sameBase64Bytes(me.kemPublicKey, keys.kemPublicKey) || !sameBase64Bytes(me.dsaPublicKey, keys.dsaPublicKey)) {
-        await uploadLocalKeys();
+        if (!sameBase64Bytes(me.kemPublicKey, keys.kemPublicKey) || !sameBase64Bytes(me.dsaPublicKey, keys.dsaPublicKey)) {
+          await uploadLocalKeys();
+        }
+      } finally {
+        clearBytes(keys.kemSecretKey);
+        clearBytes(keys.dsaSecretKey);
       }
     };
     void repairKeys().catch((err) => {
@@ -1683,6 +2702,7 @@ export default function ChatApp() {
     setRevealedNameId(null);
   };
   const lockPrivacyShield = (reason: string) => {
+    clearEphemeralSecrets();
     setPrivacyShield((current) => {
       if (!current.active) privacyAutoUnlockAttemptedRef.current = false;
       return { active: true, reason: current.active ? current.reason : reason };
@@ -1923,16 +2943,28 @@ export default function ChatApp() {
     try {
       const handle = normalizeCodeInput(getLastHandle() || privacyHandle || "");
       attemptedHandle = handle;
-      if (handle) {
-        const data = await loginWithPasskey(handle);
-        setToken(data.token);
-        setAuthHandle(data.authHandle);
-        setLastHandle(handle);
-        setPrivacyHandle(handle);
-        setPrivacyNeedsHandle(false);
+      if (handle && online) {
+        try {
+          const data = await loginWithPasskey(handle);
+          setToken(data.token);
+          setAuthHandle(data.authHandle);
+          setLastHandle(handle);
+          setPrivacyHandle(handle);
+          setPrivacyNeedsHandle(false);
+        } catch {
+          await verifyDevice();
+          setPrivacyNeedsHandle(false);
+        }
       } else {
-        setPrivacyNeedsHandle(true);
+        setPrivacyNeedsHandle(!handle && online);
         await verifyDevice();
+      }
+      if (!getToken()) {
+        const keys = await getLocalKeyPairAsync();
+        const hasLocalIdentity = !!keys.kemSecretKey && !!keys.dsaSecretKey && !!keys.kemPublicKey && !!keys.dsaPublicKey;
+        clearBytes(keys.kemSecretKey);
+        clearBytes(keys.dsaSecretKey);
+        if (!hasLocalIdentity) throw new Error("No local offline identity keys are available on this device.");
       }
       await startCamera(true);
       if (!isCameraRunning()) {
@@ -1964,6 +2996,7 @@ export default function ChatApp() {
 
   useEffect(() => {
     if (!privacyShield.active || isUnlockingPrivacy || privacyAutoUnlockAttemptedRef.current) return;
+    if (document.hidden || document.visibilityState !== "visible") return;
     const handle = normalizeCodeInput(getLastHandle() || privacyHandle || "");
     if (!handle) {
       setPrivacyNeedsHandle(true);
@@ -1975,8 +3008,12 @@ export default function ChatApp() {
   }, [privacyShield.active, privacyShield.reason, isUnlockingPrivacy, privacyHandle]);
 
   useEffect(() => {
-    const shield = () => lockPrivacyShield("App was backgrounded or unfocused.");
+    const shield = () => {
+      if (isFreshLoginVerificationValid()) return;
+      lockPrivacyShield("App was backgrounded or unfocused.");
+    };
     const handleVisibility = () => {
+      if (isFreshLoginVerificationValid()) return;
       if (document.hidden) lockPrivacyShield("App was backgrounded.");
     };
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1997,7 +3034,10 @@ export default function ChatApp() {
       event.preventDefault();
       lockForCaptureAttempt("Clipboard access was blocked. Secure content was hidden.");
     };
-    const handlePageHide = () => lockPrivacyShield("App page was hidden by the browser.");
+    const handlePageHide = () => {
+      if (isFreshLoginVerificationValid()) return;
+      lockPrivacyShield("App page was hidden by the browser.");
+    };
 
     window.addEventListener("blur", shield);
     window.addEventListener("pagehide", handlePageHide);
@@ -2042,6 +3082,18 @@ export default function ChatApp() {
             if (event.target === event.currentTarget && !isUnlockingPrivacy) void unlockPrivacyShield("manual");
           }}
         >
+          <button
+            type="button"
+            onClick={() => {
+              clearToken();
+              clearEphemeralSecrets();
+              setLocation("/");
+            }}
+            className="absolute right-4 top-4 border border-border px-4 py-2 font-mono text-[10px] tracking-widest text-muted-foreground hover:text-foreground hover:border-primary/40"
+            data-testid="button-privacy-shield-logout"
+          >
+            LOG OUT / HOME
+          </button>
           <Shield className="w-12 h-12 text-primary mb-4" />
           <p className="font-mono text-sm tracking-widest text-primary">PRIVACY SHIELD ACTIVE</p>
           <p className="font-mono text-xs text-muted-foreground mt-2 max-w-sm">
@@ -2083,7 +3135,7 @@ export default function ChatApp() {
           </div>
         </div>
       )}
-      {pushStatus && !pushStatus.ok && (
+      {online && pushStatus && !pushStatus.ok && (
         <div className="border-b border-primary/20 bg-primary/5 px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2" data-testid="push-status-warning">
           <div className="flex-1 min-w-0">
             <p className="font-mono text-[10px] tracking-widest text-primary">PUSH NOTIFICATIONS OFFLINE</p>
@@ -2098,6 +3150,22 @@ export default function ChatApp() {
           >
             {pushBusy ? "ENABLING..." : "ENABLE PUSH"}
           </button>
+        </div>
+      )}
+      {!online && (
+        <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 flex items-start gap-2" data-testid="offline-vault-status">
+          <Lock className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="font-mono text-[10px] tracking-widest text-amber-500">OFFLINE VAULT</p>
+            <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
+              Reading cached ciphertext only. New messages are encrypted on this device and queued until the server is reachable.
+            </p>
+          </div>
+        </div>
+      )}
+      {outboxCount > 0 && (
+        <div className="border-b border-primary/20 bg-primary/5 px-4 py-2" data-testid="offline-outbox-status">
+          <p className="font-mono text-[10px] tracking-widest text-primary">{outboxCount} ENCRYPTED MESSAGE{outboxCount === 1 ? "" : "S"} QUEUED</p>
         </div>
       )}
       {keyRepairStatus && !keyRepairStatus.ok && (
@@ -2250,10 +3318,12 @@ export default function ChatApp() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1 mt-0.5">
+                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                   <Lock className="w-2.5 h-2.5 text-primary/50" />
                   <span className="font-mono text-xs text-muted-foreground">Encrypted</span>
                   {room.ttlSeconds && <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />}
+                  <FuzzLabel seconds={room.deliveryFuzzSeconds} />
+                  <DecayModeLabel mode={room.decayMode} />
                 </div>
               </div>
             </button>
@@ -2270,6 +3340,7 @@ export default function ChatApp() {
             codenameForUser={codenameForUser}
             roomCodename={codenameForRoom(activeRoom.id)}
             onSensitiveRevealChange={setSensitiveReveal}
+            online={online}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center px-6">

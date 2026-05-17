@@ -9,9 +9,27 @@ setAuthTokenGetter(() => getToken());
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((err) => {
-      console.warn("Service worker registration failed", err);
-    });
+    if (import.meta.env.DEV) {
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .then(() => {
+          if (!("caches" in window)) return undefined;
+          return caches.keys().then((names) => Promise.all(
+            names
+              .filter((name) => name.startsWith("quantumshield-"))
+              .map((name) => caches.delete(name)),
+          ));
+        })
+        .catch((err) => {
+          console.warn("Service worker cleanup failed", err);
+        });
+      return;
+    }
+
+    navigator.serviceWorker.register("/sw.js", { scope: "/" })
+      .catch((err) => {
+        console.warn("Service worker registration failed", err);
+      });
   });
 }
 

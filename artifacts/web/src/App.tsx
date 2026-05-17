@@ -2,7 +2,7 @@ import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { isAuthenticated } from "@/lib/auth";
+import { getDsaPublicKey, getKemPublicKey, isAuthenticated } from "@/lib/auth";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -20,7 +20,11 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  if (!isAuthenticated()) return <Redirect to="/login" />;
+  const offlineVaultAvailable =
+    typeof navigator !== "undefined" &&
+    !!getKemPublicKey() &&
+    !!getDsaPublicKey();
+  if (!isAuthenticated() && !offlineVaultAvailable) return <Redirect to="/login" />;
   return <Component />;
 }
 

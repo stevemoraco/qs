@@ -199,6 +199,17 @@ export const RoomTtlMode = {
   after_send: 'after_send',
 } as const;
 
+/**
+ * Optional experimental quorum-decay policy tier. Standard is the default.
+ */
+export type RoomDecayMode = typeof RoomDecayMode[keyof typeof RoomDecayMode];
+
+
+export const RoomDecayMode = {
+  standard: 'standard',
+  experimental_quorum_decay: 'experimental_quorum_decay',
+} as const;
+
 export interface Room {
   id: string;
   name?: string | null;
@@ -211,6 +222,8 @@ export interface Room {
   ttlMode?: RoomTtlMode;
   /** Random server-side delivery delay window in seconds. */
   deliveryFuzzSeconds?: number;
+  /** Optional experimental quorum-decay policy tier. Standard is the default. */
+  decayMode?: RoomDecayMode;
   createdAt: string;
   members?: User[] | null;
 }
@@ -234,6 +247,17 @@ export const CreateRoomRequestTtlMode = {
   after_send: 'after_send',
 } as const;
 
+/**
+ * Optional experimental quorum-decay policy tier. Standard is the default.
+ */
+export type CreateRoomRequestDecayMode = typeof CreateRoomRequestDecayMode[keyof typeof CreateRoomRequestDecayMode];
+
+
+export const CreateRoomRequestDecayMode = {
+  standard: 'standard',
+  experimental_quorum_decay: 'experimental_quorum_decay',
+} as const;
+
 export interface CreateRoomRequest {
   name?: string | null;
   type: CreateRoomRequestType;
@@ -244,12 +268,36 @@ export interface CreateRoomRequest {
   ttlMode?: CreateRoomRequestTtlMode;
   /** Random server-side delivery delay window in seconds. */
   deliveryFuzzSeconds?: number;
+  /** Optional experimental quorum-decay policy tier. Standard is the default. */
+  decayMode?: CreateRoomRequestDecayMode;
 }
 
 /**
  * Map of userId to their ML-KEM encapsulated message key
  */
 export type MessageRecipientEncryptedKeys = {[key: string]: string} | null;
+
+export interface MessageDecayAttestationSource {
+  id: string;
+  url: string;
+  ok: boolean;
+  epochMs?: number;
+}
+
+export interface MessageDecayAttestation {
+  version: 1;
+  sampledAt: string;
+  serverFallbackEpochMs: number;
+  synthesizedAt: string;
+  synthesizedEpochMs: number;
+  synthesisMode: 'quorum_median' | 'server_fallback';
+  quorumSize: number;
+  quorumSpreadMs: number;
+  minQuorumSources: number;
+  sources: MessageDecayAttestationSource[];
+  degraded: boolean;
+  signature: string;
+}
 
 export interface Message {
   id: string;
@@ -264,8 +312,13 @@ export interface Message {
   algorithm: string;
   /** Base64-encoded ML-DSA-87 signature over ciphertext */
   signature?: string | null;
+  /** Base64-encoded ML-DSA-87 public key used to verify this message signature. */
+  senderDsaPublicKey?: string | null;
   /** Map of userId to their ML-KEM encapsulated message key */
   recipientEncryptedKeys?: MessageRecipientEncryptedKeys;
+  /** Server-signed quorum clock attestation for experimental decay rooms. */
+  decayAttestation?: MessageDecayAttestation | null;
+  decayedAt?: string | null;
   expiresAt?: string | null;
   availableAt?: string | null;
   createdAt: string;

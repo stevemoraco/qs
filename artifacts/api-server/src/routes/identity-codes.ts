@@ -47,6 +47,19 @@ function publicIdentityCode(code: typeof identityCodesTable.$inferSelect) {
   };
 }
 
+function publicSearchUser(user: typeof usersTable.$inferSelect, searchedCode: string | null) {
+  return {
+    id: user.id,
+    username: searchedCode ?? "sealed",
+    primaryCode: searchedCode,
+    displayName: user.displayName,
+    avatarColor: user.avatarColor,
+    kemPublicKey: user.kemPublicKey,
+    dsaPublicKey: user.dsaPublicKey,
+    createdAt: user.createdAt,
+  };
+}
+
 router.get("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
   const rows = await db
     .select()
@@ -77,7 +90,7 @@ router.post("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
   }
   const requestedCode = kind === "alias" ? serverLookupCode(requestedInput) : requestedInput;
 
-  if (kind === "alias" && !consumeRateLimit(`identity-code:create:${req.ip ?? "unknown"}:${requestedCode}`, 5, 5 * 60 * 1000, 30 * 60 * 1000)) {
+  if (kind === "alias" && !consumeRateLimit(`identity-code:create:${req.ip ?? "unknown"}:${requestedCode}`, 25, 10 * 60 * 1000, 5 * 60 * 1000)) {
     res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
@@ -109,6 +122,32 @@ router.post("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
     .returning();
 
   res.status(201).json(publicIdentityCode(code));
+});
+
+router.post("/identity-codes/unseal", requireAuth, async (req: AuthRequest, res) => {
+  const input = typeof req.body?.code === "string" ? normalizeIdentityCode(req.body.code) : "";
+  if (!canAcceptIdentityLookupInput(input)) {
+    res.status(400).json({ error: "Enter a valid handle to unseal." });
+    return;
+  }
+
+  const lookup = serverLookupCode(input);
+  const [code] = await db
+    .select()
+    .from(identityCodesTable)
+    .where(and(
+      eq(identityCodesTable.ownerUserId, req.userId!),
+      eq(identityCodesTable.kind, "alias"),
+      eq(identityCodesTable.code, lookup)
+    ))
+    .limit(1);
+
+  if (!code) {
+    res.status(404).json({ error: "That handle is not one of your sealed handles." });
+    return;
+  }
+
+  res.json(publicIdentityCode(code));
 });
 
 router.patch("/identity-codes/:codeId", requireAuth, async (req: AuthRequest, res) => {
@@ -177,14 +216,15 @@ router.get("/identity-codes/search", requireAuth, async (req: AuthRequest, res) 
     return;
   }
   const lookup = serverLookupCode(q);
+  const displayCode = isValidIdentityCode(q) ? q : null;
 
-  if (!consumeRateLimit(`identity-code:search:${req.ip ?? "unknown"}:${lookup}`, 10, 5 * 60 * 1000, 30 * 60 * 1000)) {
+  if (!consumeRateLimit(`identity-code:search:${req.ip ?? "unknown"}:${lookup}`, 120, 5 * 60 * 1000, 2 * 60 * 1000)) {
     res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
   const rows = await db
-    .select({ code: identityCodesTable, user: usersTable })
+    .select({ user: usersTable })
     .from(identityCodesTable)
     .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
     .where(
@@ -195,20 +235,9 @@ router.get("/identity-codes/search", requireAuth, async (req: AuthRequest, res) 
         or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))
       )
     )
-    .limit(20);
+    .limit(1);
 
-  res.json(
-    rows.map(({ code, user }) => ({
-      id: user.id,
-      username: code.code,
-      primaryCode: code.code,
-      displayName: user.displayName,
-      avatarColor: user.avatarColor,
-      kemPublicKey: user.kemPublicKey,
-      dsaPublicKey: user.dsaPublicKey,
-      createdAt: user.createdAt,
-    }))
-  );
+  res.json(rows.map(({ user }) => publicSearchUser(user, displayCode)));
 });
 
 export default router;

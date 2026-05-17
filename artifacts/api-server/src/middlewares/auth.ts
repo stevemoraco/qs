@@ -1,9 +1,9 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { db, sessionsTable, usersTable } from "@workspace/db";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, inArray } from "drizzle-orm";
+import { hashSessionToken, sessionTokenLookupValues } from "../lib/session-token";
 
-const SESSION_EXTENSION_DAYS = 30;
-const SESSION_REFRESH_WINDOW_DAYS = 7;
+const SESSION_DURATION_MS = 60 * 60 * 1000;
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -41,13 +41,20 @@ export async function requireAuth(
     .from(sessionsTable)
     .where(
       and(
-        eq(sessionsTable.token, token),
+        inArray(sessionsTable.token, sessionTokenLookupValues(token)),
         gt(sessionsTable.expiresAt, new Date())
       )
     )
     .limit(1);
 
   if (!session) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const absoluteExpiresAt = session.createdAt.getTime() + SESSION_DURATION_MS;
+  if (absoluteExpiresAt <= Date.now()) {
+    await db.delete(sessionsTable).where(inArray(sessionsTable.token, sessionTokenLookupValues(token)));
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
@@ -61,16 +68,6 @@ export async function requireAuth(
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });
     return;
-  }
-
-  const refreshAt = Date.now() + SESSION_REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-  if (session.expiresAt.getTime() < refreshAt) {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + SESSION_EXTENSION_DAYS);
-    await db
-      .update(sessionsTable)
-      .set({ expiresAt })
-      .where(eq(sessionsTable.token, token));
   }
 
   req.userId = user.id;

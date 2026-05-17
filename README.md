@@ -13,7 +13,7 @@ The privacy features this project combines:
 | Camera | Front-camera recording-device detection | The web client uses the selfie camera with an on-device detector for phones, laptops, tablets, cameras, and webcams near the screen. The Expo app keeps a front-camera sentinel live and reports scan state. |
 | Hold | One-at-a-time plaintext reveal | Messages stay encrypted in the UI until hover, tap, press, or hold reveal. Only one message is plaintext at a time, and it clears on release, blur, scroll, or background. |
 | Mask | Codenamed people and rooms | Usernames, account names, and room names are hidden behind per-session codenames until hold-revealed. |
-| Decay | Time-decaying keys | TTL message keys are purged locally after expiry. The server may retain ciphertext, but without the key the message becomes unrecoverable noise. |
+| Decay | Timed key expiry | TTL message keys are purged locally after expiry, and the API wipes expired wrapped key envelopes while retaining ciphertext. Without a usable key path, the message becomes unrecoverable noise. |
 | Shield | Blur and tab awareness | Secure content is covered or blurred when the web app loses focus, the tab is hidden, printing starts, or the mobile app backgrounds. |
 | Screen | Screenshot and print friction | The web client reacts to PrintScreen and print lifecycle events. Expo requests platform screen-capture prevention and warns on screenshot events where supported. |
 | Key | Device-local identity keys | Post-quantum identity keys are generated locally during account creation. Private keys are not uploaded to the API. |

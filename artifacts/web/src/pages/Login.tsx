@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Link, Redirect, useLocation } from "wouter";
 import { Shield, AlertCircle, Github, ExternalLink, Camera, MousePointerClick, TimerOff, EyeOff, UserX, MonitorOff, Key, Lock } from "lucide-react";
 import {
+  clearLocalPlatformPasskeyLink,
   enrollDeviceVerification,
   generateDevicePasscode,
   isAuthenticated,
   loginWithPasskey,
   linkDeviceWithInvite,
+  markFreshLoginVerified,
+  maybeLinkLocalPlatformPasskey,
   setAuthHandle,
   setDevicePasscode,
   setLastHandle,
@@ -24,7 +27,7 @@ const LOGIN_PRIVACY_FEATURES = [
   { icon: Camera, label: "Front-camera detection for nearby recording devices" },
   { icon: MousePointerClick, label: "Messages decrypt only while held, one at a time" },
   { icon: UserX, label: "Usernames and rooms stay codenamed until reveal" },
-  { icon: TimerOff, label: "TTL keys are purged so old ciphertext becomes noise" },
+  { icon: TimerOff, label: "TTL keys and wrapped key envelopes expire into noise" },
   { icon: EyeOff, label: "Blur and background shields hide secure content" },
   { icon: MonitorOff, label: "Screenshot, screen-capture, and print friction" },
   { icon: Key, label: "Alias and invite codes scope discovery and access" },
@@ -39,9 +42,25 @@ export default function Login() {
   const [isPasskeyPending, setIsPasskeyPending] = useState(false);
   const [linkCode, setLinkCode] = useState("");
   const [isLinking, setIsLinking] = useState(false);
+  const [authenticatedSession, setAuthenticatedSession] = useState<{ handle: string; token: string } | null>(null);
+  const [passkeySetupError, setPasskeySetupError] = useState("");
+
+  const finishLogin = async (token: string) => {
+    markFreshLoginVerified();
+    await ensurePushSubscription(token);
+    setLocation("/app", { replace: true });
+  };
+
+  const setupDesktopPasskey = async (session: { handle: string; token: string }) => {
+    setPasskeySetupError("");
+    clearLocalPlatformPasskeyLink(session.handle);
+    await maybeLinkLocalPlatformPasskey(session.handle, session.token, { force: true });
+    await finishLogin(session.token);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPasskeyPending) return;
     setError("");
     const normalizedHandle = normalizeCodeInput(handle);
     if (!normalizedHandle) {
@@ -54,8 +73,13 @@ export default function Login() {
       setToken(data.token);
       setAuthHandle(data.authHandle);
       setLastHandle(normalizedHandle);
-      await ensurePushSubscription(data.token);
-      setLocation("/app", { replace: true });
+      const session = { handle: normalizedHandle, token: data.token };
+      setAuthenticatedSession(session);
+      try {
+        await setupDesktopPasskey(session);
+      } catch (setupErr) {
+        setPasskeySetupError(setupErr instanceof Error ? setupErr.message : "Could not create a local desktop passkey.");
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Passkey login failed.");
     } finally {
@@ -67,6 +91,7 @@ export default function Login() {
 
   const handleLinkDevice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLinking) return;
     setError("");
     const code = normalizeCodeInput(linkCode);
     if (!code) {
@@ -147,6 +172,31 @@ export default function Login() {
               {isLoading ? "AUTHENTICATING..." : "LOG IN"}
             </button>
           </form>
+
+          {authenticatedSession && passkeySetupError && (
+            <div className="mt-5 border border-amber-500/30 bg-amber-500/10 px-3 py-3" data-testid="desktop-passkey-setup-warning">
+              <div className="font-mono text-xs text-amber-500 tracking-widest">DESKTOP PASSKEY NOT SET UP</div>
+              <p className="font-mono text-xs text-muted-foreground leading-relaxed mt-2">
+                You are logged in, but this browser did not create a local Mac/desktop passkey yet: {passkeySetupError}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => void setupDesktopPasskey(authenticatedSession).catch((setupErr) => setPasskeySetupError(setupErr instanceof Error ? setupErr.message : "Could not create a local desktop passkey."))}
+                  className="border border-amber-500/40 bg-amber-500/10 px-3 py-2 font-mono text-[10px] tracking-widest text-amber-500 hover:bg-amber-500/15"
+                >
+                  TRY TOUCH ID AGAIN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void finishLogin(authenticatedSession.token)}
+                  className="border border-border/60 bg-card/40 px-3 py-2 font-mono text-[10px] tracking-widest text-muted-foreground hover:text-foreground"
+                >
+                  CONTINUE WITHOUT IT
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 pt-6 border-t border-border/50">
             <p className="font-mono text-xs text-muted-foreground text-center">

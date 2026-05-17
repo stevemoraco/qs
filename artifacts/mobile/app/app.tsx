@@ -51,6 +51,9 @@ import * as ScreenCapture from "expo-screen-capture";
 import * as LocalAuthentication from "expo-local-authentication";
 
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
+const EXPERIMENTAL_DECAY_MODE = "experimental_quorum_decay";
+const DECAY_APPROACH_WINDOW_MS = 60_000;
+const LEGACY_SIGNATURE_GRACE_BEFORE_MS = Date.parse("2026-05-17T09:42:00Z");
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 const DELIVERY_FUZZ_OPTIONS = [
@@ -66,10 +69,19 @@ const DELIVERY_FUZZ_OPTIONS = [
 ];
 
 function formatShortDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds} sec`;
-  if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
-  if (seconds < 86400) return `${Math.round(seconds / 3600)} hr`;
-  return `${Math.round(seconds / 86400)} days`;
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  if (safeSeconds < 120) return `${safeSeconds}s`;
+  if (safeSeconds < 3600) {
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = safeSeconds % 60;
+    return remainingSeconds ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  }
+  if (safeSeconds < 86400) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${Math.round(safeSeconds / 86400)}d`;
 }
 
 function incompatibleFuzzWarning(ttlSeconds: number | null, ttlMode: "after_view" | "after_send", deliveryFuzzSeconds: number): string | null {
@@ -118,6 +130,7 @@ type Room = {
   ttlSeconds?: number | null;
   ttlMode?: "after_view" | "after_send";
   deliveryFuzzSeconds?: number | null;
+  decayMode?: "standard" | "experimental_quorum_decay" | null;
   members?: Array<{ id: string; username: string; displayName?: string | null; avatarColor?: string | null }> | null;
 };
 
@@ -129,10 +142,14 @@ type Message = {
   nonce: string;
   algorithm: string;
   signature?: string | null;
+  senderDsaPublicKey?: string | null;
   recipientEncryptedKeys?: Record<string, string> | null;
   expiresAt?: string | null;
+  decayAttestation?: Record<string, unknown> | null;
+  decayedAt?: string | null;
   availableAt?: string | null;
   createdAt: string;
+  localFuzzing?: boolean;
 };
 
 type WrappedMessageKey = {
@@ -228,7 +245,80 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function parseTimeMs(iso?: string | null): number | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function messageExpiryMs(msg: Message): number | null {
+  return parseTimeMs(msg.decayedAt) ?? parseTimeMs(msg.expiresAt);
+}
+
+function isMessageExpired(msg: Message, now = Date.now()): boolean {
+  const expiryMs = messageExpiryMs(msg);
+  return expiryMs !== null && expiryMs <= now;
+}
+
+function isMessageApproachingExpiry(msg: Message, now = Date.now()): boolean {
+  const expiryMs = messageExpiryMs(msg);
+  if (expiryMs === null || expiryMs <= now) return false;
+  return expiryMs - now <= DECAY_APPROACH_WINDOW_MS;
+}
+
+function degradedCipherPreview(msg: Message): string {
+  const seed = stableJson({
+    id: msg.id,
+    ciphertext: msg.ciphertext,
+    expiresAt: msg.expiresAt ?? "",
+    decayedAt: msg.decayedAt ?? "",
+    decayAttestation: msg.decayAttestation ?? "",
+  });
+  const digest = bytesToHex(sha256(new TextEncoder().encode(seed))).toUpperCase();
+  const alphabet = "01AX#%";
+  const chars = digest.slice(0, 48).split("").map((char, index) => {
+    const value = Number.parseInt(char, 16);
+    return Number.isFinite(value) ? alphabet[(value + index) % alphabet.length] : alphabet[index % alphabet.length];
+  });
+  return chars.join("").replace(/(.{12})/g, "$1 ").trim();
+}
+
+function isLegacySignatureGraceMessage(msg: Message): boolean {
+  const createdAtMs = new Date(msg.createdAt).getTime();
+  return Number.isFinite(createdAtMs) && createdAtMs < LEGACY_SIGNATURE_GRACE_BEFORE_MS;
+}
+
+function decayEvidenceLabel(msg: Message, now = Date.now()): string {
+  if (msg.decayedAt) return `DECAYED ${formatTime(msg.decayedAt)}`;
+  if (msg.decayAttestation) return "DECAY ATTESTED";
+  const expiryMs = messageExpiryMs(msg);
+  if (expiryMs !== null && expiryMs <= now) return "TTL EXPIRED";
+  if (expiryMs !== null) return "DECAY IMMINENT";
+  return "DECAY EVIDENCE";
+}
+
+function latestFuzzDeliveryLabel(sentAt: string, fuzzSeconds: number | null | undefined, now = Date.now()): string | null {
+  if (!fuzzSeconds || fuzzSeconds <= 0) return null;
+  const sentMs = new Date(sentAt).getTime();
+  if (!Number.isFinite(sentMs)) return null;
+  const latestMs = sentMs + fuzzSeconds * 1000;
+  if (latestMs <= now) return null;
+  const remainingSeconds = Math.ceil((latestMs - now) / 1000);
+  const latest = new Date(latestMs).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return `${formatShortDuration(remainingSeconds)} or by ${latest}`;
+}
+
 const messageKeyStore = new Map<string, Uint8Array>();
+const trustedKeyBundleFingerprints = new Map<string, string>();
+
+function clearVolatileMessageSecrets() {
+  for (const key of messageKeyStore.values()) key.fill(0);
+  messageKeyStore.clear();
+}
+
+function forgetBytes(value?: Uint8Array | null) {
+  value?.fill(0);
+}
 
 function bytesToB64(b: Uint8Array): string {
   let s = "";
@@ -275,13 +365,33 @@ function messageSignaturePayload(input: {
   );
 }
 
-function verifyKeyBundleSignature(bundle: { kemPublicKey?: string | null; dsaPublicKey?: string | null; kemSignature?: string | null }): boolean {
+type KeyBundle = { kemPublicKey?: string | null; dsaPublicKey?: string | null; kemSignature?: string | null };
+
+function keyBundleFingerprint(bundle: KeyBundle): string {
+  return bytesToHex(sha256(new TextEncoder().encode(stableJson({
+    kemPublicKey: bundle.kemPublicKey ?? "",
+    dsaPublicKey: bundle.dsaPublicKey ?? "",
+    kemSignature: bundle.kemSignature ?? "",
+  }))));
+}
+
+function verifyKeyBundleSignature(bundle: KeyBundle): boolean {
   if (!bundle.kemPublicKey || !bundle.dsaPublicKey || !bundle.kemSignature) return false;
   try {
     return ml_dsa87.verify(b64ToBytes(bundle.kemSignature), b64ToBytes(bundle.kemPublicKey), b64ToBytes(bundle.dsaPublicKey));
   } catch {
     return false;
   }
+}
+
+async function getTrustedVerifiedKeyBundle(userId: string): Promise<KeyBundle | null> {
+  const bundle = await getKeysUserId(userId);
+  if (!verifyKeyBundleSignature(bundle)) return null;
+  const fingerprint = keyBundleFingerprint(bundle);
+  const trusted = trustedKeyBundleFingerprints.get(userId);
+  if (trusted && trusted !== fingerprint) return null;
+  trustedKeyBundleFingerprints.set(userId, fingerprint);
+  return bundle;
 }
 
 async function encryptMsg(text: string): Promise<{ ciphertext: string; nonce: string; key: Uint8Array }> {
@@ -298,16 +408,29 @@ async function decryptMsg(ciphertext: string, nonce: string, key: Uint8Array): P
 
 async function wrapMessageKeyForUser(userId: string, rawMessageKey: Uint8Array): Promise<string | null> {
   try {
-    const bundle = await getKeysUserId(userId);
-    if (!verifyKeyBundleSignature(bundle)) return null;
-    const { cipherText, sharedSecret } = ml_kem1024.encapsulate(b64ToBytes(bundle.kemPublicKey));
+    const bundle = await getTrustedVerifiedKeyBundle(userId);
+    if (!bundle?.kemPublicKey) return null;
+    return wrapMessageKeyForKemPublicKey(bundle.kemPublicKey, rawMessageKey);
+  } catch {
+    return null;
+  }
+}
+
+async function wrapMessageKeyForKemPublicKey(kemPublicKeyB64: string, rawMessageKey: Uint8Array): Promise<string | null> {
+  try {
+    const { cipherText, sharedSecret } = ml_kem1024.encapsulate(b64ToBytes(kemPublicKeyB64));
     const nonce = randomBytes(12);
     const wrappedKey = gcm(sharedSecret, nonce).encrypt(rawMessageKey);
-    return JSON.stringify({
-      kemCiphertext: bytesToB64(cipherText),
-      nonce: bytesToB64(nonce),
-      wrappedKey: bytesToB64(wrappedKey),
-    } satisfies WrappedMessageKey);
+    try {
+      return JSON.stringify({
+        kemCiphertext: bytesToB64(cipherText),
+        nonce: bytesToB64(nonce),
+        wrappedKey: bytesToB64(wrappedKey),
+      } satisfies WrappedMessageKey);
+    } finally {
+      forgetBytes(sharedSecret);
+      forgetBytes(wrappedKey);
+    }
   } catch {
     return null;
   }
@@ -326,11 +449,51 @@ async function signMessagePayload(input: {
   return bytesToB64(signature);
 }
 
-async function verifyMessageSignature(roomId: string, msg: Message): Promise<boolean> {
+async function verifyMessageSignature(roomId: string, msg: Message, localDsaPublicKeyB64?: string | null): Promise<boolean> {
   if (!msg.signature) return false;
+  if (msg.senderDsaPublicKey) {
+    try {
+      if (ml_dsa87.verify(
+        b64ToBytes(msg.signature),
+        messageSignaturePayload({
+          roomId,
+          senderId: msg.senderId,
+          ciphertext: msg.ciphertext,
+          nonce: msg.nonce,
+          algorithm: msg.algorithm,
+          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
+        }),
+        b64ToBytes(msg.senderDsaPublicKey),
+      )) {
+        return true;
+      }
+    } catch {
+      // Continue through local and latest bundle checks.
+    }
+  }
+  if (localDsaPublicKeyB64) {
+    try {
+      if (ml_dsa87.verify(
+        b64ToBytes(msg.signature),
+        messageSignaturePayload({
+          roomId,
+          senderId: msg.senderId,
+          ciphertext: msg.ciphertext,
+          nonce: msg.nonce,
+          algorithm: msg.algorithm,
+          recipientEncryptedKeys: msg.recipientEncryptedKeys ?? {},
+        }),
+        b64ToBytes(localDsaPublicKeyB64),
+      )) {
+        return true;
+      }
+    } catch {
+      // Fall through to the fetched sender bundle.
+    }
+  }
   try {
-    const bundle = await getKeysUserId(msg.senderId);
-    if (!verifyKeyBundleSignature(bundle)) return false;
+    const bundle = await getTrustedVerifiedKeyBundle(msg.senderId);
+    if (!bundle?.dsaPublicKey) return false;
     return ml_dsa87.verify(
       b64ToBytes(msg.signature),
       messageSignaturePayload({
@@ -352,7 +515,11 @@ function unwrapMessageKey(wrappedValue: string, kemSecretKeyB64: string): Uint8A
   try {
     const wrapped = JSON.parse(wrappedValue) as WrappedMessageKey;
     const sharedSecret = ml_kem1024.decapsulate(b64ToBytes(wrapped.kemCiphertext), b64ToBytes(kemSecretKeyB64));
-    return gcm(sharedSecret, b64ToBytes(wrapped.nonce)).decrypt(b64ToBytes(wrapped.wrappedKey));
+    try {
+      return gcm(sharedSecret, b64ToBytes(wrapped.nonce)).decrypt(b64ToBytes(wrapped.wrappedKey));
+    } finally {
+      forgetBytes(sharedSecret);
+    }
   } catch {
     return null;
   }
@@ -391,6 +558,12 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
           {room.ttlSeconds && (
             <Text style={[styles.roomSub, { color: colors.primary }]}>· {room.ttlMode === "after_send" ? "TTL after send" : "TTL after view"}</Text>
           )}
+          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+            <Text style={[styles.roomSub, { color: "#f59e0b" }]}>· fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
+          )}
+          <Text style={[styles.roomSub, { color: room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
+            · {room.decayMode === EXPERIMENTAL_DECAY_MODE ? "Quorum decay ACTIVE" : "Decay standard"}
+          </Text>
         </View>
       </View>
       {room.lastMessageAt && (
@@ -400,17 +573,21 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
   );
 }
 
-function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, onRevealStart, onRevealEnd }: {
+function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, decayActive, fuzzLabel, onRevealStart, onRevealEnd }: {
   msg: Message;
   isOwn: boolean;
   colors: ReturnType<typeof useColors>;
   plaintext?: string;
   error?: string;
   senderLabel: string;
+  decayActive: boolean;
+  fuzzLabel?: string | null;
   onRevealStart: () => void;
   onRevealEnd: () => void;
 }) {
-  const expired = msg.expiresAt ? new Date(msg.expiresAt).getTime() < Date.now() : false;
+  const now = Date.now();
+  const expired = isMessageExpired(msg, now);
+  const showDecayEvidence = decayActive && !plaintext && (expired || isMessageApproachingExpiry(msg, now) || !!msg.decayedAt);
 
   return (
     <View style={[styles.bubbleRow, isOwn && styles.bubbleRowOwn]}>
@@ -420,8 +597,16 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, onRe
         isOwn ? { backgroundColor: `${colors.primary}20`, borderColor: `${colors.primary}40` } : { backgroundColor: colors.card },
       ]}>
         {!isOwn && <Text style={[styles.senderName, { color: colors.primary }]}>{senderLabel}</Text>}
-        {expired ? (
+        {expired && !decayActive ? (
           <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>Message expired — key destroyed</Text>
+        ) : expired ? (
+          <View style={styles.decayEvidence}>
+            <View style={styles.decayEvidenceHeader}>
+              <Feather name="activity" size={12} color="#f59e0b" />
+              <Text style={[styles.decayEvidenceLabel, { color: "#f59e0b" }]}>{decayEvidenceLabel(msg, now)}</Text>
+            </View>
+            <Text style={[styles.degradedCipherText, { color: colors.mutedForeground }]}>{degradedCipherPreview(msg)}</Text>
+          </View>
         ) : (
           <TouchableOpacity
             activeOpacity={0.85}
@@ -429,11 +614,19 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, onRe
             onPressIn={onRevealStart}
             onPressOut={onRevealEnd}
             onLongPress={onRevealStart}
-            style={styles.encryptedRow}
+            style={plaintext || showDecayEvidence ? undefined : styles.encryptedRow}
             testID={`button-hold-reveal-${msg.id}`}
           >
             {plaintext ? (
               <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
+            ) : showDecayEvidence ? (
+              <View style={styles.decayEvidence}>
+                <View style={styles.decayEvidenceHeader}>
+                  <Feather name="activity" size={12} color="#f59e0b" />
+                  <Text style={[styles.decayEvidenceLabel, { color: "#f59e0b" }]}>{decayEvidenceLabel(msg, now)}</Text>
+                </View>
+                <Text style={[styles.degradedCipherText, { color: colors.mutedForeground }]}>{degradedCipherPreview(msg)}</Text>
+              </View>
             ) : (
               <>
                 <Feather name="lock" size={12} color={colors.mutedForeground} />
@@ -441,6 +634,11 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, onRe
               </>
             )}
           </TouchableOpacity>
+        )}
+        {!!fuzzLabel && (
+          <Text style={[styles.msgError, { color: "#f59e0b" }]}>
+            Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
+          </Text>
         )}
         {!!error && <Text style={[styles.msgError, { color: colors.destructive }]}>{error}</Text>}
         <Text style={[styles.msgTime, { color: colors.mutedForeground }]}>{plaintext ? formatTime(msg.createdAt) : "TIME SEALED"}</Text>
@@ -457,6 +655,7 @@ function ChatView({
   topPad,
   codenameForUser,
   roomCodename,
+  securityEpoch,
 }: {
   room: Room;
   myId: string;
@@ -465,15 +664,18 @@ function ChatView({
   topPad: number;
   codenameForUser: CodenameFor;
   roomCodename: string;
+  securityEpoch: number;
 }) {
   const qc = useQueryClient();
-  const { getKemSecretKey, getDsaSecretKey } = useAuth();
+  const { getKemSecretKey, getKemPublicKey, getDsaSecretKey, getDsaPublicKey } = useAuth();
   const [input, setInput] = useState("");
   const [heldPlaintext, setHeldPlaintext] = useState<{ id: string; text: string } | null>(null);
   const [revealError, setRevealError] = useState<{ id: string; text: string } | null>(null);
   const [sendError, setSendError] = useState("");
   const [screenshotAlert, setScreenshotAlert] = useState(false);
   const [revealRoomName, setRevealRoomName] = useState(false);
+  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
+  const [expiryClock, setExpiryClock] = useState(0);
   const revealTokenRef = useRef(0);
   const insets = useSafeAreaInsets();
 
@@ -485,6 +687,8 @@ function ChatView({
       try {
         sub = ScreenCapture.addScreenshotListener(() => {
           if (!mounted) return;
+          hideRevealedMessage();
+          clearVolatileMessageSecrets();
           setScreenshotAlert(true);
           if (hideTimer) clearTimeout(hideTimer);
           hideTimer = setTimeout(() => {
@@ -502,21 +706,46 @@ function ChatView({
 
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      if (state !== "active") setHeldPlaintext(null);
+      if (state !== "active") {
+        hideRevealedMessage();
+        setRevealRoomName(false);
+        clearVolatileMessageSecrets();
+      }
     });
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    return () => {
+      hideRevealedMessage();
+      setRevealRoomName(false);
+      clearVolatileMessageSecrets();
+    };
+  }, []);
+
+  useEffect(() => {
+    hideRevealedMessage();
+    setRevealRoomName(false);
+    clearVolatileMessageSecrets();
+  }, [securityEpoch]);
 
   const { data: messages = [] } = useGetRoomsRoomIdMessages(
     room.id, {},
     { query: { queryKey: getGetRoomsRoomIdMessagesQueryKey(room.id), refetchInterval: () => randomRefetchInterval(17000, 73000) } }
   );
+  const liveMessages = messages as Message[];
+  const visibleOptimisticMessages = optimisticMessages.filter((local) => !liveMessages.some((live) => (
+    (local.signature && live.signature === local.signature) ||
+    live.ciphertext === local.ciphertext
+  )));
+  const visibleMessages = [...liveMessages, ...visibleOptimisticMessages];
 
   useEffect(() => {
     const purgeExpiredKeys = () => {
       const now = Date.now();
-      for (const msg of messages as Message[]) {
-        if (msg.expiresAt && new Date(msg.expiresAt).getTime() <= now) {
+      setExpiryClock(Math.floor(now / 1000));
+      for (const msg of visibleMessages) {
+        if (isMessageExpired(msg, now)) {
           messageKeyStore.delete(msg.id);
           if (heldPlaintext?.id === msg.id) hideRevealedMessage();
         }
@@ -525,7 +754,25 @@ function ChatView({
     purgeExpiredKeys();
     const interval = setInterval(purgeExpiredKeys, 1000);
     return () => clearInterval(interval);
-  }, [heldPlaintext?.id, messages]);
+  }, [heldPlaintext?.id, visibleMessages]);
+
+  useEffect(() => {
+    if (!heldPlaintext) return;
+    const msg = visibleMessages.find((item) => item.id === heldPlaintext.id);
+    const expiryMs = msg ? messageExpiryMs(msg) : null;
+    if (expiryMs === null) return;
+    const delay = expiryMs - Date.now();
+    if (delay <= 0) {
+      hideRevealedMessage();
+      messageKeyStore.delete(heldPlaintext.id);
+      return;
+    }
+    const timer = setTimeout(() => {
+      hideRevealedMessage();
+      messageKeyStore.delete(heldPlaintext.id);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [heldPlaintext, visibleMessages]);
 
   const { data: members = [] } = useGetRoomsRoomIdMembers(room.id, {
     query: { queryKey: getGetRoomsRoomIdMembersQueryKey(room.id) },
@@ -541,65 +788,123 @@ function ChatView({
     },
   });
 
+  useEffect(() => {
+    if (optimisticMessages.length === 0) return;
+    const fuzzSeconds = room.deliveryFuzzSeconds ?? 0;
+    const now = Date.now();
+    setOptimisticMessages((current) => current.filter((local) => {
+      const hasLiveCopy = liveMessages.some((live) => (
+        (local.signature && live.signature === local.signature) ||
+        live.ciphertext === local.ciphertext
+      ));
+      if (hasLiveCopy) return false;
+      const sentMs = new Date(local.createdAt).getTime();
+      if (!Number.isFinite(sentMs)) return true;
+      return now <= sentMs + Math.max(1, fuzzSeconds) * 1000;
+    }));
+  }, [expiryClock, liveMessages, optimisticMessages.length, room.deliveryFuzzSeconds]);
+
   const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
     setSendError("");
-    const dsaSecretKey = await getDsaSecretKey();
+    let dsaSecretKey = await getDsaSecretKey();
     if (!dsaSecretKey) {
       setSendError("This Expo install can log in but does not have the account message signing key. Create the account on this device or transfer keys before sending.");
       return;
     }
     setInput("");
     const { ciphertext, nonce, key } = await encryptMsg(text);
-    const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
-    const recipientIds = Array.from(new Set([myId, ...freshMembers.map((member) => member.id)]));
-    const recipientEncryptedKeys: Record<string, string> = {};
-    await Promise.all(
-      recipientIds.map(async (userId) => {
-        const wrapped = await wrapMessageKeyForUser(userId, key);
-        if (wrapped) recipientEncryptedKeys[userId] = wrapped;
-      })
-    );
-    if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
-      setSendError("Could not encrypt this message for every room member. Ask everyone to refresh their key bundle.");
-      setInput(text);
-      return;
+    try {
+      const freshMembers = await getRoomsRoomIdMembers(room.id).catch(() => members);
+      const recipientIds = Array.from(new Set([myId, ...freshMembers.map((member) => member.id)]));
+      const recipientEncryptedKeys: Record<string, string> = {};
+      await Promise.all(
+        recipientIds.map(async (userId) => {
+          const localKemPublicKey = userId === myId ? await getKemPublicKey() : null;
+          const wrapped = localKemPublicKey
+            ? await wrapMessageKeyForKemPublicKey(localKemPublicKey, key)
+            : await wrapMessageKeyForUser(userId, key);
+          if (wrapped) recipientEncryptedKeys[userId] = wrapped;
+        })
+      );
+      if (recipientIds.some((userId) => !recipientEncryptedKeys[userId])) {
+        setSendError("Could not encrypt this message for every room member. A member key changed or could not be verified.");
+        setInput(text);
+        return;
+      }
+      const signature = await signMessagePayload(
+        { roomId: room.id, senderId: myId, ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys },
+        dsaSecretKey
+      );
+      if (!signature) {
+        setSendError("Could not sign this message on this device.");
+        setInput(text);
+        return;
+      }
+      const sentAt = new Date().toISOString();
+      const optimistic: Message | null = room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0
+        ? {
+            id: `local-fuzz-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            senderId: myId,
+            senderUsername: null,
+            ciphertext,
+            nonce,
+            algorithm: CIPHER_SUITE,
+            signature,
+            senderDsaPublicKey: await getDsaPublicKey(),
+            recipientEncryptedKeys,
+            expiresAt: null,
+            decayAttestation: null,
+            decayedAt: null,
+            availableAt: sentAt,
+            createdAt: sentAt,
+            localFuzzing: true,
+          }
+        : null;
+      if (optimistic) setOptimisticMessages((current) => [...current, optimistic]);
+      sendMsg.mutate(
+        { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
+        {
+          onError: () => {
+            if (optimistic) setOptimisticMessages((current) => current.filter((msg) => msg.id !== optimistic.id));
+            setInput(text);
+          },
+        }
+      );
+    } finally {
+      forgetBytes(key);
+      dsaSecretKey = null;
     }
-    const signature = await signMessagePayload(
-      { roomId: room.id, senderId: myId, ciphertext, nonce, algorithm: CIPHER_SUITE, recipientEncryptedKeys },
-      dsaSecretKey
-    );
-    if (!signature) {
-      setSendError("Could not sign this message on this device.");
-      setInput(text);
-      return;
-    }
-    sendMsg.mutate(
-      { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
-      { onSuccess: (msg) => { messageKeyStore.set(msg.id, key); } }
-    );
   };
 
   const revealMessage = async (msg: Message) => {
     const revealToken = ++revealTokenRef.current;
     setRevealError((current) => (current?.id === msg.id ? null : current));
-    const verified = await verifyMessageSignature(room.id, msg);
+    if (isMessageExpired(msg)) {
+      messageKeyStore.delete(msg.id);
+      hideRevealedMessage();
+      return;
+    }
+    const localDsaPublicKey = msg.senderId === myId ? await getDsaPublicKey() : null;
+    const verified = await verifyMessageSignature(room.id, msg, localDsaPublicKey);
     if (!verified) {
-      if (revealToken === revealTokenRef.current) {
+      const legacyMessage = isLegacySignatureGraceMessage(msg);
+      if (msg.senderId !== myId && !legacyMessage && revealToken === revealTokenRef.current) {
         setRevealError({
           id: msg.id,
           text: msg.signature ? "Message signature could not be verified." : "This message was not signed by a verified sender key.",
         });
       }
-      return;
+      if (msg.senderId !== myId && !legacyMessage) return;
     }
     let key = messageKeyStore.get(msg.id);
+    let shouldForgetKey = false;
     if (!key && msg.recipientEncryptedKeys?.[myId]) {
       const kemSecretKey = await getKemSecretKey();
       if (kemSecretKey) {
         key = unwrapMessageKey(msg.recipientEncryptedKeys[myId], kemSecretKey) ?? undefined;
-        if (key) messageKeyStore.set(msg.id, key);
+        shouldForgetKey = !!key;
       }
     }
     if (!key) {
@@ -616,11 +921,18 @@ function ChatView({
     try {
       const plaintext = await decryptMsg(msg.ciphertext, msg.nonce, key);
       if (revealToken !== revealTokenRef.current) return;
+      if (isMessageExpired(msg)) {
+        messageKeyStore.delete(msg.id);
+        hideRevealedMessage();
+        return;
+      }
       setHeldPlaintext({ id: msg.id, text: plaintext });
     } catch {
       if (revealToken === revealTokenRef.current) {
         setRevealError({ id: msg.id, text: "Could not decrypt this message on this device." });
       }
+    } finally {
+      if (shouldForgetKey) forgetBytes(key);
     }
   };
 
@@ -628,7 +940,7 @@ function ChatView({
     revealTokenRef.current += 1;
     setHeldPlaintext(null);
   };
-  const reversed = [...messages].reverse();
+  const reversed = [...visibleMessages].reverse();
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={0}>
@@ -640,9 +952,27 @@ function ChatView({
           <TouchableOpacity delayLongPress={120} onLongPress={() => setRevealRoomName(true)} onPressOut={() => setRevealRoomName(false)} activeOpacity={0.85} testID="button-hold-reveal-room-name">
             <Text style={[styles.chatTitle, { color: colors.foreground }]} numberOfLines={1}>{revealRoomName ? getRoomLabel(room, myId) : roomCodename}</Text>
           </TouchableOpacity>
-          <View style={styles.cipherRow}>
+          <View style={styles.chatMetaRow}>
             <Feather name="shield" size={10} color={colors.primary} />
             <Text style={[styles.cipherText, { color: colors.primary }]} numberOfLines={1}>{CIPHER_SUITE}</Text>
+          </View>
+          {room.ttlSeconds && (
+            <View style={styles.chatMetaRow}>
+              <Feather name="clock" size={10} color={colors.primary} />
+              <Text style={[styles.cipherText, { color: colors.primary }]}>{room.ttlMode === "after_send" ? "TTL after send" : "TTL after view"}</Text>
+            </View>
+          )}
+          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+            <View style={styles.chatMetaRow}>
+              <Feather name="clock" size={10} color="#f59e0b" />
+              <Text style={[styles.cipherText, { color: "#f59e0b" }]}>fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
+            </View>
+          )}
+          <View style={styles.chatMetaRow}>
+            <Feather name="shield" size={10} color={room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground} />
+            <Text style={[styles.cipherText, { color: room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
+              {room.decayMode === EXPERIMENTAL_DECAY_MODE ? "QUORUM DECAY ACTIVE" : "DECAY STANDARD"}
+            </Text>
           </View>
         </View>
         <View style={styles.memberBadge}>
@@ -673,6 +1003,8 @@ function ChatView({
               plaintext={plaintext}
               error={error}
               senderLabel={codenameForUser(item.senderId)}
+              decayActive={room.decayMode === EXPERIMENTAL_DECAY_MODE}
+              fuzzLabel={item.senderId === myId ? latestFuzzDeliveryLabel(item.createdAt, room.deliveryFuzzSeconds) : null}
               onRevealStart={() => revealMessage(item as Message)}
               onRevealEnd={hideRevealedMessage}
             />
@@ -726,6 +1058,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const [ttl, setTtl] = useState<number | null>(300);
   const [ttlMode, setTtlMode] = useState<"after_view" | "after_send">("after_view");
   const [deliveryFuzzSeconds, setDeliveryFuzzSeconds] = useState(DEFAULT_DELIVERY_FUZZ_SECONDS);
+  const [decayMode, setDecayMode] = useState<"standard" | "experimental_quorum_decay">("standard");
   const [pendingTtlMode, setPendingTtlMode] = useState<"after_view" | "after_send" | null>(null);
   const [search, setSearch] = useState("");
   const [searchHash, setSearchHash] = useState("");
@@ -746,7 +1079,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
         onClose();
-        setName(""); setSearch(""); setSelected([]); setTtl(300); setTtlMode("after_view"); setDeliveryFuzzSeconds(DEFAULT_DELIVERY_FUZZ_SECONDS);
+        setName(""); setSearch(""); setSelected([]); setTtl(300); setTtlMode("after_view"); setDeliveryFuzzSeconds(DEFAULT_DELIVERY_FUZZ_SECONDS); setDecayMode("standard");
       },
     },
   });
@@ -789,6 +1122,21 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             ))}
           </ScrollView>
           <Text style={[styles.codeMeta, { color: colors.mutedForeground, marginTop: 6 }]}>Each message releases at a random point inside this window. Default is 89 seconds.</Text>
+
+          <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>DECAY TIER</Text>
+          <View style={styles.typeRow}>
+            {([
+              { label: "STANDARD", v: "standard" as const },
+              { label: "EXPERIMENTAL", v: EXPERIMENTAL_DECAY_MODE },
+            ] as const).map((o) => (
+              <TouchableOpacity key={o.v} onPress={() => setDecayMode(o.v)} style={[styles.typeBtn, { borderColor: decayMode === o.v ? "#f59e0b" : colors.border }, decayMode === o.v && { backgroundColor: "#f59e0b20" }]} testID={`button-decay-mode-${o.v}`}>
+                <Text style={[styles.typeBtnText, { color: decayMode === o.v ? "#f59e0b" : colors.mutedForeground }]}>{o.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {decayMode === EXPERIMENTAL_DECAY_MODE && (
+            <Text style={[styles.codeMeta, { color: "#f59e0b", marginTop: 6 }]}>Multiple clocks must attest the time so even if a device, server, or stored keys are compromised after expiry, messages decay. Uses device time, server time, and multiple public clocks.</Text>
+          )}
 
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>MESSAGE EXPIRY (TTL)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
@@ -837,7 +1185,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             );
           })}
 
-          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl, ttlMode, deliveryFuzzSeconds } })} disabled={createRoom.isPending} testID="button-create-room">
+          <TouchableOpacity style={[styles.createBtn, { backgroundColor: colors.primary }, createRoom.isPending && { opacity: 0.5 }]} onPress={() => createRoom.mutate({ data: { name: name || null, type, memberIds: selected, ttlSeconds: ttl, ttlMode, deliveryFuzzSeconds, decayMode } })} disabled={createRoom.isPending} testID="button-create-room">
             {createRoom.isPending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={[styles.createBtnText, { color: colors.background }]}>CREATE ENCRYPTED CHANNEL</Text>}
           </TouchableOpacity>
         </ScrollView>
@@ -951,7 +1299,14 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     isLastActiveHandle: boolean;
     stage: number;
   } | null>(null);
-  const { data: codes = [] } = useGetIdentityCodes({ query: { queryKey: getGetIdentityCodesQueryKey(), enabled: visible } });
+  const { data: codes = [] } = useGetIdentityCodes({
+    query: {
+      queryKey: getGetIdentityCodesQueryKey(),
+      enabled: visible,
+      refetchInterval: visible ? 10000 : false,
+      refetchOnWindowFocus: true,
+    },
+  });
   const sortedCodes = [...codes].sort((a, b) => `${a.kind}:${a.active ? "0" : "1"}:${a.code}:${a.createdAt}`.localeCompare(`${b.kind}:${b.active ? "0" : "1"}:${b.code}:${b.createdAt}`));
   const activeHandleCount = codes.filter((code) => code.kind === "alias" && code.active).length;
 
@@ -971,6 +1326,16 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
       mounted = false;
     };
   }, [revealed, token, visible]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") {
+        setRevealed(false);
+        setDeviceSessions(null);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const createCode = usePostIdentityCodes({
     mutation: {
@@ -1244,6 +1609,7 @@ export default function AppScreen() {
   const [privacyLock, setPrivacyLock] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [isUnlockingPrivacy, setIsUnlockingPrivacy] = useState(false);
   const privacyAutoUnlockAttemptedRef = useRef(false);
+  const [securityEpoch, setSecurityEpoch] = useState(0);
   const [cameraStatus, setCameraStatus] = useState<"scanning" | "clear" | "unavailable">("scanning");
   const [cameraDetail, setCameraDetail] = useState("REQUESTING LOCAL SCAN");
   const [cameraInfoOpen, setCameraInfoOpen] = useState(false);
@@ -1252,7 +1618,14 @@ export default function AppScreen() {
   const { data: rooms = [] } = useGetRooms({ query: { queryKey: getGetRoomsQueryKey(), refetchInterval: () => randomRefetchInterval(28000, 97000) } });
 
   const logout = usePostAuthLogout({
-    mutation: { onSuccess: async () => { await clearAuth(); router.replace("/login"); } },
+    mutation: {
+      onSuccess: async () => {
+        clearVolatileMessageSecrets();
+        trustedKeyBundleFingerprints.clear();
+        await clearAuth();
+        router.replace("/login");
+      },
+    },
   });
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId) as Room | undefined;
@@ -1260,6 +1633,9 @@ export default function AppScreen() {
   const codenameForRoom = useCallback((id: string) => codenameFor(`room:${id}`), [codenameFor]);
   const updateCameraStatus = useCallback((status: "scanning" | "clear" | "unavailable", detail: string) => { setCameraStatus(status); setCameraDetail(detail); }, []);
   const lockPrivacy = useCallback((reason: string) => {
+    clearVolatileMessageSecrets();
+    setRevealedNameId(null);
+    setSecurityEpoch((value) => value + 1);
     setPrivacyLock((current) => {
       if (!current.active) privacyAutoUnlockAttemptedRef.current = false;
       return { active: true, reason: current.active ? current.reason : reason };
@@ -1408,7 +1784,7 @@ export default function AppScreen() {
           />
         </View>
       ) : activeRoom && me ? (
-        <ChatView room={activeRoom} myId={me.id} colors={colors} topPad={topPad} codenameForUser={codenameForUser} roomCodename={codenameForRoom(activeRoom.id)} onBack={() => { setShowRooms(true); setActiveRoomId(null); }} />
+        <ChatView room={activeRoom} myId={me.id} colors={colors} topPad={topPad} codenameForUser={codenameForUser} roomCodename={codenameForRoom(activeRoom.id)} securityEpoch={securityEpoch} onBack={() => { setShowRooms(true); setActiveRoomId(null); }} />
       ) : null}
 
       {me && <NewRoomModal visible={showNewRoom} onClose={() => setShowNewRoom(false)} myId={me.id} colors={colors} codenameForUser={codenameForUser} />}
@@ -1438,7 +1814,7 @@ const styles = StyleSheet.create({
   channelsLabel: { fontFamily: "Inter_500Medium", fontSize: 10, letterSpacing: 3 },
   roomItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 0 },
   roomName: { fontFamily: "Inter_600SemiBold", fontSize: 13 },
-  roomMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  roomMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 4, marginTop: 2 },
   roomSub: { fontFamily: "Inter_400Regular", fontSize: 11 },
   roomTime: { fontFamily: "Inter_400Regular", fontSize: 10 },
   emptyRooms: { alignItems: "center", paddingTop: 60, gap: 8 },
@@ -1447,7 +1823,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4, marginLeft: -4 },
   chatHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingBottom: 10, borderBottomWidth: 1 },
   chatTitle: { fontFamily: "Inter_600SemiBold", fontSize: 15 },
-  cipherRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  chatMetaRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
   cipherText: { fontFamily: "Inter_500Medium", fontSize: 9, letterSpacing: 0.5 },
   screenshotAlert: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8 },
   screenshotAlertText: { fontFamily: "Inter_600SemiBold", fontSize: 10, letterSpacing: 1.5, color: "#fff" },
@@ -1463,6 +1839,10 @@ const styles = StyleSheet.create({
   msgText: { fontFamily: "Inter_400Regular", fontSize: 14, lineHeight: 20 },
   msgError: { fontFamily: "Inter_400Regular", fontSize: 11, lineHeight: 16, marginTop: 6 },
   encryptedRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  decayEvidence: { gap: 5 },
+  decayEvidenceHeader: { flexDirection: "row", alignItems: "center", gap: 5 },
+  decayEvidenceLabel: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
+  degradedCipherText: { fontFamily: Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" }), fontSize: 12, lineHeight: 17, letterSpacing: 0.5 },
   msgTime: { fontFamily: "Inter_400Regular", fontSize: 10, marginTop: 4, textAlign: "right" },
   emptyChat: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 40 },
   emptyChatText: { fontFamily: "Inter_500Medium", fontSize: 14 },

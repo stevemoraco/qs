@@ -7,6 +7,7 @@
  */
 import type { CreateRoomRequestTtlMode } from './createRoomRequestTtlMode';
 import type { CreateRoomRequestType } from './createRoomRequestType';
+import type { CreateRoomRequestDecayMode } from './createRoomRequestDecayMode';
 
 export interface CreateRoomRequest {
   name?: string | null;
@@ -16,4 +17,8 @@ export interface CreateRoomRequest {
   ttlSeconds?: number | null;
   /** Whether TTL starts when a message is first viewed or when it is sent. */
   ttlMode?: CreateRoomRequestTtlMode;
+  /** Random server-side delivery delay window in seconds. */
+  deliveryFuzzSeconds?: number;
+  /** Optional experimental quorum-decay policy tier. Standard is the default. */
+  decayMode?: CreateRoomRequestDecayMode;
 }

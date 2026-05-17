@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 
 const TOKEN_KEY = "qs_token";
@@ -10,6 +11,52 @@ const KEM_SK_KEY = "qs_kem_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const DSA_PK_KEY = "qs_dsa_pk";
+const SECRET_KEYS = [TOKEN_KEY, AUTH_HANDLE_KEY, DEVICE_PASSCODE_KEY, KEM_SK_KEY, KEM_PK_KEY, DSA_SK_KEY, DSA_PK_KEY];
+
+const secureStoreOptions: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+};
+
+async function isSecureStoreAvailable(): Promise<boolean> {
+  try {
+    return await SecureStore.isAvailableAsync();
+  } catch {
+    return false;
+  }
+}
+
+async function getSecret(key: string): Promise<string | null> {
+  if (!(await isSecureStoreAvailable())) return null;
+  const secureValue = await SecureStore.getItemAsync(key);
+  if (secureValue !== null) return secureValue;
+
+  const legacyValue = await AsyncStorage.getItem(key);
+  if (legacyValue !== null) {
+    await SecureStore.setItemAsync(key, legacyValue, secureStoreOptions);
+    await AsyncStorage.removeItem(key);
+  }
+  return legacyValue;
+}
+
+async function setSecret(key: string, value: string): Promise<void> {
+  if (!(await isSecureStoreAvailable())) {
+    throw new Error("Secure device storage is unavailable.");
+  }
+  await SecureStore.setItemAsync(key, value, secureStoreOptions);
+  await AsyncStorage.removeItem(key);
+}
+
+async function deleteSecret(key: string): Promise<void> {
+  if (await isSecureStoreAvailable()) {
+    await SecureStore.deleteItemAsync(key);
+  }
+  await AsyncStorage.removeItem(key);
+}
+
+async function migrateLegacySecrets(): Promise<void> {
+  if (!(await isSecureStoreAvailable())) return;
+  await Promise.all(SECRET_KEYS.map((key) => getSecret(key).then(() => undefined)));
+}
 
 type AuthContextType = {
   token: string | null;
@@ -37,27 +84,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(TOKEN_KEY).then((t) => {
-      setTokenState(t);
-      setIsLoading(false);
-    });
+    let mounted = true;
+    (async () => {
+      try {
+        await migrateLegacySecrets();
+        const t = await getSecret(TOKEN_KEY);
+        if (mounted) setTokenState(t);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
     setAuthTokenGetter(async () => {
-      return await AsyncStorage.getItem(TOKEN_KEY);
+      return await getSecret(TOKEN_KEY);
     });
   }, []);
 
   const setToken = useCallback(async (t: string) => {
-    await AsyncStorage.setItem(TOKEN_KEY, t);
+    await setSecret(TOKEN_KEY, t);
     setTokenState(t);
   }, []);
 
-  const getAuthHandle = useCallback(() => AsyncStorage.getItem(AUTH_HANDLE_KEY), []);
+  const getAuthHandle = useCallback(() => getSecret(AUTH_HANDLE_KEY), []);
 
   const setAuthHandle = useCallback(async (h: string) => {
-    await AsyncStorage.setItem(AUTH_HANDLE_KEY, h);
+    await setSecret(AUTH_HANDLE_KEY, h);
   }, []);
 
   const getLastHandle = useCallback(async () => {
@@ -73,30 +129,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(LAST_HANDLE_KEY, h);
   }, []);
 
-  const getDevicePasscode = useCallback(() => AsyncStorage.getItem(DEVICE_PASSCODE_KEY), []);
+  const getDevicePasscode = useCallback(() => getSecret(DEVICE_PASSCODE_KEY), []);
 
   const setDevicePasscode = useCallback(async (p: string) => {
-    await AsyncStorage.setItem(DEVICE_PASSCODE_KEY, p);
+    await setSecret(DEVICE_PASSCODE_KEY, p);
   }, []);
 
   const clearAuth = useCallback(async () => {
-    await AsyncStorage.removeItem(TOKEN_KEY);
+    await deleteSecret(TOKEN_KEY);
+    await deleteSecret(AUTH_HANDLE_KEY);
     setTokenState(null);
   }, []);
 
   const storeKeyPair = useCallback(async (kemSk: string, kemPk: string, dsaSk: string, dsaPk: string) => {
-    await AsyncStorage.multiSet([
-      [KEM_SK_KEY, kemSk],
-      [KEM_PK_KEY, kemPk],
-      [DSA_SK_KEY, dsaSk],
-      [DSA_PK_KEY, dsaPk],
+    await Promise.all([
+      setSecret(KEM_SK_KEY, kemSk),
+      setSecret(KEM_PK_KEY, kemPk),
+      setSecret(DSA_SK_KEY, dsaSk),
+      setSecret(DSA_PK_KEY, dsaPk),
     ]);
   }, []);
 
-  const getKemSecretKey = useCallback(() => AsyncStorage.getItem(KEM_SK_KEY), []);
-  const getKemPublicKey = useCallback(() => AsyncStorage.getItem(KEM_PK_KEY), []);
-  const getDsaSecretKey = useCallback(() => AsyncStorage.getItem(DSA_SK_KEY), []);
-  const getDsaPublicKey = useCallback(() => AsyncStorage.getItem(DSA_PK_KEY), []);
+  const getKemSecretKey = useCallback(() => getSecret(KEM_SK_KEY), []);
+  const getKemPublicKey = useCallback(() => getSecret(KEM_PK_KEY), []);
+  const getDsaSecretKey = useCallback(() => getSecret(DSA_SK_KEY), []);
+  const getDsaPublicKey = useCallback(() => getSecret(DSA_PK_KEY), []);
 
   return (
     <AuthContext.Provider

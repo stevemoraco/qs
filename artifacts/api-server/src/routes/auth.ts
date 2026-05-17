@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, usersTable, sessionsTable, leadsTable, identityCodesTable, deviceCredentialsTable } from "@workspace/db";
-import { and, count, desc, eq, gt, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNull, not, or, sql } from "drizzle-orm";
 import argon2 from "argon2";
 import { createHash, randomBytes } from "crypto";
 import {
@@ -26,6 +26,7 @@ import {
   serverLookupCode,
 } from "../lib/identity-lookup";
 import { consumeRateLimit } from "../lib/rate-limit";
+import { hashSessionToken, sessionTokenLookupValues } from "../lib/session-token";
 
 const router = Router();
 
@@ -56,14 +57,34 @@ function generateInternalUsername(): string {
   return `acct_${randomBytes(12).toString("hex")}`;
 }
 
+function configuredPublicOrigin(): string | null {
+  const raw =
+    process.env["PUBLIC_ORIGIN"] ??
+    process.env["APP_ORIGIN"] ??
+    (process.env["REPLIT_DEV_DOMAIN"] ? `https://${process.env["REPLIT_DEV_DOMAIN"]}` : null);
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
 function publicOrigin(req: { get(name: string): string | undefined; protocol: string }): string {
-  const host = req.get("x-forwarded-host") ?? req.get("host") ?? "localhost";
-  const proto = req.get("x-forwarded-proto") ?? req.protocol ?? "https";
+  const configured = configuredPublicOrigin();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") throw new Error("PUBLIC_ORIGIN is required for passkey verification in production");
+  const host = req.get("host") ?? "localhost";
+  const proto = req.protocol ?? "https";
   return `${proto}://${host}`;
 }
 
 function rpId(req: { get(name: string): string | undefined }): string {
-  return (req.get("x-forwarded-host") ?? req.get("host") ?? "localhost").split(":")[0];
+  if (process.env["WEBAUTHN_RP_ID"]) return process.env["WEBAUTHN_RP_ID"];
+  const configured = configuredPublicOrigin();
+  if (configured) return new URL(configured).hostname;
+  if (process.env.NODE_ENV === "production") throw new Error("WEBAUTHN_RP_ID or PUBLIC_ORIGIN is required in production");
+  return (req.get("host") ?? "localhost").split(":")[0];
 }
 
 function rememberChallenge(challenge: string, handle: string): void {
@@ -90,16 +111,18 @@ function expiryFromTtl(ttlSeconds: number | null | undefined): Date | null {
 }
 
 function sessionExpiresAt(): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + 30);
-  return d;
+  return new Date(Date.now() + 60 * 60 * 1000);
+}
+
+function passkeyUserChallenge(userId: string): string {
+  return `user:${userId}`;
 }
 
 async function createSession(userId: string): Promise<string> {
   const token = generateToken();
   await db.insert(sessionsTable).values({
     userId,
-    token,
+    token: hashSessionToken(token),
     expiresAt: sessionExpiresAt(),
   });
   return token;
@@ -112,8 +135,8 @@ function loginKey(reqIp: string | undefined, handle: string): string {
 function consumeHandleGuessBudget(reqIp: string | undefined, purpose: string, lookup: string): boolean {
   const ip = reqIp ?? "unknown";
   return (
-    consumeRateLimit(`handle:${purpose}:ip:${ip}`, 30, 60 * 1000, 15 * 60 * 1000) &&
-    consumeRateLimit(`handle:${purpose}:target:${ip}:${lookup}`, 5, 5 * 60 * 1000, 30 * 60 * 1000)
+    consumeRateLimit(`handle:${purpose}:ip:${ip}`, 180, 60 * 1000, 2 * 60 * 1000) &&
+    consumeRateLimit(`handle:${purpose}:target:${ip}:${lookup}`, 40, 5 * 60 * 1000, 5 * 60 * 1000)
   );
 }
 
@@ -378,6 +401,102 @@ router.post("/auth/passkey/register/verify", async (req, res) => {
   res.status(201).json(authUser(user, authHandle, token));
 });
 
+router.post("/auth/passkey/add/options", requireAuth, async (req: AuthRequest, res) => {
+  if (!req.userId || !req.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const credentials = await db
+    .select({ credentialId: deviceCredentialsTable.credentialId, credentialTransports: deviceCredentialsTable.credentialTransports })
+    .from(deviceCredentialsTable)
+    .where(and(eq(deviceCredentialsTable.userId, req.userId), isNull(deviceCredentialsTable.revokedAt)));
+
+  const excludeCredentials = credentials
+    .filter((credential) => credential.credentialId)
+    .map((credential) => ({
+      id: credential.credentialId!,
+      transports: (credential.credentialTransports ?? undefined) as AuthenticatorTransportFuture[] | undefined,
+    }));
+
+  const options = await generateRegistrationOptions({
+    rpName: "QuantumShield",
+    rpID: rpId(req),
+    userName: `account-${req.userId.slice(0, 8)}`,
+    userID: randomBytes(16),
+    userDisplayName: "QuantumShield desktop",
+    attestationType: "none",
+    excludeCredentials,
+    authenticatorSelection: {
+      authenticatorAttachment: "platform",
+      residentKey: "required",
+      userVerification: "required",
+    },
+    preferredAuthenticatorType: "localDevice",
+  });
+
+  rememberChallenge(options.challenge, passkeyUserChallenge(req.userId));
+  res.json(options);
+});
+
+router.post("/auth/passkey/add/verify", requireAuth, async (req: AuthRequest, res) => {
+  if (!req.userId || !req.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const body = req.body as { response?: unknown; label?: unknown };
+  if (!isRegistrationResponse(body.response)) {
+    res.status(400).json({ error: "Passkey registration response is required" });
+    return;
+  }
+
+  const challenge = body.response.response.clientDataJSON ? JSON.parse(Buffer.from(body.response.response.clientDataJSON, "base64url").toString("utf8")).challenge as string : "";
+  if (!consumeChallenge(challenge, passkeyUserChallenge(req.userId))) {
+    res.status(400).json({ error: "Passkey challenge expired. Try again." });
+    return;
+  }
+
+  const verification = await verifyRegistrationResponse({
+    response: body.response,
+    expectedChallenge: challenge,
+    expectedOrigin: publicOrigin(req),
+    expectedRPID: rpId(req),
+    requireUserVerification: true,
+  });
+
+  if (!verification.verified) {
+    res.status(400).json({ error: "Passkey registration was not verified" });
+    return;
+  }
+
+  const { credential } = verification.registrationInfo;
+  const [existing] = await db
+    .select({ id: deviceCredentialsTable.id })
+    .from(deviceCredentialsTable)
+    .where(eq(deviceCredentialsTable.credentialId, credential.id))
+    .limit(1);
+
+  if (existing) {
+    res.status(409).json({ error: "This passkey is already linked." });
+    return;
+  }
+
+  const authHandle = generateAuthHandle();
+  await db.insert(deviceCredentialsTable).values({
+    userId: req.userId,
+    authHandleHash: hashAuthHandle(authHandle),
+    passwordHash: await argon2.hash(randomBytes(32).toString("base64url")),
+    credentialId: credential.id,
+    credentialPublicKey: Buffer.from(credential.publicKey).toString("base64url"),
+    credentialCounter: credential.counter,
+    credentialTransports: body.response.response.transports ?? null,
+    label: typeof body.label === "string" && body.label.trim() ? body.label.trim().slice(0, 80) : "Desktop passkey",
+  });
+
+  res.status(201).json({ ok: true });
+});
+
 router.post("/auth/passkey/login/options", async (req, res) => {
   const handleInput = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
   if (!canAcceptIdentityLookupInput(handleInput)) {
@@ -620,31 +739,65 @@ router.post("/auth/link-device", async (req, res) => {
   }
 
   const authHandle = generateAuthHandle();
-  await db.insert(deviceCredentialsTable).values({
-    userId: row.user.id,
-    authHandleHash: hashAuthHandle(authHandle),
-    passwordHash: await argon2.hash(body.passcode),
-    label: body.deviceLabel ?? "Linked device",
-    linkedByCode: row.code.code,
+  const now = new Date();
+  const reachedUseLimit = row.code.maxUses !== null && row.code.useCount + 1 >= row.code.maxUses;
+  const passwordHash = await argon2.hash(body.passcode);
+  const deviceLabel = typeof body.deviceLabel === "string" && body.deviceLabel.trim()
+    ? body.deviceLabel.trim().slice(0, 80)
+    : "Linked device";
+
+  const linkedUser = await db.transaction(async (tx) => {
+    const [consumed] = await tx
+      .update(identityCodesTable)
+      .set({
+        useCount: sql`${identityCodesTable.useCount} + 1`,
+        active: reachedUseLimit ? false : row.code.active,
+        visibilityScope: reachedUseLimit ? "disabled" : row.code.visibilityScope,
+        expiresAt: reachedUseLimit ? now : row.code.expiresAt,
+        rolledAt: reachedUseLimit ? now : row.code.rolledAt,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(identityCodesTable.id, row.code.id),
+          eq(identityCodesTable.active, true),
+          or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, now)),
+          or(isNull(identityCodesTable.maxUses), sql`${identityCodesTable.useCount} < ${identityCodesTable.maxUses}`)
+        )
+      )
+      .returning({ id: identityCodesTable.id });
+
+    if (!consumed) {
+      throw new Error("Code has already been used or expired");
+    }
+
+    await tx.insert(deviceCredentialsTable).values({
+      userId: row.user.id,
+      authHandleHash: hashAuthHandle(authHandle),
+      passwordHash,
+      label: deviceLabel,
+      linkedByCode: row.code.id,
+    });
+
+    return row.user;
+  }).catch((err) => {
+    if (err instanceof Error && err.message === "Code has already been used or expired") return null;
+    throw err;
   });
 
-  await db
-    .update(identityCodesTable)
-    .set({
-      useCount: row.code.useCount + 1,
-      expiresAt: row.code.kind === "invite" && row.code.maxUses === 1 ? expiryFromTtl(1) : row.code.expiresAt,
-      updatedAt: new Date(),
-    })
-    .where(eq(identityCodesTable.id, row.code.id));
+  if (!linkedUser) {
+    res.status(403).json({ error: "Code has already been used or expired" });
+    return;
+  }
 
-  const token = await createSession(row.user.id);
-  void notifyUser(row.user.id, {
+  const token = await createSession(linkedUser.id);
+  void notifyUser(linkedUser.id, {
     title: "New device linked",
-    body: `A new device was linked with invite ${row.code.code}. Disable or roll the invite if this was not you.`,
+    body: reachedUseLimit ? "A one-use invite was consumed and disabled." : "A new device was linked. Disable or roll the invite if this was not you.",
     url: "/app",
     tag: "quantumshield-device-link",
   });
-  res.status(201).json(authUser(row.user, authHandle, token, row.code.code, row.code.code));
+  res.status(201).json(authUser(linkedUser, authHandle, token));
 });
 
 router.get("/auth/me", requireAuth, async (req: AuthRequest, res) => {
@@ -683,17 +836,57 @@ router.get("/auth/devices", requireAuth, async (req: AuthRequest, res) => {
     activeDeviceCount: row?.count ?? 0,
     sessions: sessions.map((session, index) => ({
       id: session.id,
-      label: session.token === token ? "This session" : `Session ${index + 1}`,
-      current: session.token === token,
+      label: sessionTokenLookupValues(token).includes(session.token) ? "This session" : `Session ${index + 1}`,
+      current: sessionTokenLookupValues(token).includes(session.token),
       createdAt: session.createdAt,
       expiresAt: session.expiresAt,
     })),
   });
 });
 
+router.post("/auth/sessions/expire", requireAuth, async (req: AuthRequest, res) => {
+  const token = req.headers.authorization!.slice(7);
+  const currentTokenValues = sessionTokenLookupValues(token);
+  const sessionId = typeof req.body?.sessionId === "string" ? req.body.sessionId : null;
+  const scope = req.body?.scope === "all" ? "all" : req.body?.scope === "others" ? "others" : sessionId ? "one" : "";
+
+  if (scope === "all") {
+    await db.delete(sessionsTable).where(eq(sessionsTable.userId, req.userId!));
+    res.json({ ok: true, expiredCurrent: true });
+    return;
+  }
+
+  if (scope === "others") {
+    await db
+      .delete(sessionsTable)
+      .where(and(eq(sessionsTable.userId, req.userId!), not(inArray(sessionsTable.token, currentTokenValues))));
+    res.json({ ok: true, expiredCurrent: false });
+    return;
+  }
+
+  if (scope === "one" && sessionId) {
+    const [session] = await db
+      .select({ token: sessionsTable.token })
+      .from(sessionsTable)
+      .where(and(eq(sessionsTable.id, sessionId), eq(sessionsTable.userId, req.userId!)))
+      .limit(1);
+
+    if (!session) {
+      res.status(404).json({ error: "Session not found" });
+      return;
+    }
+
+    await db.delete(sessionsTable).where(and(eq(sessionsTable.id, sessionId), eq(sessionsTable.userId, req.userId!)));
+    res.json({ ok: true, expiredCurrent: currentTokenValues.includes(session.token) });
+    return;
+  }
+
+  res.status(400).json({ error: "Choose a session or expiration scope." });
+});
+
 router.post("/auth/logout", requireAuth, async (req: AuthRequest, res) => {
   const token = req.headers.authorization!.slice(7);
-  await db.delete(sessionsTable).where(eq(sessionsTable.token, token));
+  await db.delete(sessionsTable).where(inArray(sessionsTable.token, sessionTokenLookupValues(token)));
   res.json({ ok: true });
 });
 

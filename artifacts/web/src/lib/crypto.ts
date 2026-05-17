@@ -3,7 +3,6 @@ export const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 export async function encryptMessage(plaintext: string): Promise<{
   ciphertext: string;
   nonce: string;
-  key: CryptoKey;
   rawKey: Uint8Array;
 }> {
   const key = await window.crypto.subtle.generateKey(
@@ -21,7 +20,7 @@ export async function encryptMessage(plaintext: string): Promise<{
   );
   const ciphertext = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
   const nonceB64 = btoa(String.fromCharCode(...nonce));
-  return { ciphertext, nonce: nonceB64, key, rawKey };
+  return { ciphertext, nonce: nonceB64, rawKey };
 }
 
 export async function importMessageKey(rawKey: Uint8Array): Promise<CryptoKey> {
@@ -43,16 +42,6 @@ export async function decryptMessage(
   return new TextDecoder().decode(decrypted);
 }
 
-const messageKeyStore = new Map<string, CryptoKey>();
-
-export function storeMessageKey(messageId: string, key: CryptoKey): void {
-  messageKeyStore.set(messageId, key);
-}
-
-export function getMessageKey(messageId: string): CryptoKey | undefined {
-  return messageKeyStore.get(messageId);
-}
-
-export function deleteMessageKey(messageId: string): void {
-  messageKeyStore.delete(messageId);
+export function clearBytes(value: Uint8Array | null | undefined): void {
+  value?.fill(0);
 }
