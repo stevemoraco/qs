@@ -1511,8 +1511,8 @@ export default function ChatApp() {
     for (let i = 0; i < data.length; i += 4) {
       const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
       luminanceTotal += lum;
-      if (lum > 190) brightPixels += 1;
-      if (lum > 235) veryBrightPixels += 1;
+      if (lum > 184) brightPixels += 1;
+      if (lum > 228) veryBrightPixels += 1;
       if (lum > peak) peak = lum;
     }
 
@@ -1523,10 +1523,10 @@ export default function ChatApp() {
     const avgDelta = avg - baseline.avg;
     const brightDelta = brightRatio - baseline.brightRatio;
     const peakDelta = peak - baseline.peak;
-    const globalFlash = avgDelta > 31 && brightDelta > 0.05 && avg > 82;
-    const localizedFlash = peakDelta > 48 && brightDelta > 0.03 && veryBrightRatio > 0.018;
-    const brightBloom = veryBrightRatio > 0.07 && brightDelta > 0.026 && avgDelta > 16;
-    const strongFlash = avgDelta > 52 || brightDelta > 0.13 || (peakDelta > 76 && veryBrightRatio > 0.026);
+    const globalFlash = avgDelta > 28 && brightDelta > 0.045 && avg > 78;
+    const localizedFlash = peakDelta > 40 && brightDelta > 0.024 && veryBrightRatio > 0.012;
+    const brightBloom = veryBrightRatio > 0.058 && brightDelta > 0.02 && avgDelta > 12;
+    const strongFlash = avgDelta > 46 || brightDelta > 0.105 || (peakDelta > 60 && veryBrightRatio > 0.018);
     const candidate = globalFlash || localizedFlash || brightBloom;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
     const isFlash = strongFlash || flashStreakRef.current >= 2;
