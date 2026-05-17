@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 pnpm install --frozen-lockfile
-pnpm --filter db push
+echo "Skipping automatic database push. Review lib/db/migrations/manual/ for production-safe migrations."

@@ -50,6 +50,7 @@ export type OfflineOutboxEntry = {
   nonce: string;
   algorithm: string;
   signature: string;
+  senderDsaPublicKey?: string | null;
   recipientEncryptedKeys: Record<string, string>;
   ttlSeconds?: number | null;
   createdAt: string;

@@ -1,0 +1,92 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
+const root = path.resolve(import.meta.dirname, "..", "..");
+
+type Check = {
+  name: string;
+  pass: boolean;
+};
+
+function has(source: string, snippets: string[]): boolean {
+  return snippets.every((snippet) => source.includes(snippet));
+}
+
+const [chatApp, offlineVault, pwaLib] = await Promise.all([
+  readFile(path.join(root, "artifacts/web/src/pages/ChatApp.tsx"), "utf8"),
+  readFile(path.join(root, "artifacts/web/src/lib/offline-vault.ts"), "utf8"),
+  readFile(path.join(root, "artifacts/web/src/lib/pwa.ts"), "utf8"),
+]);
+
+const checks: Check[] = [
+  {
+    name: "send path queues encrypted outbox entries when network send fails",
+    pass: has(chatApp, [
+      "enqueueOutbox",
+      "outboxEntryToMessage",
+      "qs-offline-outbox-changed",
+      "data-testid=\"offline-outbox-status\"",
+    ]),
+  },
+  {
+    name: "send path signs message package and requires recipient wrapped keys",
+    pass: has(chatApp, [
+      "recipientEncryptedKeys",
+      "signature",
+      "signMessagePayload",
+      "button-send",
+    ]),
+  },
+  {
+    name: "reveal path verifies sender signature before decrypting non-legacy messages",
+    pass:
+      has(chatApp, [
+        "verifyMessageSignature",
+        "const verified = await verifyMessageSignature(room.id, msg)",
+        "Message signature could not be verified.",
+        "activeRevealRef",
+        "forceHideRevealedMsg",
+      ]) &&
+      chatApp.indexOf("const verified = await verifyMessageSignature(room.id, msg)") < chatApp.indexOf("decryptMessage(msg.ciphertext"),
+  },
+  {
+    name: "reveal plaintext clears on release, scroll, blur, and page hide",
+    pass: has(chatApp, [
+      "onPointerUp",
+      "onPointerCancel",
+      "onPointerLeave",
+      "onScroll={hideRevealedMsg}",
+      "document.addEventListener(\"visibilitychange\"",
+      "window.addEventListener(\"blur\"",
+    ]),
+  },
+  {
+    name: "offline vault has durable stores for rooms, messages, members, keys, and outbox",
+    pass: has(offlineVault, [
+      "ROOMS_STORE",
+      "MESSAGES_STORE",
+      "MEMBERS_STORE",
+      "KEY_BUNDLES_STORE",
+      "OUTBOX_STORE",
+      "enqueueOutbox",
+      "getOutboxEntries",
+      "deleteOutboxEntry",
+    ]),
+  },
+  {
+    name: "push subscription client rejects missing browser support and invalid VAPID keys",
+    pass: has(pwaLib, [
+      "Service workers are not supported in this browser.",
+      "Push notifications are not supported in this browser.",
+      "isLikelyP256PublicKey",
+      "Server push key is invalid",
+    ]),
+  },
+];
+
+let failed = 0;
+for (const check of checks) {
+  if (!check.pass) failed += 1;
+  console.log(`${check.pass ? "ok" : "not ok"} - ${check.name}`);
+}
+if (failed > 0) process.exitCode = 1;

@@ -46,6 +46,20 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("/@tensorflow/") || id.includes("/@tensorflow-models/")) return "ml-tensorflow";
+          if (id.includes("/@huggingface/") || id.includes("/onnxruntime-web/")) return "ml-transformers";
+          if (id.includes("/@noble/") || id.includes("/@simplewebauthn/")) return "crypto-auth";
+          if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("/scheduler/")) return "react-vendor";
+          if (id.includes("/@radix-ui/") || id.includes("/lucide-react/")) return "ui-vendor";
+          if (id.includes("/@tanstack/")) return "query-vendor";
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     port,

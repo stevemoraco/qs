@@ -199,8 +199,10 @@ pnpm --filter @workspace/api-spec run codegen
 Push database schema changes in development only:
 
 ```sh
-pnpm --filter @workspace/db run push
+ALLOW_DB_PUSH=1 pnpm --filter @workspace/db run push
 ```
+
+For production or shared databases, do not use `drizzle-kit push` when it reports a data-risk prompt. Use the reviewed SQL scripts in `lib/db/migrations/manual/` instead.
 
 ## Security
 

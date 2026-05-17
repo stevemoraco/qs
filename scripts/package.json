@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "smoke:api-behavior": "tsx ./src/smoke-api-behavior.ts",
+    "smoke:web-chat": "tsx ./src/smoke-web-chat.ts",
+    "smoke:pwa-static": "tsx ./src/smoke-pwa-static.ts",
+    "smoke": "pnpm run smoke:api-behavior && pnpm run smoke:web-chat && pnpm run smoke:pwa-static",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

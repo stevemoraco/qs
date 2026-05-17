@@ -1,5 +1,5 @@
 /* QuantumShield Service Worker */
-const CACHE_NAME = "quantumshield-v4";
+const CACHE_NAME = "quantumshield-v5";
 const MODEL_CACHE_NAME = "quantumshield-models-v1";
 const MODEL_HOSTS = ["huggingface.co", "storage.googleapis.com", "tfhub.dev"];
 const MODEL_HOST_SUFFIXES = [".huggingface.co", ".hf.co", ".xethub.hf.co"];
@@ -19,6 +19,7 @@ function isModelHost(hostname) {
 }
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL).catch(() => undefined)),
   );
@@ -26,11 +27,15 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) => Promise.all(
-      names
-        .filter((name) => name !== CACHE_NAME && name !== MODEL_CACHE_NAME)
-        .map((name) => caches.delete(name)),
-    )),
+    Promise.all([
+      self.clients.claim(),
+      caches.keys()
+        .then((names) => Promise.all(
+          names
+            .filter((name) => name.startsWith("quantumshield-") && name !== CACHE_NAME && name !== MODEL_CACHE_NAME)
+            .map((name) => caches.delete(name)),
+        )),
+    ]),
   );
 });
 
@@ -44,7 +49,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && response.type === "basic") {
             const copy = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put("/", copy.clone());
@@ -73,12 +78,18 @@ self.addEventListener("fetch", (event) => {
       if (cached) return cached;
 
       const response = await fetch(event.request);
-      if (response.ok) {
+      if (response.ok && (isModelRequest || response.type === "basic")) {
         cache.put(event.request, response.clone());
       }
       return response;
     }),
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("push", (event) => {

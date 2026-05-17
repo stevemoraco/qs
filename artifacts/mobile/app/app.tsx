@@ -884,7 +884,7 @@ function ChatView({
       };
       setOptimisticMessages((current) => [...current, optimistic]);
       sendMsg.mutate(
-        { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
+        { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, senderDsaPublicKey: await getDsaPublicKey(), recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
         {
           onError: () => {
             setOptimisticMessages((current) => current.filter((msg) => msg.id !== optimistic.id));
