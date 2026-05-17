@@ -4,6 +4,7 @@ import { eq, and, lt, desc, ne, inArray, isNull } from "drizzle-orm";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
+import { logger } from "../lib/logger";
 
 const router = Router();
 
@@ -202,6 +203,25 @@ router.post("/rooms/:roomId/privacy-alert", requireAuth, async (req: AuthRequest
 
   void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
 
+  res.status(202).json({ ok: true });
+});
+
+router.post("/rooms/:roomId/privacy-debug", requireAuth, async (req: AuthRequest, res) => {
+  const roomId = routeParam(req.params.roomId);
+
+  const membership = await db
+    .select()
+    .from(roomMembersTable)
+    .where(and(eq(roomMembersTable.roomId, roomId), eq(roomMembersTable.userId, req.userId!)))
+    .limit(1);
+
+  if (membership.length === 0) {
+    res.status(403).json({ error: "Not a member of this room" });
+    return;
+  }
+
+  const metrics = typeof req.body === "object" && req.body ? req.body : {};
+  logger.info({ userId: req.userId, roomId, metrics }, "Privacy camera flash debug");
   res.status(202).json({ ok: true });
 });
 

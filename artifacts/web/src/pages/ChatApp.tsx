@@ -55,6 +55,7 @@ const FLASH_SCAN_MS = 100;
 const FLASH_ALERT_THROTTLE_MS = 12_000;
 const FLASH_FRAME_WIDTH = 64;
 const FLASH_FRAME_HEIGHT = 40;
+const FLASH_DEBUG_SEND_MS = 350;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1296,6 +1297,7 @@ export default function ChatApp() {
   const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
   const flashStreakRef = useRef(0);
   const lastFlashAlertAtRef = useRef(0);
+  const lastFlashDebugAtRef = useRef(0);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const startingCameraRef = useRef<Promise<void> | null>(null);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
@@ -1487,8 +1489,8 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
-  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; detail: string } => {
-    const noFlash = { triggered: false, detail: "" };
+  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; candidate: boolean; detail: string; metrics?: Record<string, number | boolean> } => {
+    const noFlash = { triggered: false, candidate: false, detail: "" };
     if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return noFlash;
 
     const canvas = flashCanvasRef.current ?? document.createElement("canvas");
@@ -1540,7 +1542,21 @@ export default function ChatApp() {
     if (isFlash) flashStreakRef.current = 0;
     return {
       triggered: isFlash,
+      candidate,
       detail: `FLASH A+${avgDelta.toFixed(0)} B+${(brightDelta * 100).toFixed(1)} P+${peakDelta.toFixed(0)} V${(veryBrightRatio * 100).toFixed(1)}%`,
+      metrics: {
+        avg: Math.round(avg),
+        avgDelta: Math.round(avgDelta),
+        brightPct: Number((brightRatio * 100).toFixed(1)),
+        brightDeltaPct: Number((brightDelta * 100).toFixed(1)),
+        veryBrightPct: Number((veryBrightRatio * 100).toFixed(1)),
+        peak: Math.round(peak),
+        peakDelta: Math.round(peakDelta),
+        candidate,
+        strongFlash,
+        triggered: isFlash,
+        streak: flashStreakRef.current,
+      },
     };
   };
 
@@ -1563,6 +1579,23 @@ export default function ChatApp() {
   const isCameraRunning = () => {
     const stream = cameraStreamRef.current;
     return !!stream && stream.getVideoTracks().some((track) => track.readyState === "live" && track.enabled);
+  };
+
+  const sendFlashDebug = (roomId: string, flash: { detail: string; metrics?: Record<string, number | boolean> }) => {
+    const token = getToken();
+    if (!token) return;
+    fetch(`/api/rooms/${roomId}/privacy-debug`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: "flash-sample",
+        detail: flash.detail,
+        ...flash.metrics,
+      }),
+    }).catch(() => undefined);
   };
 
   const startCamera = async (force = false) => {
@@ -1603,12 +1636,19 @@ export default function ChatApp() {
         flashScanIntervalRef.current = setInterval(() => {
           if (!videoRef.current) return;
           const flash = scanCameraFlash(videoRef.current);
+          const roomId = activeRoomIdRef.current;
+          if (roomId && (flash.candidate || flash.triggered)) {
+            const now = Date.now();
+            if (flash.triggered || now - lastFlashDebugAtRef.current > FLASH_DEBUG_SEND_MS) {
+              lastFlashDebugAtRef.current = now;
+              sendFlashDebug(roomId, flash);
+            }
+          }
           if (!flash.triggered) return;
           const now = Date.now();
           if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
           lastFlashAlertAtRef.current = now;
           lockForCaptureAttempt("Possible screenshot flash reflected in the selfie camera. Secure content was hidden.");
-          const roomId = activeRoomIdRef.current;
           if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
           setCameraStatus("threat");
           setCameraStatusDetail(`FLASH GUARD / ${flash.detail}`);
