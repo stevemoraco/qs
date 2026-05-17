@@ -60,7 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(AUTH_HANDLE_KEY, h);
   }, []);
 
-  const getLastHandle = useCallback(() => AsyncStorage.getItem(LAST_HANDLE_KEY), []);
+  const getLastHandle = useCallback(async () => {
+    const handle = await AsyncStorage.getItem(LAST_HANDLE_KEY);
+    if (handle && /^[a-f0-9]{64}$/.test(handle)) {
+      await AsyncStorage.removeItem(LAST_HANDLE_KEY);
+      return null;
+    }
+    return handle;
+  }, []);
 
   const setLastHandle = useCallback(async (h: string) => {
     await AsyncStorage.setItem(LAST_HANDLE_KEY, h);

@@ -98,7 +98,12 @@ export function setAuthHandle(authHandle: string): void {
 }
 
 export function getLastHandle(): string | null {
-  return getPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE);
+  const handle = getPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE);
+  if (handle && /^[a-f0-9]{64}$/.test(handle)) {
+    clearPersistentValue(LAST_HANDLE_KEY, LAST_HANDLE_COOKIE);
+    return null;
+  }
+  return handle;
 }
 
 export function setLastHandle(handle: string): void {
