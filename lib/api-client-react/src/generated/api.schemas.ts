@@ -334,6 +334,8 @@ export interface SendMessageRequest {
   nonce: string;
   algorithm: string;
   signature?: string | null;
+  /** Base64-encoded ML-DSA-87 public key used to verify this message signature. */
+  senderDsaPublicKey?: string | null;
   /** Map of userId to their ML-KEM encapsulated message key */
   recipientEncryptedKeys?: SendMessageRequestRecipientEncryptedKeys;
   ttlSeconds?: number | null;

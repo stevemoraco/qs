@@ -53,9 +53,11 @@ import * as LocalAuthentication from "expo-local-authentication";
 const CIPHER_SUITE = "AES-256-GCM+ML-KEM-1024+ML-DSA-87";
 const EXPERIMENTAL_DECAY_MODE = "experimental_quorum_decay";
 const DECAY_APPROACH_WINDOW_MS = 60_000;
+const OPTIMISTIC_FUZZ_VISIBILITY_GRACE_MS = 90_000;
 const LEGACY_SIGNATURE_GRACE_BEFORE_MS = Date.parse("2026-05-17T09:42:00Z");
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
+const EXPO_PASSKEY_LIMITATION = "Expo native does not expose the browser WebAuthn passkey ceremony used by the PWA. Mobile saves a SecureStore device key gated by Face ID or biometrics instead.";
 const DELIVERY_FUZZ_OPTIONS = [
   { label: "89 sec", v: 89 },
   { label: "7 min", v: 420 },
@@ -101,6 +103,18 @@ function hashIdentityCode(value: string): string {
   const normalized = normalizeCodeInput(value);
   if (/^[a-f0-9]{64}$/.test(normalized)) return normalized;
   return bytesToHex(sha256(new TextEncoder().encode(`quantumshield-identity-v1:${normalized}`)));
+}
+
+function apiUrl(path: string): string {
+  return Platform.OS === "web" ? `/api${path}` : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api${path}`;
+}
+
+function generateDevicePasscode(): string {
+  const bytes = new Uint8Array(32);
+  const getRandomValues = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+  if (!getRandomValues) throw new Error("Secure random generator unavailable.");
+  getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 async function verifyDevice(promptMessage: string): Promise<void> {
@@ -562,9 +576,6 @@ function RoomListItem({ room, myId, active, onPress, colors, codenameForRoom }: 
           {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && revealName && (
             <Text style={[styles.roomSub, { color: "#f59e0b" }]}>· fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
           )}
-          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && !revealName && (
-            <Text style={[styles.roomSub, { color: "#f59e0b" }]}>· fuzz sealed</Text>
-          )}
           <Text style={[styles.roomSub, { color: revealName && room.decayMode === EXPERIMENTAL_DECAY_MODE ? "#f59e0b" : colors.mutedForeground }]}>
             · {revealName ? (room.decayMode === EXPERIMENTAL_DECAY_MODE ? "Quorum decay ACTIVE" : "Decay standard") : "decay sealed"}
           </Text>
@@ -591,7 +602,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, deca
 }) {
   const now = Date.now();
   const expired = isMessageExpired(msg, now);
-  const showDecayEvidence = decayActive && !plaintext && (expired || isMessageApproachingExpiry(msg, now) || !!msg.decayedAt);
+  const showDecayEvidence = decayActive && !!plaintext && (expired || isMessageApproachingExpiry(msg, now) || !!msg.decayedAt || !!msg.decayAttestation);
 
   return (
     <View style={[styles.bubbleRow, isOwn && styles.bubbleRowOwn]}>
@@ -604,13 +615,7 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, deca
         {expired && !decayActive ? (
           <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>Message expired — key destroyed</Text>
         ) : expired ? (
-          <View style={styles.decayEvidence}>
-            <View style={styles.decayEvidenceHeader}>
-              <Feather name="activity" size={12} color="#f59e0b" />
-              <Text style={[styles.decayEvidenceLabel, { color: "#f59e0b" }]}>{decayEvidenceLabel(msg, now)}</Text>
-            </View>
-            <Text style={[styles.degradedCipherText, { color: colors.mutedForeground }]}>{degradedCipherPreview(msg)}</Text>
-          </View>
+          <Text style={[styles.msgText, { color: colors.mutedForeground, fontStyle: "italic" }]}>Message expired — cryptographic decay sealed</Text>
         ) : (
           <TouchableOpacity
             activeOpacity={0.85}
@@ -622,7 +627,18 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, deca
             testID={`button-hold-reveal-${msg.id}`}
           >
             {plaintext ? (
-              <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
+              <View>
+                <Text style={[styles.msgText, { color: colors.foreground }]}>{plaintext}</Text>
+                {showDecayEvidence && (
+                  <View style={[styles.decayEvidence, { marginTop: 8 }]}>
+                    <View style={styles.decayEvidenceHeader}>
+                      <Feather name="activity" size={12} color="#f59e0b" />
+                      <Text style={[styles.decayEvidenceLabel, { color: "#f59e0b" }]}>{decayEvidenceLabel(msg, now)}</Text>
+                    </View>
+                    <Text style={[styles.degradedCipherText, { color: colors.mutedForeground }]}>{degradedCipherPreview(msg)}</Text>
+                  </View>
+                )}
+              </View>
             ) : showDecayEvidence ? (
               <View style={styles.decayEvidence}>
                 <View style={styles.decayEvidenceHeader}>
@@ -642,11 +658,6 @@ function MessageBubble({ msg, isOwn, colors, plaintext, error, senderLabel, deca
         {!!fuzzLabel && plaintext && (
           <Text style={[styles.msgError, { color: "#f59e0b" }]}>
             Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
-          </Text>
-        )}
-        {!!fuzzLabel && !plaintext && (
-          <Text style={[styles.msgError, { color: "#f59e0b" }]}>
-            Fuzzing metadata sealed. Hold to reveal delivery window.
           </Text>
         )}
         {!!error && <Text style={[styles.msgError, { color: colors.destructive }]}>{error}</Text>}
@@ -810,7 +821,7 @@ function ChatView({
       if (local.localOptimistic && !local.localFuzzing) return true;
       const sentMs = new Date(local.createdAt).getTime();
       if (!Number.isFinite(sentMs)) return true;
-      return now <= sentMs + Math.max(1, fuzzSeconds) * 1000;
+      return now <= sentMs + Math.max(1, fuzzSeconds) * 1000 + OPTIMISTIC_FUZZ_VISIBILITY_GRACE_MS;
     }));
   }, [expiryClock, liveMessages, optimisticMessages.length, room.deliveryFuzzSeconds]);
 
@@ -971,10 +982,10 @@ function ChatView({
               <Text style={[styles.cipherText, { color: colors.primary }]}>{room.ttlMode === "after_send" ? "TTL after send" : "TTL after view"}</Text>
             </View>
           )}
-          {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+          {revealRoomName && !!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
             <View style={styles.chatMetaRow}>
               <Feather name="clock" size={10} color="#f59e0b" />
-              <Text style={[styles.cipherText, { color: "#f59e0b" }]}>{revealRoomName ? `fuzz ${formatShortDuration(room.deliveryFuzzSeconds)}` : "FUZZ SEALED"}</Text>
+              <Text style={[styles.cipherText, { color: "#f59e0b" }]}>fuzz {formatShortDuration(room.deliveryFuzzSeconds)}</Text>
             </View>
           )}
           <View style={styles.chatMetaRow}>
@@ -1013,7 +1024,7 @@ function ChatView({
               error={error}
               senderLabel={codenameForUser(item.senderId)}
               decayActive={room.decayMode === EXPERIMENTAL_DECAY_MODE}
-              fuzzLabel={item.senderId === myId ? latestFuzzDeliveryLabel(item.createdAt, room.deliveryFuzzSeconds) : null}
+              fuzzLabel={item.senderId === myId && item.localFuzzing ? latestFuzzDeliveryLabel(item.createdAt, room.deliveryFuzzSeconds) : null}
               onRevealStart={() => revealMessage(item as Message)}
               onRevealEnd={hideRevealedMessage}
             />
@@ -1030,7 +1041,7 @@ function ChatView({
         keyboardDismissMode="interactive"
         onScrollBeginDrag={hideRevealedMessage}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={!!messages.length}
+        scrollEnabled={!!visibleMessages.length}
       />
 
       <View style={[styles.inputArea, { borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
@@ -1289,13 +1300,15 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   token: string | null;
 }) {
   const qc = useQueryClient();
-  const { getDevicePasscode, getLastHandle, setAuthHandle, setToken } = useAuth();
+  const { getDevicePasscode, getLastHandle, setAuthHandle, setDevicePasscode, setToken } = useAuth();
   const [revealed, setRevealed] = useState(false);
   const [deviceSessions, setDeviceSessions] = useState<DeviceSession[] | null>(null);
   const [newCode, setNewCode] = useState("");
   const [newKind, setNewKind] = useState<"alias" | "invite">("alias");
   const [newTtl, setNewTtl] = useState(315360000);
   const [error, setError] = useState("");
+  const [deviceKeyPending, setDeviceKeyPending] = useState(false);
+  const [deviceKeyStatus, setDeviceKeyStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState<{
     code: IdentityCode;
     message: string;
@@ -1322,8 +1335,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   useEffect(() => {
     if (!visible || !revealed || !token) return;
     let mounted = true;
-    const url = Platform.OS === "web" ? "/api/auth/devices" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/devices`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(apiUrl("/auth/devices"), { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (mounted && data && Array.isArray(data.sessions)) setDeviceSessions(data.sessions as DeviceSession[]);
@@ -1381,6 +1393,38 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
     });
   };
 
+  const saveDeviceKey = async () => {
+    if (deviceKeyPending) return;
+    if (!token) {
+      setDeviceKeyStatus({ tone: "error", text: "Sign in again before saving a device key." });
+      return;
+    }
+    setDeviceKeyPending(true);
+    setDeviceKeyStatus(null);
+    setError("");
+    try {
+      await verifyDevice("Save QuantumShield device key");
+      const passcode = generateDevicePasscode();
+      const res = await fetch(apiUrl("/auth/device-key/add"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ passcode, deviceLabel: `${Platform.OS} SecureStore key` }),
+      });
+      const data = await res.json().catch(() => null) as { authHandle?: string; error?: string } | null;
+      if (!res.ok) throw new Error(data?.error ?? "Could not save device key.");
+      await setDevicePasscode(passcode);
+      if (data?.authHandle) await setAuthHandle(data.authHandle);
+      setDeviceKeyStatus({ tone: "ok", text: "Saved a new SecureStore device key for this account." });
+    } catch (err: unknown) {
+      setDeviceKeyStatus({ tone: "error", text: err instanceof Error ? err.message : "Could not save device key." });
+    } finally {
+      setDeviceKeyPending(false);
+    }
+  };
+
   const requestUpdate = (
     message: string,
     code: IdentityCode,
@@ -1409,8 +1453,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
         const localHandle = await getLastHandle();
         if (!passcode) throw new Error("No local device access key found.");
         if (!localHandle) throw new Error("Enter your handle on the login screen before disabling your last handle.");
-        const url = Platform.OS === "web" ? "/api/auth/login" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/login`;
-        const res = await fetch(url, {
+        const res = await fetch(apiUrl("/auth/login"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ handle: hashIdentityCode(localHandle), passcode }),
@@ -1471,6 +1514,36 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
               )}
             </View>
           </TouchableOpacity>
+
+          <View style={[styles.deviceKeyBlock, { borderColor: colors.border, backgroundColor: colors.card }]}>
+            <View style={styles.deviceKeyHeader}>
+              <Feather name="key" size={16} color={colors.primary} />
+              <Text style={[styles.deviceKeyTitle, { color: colors.foreground }]}>MOBILE DEVICE KEY</Text>
+            </View>
+            <Text style={[styles.deviceKeyText, { color: colors.mutedForeground }]} testID="mobile-passkey-limitation">
+              {EXPO_PASSKEY_LIMITATION}
+            </Text>
+            {deviceKeyStatus && (
+              <Text
+                style={[styles.deviceKeyStatus, { color: deviceKeyStatus.tone === "ok" ? colors.primary : colors.destructive }]}
+                testID="mobile-device-key-status"
+              >
+                {deviceKeyStatus.text}
+              </Text>
+            )}
+            <TouchableOpacity
+              disabled={deviceKeyPending}
+              onPress={() => void saveDeviceKey()}
+              style={[styles.createBtn, { backgroundColor: colors.primary }, deviceKeyPending && { opacity: 0.5 }]}
+              testID="button-add-settings-passkey"
+            >
+              {deviceKeyPending ? (
+                <ActivityIndicator color={colors.background} size="small" />
+              ) : (
+                <Text style={[styles.createBtnText, { color: colors.background }]}>SAVE EXPO DEVICE KEY</Text>
+              )}
+            </TouchableOpacity>
+          </View>
 
           <Text style={[styles.label, { color: colors.mutedForeground }]}>CREATE HANDLE / INVITE</Text>
           <TextInput
@@ -1866,6 +1939,11 @@ const styles = StyleSheet.create({
   modalTitle: { fontFamily: "Inter_700Bold", fontSize: 14, letterSpacing: 2 },
   modalBody: { padding: 16 },
   profileBlock: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, padding: 12, marginBottom: 18 },
+  deviceKeyBlock: { borderWidth: 1, padding: 12, marginBottom: 18 },
+  deviceKeyHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  deviceKeyTitle: { fontFamily: "Inter_700Bold", fontSize: 11, letterSpacing: 2 },
+  deviceKeyText: { fontFamily: "Inter_400Regular", fontSize: 11, lineHeight: 17 },
+  deviceKeyStatus: { fontFamily: "Inter_500Medium", fontSize: 11, lineHeight: 17, marginTop: 10 },
   sessionList: { gap: 8, marginTop: 10 },
   sessionCard: { borderWidth: 1, padding: 10 },
   sessionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 },

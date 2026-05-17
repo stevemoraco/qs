@@ -1058,6 +1058,10 @@ components:
         signature:
           type: string
           nullable: true
+        senderDsaPublicKey:
+          type: string
+          nullable: true
+          description: Base64-encoded ML-DSA-87 public key used to verify this message signature.
         recipientEncryptedKeys:
           type: object
           nullable: true

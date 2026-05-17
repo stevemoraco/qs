@@ -13,6 +13,7 @@ const KEM_SK_KEY = "qs_kem_sk";
 const DSA_SK_KEY = "qs_dsa_sk";
 const KEM_PK_KEY = "qs_kem_pk";
 const DSA_PK_KEY = "qs_dsa_pk";
+const HISTORICAL_KEYRING_KEY = "qs_historical_keyring_v1";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 400;
 const KEY_DB_NAME = "quantumshield-keyring";
 const KEY_DB_STORE = "keys";
@@ -20,6 +21,14 @@ const KEY_DB_VERSION = 1;
 const PRIVATE_KEY_CACHE_MS = 2 * 60 * 1000;
 
 const privateKeyCache = new Map<string, { value: Uint8Array; expiresAt: number }>();
+
+type HistoricalKeyPair = {
+  kemSecretKey: string;
+  kemPublicKey: string;
+  dsaSecretKey: string;
+  dsaPublicKey: string;
+  storedAt: string;
+};
 
 function isPrivateKey(key: string): boolean {
   return key === KEM_SK_KEY || key === DSA_SK_KEY;
@@ -349,6 +358,8 @@ export function storeKeyPair(
   dsaSk: Uint8Array,
   dsaPk: Uint8Array
 ): void {
+  const previous = getLocalKeyPair();
+  void preserveKeyPairForHistory(previous);
   localStorage.setItem(KEM_PK_KEY, bytesToBase64(kemPk));
   localStorage.setItem(DSA_PK_KEY, bytesToBase64(dsaPk));
   localStorage.removeItem(KEM_SK_KEY);
@@ -361,6 +372,32 @@ export function storeKeyPair(
     [DSA_SK_KEY]: bytesToBase64(dsaSk),
     [DSA_PK_KEY]: bytesToBase64(dsaPk),
   });
+}
+
+async function preserveKeyPairForHistory(current: {
+  kemSecretKey: Uint8Array | null;
+  kemPublicKey: Uint8Array | null;
+  dsaSecretKey: Uint8Array | null;
+  dsaPublicKey: Uint8Array | null;
+}): Promise<void> {
+  try {
+    if (!current.kemSecretKey || !current.kemPublicKey || !current.dsaSecretKey || !current.dsaPublicKey) return;
+    const entry: HistoricalKeyPair = {
+      kemSecretKey: bytesToBase64(current.kemSecretKey),
+      kemPublicKey: bytesToBase64(current.kemPublicKey),
+      dsaSecretKey: bytesToBase64(current.dsaSecretKey),
+      dsaPublicKey: bytesToBase64(current.dsaPublicKey),
+      storedAt: new Date().toISOString(),
+    };
+    const history = await readHistoricalKeyPairs();
+    if (!history.some((item) => item.kemPublicKey === entry.kemPublicKey && item.dsaPublicKey === entry.dsaPublicKey)) {
+      history.push(entry);
+      await storeValueInIndexedDb(HISTORICAL_KEYRING_KEY, JSON.stringify(history.slice(-8)));
+    }
+  } finally {
+    current.kemSecretKey?.fill(0);
+    current.dsaSecretKey?.fill(0);
+  }
 }
 
 export function getKemPublicKey(): string | null {
@@ -401,6 +438,22 @@ export function getKemSecretKey(): Uint8Array | null {
 
 export async function getKemSecretKeyAsync(): Promise<Uint8Array | null> {
   return getKemSecretKey() ?? (await getStoredBytesAsync(KEM_SK_KEY));
+}
+
+export async function getKemSecretKeysAsync(): Promise<Uint8Array[]> {
+  const keys: Uint8Array[] = [];
+  const current = await getKemSecretKeyAsync();
+  if (current) keys.push(current);
+  for (const historical of await readHistoricalKeyPairs()) {
+    try {
+      const key = base64ToBytes(historical.kemSecretKey);
+      if (!keys.some((existing) => bytesToBase64(existing) === historical.kemSecretKey)) keys.push(key);
+      else key.fill(0);
+    } catch {
+      // Skip malformed historical key records.
+    }
+  }
+  return keys;
 }
 
 export function getDsaSecretKey(): Uint8Array | null {
@@ -450,6 +503,52 @@ async function storeKeyPairInIndexedDb(values: Record<string, string>): Promise<
     tx.onabort = () => resolve();
   });
   db.close();
+}
+
+async function storeValueInIndexedDb(key: string, value: string): Promise<void> {
+  const db = await openKeyDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    const tx = db.transaction(KEY_DB_STORE, "readwrite");
+    tx.objectStore(KEY_DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.onabort = () => resolve();
+  });
+  db.close();
+}
+
+async function getValueFromIndexedDb(key: string): Promise<string | null> {
+  const db = await openKeyDb();
+  if (!db) return null;
+  const value = await new Promise<string | null>((resolve) => {
+    const tx = db.transaction(KEY_DB_STORE, "readonly");
+    const req = tx.objectStore(KEY_DB_STORE).get(key);
+    req.onsuccess = () => resolve(typeof req.result === "string" ? req.result : null);
+    req.onerror = () => resolve(null);
+    tx.onerror = () => resolve(null);
+    tx.onabort = () => resolve(null);
+  });
+  db.close();
+  return value;
+}
+
+async function readHistoricalKeyPairs(): Promise<HistoricalKeyPair[]> {
+  try {
+    const raw = await getValueFromIndexedDb(HISTORICAL_KEYRING_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is HistoricalKeyPair => (
+      !!item &&
+      typeof item.kemSecretKey === "string" &&
+      typeof item.kemPublicKey === "string" &&
+      typeof item.dsaSecretKey === "string" &&
+      typeof item.dsaPublicKey === "string" &&
+      typeof item.storedAt === "string"
+    ));
+  } catch {
+    return [];
+  }
 }
 
 async function deletePrivateKeysFromIndexedDb(): Promise<void> {

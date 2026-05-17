@@ -1,12 +1,23 @@
 import { Router } from "express";
-import { db, pushSubscriptionsTable } from "@workspace/db";
-import { and, eq } from "drizzle-orm";
+import { db, pushNotificationJobsTable, pushSubscriptionsTable } from "@workspace/db";
+import { and, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import webPush from "web-push";
 import { createECDH, createHash } from "crypto";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 
 const router = Router();
+const PUSH_JOB_POLL_INTERVAL_MS = 5_000;
+const PUSH_JOB_BATCH_SIZE = 50;
+const PUSH_JOB_LOCK_TIMEOUT_MS = 60_000;
+const PUSH_JOB_RETRY_DELAY_MS = 30_000;
+
+type PushPayload = {
+  title: string;
+  body: string;
+  url?: string;
+  tag?: string;
+};
 
 // Allowlist of recognized Web Push service hosts. Blocks SSRF via arbitrary
 // endpoints stored here and later fetched by web-push.
@@ -104,7 +115,7 @@ export function configureWebPush(): boolean {
   return true;
 }
 
-export async function notifyUser(userId: string, payload: { title: string; body: string; url?: string; tag?: string }) {
+export async function notifyUser(userId: string, payload: PushPayload) {
   if (!configureWebPush()) {
     logger.warn("Push notification skipped: VAPID is not configured");
     return;
@@ -146,6 +157,113 @@ export async function notifyUser(userId: string, payload: { title: string; body:
   );
   const failed = results.filter((result) => result.status === "rejected").length;
   logger.info({ userRef: pseudonymousUserId(userId), subscriptions: subscriptions.length, failed }, "Push notification delivery attempted");
+}
+
+function isPushPayload(value: unknown): value is PushPayload {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const payload = value as Record<string, unknown>;
+  return (
+    typeof payload["title"] === "string" &&
+    typeof payload["body"] === "string" &&
+    (payload["url"] === undefined || typeof payload["url"] === "string") &&
+    (payload["tag"] === undefined || typeof payload["tag"] === "string")
+  );
+}
+
+export async function enqueuePushNotification(userId: string, payload: PushPayload, dueAt: Date): Promise<void> {
+  await db.insert(pushNotificationJobsTable).values({
+    userId,
+    payload,
+    dueAt,
+  });
+}
+
+async function claimDuePushJobs(now: Date) {
+  const staleLockCutoff = new Date(now.getTime() - PUSH_JOB_LOCK_TIMEOUT_MS);
+  return await db.transaction(async (tx) => {
+    const jobs = await tx
+      .select()
+      .from(pushNotificationJobsTable)
+      .where(and(
+        isNull(pushNotificationJobsTable.processedAt),
+        lte(pushNotificationJobsTable.dueAt, now),
+        or(isNull(pushNotificationJobsTable.lockedAt), lte(pushNotificationJobsTable.lockedAt, staleLockCutoff)),
+      ))
+      .orderBy(pushNotificationJobsTable.dueAt)
+      .limit(PUSH_JOB_BATCH_SIZE)
+      .for("update", { skipLocked: true });
+
+    if (jobs.length === 0) return [];
+
+    await tx
+      .update(pushNotificationJobsTable)
+      .set({ lockedAt: now })
+      .where(inArray(pushNotificationJobsTable.id, jobs.map((job) => job.id)));
+
+    return jobs;
+  });
+}
+
+async function processDuePushJobs(): Promise<void> {
+  const now = new Date();
+  const jobs = await claimDuePushJobs(now);
+
+  await Promise.all(jobs.map(async (job) => {
+    if (!isPushPayload(job.payload)) {
+      await db
+        .update(pushNotificationJobsTable)
+        .set({
+          processedAt: new Date(),
+          lockedAt: null,
+          attempts: job.attempts + 1,
+          lastError: "Invalid push payload",
+        })
+        .where(eq(pushNotificationJobsTable.id, job.id));
+      return;
+    }
+
+    try {
+      await notifyUser(job.userId, job.payload);
+      await db
+        .update(pushNotificationJobsTable)
+        .set({
+          processedAt: new Date(),
+          lockedAt: null,
+          attempts: job.attempts + 1,
+          lastError: null,
+        })
+        .where(eq(pushNotificationJobsTable.id, job.id));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Push notification job failed";
+      await db
+        .update(pushNotificationJobsTable)
+        .set({
+          dueAt: new Date(Date.now() + PUSH_JOB_RETRY_DELAY_MS),
+          lockedAt: null,
+          attempts: job.attempts + 1,
+          lastError: message.slice(0, 1_000),
+        })
+        .where(eq(pushNotificationJobsTable.id, job.id));
+      logger.warn({ err: error, jobId: job.id }, "Push notification job failed");
+    }
+  }));
+}
+
+let pushNotificationWorkerStarted = false;
+
+export function startPushNotificationWorker(): void {
+  if (pushNotificationWorkerStarted) return;
+  pushNotificationWorkerStarted = true;
+
+  const run = () => {
+    void processDuePushJobs().catch((error) => {
+      logger.warn({ err: error }, "Push notification worker failed");
+    });
+  };
+
+  run();
+  const timer = setInterval(run, PUSH_JOB_POLL_INTERVAL_MS);
+  timer.unref?.();
 }
 
 router.get("/push/vapid-public-key", (_req, res) => {

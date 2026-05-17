@@ -447,6 +447,7 @@ export const PostRoomsRoomIdMessagesBody = zod.object({
   "nonce": zod.string(),
   "algorithm": zod.string(),
   "signature": zod.string().nullish(),
+  "senderDsaPublicKey": zod.string().nullish().describe('Base64-encoded ML-DSA-87 public key used to verify this message signature.'),
   "recipientEncryptedKeys": zod.record(zod.string(), zod.string()).nullish().describe('Map of userId to their ML-KEM encapsulated message key'),
   "ttlSeconds": zod.number().nullish()
 })

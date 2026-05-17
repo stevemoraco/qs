@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { db, messagesTable, roomMembersTable, roomsTable, usersTable } from "@workspace/db";
+import { db, messagesTable, preKeysTable, roomMembersTable, roomsTable, usersTable } from "@workspace/db";
 import { eq, and, lt, desc, ne, inArray, isNull, isNotNull, lte, or } from "drizzle-orm";
 import { randomInt } from "crypto";
 import { ml_dsa87 } from "@noble/post-quantum/ml-dsa.js";
 import { PostRoomsRoomIdMessagesBody } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
-import { notifyUser } from "./push";
+import { enqueuePushNotification, notifyUser } from "./push";
 import { logger } from "../lib/logger";
 import { createTimeQuorumAttestation, type TimeQuorumAttestation } from "../lib/time-quorum";
 
@@ -19,17 +19,6 @@ const EXPERIMENTAL_QUORUM_DECAY = "experimental_quorum_decay";
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
-}
-
-function scheduleNotification(delaySeconds: number, task: () => Promise<unknown>): void {
-  if (delaySeconds <= 0) {
-    void task();
-    return;
-  }
-  const timer = setTimeout(() => {
-    void task();
-  }, delaySeconds * 1000);
-  timer.unref?.();
 }
 
 async function purgeExpiredMessageKeys(attestation?: TimeQuorumAttestation): Promise<void> {
@@ -285,6 +274,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   }
 
   const { ciphertext, nonce, algorithm, signature, recipientEncryptedKeys, ttlSeconds } = parse.data;
+  const senderDsaPublicKey = typeof req.body?.senderDsaPublicKey === "string" ? req.body.senderDsaPublicKey : null;
   if (algorithm !== CIPHER_SUITE) {
     res.status(400).json({ error: "Unsupported message algorithm" });
     return;
@@ -319,6 +309,16 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     .from(usersTable)
     .where(eq(usersTable.id, req.userId!))
     .limit(1);
+  const senderDsaCandidates = new Set<string>();
+  if (sender?.dsaPublicKey) senderDsaCandidates.add(sender.dsaPublicKey);
+  if (senderDsaPublicKey) {
+    const [historicalSenderKey] = await db
+      .select({ dsaPublicKey: preKeysTable.dsaPublicKey })
+      .from(preKeysTable)
+      .where(and(eq(preKeysTable.userId, req.userId!), eq(preKeysTable.dsaPublicKey, senderDsaPublicKey)))
+      .limit(1);
+    if (historicalSenderKey?.dsaPublicKey) senderDsaCandidates.add(historicalSenderKey.dsaPublicKey);
+  }
   if (!verifiesMessageSignature({
     roomId,
     senderId: req.userId!,
@@ -327,7 +327,16 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     algorithm,
     recipientEncryptedKeys,
     signature,
-    dsaPublicKey: sender?.dsaPublicKey,
+    dsaPublicKey: [...senderDsaCandidates].find((candidate) => verifiesMessageSignature({
+      roomId,
+      senderId: req.userId!,
+      ciphertext,
+      nonce,
+      algorithm,
+      recipientEncryptedKeys,
+      signature,
+      dsaPublicKey: candidate,
+    })),
   })) {
     res.status(400).json({ error: "Invalid message signature" });
     return;
@@ -344,7 +353,8 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   }
 
   const effectiveTtl = ttlSeconds ?? room?.ttlSeconds ?? null;
-  const decayAttestation: TimeQuorumAttestation | null = room.decayMode === EXPERIMENTAL_QUORUM_DECAY
+  const attestExpiryOnSend = room.decayMode === EXPERIMENTAL_QUORUM_DECAY && room.ttlMode === "after_send";
+  const decayAttestation: TimeQuorumAttestation | null = attestExpiryOnSend
     ? await createTimeQuorumAttestation()
     : null;
   const now = decayAttestation?.synthesizedEpochMs ?? Date.now();
@@ -355,7 +365,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
   }
   const fuzzDelaySeconds = fuzzSeconds > 0 ? randomInt(0, fuzzSeconds + 1) : 0;
   const availableAt = new Date(now + fuzzDelaySeconds * 1000);
-  const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(availableAt.getTime() + effectiveTtl * 1000) : null;
+  const expiresAt = effectiveTtl && room?.ttlMode === "after_send" ? new Date(now + effectiveTtl * 1000) : null;
 
   const [message] = await db
     .insert(messagesTable)
@@ -366,7 +376,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       nonce,
       algorithm,
       signature: signature ?? null,
-      senderDsaPublicKey: sender?.dsaPublicKey ?? null,
+      senderDsaPublicKey: senderDsaPublicKey ?? sender?.dsaPublicKey ?? null,
       recipientEncryptedKeys,
       decayAttestation,
       expiresAt,
@@ -392,7 +402,9 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     tag: `room-${roomId}`,
   };
 
-  scheduleNotification(fuzzDelaySeconds, () => Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload))));
+  await Promise.all(
+    recipients.map((recipient) => enqueuePushNotification(recipient.userId, notificationPayload, availableAt)),
+  );
 
   res.status(201).json(messageResponse(message));
 });

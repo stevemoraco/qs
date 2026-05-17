@@ -673,6 +673,14 @@ function isWithinFuzzWindow(sentAt: string, fuzzSeconds: number | null | undefin
   return Number.isFinite(sentMs) && nowMs < sentMs + fuzzSeconds * 1000;
 }
 
+function sameSentMessage(local: Message, live: Message): boolean {
+  return (local.signature ? live.signature === local.signature : false) || live.ciphertext === local.ciphertext;
+}
+
+function shouldKeepFuzzMetadata(local: Message, fuzzSeconds: number | null | undefined, nowMs: number): boolean {
+  return !!local.localFuzzing && isWithinFuzzWindow(local.createdAt, Math.max(1, fuzzSeconds ?? 0), nowMs);
+}
+
 function TTLLabel({ seconds, mode }: { seconds?: number | null; mode?: "after_view" | "after_send" }) {
   if (!seconds) return null;
   const h = Math.floor(seconds / 3600);
@@ -718,16 +726,9 @@ function ChatMetaRows({ room, revealed }: { room: Room; revealed: boolean }) {
           <TTLLabel seconds={room.ttlSeconds} mode={room.ttlMode} />
         </div>
       )}
-      {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
+      {revealed && !!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
         <div className="flex items-center gap-2 min-w-0">
-          {revealed ? (
-            <FuzzLabel seconds={room.deliveryFuzzSeconds} />
-          ) : (
-            <span className="font-mono text-[10px] md:text-xs text-amber-500/80 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              FUZZ SEALED
-            </span>
-          )}
+          <FuzzLabel seconds={room.deliveryFuzzSeconds} />
         </div>
       )}
       <div className="flex items-center gap-2 min-w-0">
@@ -1801,13 +1802,15 @@ function RoomView({
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const queuedCount = queuedMessages.filter((msg) => msg.localQueued).length;
-  const visibleLiveMessages = liveMessages as Message[];
+  const visibleLiveMessages = (liveMessages as Message[]).map((live) => {
+    const localFuzz = queuedMessages.find((local) => (
+      shouldKeepFuzzMetadata(local, room.deliveryFuzzSeconds, nowMs) && sameSentMessage(local, live)
+    ));
+    return localFuzz ? { ...live, createdAt: localFuzz.createdAt, localFuzzing: true } : live;
+  });
   const visibleLocalMessages = queuedMessages.filter((local) => {
     if (!local.localOptimistic && !local.localFuzzing) return true;
-    return !visibleLiveMessages.some((live) => (
-      (local.signature && live.signature === local.signature) ||
-      live.ciphertext === local.ciphertext
-    ));
+    return !visibleLiveMessages.some((live) => sameSentMessage(local, live));
   });
   const messages = online ? [...visibleLiveMessages, ...visibleLocalMessages] : offlineMessages;
   const members = online ? liveMembers : offlineMembers;
@@ -1876,13 +1879,10 @@ function RoomView({
     const fuzzSeconds = room.deliveryFuzzSeconds ?? 0;
     setQueuedMessages((current) => current.filter((local) => {
       if (!local.localOptimistic && !local.localFuzzing) return true;
-      const hasLiveCopy = (liveMessages as Message[]).some((live) => (
-        (local.signature && live.signature === local.signature) ||
-        live.ciphertext === local.ciphertext
-      ));
-      if (hasLiveCopy) return false;
+      const hasLiveCopy = (liveMessages as Message[]).some((live) => sameSentMessage(local, live));
+      if (hasLiveCopy) return shouldKeepFuzzMetadata(local, room.deliveryFuzzSeconds, nowMs);
       if (local.localOptimistic && !local.localFuzzing) return true;
-      return isWithinFuzzWindow(local.createdAt, Math.max(1, fuzzSeconds), nowMs);
+      return shouldKeepFuzzMetadata(local, fuzzSeconds, nowMs);
     }));
   }, [liveMessages, nowMs, online, queuedMessages.length, room.deliveryFuzzSeconds]);
 
@@ -2258,7 +2258,7 @@ function RoomView({
           const senderLabel = revealedSenderId === msg.senderId ? (msg.senderUsername ?? codenameForUser(msg.senderId)) : codenameForUser(msg.senderId);
           const experimentalDecay = room.decayMode === "experimental_quorum_decay";
           const decayEvidence = experimentalDecay ? getDecayEvidence(msg as Message, nowMs) : null;
-          const showGarbledPreview = !!decayEvidence?.active && !plaintext;
+          const showGarbledPreview = !!decayEvidence?.active && !!plaintext;
           const blockRevealForDecay = showGarbledPreview && !!decayEvidence?.expired;
           const fuzzLabel = isOwn && msg.localFuzzing ? latestFuzzDeliveryLabel(msg.createdAt, room.deliveryFuzzSeconds, nowMs) : null;
 
@@ -2289,7 +2289,7 @@ function RoomView({
                   {msg.localQueued && (
                     <span className="font-mono text-[10px] tracking-widest text-primary">QUEUED</span>
                   )}
-                  {fuzzLabel && (
+                  {fuzzLabel && plaintext && (
                     <span className="font-mono text-[10px] tracking-widest text-amber-500">FUZZING</span>
                   )}
                   <MessageExpiry expiresAt={msg.expiresAt} revealed={!!plaintext} />
@@ -2304,6 +2304,10 @@ function RoomView({
                   {expired && !experimentalDecay ? (
                     <p className="font-mono text-xs text-muted-foreground italic">
                       Message expired — cryptographically destroyed
+                    </p>
+                  ) : expired ? (
+                    <p className="font-mono text-xs text-muted-foreground italic">
+                      Message expired — cryptographic decay sealed
                     </p>
                   ) : blockRevealForDecay ? (
                     <div>
@@ -2335,7 +2339,19 @@ function RoomView({
                       data-testid={`button-hold-reveal-${msg.id}`}
                     >
                       {plaintext ? (
-                        <span className="font-mono text-sm">{plaintext}</span>
+                        <span>
+                          <span className="block font-mono text-sm">{plaintext}</span>
+                          {showGarbledPreview && (
+                            <span className="mt-2 block">
+                              <span className="block font-mono text-[10px] tracking-widest text-amber-500 mb-2">
+                                {decayEvidence?.text} / QUORUM DECAY EVIDENCE
+                              </span>
+                              <span className="block font-mono text-xs break-all text-muted-foreground" data-testid={`message-decay-preview-${msg.id}`}>
+                                {deterministicGarbledPreview(msg as Message)}
+                              </span>
+                            </span>
+                          )}
+                        </span>
                       ) : showGarbledPreview ? (
                         <span>
                           <span className="block font-mono text-[10px] tracking-widest text-amber-500 mb-2">
@@ -2365,10 +2381,6 @@ function RoomView({
                   ) : fuzzLabel && plaintext ? (
                     <p className="mt-2 font-mono text-[10px] leading-snug text-amber-500">
                       Sent to server and being fuzzed. Recipient will receive it sometime in the next {fuzzLabel} at the latest.
-                    </p>
-                  ) : fuzzLabel ? (
-                    <p className="mt-2 font-mono text-[10px] leading-snug text-amber-500">
-                      Fuzzing metadata sealed. Hold to reveal delivery window.
                     </p>
                   ) : null}
                 </div>
@@ -3365,9 +3377,6 @@ export default function ChatApp() {
                     </>
                   ) : (
                     <>
-                      {!!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0 && (
-                        <span className="font-mono text-[10px] text-amber-500/80">FUZZ SEALED</span>
-                      )}
                       <span className="font-mono text-[10px] text-muted-foreground">DECAY SEALED</span>
                     </>
                   )}

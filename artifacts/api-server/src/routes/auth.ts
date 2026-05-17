@@ -497,6 +497,37 @@ router.post("/auth/passkey/add/verify", requireAuth, async (req: AuthRequest, re
   res.status(201).json({ ok: true });
 });
 
+router.post("/auth/device-key/add", requireAuth, async (req: AuthRequest, res) => {
+  if (!req.userId || !req.user) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const body = req.body as { passcode?: unknown; deviceLabel?: unknown };
+  if (typeof body.passcode !== "string" || body.passcode.length < 8) {
+    res.status(400).json({ error: "Device passcode is required" });
+    return;
+  }
+  if (body.deviceLabel !== undefined && body.deviceLabel !== null && typeof body.deviceLabel !== "string") {
+    res.status(400).json({ error: "Device label must be a string" });
+    return;
+  }
+
+  const authHandle = generateAuthHandle();
+  const deviceLabel = typeof body.deviceLabel === "string" && body.deviceLabel.trim()
+    ? body.deviceLabel.trim().slice(0, 80)
+    : "Expo device key";
+
+  await db.insert(deviceCredentialsTable).values({
+    userId: req.userId,
+    authHandleHash: hashAuthHandle(authHandle),
+    passwordHash: await argon2.hash(body.passcode),
+    label: deviceLabel,
+  });
+
+  res.status(201).json({ ok: true, authHandle });
+});
+
 router.post("/auth/passkey/login/options", async (req, res) => {
   const handleInput = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
   if (!canAcceptIdentityLookupInput(handleInput)) {

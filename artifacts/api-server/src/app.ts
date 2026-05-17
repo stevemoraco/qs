@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { startPushNotificationWorker } from "./routes/push";
 
 const app: Express = express();
 
@@ -76,5 +77,7 @@ app.use(express.json({ limit: "256kb" }));
 app.use(express.urlencoded({ extended: true, limit: "64kb" }));
 
 app.use("/api", router);
+
+startPushNotificationWorker();
 
 export default app;

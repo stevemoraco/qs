@@ -5,6 +5,7 @@ export * from "./room_members";
 export * from "./messages";
 export * from "./pre_keys";
 export * from "./push_subscriptions";
+export * from "./push_notification_jobs";
 export * from "./leads";
 export * from "./identity_codes";
 export * from "./device_credentials";
