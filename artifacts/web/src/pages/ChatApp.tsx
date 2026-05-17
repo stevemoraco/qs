@@ -50,7 +50,7 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
-const FLASH_SCAN_MS = 100;
+const FLASH_SCAN_MS = 60;
 const FLASH_FRAME_WIDTH = 64;
 const FLASH_FRAME_HEIGHT = 40;
 const FLASH_DEBUG_SEND_MS = 500;
@@ -1521,8 +1521,8 @@ export default function ChatApp() {
     const globalFlash = avgDelta > 17 && brightDelta > 0.025 && avg > 42;
     const localizedFlash = peakDelta > 24 && brightDelta > 0.012 && veryBrightRatio > 0.004;
     const brightBloom = veryBrightRatio > 0.028 && brightDelta > 0.01 && avgDelta > 7;
-    const dimPeakFlash = peakDelta > 48 && avgDelta > 1 && avg > 3 && brightDelta > -0.01;
-    const dimPeakCandidate = peakDelta > 40 && avgDelta > 1 && avg > 3 && brightDelta > -0.01;
+    const dimPeakFlash = peakDelta > 48 && avgDelta > 0.35 && avg > 1 && brightDelta > -0.01;
+    const dimPeakCandidate = peakDelta > 36 && avgDelta > 0.25 && avg > 1 && brightDelta > -0.01;
     const strongFlash = avgDelta > 34 || brightDelta > 0.075 || (peakDelta > 44 && veryBrightRatio > 0.01);
     const candidate = globalFlash || localizedFlash || brightBloom || dimPeakCandidate;
     flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
