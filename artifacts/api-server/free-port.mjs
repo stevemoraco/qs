@@ -1,17 +1,17 @@
 import { readFileSync, readdirSync, readlinkSync } from "node:fs";
 import { setTimeout as sleep } from "node:timers/promises";
-import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve, sep } from "node:path";
 
 const port = Number(process.env.PORT || 8080);
 const portHex = port.toString(16).toUpperCase().padStart(4, "0");
 const selfPid = String(process.pid);
-const apiServerDir = resolve(new URL(".", import.meta.url).pathname);
-const ownershipMarkers = [
-  apiServerDir,
+const apiServerDir = resolve(dirname(fileURLToPath(import.meta.url)));
+const cmdlineMarkers = [
   "@workspace/api-server",
   "artifacts/api-server",
-  "replit-run-latest",
-  "replit:latest",
+  "replit-run-latest.sh",
+  "run replit:latest",
 ];
 
 function inodesListeningOn(file) {
@@ -49,9 +49,15 @@ function readPpid(pid) {
   } catch { return ""; }
 }
 
-function matchesOwnership(text) {
+function cmdlineMatches(text) {
   if (!text) return false;
-  return ownershipMarkers.some((marker) => text.includes(marker));
+  return cmdlineMarkers.some((marker) => text.includes(marker));
+}
+
+function cwdMatches(cwd) {
+  if (!cwd) return false;
+  const normalized = resolve(cwd);
+  return normalized === apiServerDir || normalized.startsWith(apiServerDir + sep);
 }
 
 function isApiServerProcess(pid) {
@@ -59,8 +65,8 @@ function isApiServerProcess(pid) {
   let cursor = pid;
   while (cursor && !seen.has(cursor) && cursor !== "1" && cursor !== "0") {
     seen.add(cursor);
-    if (matchesOwnership(readCmdline(cursor))) return true;
-    if (matchesOwnership(readCwd(cursor))) return true;
+    if (cmdlineMatches(readCmdline(cursor))) return true;
+    if (cwdMatches(readCwd(cursor))) return true;
     cursor = readPpid(cursor);
   }
   return false;
