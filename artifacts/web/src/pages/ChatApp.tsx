@@ -688,10 +688,20 @@ function recipientEncryptedKeySignatureVariants(keys: RecipientEncryptedKeys): R
   return variants;
 }
 
+// Must match the server's per-recipient cap in artifacts/api-server/src/routes/messages.ts
+// (`isValidWrappedKeyValue` rejects arrays with length > 16). The server returns device
+// bundles ordered newest-first from /api/keys/:userId/devices, so a simple .slice keeps
+// the most recently registered devices.
+const MAX_WRAPPED_KEYS_PER_RECIPIENT = 16;
+
 async function wrapMessageKeyForUserDevices(userId: string, rawMessageKey: Uint8Array): Promise<RecipientEncryptedKeyValue | null> {
   const bundles = await getTrustedKeyBundles(userId);
+  if (bundles.length > MAX_WRAPPED_KEYS_PER_RECIPIENT) {
+    console.warn(`Recipient ${userId} has ${bundles.length} trusted devices; encrypting for the ${MAX_WRAPPED_KEYS_PER_RECIPIENT} most recent only.`);
+  }
+  const cappedBundles = bundles.slice(0, MAX_WRAPPED_KEYS_PER_RECIPIENT);
   const wrapped = await Promise.all(
-    bundles.map((bundle) => bundle.kemPublicKey ? wrapMessageKeyForKemPublicKey(base64ToBytes(bundle.kemPublicKey), rawMessageKey) : null),
+    cappedBundles.map((bundle) => bundle.kemPublicKey ? wrapMessageKeyForKemPublicKey(base64ToBytes(bundle.kemPublicKey), rawMessageKey) : null),
   );
   return encodeWrappedKeys(wrapped.filter((value): value is string => !!value));
 }
@@ -706,13 +716,15 @@ async function wrapMessageKeyForCurrentUserDevices(userId: string, rawMessageKey
     }
     const bundles = await getTrustedKeyBundles(userId);
     const localKemPublicKey = keys.kemPublicKey ? bytesToBase64(keys.kemPublicKey) : null;
+    const remoteSlots = Math.max(0, MAX_WRAPPED_KEYS_PER_RECIPIENT - wrapped.length);
+    const remoteBundles = bundles
+      .filter((bundle) => bundle.kemPublicKey && bundle.kemPublicKey !== localKemPublicKey)
+      .slice(0, remoteSlots);
     const remoteWrapped = await Promise.all(
-      bundles
-        .filter((bundle) => bundle.kemPublicKey && bundle.kemPublicKey !== localKemPublicKey)
-        .map((bundle) => wrapMessageKeyForKemPublicKey(base64ToBytes(bundle.kemPublicKey!), rawMessageKey)),
+      remoteBundles.map((bundle) => wrapMessageKeyForKemPublicKey(base64ToBytes(bundle.kemPublicKey!), rawMessageKey)),
     );
     wrapped.push(...remoteWrapped.filter((value): value is string => !!value));
-    return encodeWrappedKeys(wrapped);
+    return encodeWrappedKeys(wrapped.slice(0, MAX_WRAPPED_KEYS_PER_RECIPIENT));
   } finally {
     clearBytes(keys.kemSecretKey);
     clearBytes(keys.dsaSecretKey);
