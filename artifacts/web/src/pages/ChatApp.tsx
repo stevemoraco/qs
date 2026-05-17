@@ -51,10 +51,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
 const PRIVACY_ALERT_THROTTLE_MS = 60_000;
-const FLASH_SCAN_MS = 150;
-const FLASH_ALERT_THROTTLE_MS = 20_000;
-const FLASH_FRAME_WIDTH = 64;
-const FLASH_FRAME_HEIGHT = 40;
+const FLASH_SCAN_MS = 250;
+const FLASH_ALERT_THROTTLE_MS = 15_000;
+const FLASH_FRAME_WIDTH = 48;
+const FLASH_FRAME_HEIGHT = 32;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1293,8 +1293,10 @@ export default function ChatApp() {
   const lastPrivacyAlertAtRef = useRef(0);
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const flashBaselineRef = useRef<{ avg: number; brightRatio: number; peak: number } | null>(null);
+  const flashBaselineRef = useRef<number | null>(null);
   const lastFlashAlertAtRef = useRef(0);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const startingCameraRef = useRef<Promise<void> | null>(null);
   const codenameFor = useMemo(() => createSessionCodenameFactory(), []);
   const qc = useQueryClient();
 
@@ -1484,9 +1486,8 @@ export default function ChatApp() {
     warnCaptureAttempt(reason);
   };
 
-  const scanCameraFlash = (video: HTMLVideoElement): { triggered: boolean; detail: string } => {
-    const noFlash = { triggered: false, detail: "" };
-    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return noFlash;
+  const scanCameraFlash = (video: HTMLVideoElement): boolean => {
+    if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth === 0 || video.videoHeight === 0) return false;
 
     const canvas = flashCanvasRef.current ?? document.createElement("canvas");
     if (!flashCanvasRef.current) {
@@ -1496,47 +1497,116 @@ export default function ChatApp() {
     }
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return noFlash;
+    if (!ctx) return false;
     ctx.drawImage(video, 0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT);
     const data = ctx.getImageData(0, 0, FLASH_FRAME_WIDTH, FLASH_FRAME_HEIGHT).data;
 
     let luminanceTotal = 0;
     let brightPixels = 0;
-    let veryBrightPixels = 0;
-    let peak = 0;
     const pixelCount = FLASH_FRAME_WIDTH * FLASH_FRAME_HEIGHT;
     for (let i = 0; i < data.length; i += 4) {
       const lum = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
       luminanceTotal += lum;
-      if (lum > 200) brightPixels += 1;
-      if (lum > 242) veryBrightPixels += 1;
-      if (lum > peak) peak = lum;
+      if (lum > 215) brightPixels += 1;
     }
 
     const avg = luminanceTotal / pixelCount;
     const brightRatio = brightPixels / pixelCount;
-    const veryBrightRatio = veryBrightPixels / pixelCount;
-    const baseline = flashBaselineRef.current ?? { avg, brightRatio, peak };
-    const avgDelta = avg - baseline.avg;
-    const brightDelta = brightRatio - baseline.brightRatio;
-    const peakDelta = peak - baseline.peak;
-    const globalFlash = avgDelta > 34 && brightDelta > 0.055 && avg > 85;
-    const localizedFlash = peakDelta > 52 && brightDelta > 0.035 && veryBrightRatio > 0.012;
-    const brightBloom = veryBrightRatio > 0.075 && brightDelta > 0.03 && avgDelta > 18;
-    const triggered = globalFlash || localizedFlash || brightBloom;
+    const baseline = flashBaselineRef.current ?? avg;
+    const delta = avg - baseline;
+    const isFlash = avg > 120 && delta > 42 && brightRatio > 0.12;
+    flashBaselineRef.current = isFlash ? baseline : baseline * 0.92 + avg * 0.08;
+    return isFlash;
+  };
 
-    if (!triggered) {
-      flashBaselineRef.current = {
-        avg: baseline.avg * 0.9 + avg * 0.1,
-        brightRatio: baseline.brightRatio * 0.9 + brightRatio * 0.1,
-        peak: baseline.peak * 0.86 + peak * 0.14,
-      };
+  const stopCamera = () => {
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
     }
+    if (flashScanIntervalRef.current) {
+      clearInterval(flashScanIntervalRef.current);
+      flashScanIntervalRef.current = null;
+    }
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    flashBaselineRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+  };
 
-    return {
-      triggered,
-      detail: `avg +${avgDelta.toFixed(0)} / bright +${(brightDelta * 100).toFixed(1)}% / peak +${peakDelta.toFixed(0)}`,
-    };
+  const isCameraRunning = () => {
+    const stream = cameraStreamRef.current;
+    return !!stream && stream.getVideoTracks().some((track) => track.readyState === "live" && track.enabled);
+  };
+
+  const startCamera = async () => {
+    if (isCameraRunning()) return;
+    if (startingCameraRef.current) return startingCameraRef.current;
+
+    startingCameraRef.current = (async () => {
+      stopCamera();
+      setCameraStatus("scanning");
+      setCameraStatusDetail("STARTING");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        cameraStreamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+
+        const detector = await getFrameThreatDetector();
+        if (!detector) {
+          setCameraStatus("unavailable");
+          setCameraStatusDetail("MODEL UNAVAILABLE");
+          return;
+        }
+        setCameraStatus("clear");
+        setCameraStatusDetail("ON-DEVICE");
+
+        flashScanIntervalRef.current = setInterval(() => {
+          if (!videoRef.current || scanCameraFlash(videoRef.current) === false) return;
+          const now = Date.now();
+          if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
+          lastFlashAlertAtRef.current = now;
+          lockForCaptureAttempt("Possible screenshot flash reflected in the selfie camera. Secure content was hidden.");
+          const roomId = activeRoomIdRef.current;
+          if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
+          setCameraStatus("threat");
+          setCameraStatusDetail("FLASH GUARD");
+        }, FLASH_SCAN_MS);
+
+        detectionIntervalRef.current = setInterval(async () => {
+          if (!videoRef.current) return;
+          try {
+            const threats = await detector.detect(videoRef.current);
+            const strongest = threats.sort((a, b) => b.score - a.score)[0];
+            setCameraStatus(strongest ? "threat" : "clear");
+            if (strongest) {
+              lockPrivacyShield(`Another device may be photographing this screen: ${strongest.label}.`);
+              const roomId = activeRoomIdRef.current;
+              if (roomId) void sendPrivacyAlert(roomId, strongest.label);
+            }
+            setCameraStatusDetail(
+              strongest
+                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}%`
+                : "ON-DEVICE",
+            );
+          } catch {
+            setCameraStatus("unavailable");
+            setCameraStatusDetail("SCAN ERROR");
+          }
+        }, 2200);
+      } catch {
+        setCameraStatus("unavailable");
+        setCameraStatusDetail("CAMERA DENIED");
+      } finally {
+        startingCameraRef.current = null;
+      }
+    })();
+
+    return startingCameraRef.current;
   };
 
   const unlockPrivacyShield = async (source: "auto" | "manual" = "manual") => {
@@ -1556,6 +1626,15 @@ export default function ChatApp() {
       } else {
         setPrivacyNeedsHandle(true);
         await verifyDevice();
+      }
+      await startCamera();
+      if (!isCameraRunning()) {
+        setPrivacyShield((current) => ({
+          ...current,
+          active: true,
+          error: "Camera privacy scan is offline. Re-enable camera access before unlocking secure chat.",
+        }));
+        return;
       }
       setPrivacyShield({ active: false, reason: "" });
     } catch (err: unknown) {
@@ -1638,77 +1717,8 @@ export default function ChatApp() {
   }, []);
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
-    let mounted = true;
-
-    const startCamera = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-        if (!mounted) return;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-        }
-
-        const detector = await getFrameThreatDetector();
-        if (!mounted) return;
-        if (!detector) {
-          setCameraStatus("unavailable");
-          setCameraStatusDetail("MODEL UNAVAILABLE");
-          return;
-        }
-        setCameraStatus("clear");
-        setCameraStatusDetail("ON-DEVICE");
-
-        flashScanIntervalRef.current = setInterval(() => {
-          if (!videoRef.current) return;
-          const flash = scanCameraFlash(videoRef.current);
-          if (!flash.triggered) return;
-          const now = Date.now();
-          if (now - lastFlashAlertAtRef.current < FLASH_ALERT_THROTTLE_MS) return;
-          lastFlashAlertAtRef.current = now;
-          lockForCaptureAttempt("Possible screenshot flash reflected in the selfie camera. Secure content was hidden.");
-          const roomId = activeRoomIdRef.current;
-          if (roomId) void sendPrivacyAlert(roomId, "possible screenshot flash");
-          setCameraStatus("threat");
-          setCameraStatusDetail(`FLASH GUARD / ${flash.detail}`);
-        }, FLASH_SCAN_MS);
-
-        detectionIntervalRef.current = setInterval(async () => {
-          if (!videoRef.current) return;
-          try {
-            const threats = await detector.detect(videoRef.current);
-            const strongest = threats.sort((a, b) => b.score - a.score)[0];
-            setCameraStatus(strongest ? "threat" : "clear");
-            if (strongest) {
-              lockPrivacyShield(`Another device may be photographing this screen: ${strongest.label}.`);
-              const roomId = activeRoomIdRef.current;
-              if (roomId) void sendPrivacyAlert(roomId, strongest.label);
-            }
-            setCameraStatusDetail(
-              strongest
-                ? `${strongest.label.toUpperCase()} ${(strongest.score * 100).toFixed(0)}%`
-                : "ON-DEVICE",
-            );
-          } catch {
-            setCameraStatus("unavailable");
-            setCameraStatusDetail("SCAN ERROR");
-          }
-        }, 2200);
-      } catch {
-        setCameraStatus("unavailable");
-        setCameraStatusDetail("CAMERA DENIED");
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      mounted = false;
-      if (detectionIntervalRef.current) clearInterval(detectionIntervalRef.current);
-      if (flashScanIntervalRef.current) clearInterval(flashScanIntervalRef.current);
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-    };
+    void startCamera();
+    return () => stopCamera();
   }, []);
 
   return (
