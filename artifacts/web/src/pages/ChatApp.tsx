@@ -51,10 +51,10 @@ import { ensurePushSubscription, notificationPermission } from "@/lib/pwa";
 const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const CAPTURE_WARNING_MS = 8000;
 const PRIVACY_ALERT_THROTTLE_MS = 60_000;
-const FLASH_SCAN_MS = 250;
-const FLASH_ALERT_THROTTLE_MS = 15_000;
-const FLASH_FRAME_WIDTH = 48;
-const FLASH_FRAME_HEIGHT = 32;
+const FLASH_SCAN_MS = 150;
+const FLASH_ALERT_THROTTLE_MS = 12_000;
+const FLASH_FRAME_WIDTH = 56;
+const FLASH_FRAME_HEIGHT = 36;
 
 function normalizeCodeInput(value: string): string {
   return value.trim().replace(/^[@#]+/, "").toLowerCase();
@@ -1294,6 +1294,7 @@ export default function ChatApp() {
   const flashScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const flashCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const flashBaselineRef = useRef<number | null>(null);
+  const flashStreakRef = useRef(0);
   const lastFlashAlertAtRef = useRef(0);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const startingCameraRef = useRef<Promise<void> | null>(null);
@@ -1514,8 +1515,11 @@ export default function ChatApp() {
     const brightRatio = brightPixels / pixelCount;
     const baseline = flashBaselineRef.current ?? avg;
     const delta = avg - baseline;
-    const isFlash = avg > 120 && delta > 42 && brightRatio > 0.12;
-    flashBaselineRef.current = isFlash ? baseline : baseline * 0.92 + avg * 0.08;
+    const candidate = avg > 105 && delta > 32 && brightRatio > 0.08;
+    flashStreakRef.current = candidate ? flashStreakRef.current + 1 : 0;
+    const isFlash = flashStreakRef.current >= 2;
+    flashBaselineRef.current = candidate ? baseline : baseline * 0.92 + avg * 0.08;
+    if (isFlash) flashStreakRef.current = 0;
     return isFlash;
   };
 
@@ -1531,6 +1535,7 @@ export default function ChatApp() {
     cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
     cameraStreamRef.current = null;
     flashBaselineRef.current = null;
+    flashStreakRef.current = 0;
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
@@ -1539,8 +1544,8 @@ export default function ChatApp() {
     return !!stream && stream.getVideoTracks().some((track) => track.readyState === "live" && track.enabled);
   };
 
-  const startCamera = async () => {
-    if (isCameraRunning()) return;
+  const startCamera = async (force = false) => {
+    if (!force && isCameraRunning()) return;
     if (startingCameraRef.current) return startingCameraRef.current;
 
     startingCameraRef.current = (async () => {
@@ -1551,6 +1556,15 @@ export default function ChatApp() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
         cameraStreamRef.current = stream;
+        stream.getVideoTracks().forEach((track) => {
+          const handleCameraLost = () => {
+            lockPrivacyShield("Camera privacy scan stopped. Secure content is locked until camera access is restored.");
+            setCameraStatus("unavailable");
+            setCameraStatusDetail("CAMERA STOPPED");
+          };
+          track.addEventListener("ended", handleCameraLost, { once: true });
+          track.addEventListener("mute", handleCameraLost, { once: true });
+        });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
@@ -1627,7 +1641,7 @@ export default function ChatApp() {
         setPrivacyNeedsHandle(true);
         await verifyDevice();
       }
-      await startCamera();
+      await startCamera(true);
       if (!isCameraRunning()) {
         setPrivacyShield((current) => ({
           ...current,
