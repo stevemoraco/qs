@@ -65,12 +65,13 @@ WEB_PID=$!
 wait_for_url "${WEB_URL}" "PWA"
 wait_for_url "${WEB_URL}/api/version" "PWA API proxy"
 
-INDEX_JS="$(curl -fsS "${WEB_URL}" | rg -o '/assets/index-[^"]+\\.js' | head -1)"
+INDEX_JS="$(curl -fsS "${WEB_URL}" | rg -m 1 -o '/assets/index-[^"]+\\.js')"
 if [[ -z "$INDEX_JS" ]]; then
   echo "Could not find built index asset in served PWA HTML." >&2
   exit 1
 fi
-if ! curl -fsS "${WEB_URL}${INDEX_JS}" | rg -q "$HEAD_SHORT"; then
+INDEX_SOURCE="$(curl -fsS "${WEB_URL}${INDEX_JS}")"
+if ! rg -q "$HEAD_SHORT" <<<"$INDEX_SOURCE"; then
   echo "Served PWA asset ${INDEX_JS} does not contain current commit ${HEAD_SHORT}." >&2
   exit 1
 fi
