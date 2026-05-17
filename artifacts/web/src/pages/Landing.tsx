@@ -305,42 +305,42 @@ const LOCAL_DEVICE_EXPOSURE = [
     name: "Signal",
     tone: "risk",
     icon: <Database className="w-5 h-5" />,
-    plain: "Signal keeps local chat data on your devices so it can reopen your history.",
+    plain: "With Signal, a bad actor can go after the chat history saved on your device.",
     headline: "Desktop and phone history, attachments, and notifications can become local app targets.",
-    runningPlain: "While open, Signal has to read chats to show them to you.",
+    runningPlain: "While Signal is open, your device can already see your chats.",
     running: [
       "RAM can contain the messages, contacts, attachments, previews, and keys the desktop app or phone app is actively using.",
       "The app must decrypt content locally to render conversations and attachments.",
       "Screen security/app lock reduce casual exposure but do not hide content from malware already running as you on a computer or phone.",
     ],
-    stoppedPlain: "When closed, the app can still keep local records that bad actors may try to copy or upload.",
+    stoppedPlain: "When Signal is closed, local chat records can still be a target.",
     stopped: [
       "Disk or device storage can contain Signal's local encrypted database, attachment files/state, preferences, and key material needed by the client.",
       "The database is not a simple plaintext file, but the app must retain enough local material to reopen your history.",
       "OS account compromise, phone compromise, backups, screenshots, exports, and notification artifacts can still matter.",
     ],
-    implicationPlain: "Anyone, phone malware, or any AI agent using your unlocked device can target chats, files, contacts, and notifications.",
+    implicationPlain: "If they get into your unlocked device, they can try to grab your chats, files, contacts, and alerts.",
     implication: "A local AI agent or malware with your user privileges may not need to break Signal's network encryption; it can target the app's local dataset, live process, screen, clipboard, notifications, or backups on a computer or phone.",
   },
   {
     name: "iMessage",
     tone: "risk",
     icon: <FolderSearch className="w-5 h-5" />,
-    plain: "iMessage keeps message history your Apple devices can search and reopen.",
+    plain: "With iMessage, your Apple device can keep years of messages ready to search.",
     headline: "Mac and iPhone message history, attachments, contacts, and alerts are ordinary local targets.",
-    runningPlain: "While open, your Mac or iPhone can show messages, files, previews, and alerts.",
+    runningPlain: "While iMessage is open, your device can show your messages, files, previews, and alerts.",
     running: [
       "RAM can contain open conversations, rendered plaintext, attachments, notification state, and account/device sync state.",
       "The Messages app and system services can render searchable conversation history on your unlocked Mac or phone.",
       "Anything visible to the user can also be visible to screen-reading malware, phone malware, screenshots, remote control tools, or a local agent.",
     ],
-    stoppedPlain: "When closed, history and attachments can still live locally where bad actors can try to copy or upload them.",
+    stoppedPlain: "When iMessage is closed, old messages and photos can still live on your device.",
     stopped: [
       "Mac disk commonly contains Messages history under the user Library Messages database and attachment folders; phones can also retain local message databases, attachments, notifications, and backup-derived copies.",
       "Local storage may also expose contacts, handles, previews, Spotlight/search artifacts, caches, and backup-derived copies depending on settings.",
       "iCloud settings, local retention, backups, FileVault, device lock state, and Advanced Data Protection change the exposure.",
     ],
-    implicationPlain: "Anyone, phone malware, or any AI agent with your unlocked Apple device can target all local messages, attachments, contacts, previews, and search records.",
+    implicationPlain: "If they get into your unlocked Apple device, they can target years of messages, photos, contacts, and previews.",
     implication: "A local AI agent, malware process, remote admin tool, phone malware, or person with access to your unlocked Apple device can often inspect the endpoint record directly. If plaintext exists on disk or in local app stores, a bad actor can silently copy or upload it without breaking transport encryption.",
   },
 ];
@@ -503,7 +503,7 @@ export default function Landing() {
               <div key={item.name} className="border border-border/50 bg-card/30 p-5">
                 <div className="text-primary mb-4">{item.icon}</div>
                 <div className="font-mono text-[10px] text-muted-foreground tracking-widest mb-2">{item.name.toUpperCase()}</div>
-                <h3 className="font-mono text-base font-bold leading-snug text-foreground mb-2">{item.plain}</h3>
+                <h3 className={`font-mono text-base font-bold leading-snug mb-2 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{item.plain}</h3>
                 <p className="font-mono text-xs text-muted-foreground leading-relaxed mb-4">{item.headline}</p>
                 <div className="space-y-4">
                   {[
@@ -515,7 +515,7 @@ export default function Landing() {
                         <span className={item.tone === "benefit" ? "text-primary" : "text-destructive"}>{group.icon}</span>
                         <div className="font-mono text-[10px] text-muted-foreground tracking-widest">{group.label.toUpperCase()}</div>
                       </div>
-                      <p className={`font-mono text-sm leading-snug mb-2 ${item.name === "QuantumShield" ? "text-muted-foreground/80" : "font-bold text-foreground"}`}>{group.plain}</p>
+                      <p className={`font-mono text-sm font-bold leading-snug mb-2 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{group.plain}</p>
                       <div className="space-y-2">
                         {group.lines.map((line) => (
                           <div key={line} className="grid grid-cols-[auto_1fr] gap-2">
@@ -528,7 +528,7 @@ export default function Landing() {
                   ))}
                   <div className={`border p-3 ${item.tone === "benefit" ? "border-primary/30 bg-primary/5" : "border-destructive/30 bg-destructive/5"}`}>
                     <div className={`font-mono text-[10px] tracking-widest mb-2 ${item.tone === "benefit" ? "text-primary" : "text-destructive"}`}>AI AGENT / MALWARE IMPLICATION</div>
-                    <p className={`font-mono text-sm leading-snug mb-2 ${item.name === "QuantumShield" ? "text-muted-foreground/80" : "font-bold text-foreground"}`}>{item.implicationPlain}</p>
+                    <p className={`font-mono text-sm font-bold leading-snug mb-2 ${item.tone === "benefit" ? "text-foreground" : "text-destructive"}`}>{item.implicationPlain}</p>
                     <p className="font-mono text-xs text-muted-foreground/80 leading-relaxed">{item.implication}</p>
                   </div>
                 </div>
