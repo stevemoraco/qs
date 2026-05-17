@@ -196,6 +196,10 @@ function sendRecipientEncryptedKeys(keys: RecipientEncryptedKeys): SendRecipient
   return keys as SendRecipientEncryptedKeys;
 }
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : "Unknown error";
+}
+
 function formatAuditTime(value: string, timeZone?: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "unavailable";
@@ -700,6 +704,26 @@ async function signMessagePayload(input: {
     clearBytes(keys.kemSecretKey);
     clearBytes(keys.dsaSecretKey);
   }
+}
+
+async function senderDsaPublicKeyForSignedPayload(input: {
+  roomId: string;
+  senderId: string;
+  ciphertext: string;
+  nonce: string;
+  algorithm: string;
+  recipientEncryptedKeys: RecipientEncryptedKeys;
+  signature: string;
+}): Promise<string | null> {
+  const payload = messageSignaturePayload(input);
+  for (const dsaPublicKey of await getDsaPublicKeysAsync()) {
+    try {
+      if (ml_dsa87.verify(base64ToBytes(input.signature), payload, base64ToBytes(dsaPublicKey))) return dsaPublicKey;
+    } catch {
+      // Try the next local signing key.
+    }
+  }
+  return null;
 }
 
 async function verifyMessageSignature(roomId: string, msg: Message): Promise<boolean> {
@@ -2266,12 +2290,21 @@ function RoomView({
   const members = online ? liveMembers : offlineMembers;
 
   const postQueuedMessage = async (entry: OfflineOutboxEntry): Promise<Message> => {
+    const senderDsaPublicKey = entry.senderDsaPublicKey ?? await senderDsaPublicKeyForSignedPayload({
+      roomId: entry.roomId,
+      senderId: currentUserId,
+      ciphertext: entry.ciphertext,
+      nonce: entry.nonce,
+      algorithm: entry.algorithm,
+      recipientEncryptedKeys: entry.recipientEncryptedKeys,
+      signature: entry.signature,
+    });
     const message = await postRoomsRoomIdMessages(entry.roomId, {
       ciphertext: entry.ciphertext,
       nonce: entry.nonce,
       algorithm: entry.algorithm,
       signature: entry.signature,
-      senderDsaPublicKey: entry.senderDsaPublicKey,
+      senderDsaPublicKey,
       recipientEncryptedKeys: sendRecipientEncryptedKeys(entry.recipientEncryptedKeys),
       ttlSeconds: entry.ttlSeconds,
     }) as Message;
@@ -2467,12 +2500,20 @@ function RoomView({
       }
       const sentAt = new Date().toISOString();
 
+      const signedPayload = {
+        roomId: room.id,
+        senderId: currentUserId,
+        ciphertext,
+        nonce,
+        algorithm: CIPHER_SUITE,
+        recipientEncryptedKeys,
+      };
       const payload = {
         ciphertext,
         nonce,
         algorithm: CIPHER_SUITE,
         signature,
-        senderDsaPublicKey: getDsaPublicKey(),
+        senderDsaPublicKey: await senderDsaPublicKeyForSignedPayload({ ...signedPayload, signature }) ?? getDsaPublicKey(),
         recipientEncryptedKeys,
         ttlSeconds: room.ttlSeconds,
       };
@@ -2515,8 +2556,8 @@ function RoomView({
           ...current.filter((msg) => msg.id !== queuedMessage.id && msg.signature !== queuedMessage.signature),
           optimistic,
         ]);
-      } catch {
-        setSendError("Server did not accept the message. It is still queued and will retry.");
+      } catch (err) {
+        setSendError(`Server did not accept the message. It is still queued and will retry. ${errorMessage(err)}`);
         setQueuedMessages((current) => current.some((msg) => msg.id === queuedMessage.id) ? current : [...current, queuedMessage]);
       }
     } catch (err) {
@@ -3082,19 +3123,33 @@ export default function ChatApp() {
   }, [online, liveRooms]);
 
   useEffect(() => {
-    if (!online) return;
+    if (!online || !me?.id) return;
     let cancelled = false;
+    const senderId = me.id;
     const flush = async () => {
       const entries = await getOutboxEntries();
       for (const entry of entries) {
         if (cancelled) return;
         try {
+          const senderDsaPublicKey = entry.senderDsaPublicKey ?? await senderDsaPublicKeyForSignedPayload({
+            roomId: entry.roomId,
+            senderId,
+            ciphertext: entry.ciphertext,
+            nonce: entry.nonce,
+            algorithm: entry.algorithm,
+            recipientEncryptedKeys: entry.recipientEncryptedKeys,
+            signature: entry.signature,
+          });
+          if (!senderDsaPublicKey) {
+            console.warn("Queued message is missing a locally verifiable sender signing key.");
+            continue;
+          }
           await postRoomsRoomIdMessages(entry.roomId, {
             ciphertext: entry.ciphertext,
             nonce: entry.nonce,
             algorithm: entry.algorithm,
             signature: entry.signature,
-            senderDsaPublicKey: entry.senderDsaPublicKey,
+            senderDsaPublicKey,
             recipientEncryptedKeys: sendRecipientEncryptedKeys(entry.recipientEncryptedKeys),
             ttlSeconds: entry.ttlSeconds,
           });
@@ -3103,9 +3158,10 @@ export default function ChatApp() {
           if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
           qc.invalidateQueries({ queryKey: getGetRoomsRoomIdMessagesQueryKey(entry.roomId) });
           qc.invalidateQueries({ queryKey: getGetRoomsQueryKey() });
-        } catch {
+        } catch (err) {
+          console.warn("Queued message flush failed", err);
           if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
-          return;
+          continue;
         }
       }
       if (!cancelled) setOutboxCount((await getOutboxEntries()).length);
@@ -3129,7 +3185,7 @@ export default function ChatApp() {
       window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [online, qc]);
+  }, [online, qc, me?.id]);
 
   const uploadLocalKeys = async () => {
     const keys = await getLocalKeyPairAsync();

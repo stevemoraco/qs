@@ -31,6 +31,7 @@ const checks: Check[] = [
       "data-testid=\"offline-outbox-status\"",
       "apiReachable",
       "const canReachServer = online || await apiReachable()",
+      "Server did not accept the message. It is still queued and will retry. ${errorMessage(err)}",
     ]),
   },
   {
@@ -54,6 +55,15 @@ const checks: Check[] = [
       "return unique.length === 1 ? unique[0] : unique",
       "function sendRecipientEncryptedKeys(keys: RecipientEncryptedKeys): SendRecipientEncryptedKeys {\n  return keys as SendRecipientEncryptedKeys;\n}",
       "recipientEncryptedKeySignatureVariants",
+    ]),
+  },
+  {
+    name: "queued message flush repairs signing key metadata and never blocks later entries",
+    pass: has(chatApp, [
+      "senderDsaPublicKeyForSignedPayload",
+      "entry.senderDsaPublicKey ?? await senderDsaPublicKeyForSignedPayload",
+      "Queued message flush failed",
+      "continue;",
     ]),
   },
   {
