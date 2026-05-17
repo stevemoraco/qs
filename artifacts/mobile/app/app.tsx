@@ -65,6 +65,18 @@ const DELIVERY_FUZZ_OPTIONS = [
   { label: "409d", v: 35337600 },
 ];
 
+function formatShortDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds} sec`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} hr`;
+  return `${Math.round(seconds / 86400)} days`;
+}
+
+function incompatibleFuzzWarning(ttlSeconds: number | null, ttlMode: "after_view" | "after_send", deliveryFuzzSeconds: number): string | null {
+  if (!ttlSeconds || ttlMode !== "after_send" || deliveryFuzzSeconds <= ttlSeconds) return null;
+  return `Delivery fuzz is ${formatShortDuration(deliveryFuzzSeconds)}, but the send timer is ${formatShortDuration(ttlSeconds)}. Some messages may expire before recipients can receive or reveal them.`;
+}
+
 function randomRefetchInterval(minMs: number, maxMs: number): number {
   return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
 }
@@ -718,6 +730,7 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
   const [search, setSearch] = useState("");
   const [searchHash, setSearchHash] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  const settingsWarning = incompatibleFuzzWarning(ttl, ttlMode, deliveryFuzzSeconds);
 
   const normalizedSearch = normalizeCodeInput(search);
   useEffect(() => {
@@ -798,6 +811,13 @@ function NewRoomModal({ visible, onClose, myId, colors, codenameForUser }: {
             ))}
           </View>
 
+          {!!settingsWarning && (
+            <View style={[styles.settingsWarning, { borderColor: colors.destructive, backgroundColor: `${colors.destructive}18` }]} testID="room-settings-warning">
+              <Feather name="alert-triangle" size={15} color={colors.destructive} />
+              <Text style={[styles.settingsWarningText, { color: colors.destructive }]}>{settingsWarning}</Text>
+            </View>
+          )}
+
           <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 16 }]}>ADD MEMBERS</Text>
           <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <Feather name="search" size={14} color={colors.mutedForeground} />
@@ -870,8 +890,12 @@ const CODE_SCOPE_OPTIONS = [
 
 function describeCodeKind(kind: "alias" | "invite"): string {
   return kind === "alias"
-    ? "A handle is your reusable public name. People can search it, add you to chats, or link a device with it until you disable or expire it."
+    ? "Your readable handle stays local. The server stores a peppered exact-lookup value so people can find you only by typing the exact handle."
     : "An invite is a public one-use code. Share it with one person or device, and it stops working after it is used, expired, or rolled.";
+}
+
+function displayIdentityCode(code: IdentityCode): string {
+  return code.kind === "alias" ? "SEALED HANDLE" : `#${code.code}`;
 }
 
 function formatExpiry(expiresAt?: string | null): string {
@@ -908,7 +932,7 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
   token: string | null;
 }) {
   const qc = useQueryClient();
-  const { getDevicePasscode, setAuthHandle, setToken } = useAuth();
+  const { getDevicePasscode, getLastHandle, setAuthHandle, setToken } = useAuth();
   const [revealed, setRevealed] = useState(false);
   const [deviceSessions, setDeviceSessions] = useState<DeviceSession[] | null>(null);
   const [newCode, setNewCode] = useState("");
@@ -1008,12 +1032,14 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
       try {
         await verifyDevice("Confirm last handle disable");
         const passcode = await getDevicePasscode();
+        const localHandle = await getLastHandle();
         if (!passcode) throw new Error("No local device access key found.");
+        if (!localHandle) throw new Error("Enter your handle on the login screen before disabling your last handle.");
         const url = Platform.OS === "web" ? "/api/auth/login" : `https://${process.env.EXPO_PUBLIC_DOMAIN}/api/auth/login`;
         const res = await fetch(url, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ handle: pendingUpdate.code.code, passcode }),
+          body: JSON.stringify({ handle: hashIdentityCode(localHandle), passcode }),
         });
         const auth = await res.json();
         if (!res.ok) throw new Error(auth?.error ?? "Fresh device verification failed.");
@@ -1109,28 +1135,28 @@ function ProfileModal({ visible, onClose, me, colors, codename, token }: {
             <View key={code.id} style={[styles.codeCard, { borderColor: colors.border, backgroundColor: colors.card }]} testID={`identity-code-${code.id}`}>
               <View style={styles.codeHeader}>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.codeTitle, { color: colors.foreground }]}>{code.kind === "alias" ? "@" : "#"}{code.code}</Text>
+                  <Text style={[styles.codeTitle, { color: colors.foreground }]}>{displayIdentityCode(code)}</Text>
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses</Text>
                   <Text style={[styles.codeMeta, { color: colors.mutedForeground }]}>{formatExpiry(code.expiresAt)}</Text>
                 </View>
-                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${displayIdentityCode(code)}? This changes whether people can discover it.`, code, { active: !code.active })} style={[styles.smallBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.smallBtnText, { color: colors.primary }]}>{code.active ? "DISABLE" : "ENABLE"}</Text>
                 </TouchableOpacity>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_SCOPE_OPTIONS.map((scope) => (
-                  <TouchableOpacity key={scope.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change visibility for ${code.code} to ${scope.label}?`, code, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                  <TouchableOpacity key={scope.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change visibility for ${displayIdentityCode(code)} to ${scope.label}?`, code, { visibilityScope: scope.value })} style={[styles.ttlBtn, { borderColor: code.visibilityScope === scope.value ? colors.primary : colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: code.visibilityScope === scope.value ? colors.primary : colors.mutedForeground }]}>{scope.label}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.ttlScroll}>
                 {CODE_TTL_OPTIONS.map((ttl) => (
-                  <TouchableOpacity key={ttl.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change duration for ${code.code} to ${ttl.label}?`, code, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
+                  <TouchableOpacity key={ttl.value} disabled={updateCode.isPending} onPress={() => requestUpdate(`Change duration for ${displayIdentityCode(code)} to ${ttl.label}?`, code, { ttlSeconds: ttl.value })} style={[styles.ttlBtn, { borderColor: colors.border }, updateCode.isPending && { opacity: 0.5 }]}>
                     <Text style={[styles.ttlBtnText, { color: colors.mutedForeground }]}>{ttl.label}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }, updateCode.isPending && { opacity: 0.5 }]}>
+                <TouchableOpacity disabled={updateCode.isPending} onPress={() => requestUpdate(`Roll/expire ${displayIdentityCode(code)}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })} style={[styles.ttlBtn, { borderColor: colors.destructive }, updateCode.isPending && { opacity: 0.5 }]}>
                   <Text style={[styles.ttlBtnText, { color: colors.destructive }]}>Roll / expire</Text>
                 </TouchableOpacity>
               </ScrollView>
@@ -1175,7 +1201,7 @@ function ConfirmCodeUpdateModal({
             </Text>
           </View>
           <Text style={[styles.confirmTitle, { color: colors.foreground }]}>
-            {pendingUpdate.isLastActiveHandle ? `Disable @${pendingUpdate.code.code}?` : "Apply this change?"}
+            {pendingUpdate.isLastActiveHandle ? "Disable your last active handle?" : "Apply this change?"}
           </Text>
           <Text style={[styles.confirmText, { color: colors.mutedForeground }]}>
             {pendingUpdate.isLastActiveHandle
@@ -1465,6 +1491,8 @@ const styles = StyleSheet.create({
   ttlScroll: { marginBottom: 4 },
   ttlBtn: { borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8 },
   ttlBtnText: { fontFamily: "Inter_500Medium", fontSize: 12 },
+  settingsWarning: { flexDirection: "row", alignItems: "flex-start", gap: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 8, marginTop: 12 },
+  settingsWarningText: { flex: 1, fontFamily: "Inter_400Regular", fontSize: 11, lineHeight: 17 },
   searchRow: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10 },
   searchInput: { flex: 1, fontFamily: "Inter_400Regular", fontSize: 14, padding: 0 },
   userRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 4 },

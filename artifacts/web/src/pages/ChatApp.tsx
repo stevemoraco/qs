@@ -17,6 +17,7 @@ import {
   KeyRound,
   Settings,
   CameraOff,
+  AlertTriangle,
 } from "lucide-react";
 import {
   useGetRooms,
@@ -251,6 +252,18 @@ const DELIVERY_FUZZ_OPTIONS = [
   { label: "409 days", value: 35337600 },
 ];
 
+function formatShortDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds} sec`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} hr`;
+  return `${Math.round(seconds / 86400)} days`;
+}
+
+function incompatibleFuzzWarning(ttlSeconds: number | null, ttlMode: "after_view" | "after_send", deliveryFuzzSeconds: number): string | null {
+  if (!ttlSeconds || ttlMode !== "after_send" || deliveryFuzzSeconds <= ttlSeconds) return null;
+  return `Delivery fuzz is ${formatShortDuration(deliveryFuzzSeconds)}, but the send timer is ${formatShortDuration(ttlSeconds)}. Some messages may expire before recipients can receive or reveal them.`;
+}
+
 function randomRefetchInterval(minMs: number, maxMs: number): number {
   return minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
 }
@@ -391,6 +404,7 @@ function NewRoomDialog({
   const [searchHash, setSearchHash] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [revealedUserId, setRevealedUserId] = useState<string | null>(null);
+  const settingsWarning = incompatibleFuzzWarning(ttl, ttlMode, deliveryFuzzSeconds);
 
   const normalizedSearch = normalizeCodeInput(search);
   useEffect(() => {
@@ -532,6 +546,13 @@ function NewRoomDialog({
             <p className="font-mono text-xs text-muted-foreground mt-1">Server releases each message at a random time inside this window. Default is 89 seconds.</p>
           </div>
 
+          {settingsWarning && (
+            <div className="border border-destructive/40 bg-destructive/10 px-3 py-2 flex items-start gap-2" data-testid="room-settings-warning">
+              <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+              <p className="font-mono text-xs leading-relaxed text-destructive">{settingsWarning}</p>
+            </div>
+          )}
+
           <div>
             <label className="font-mono text-xs text-muted-foreground block mb-2 tracking-widest">ADD MEMBERS</label>
             <div className="relative">
@@ -646,8 +667,12 @@ const CODE_SCOPE_OPTIONS = [
 
 function describeCodeKind(kind: "alias" | "invite"): string {
   return kind === "alias"
-    ? "A handle is your reusable public name. People can search it, add you to chats, or link a device with it until you disable or expire it."
+    ? "Your readable handle stays local. The server stores a peppered exact-lookup value so people can find you only by typing the exact handle."
     : "An invite is a public one-use code. Share it with one person or device, and it stops working after it is used, expired, or rolled.";
+}
+
+function displayIdentityCode(code: IdentityCode): string {
+  return code.kind === "alias" ? "SEALED HANDLE" : `#${code.code}`;
 }
 
 function formatExpiry(expiresAt?: string | null): string {
@@ -800,7 +825,9 @@ function ProfilePanel({
     let data = pendingUpdate.data;
     if (pendingUpdate.isLastActiveHandle) {
       try {
-        const auth = await loginWithPasskey(pendingUpdate.code.code);
+        const localHandle = getLastHandle();
+        if (!localHandle) throw new Error("Enter your handle on the login screen before disabling your last handle.");
+        const auth = await loginWithPasskey(localHandle);
         setToken(auth.token);
         setAuthHandle(auth.authHandle);
         data = { ...data, confirmLastHandleDisable: true };
@@ -908,7 +935,7 @@ function ProfilePanel({
               <div key={code.id} className="border border-border/50 bg-background/40 p-3 space-y-3" data-testid={`identity-code-${code.id}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-mono text-sm font-semibold">{code.kind === "alias" ? "@" : "#"}{code.code}</div>
+                    <div className="font-mono text-sm font-semibold">{displayIdentityCode(code)}</div>
                     <div className="font-mono text-xs text-muted-foreground">
                       {code.active ? "ACTIVE" : "DISABLED"} / {code.visibilityScope.replaceAll("_", " ")} / {code.useCount}{code.maxUses ? ` of ${code.maxUses}` : ""} uses
                     </div>
@@ -917,7 +944,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${code.code}? This changes whether people can discover or link with it.`, code, { active: !code.active })}
+                    onClick={() => requestUpdate(`${code.active ? "Disable" : "Enable"} ${displayIdentityCode(code)}? This changes whether people can discover it.`, code, { active: !code.active })}
                     className="border border-border px-3 py-1.5 font-mono text-xs hover:border-primary/50 disabled:opacity-50"
                   >
                     {code.active ? "DISABLE" : "ENABLE"}
@@ -927,7 +954,7 @@ function ProfilePanel({
                   <select
                     value={code.visibilityScope}
                     disabled={updateCode.isPending}
-                    onChange={(e) => requestUpdate(`Change visibility for ${code.code} to ${e.target.value.replaceAll("_", " ")}?`, code, { visibilityScope: e.target.value as typeof code.visibilityScope })}
+                    onChange={(e) => requestUpdate(`Change visibility for ${displayIdentityCode(code)} to ${e.target.value.replaceAll("_", " ")}?`, code, { visibilityScope: e.target.value as typeof code.visibilityScope })}
                     className="bg-background border border-border px-2 py-2 font-mono text-xs disabled:opacity-50"
                   >
                     {CODE_SCOPE_OPTIONS.map((scope) => <option key={scope.value} value={scope.value}>{scope.label}</option>)}
@@ -938,7 +965,7 @@ function ProfilePanel({
                     onChange={(e) => {
                       if (e.target.value) {
                         const label = CODE_TTL_OPTIONS.find((ttl) => ttl.value === Number(e.target.value))?.label ?? e.target.value;
-                        requestUpdate(`Change duration for ${code.code} to ${label}?`, code, { ttlSeconds: Number(e.target.value) });
+                        requestUpdate(`Change duration for ${displayIdentityCode(code)} to ${label}?`, code, { ttlSeconds: Number(e.target.value) });
                       }
                       e.currentTarget.value = "";
                     }}
@@ -950,7 +977,7 @@ function ProfilePanel({
                   <button
                     type="button"
                     disabled={updateCode.isPending}
-                    onClick={() => requestUpdate(`Roll/expire ${code.code}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })}
+                    onClick={() => requestUpdate(`Roll/expire ${displayIdentityCode(code)}? This disables it immediately.`, code, { active: false, visibilityScope: "disabled" })}
                     className="border border-border px-2 py-2 font-mono text-xs hover:border-destructive/60 hover:text-destructive disabled:opacity-50"
                   >
                     ROLL / EXPIRE
@@ -999,7 +1026,7 @@ function ConfirmCodeUpdateModal({
           </div>
         </div>
         <h3 className="font-mono text-lg font-bold mb-2">
-          {pendingUpdate.isLastActiveHandle ? `Disable @${pendingUpdate.code.code}?` : "Apply this change?"}
+          {pendingUpdate.isLastActiveHandle ? "Disable your last active handle?" : "Apply this change?"}
         </h3>
         <p className="font-mono text-xs text-muted-foreground leading-relaxed">
           {pendingUpdate.isLastActiveHandle

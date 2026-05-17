@@ -2,6 +2,12 @@ import { Router } from "express";
 import { db, identityCodesTable, usersTable } from "@workspace/db";
 import { and, eq, gt, isNull, or } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
+import {
+  canAcceptIdentityLookupInput,
+  normalizeIdentityCode,
+  serverLookupCode,
+} from "../lib/identity-lookup";
+import { consumeRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
@@ -22,18 +28,16 @@ function publicUser(u: typeof usersTable.$inferSelect) {
   };
 }
 
-function normalizeIdentityCode(code: string): string {
-  return code.trim().replace(/^[@#]+/, "").toLowerCase();
-}
-
-function isValidLookupHash(code: string): boolean {
-  return /^[a-f0-9]{64}$/.test(code);
-}
-
 router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
   const q = normalizeIdentityCode(String(req.query.q ?? ""));
-  if (!q || !isValidLookupHash(q)) {
+  if (!q || !canAcceptIdentityLookupInput(q)) {
     res.json([]);
+    return;
+  }
+  const lookup = serverLookupCode(q);
+
+  if (!consumeRateLimit(`users:search:${req.ip ?? "unknown"}:${req.userId}:${lookup}`, 10, 5 * 60 * 1000, 30 * 60 * 1000)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -43,7 +47,7 @@ router.get("/users/search", requireAuth, async (req: AuthRequest, res) => {
     .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
     .where(
       and(
-        eq(identityCodesTable.code, q),
+        eq(identityCodesTable.code, lookup),
         eq(identityCodesTable.active, true),
         eq(identityCodesTable.visibilityScope, "public"),
         or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))

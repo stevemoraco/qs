@@ -14,6 +14,17 @@ function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
 }
 
+function scheduleNotification(delaySeconds: number, task: () => Promise<unknown>): void {
+  if (delaySeconds <= 0) {
+    void task();
+    return;
+  }
+  const timer = setTimeout(() => {
+    void task();
+  }, delaySeconds * 1000);
+  timer.unref?.();
+}
+
 router.get("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res) => {
   const roomId = routeParam(req.params.roomId);
 
@@ -146,6 +157,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
       recipientEncryptedKeys: recipientEncryptedKeys ?? null,
       expiresAt,
       availableAt,
+      createdAt: availableAt,
     })
     .returning();
 
@@ -166,9 +178,7 @@ router.post("/rooms/:roomId/messages", requireAuth, async (req: AuthRequest, res
     tag: `room-${roomId}`,
   };
 
-  if (fuzzDelaySeconds === 0) {
-    void Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload)));
-  }
+  scheduleNotification(fuzzDelaySeconds, () => Promise.all(recipients.map((recipient) => notifyUser(recipient.userId, notificationPayload))));
 
   res.status(201).json({
     id: message.id,

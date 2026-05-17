@@ -1,29 +1,24 @@
 import { Router } from "express";
 import { db, identityCodesTable, usersTable } from "@workspace/db";
-import { and, asc, count, desc, eq, gt, ilike, isNull, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, isNull, or } from "drizzle-orm";
 import {
   PatchIdentityCodesCodeIdBody,
   PostIdentityCodesBody,
 } from "@workspace/api-zod";
 import { randomBytes } from "crypto";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
+import {
+  canAcceptIdentityLookupInput,
+  isValidIdentityCode,
+  normalizeIdentityCode,
+  serverLookupCode,
+} from "../lib/identity-lookup";
+import { consumeRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
 function routeParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] : (value ?? "");
-}
-
-function normalizeIdentityCode(code: string): string {
-  return code.trim().replace(/^[@#]+/, "").toLowerCase();
-}
-
-function isValidIdentityCode(code: string): boolean {
-  return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
-}
-
-function isHashedIdentityCode(code: string): boolean {
-  return /^[a-f0-9]{64}$/.test(code);
 }
 
 function expiryFromTtl(ttlSeconds: number | null | undefined): Date | null {
@@ -74,10 +69,16 @@ router.post("/identity-codes", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
 
-  const requestedCode = parse.data.code ? normalizeIdentityCode(parse.data.code) : randomCode();
   const kind = parse.data.kind ?? "alias";
-  if (kind === "alias" ? !isHashedIdentityCode(requestedCode) : !isValidIdentityCode(requestedCode)) {
+  const requestedInput = parse.data.code ? normalizeIdentityCode(parse.data.code) : randomCode();
+  if (kind === "alias" ? !canAcceptIdentityLookupInput(requestedInput) : !isValidIdentityCode(requestedInput)) {
     res.status(400).json({ error: kind === "alias" ? "Handle lookup hash is invalid" : "Code must be 2-32 letters, numbers, underscores, or dashes" });
+    return;
+  }
+  const requestedCode = kind === "alias" ? serverLookupCode(requestedInput) : requestedInput;
+
+  if (kind === "alias" && !consumeRateLimit(`identity-code:create:${req.ip ?? "unknown"}:${requestedCode}`, 5, 5 * 60 * 1000, 30 * 60 * 1000)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -171,8 +172,14 @@ router.patch("/identity-codes/:codeId", requireAuth, async (req: AuthRequest, re
 
 router.get("/identity-codes/search", requireAuth, async (req: AuthRequest, res) => {
   const q = normalizeIdentityCode(String(req.query.q ?? ""));
-  if (!q) {
+  if (!q || !canAcceptIdentityLookupInput(q)) {
     res.json([]);
+    return;
+  }
+  const lookup = serverLookupCode(q);
+
+  if (!consumeRateLimit(`identity-code:search:${req.ip ?? "unknown"}:${lookup}`, 10, 5 * 60 * 1000, 30 * 60 * 1000)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -182,7 +189,7 @@ router.get("/identity-codes/search", requireAuth, async (req: AuthRequest, res) 
     .innerJoin(usersTable, eq(identityCodesTable.ownerUserId, usersTable.id))
     .where(
       and(
-        ilike(identityCodesTable.code, `%${q}%`),
+        eq(identityCodesTable.code, lookup),
         eq(identityCodesTable.active, true),
         eq(identityCodesTable.visibilityScope, "public"),
         or(isNull(identityCodesTable.expiresAt), gt(identityCodesTable.expiresAt, new Date()))

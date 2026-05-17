@@ -20,6 +20,12 @@ import {
 } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middlewares/auth";
 import { notifyUser } from "./push";
+import {
+  canAcceptIdentityLookupInput,
+  normalizeIdentityCode,
+  serverLookupCode,
+} from "../lib/identity-lookup";
+import { consumeRateLimit } from "../lib/rate-limit";
 
 const router = Router();
 
@@ -28,7 +34,6 @@ const AVATAR_COLORS = [
   "#ec4899","#6366f1","#14b8a6","#f97316","#84cc16",
 ];
 
-const loginFailures = new Map<string, { count: number; lockedUntil: number }>();
 const passkeyChallenges = new Map<string, { handle: string; expiresAt: number }>();
 
 function randomColor() {
@@ -71,22 +76,6 @@ function consumeChallenge(challenge: string, handle: string): boolean {
   return !!saved && saved.handle === handle && saved.expiresAt > Date.now();
 }
 
-function normalizeIdentityCode(code: string): string {
-  return code.trim().replace(/^[@#]+/, "").toLowerCase();
-}
-
-function isValidIdentityCode(code: string): boolean {
-  return /^[a-z0-9][a-z0-9_-]{1,31}$/.test(code);
-}
-
-function isHashedIdentityCode(code: string): boolean {
-  return /^[a-f0-9]{64}$/.test(code);
-}
-
-function isValidStoredIdentityCode(code: string): boolean {
-  return isValidIdentityCode(code) || isHashedIdentityCode(code);
-}
-
 function isRegistrationResponse(value: unknown): value is RegistrationResponseJSON {
   return !!value && typeof value === "object" && "id" in value && "response" in value;
 }
@@ -120,21 +109,16 @@ function loginKey(reqIp: string | undefined, handle: string): string {
   return `${reqIp ?? "unknown"}:${handle}`;
 }
 
-function isLoginThrottled(key: string): boolean {
-  const entry = loginFailures.get(key);
-  if (!entry) return false;
-  if (entry.lockedUntil <= Date.now()) {
-    loginFailures.delete(key);
-    return false;
-  }
-  return entry.count >= 5;
+function consumeHandleGuessBudget(reqIp: string | undefined, purpose: string, lookup: string): boolean {
+  const ip = reqIp ?? "unknown";
+  return (
+    consumeRateLimit(`handle:${purpose}:ip:${ip}`, 30, 60 * 1000, 15 * 60 * 1000) &&
+    consumeRateLimit(`handle:${purpose}:target:${ip}:${lookup}`, 5, 5 * 60 * 1000, 30 * 60 * 1000)
+  );
 }
 
-function recordLoginFailure(key: string): void {
-  const entry = loginFailures.get(key);
-  const count = (entry?.count ?? 0) + 1;
-  const lockedUntil = count >= 5 ? Date.now() + Math.min(15 * 60 * 1000, count * 60 * 1000) : Date.now() + 60 * 1000;
-  loginFailures.set(key, { count, lockedUntil });
+function genericPasskeyError() {
+  return { error: "Could not start verification. Check your handle and passkey." };
 }
 
 function authUser(user: typeof usersTable.$inferSelect, authHandle: string, token: string, username = "sealed", primaryCode: string | null = null) {
@@ -162,17 +146,23 @@ router.post("/auth/register", async (req, res) => {
   }
 
   const { passcode, primaryCode, displayName, kemPublicKey, dsaPublicKey, leadEmail } = parse.data;
-  const normalizedPrimaryCode = primaryCode ? normalizeIdentityCode(primaryCode) : "";
+  const primaryLookupInput = primaryCode ? normalizeIdentityCode(primaryCode) : "";
 
-  if (!isValidStoredIdentityCode(normalizedPrimaryCode)) {
+  if (!canAcceptIdentityLookupInput(primaryLookupInput)) {
     res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
+    return;
+  }
+  const primaryLookup = serverLookupCode(primaryLookupInput);
+
+  if (!consumeHandleGuessBudget(req.ip, "register", primaryLookup)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
   const existing = await db
     .select({ id: identityCodesTable.id })
     .from(identityCodesTable)
-    .where(eq(identityCodesTable.code, normalizedPrimaryCode))
+    .where(eq(identityCodesTable.code, primaryLookup))
     .limit(1);
 
   if (existing.length > 0) {
@@ -205,7 +195,7 @@ router.post("/auth/register", async (req, res) => {
 
   await db.insert(identityCodesTable).values({
     ownerUserId: user.id,
-    code: normalizedPrimaryCode,
+    code: primaryLookup,
     kind: "alias",
   });
 
@@ -233,13 +223,19 @@ router.post("/auth/register", async (req, res) => {
       });
   }
 
-  res.status(201).json(authUser(user, authHandle, token, normalizedPrimaryCode, normalizedPrimaryCode));
+  res.status(201).json(authUser(user, authHandle, token));
 });
 
 router.post("/auth/passkey/register/options", async (req, res) => {
-  const handle = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
-  if (!isValidStoredIdentityCode(handle)) {
+  const handleInput = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
+  if (!canAcceptIdentityLookupInput(handleInput)) {
     res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
+    return;
+  }
+  const handle = serverLookupCode(handleInput);
+
+  if (!consumeHandleGuessBudget(req.ip, "register-options", handle)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -281,12 +277,13 @@ router.post("/auth/passkey/register/verify", async (req, res) => {
     displayName?: unknown;
     leadEmail?: unknown;
   };
-  const handle = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
+  const handleInput = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
 
-  if (!isValidStoredIdentityCode(handle)) {
+  if (!canAcceptIdentityLookupInput(handleInput)) {
     res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
     return;
   }
+  const handle = serverLookupCode(handleInput);
   if (!isRegistrationResponse(body.response) || typeof body.kemPublicKey !== "string" || typeof body.dsaPublicKey !== "string") {
     res.status(400).json({ error: "Passkey registration response and public keys are required" });
     return;
@@ -378,13 +375,19 @@ router.post("/auth/passkey/register/verify", async (req, res) => {
       });
   }
 
-  res.status(201).json(authUser(user, authHandle, token, handle, handle));
+  res.status(201).json(authUser(user, authHandle, token));
 });
 
 router.post("/auth/passkey/login/options", async (req, res) => {
-  const handle = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
-  if (!isValidStoredIdentityCode(handle)) {
-    res.status(400).json({ error: "Handle lookup must be a valid handle or normalized handle hash" });
+  const handleInput = typeof req.body?.handle === "string" ? normalizeIdentityCode(req.body.handle) : "";
+  if (!canAcceptIdentityLookupInput(handleInput)) {
+    res.status(400).json(genericPasskeyError());
+    return;
+  }
+  const handle = serverLookupCode(handleInput);
+
+  if (!consumeHandleGuessBudget(req.ip, "login-options", handle)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -398,12 +401,12 @@ router.post("/auth/passkey/login/options", async (req, res) => {
     .limit(1);
 
   if (!handleState) {
-    res.status(404).json({ error: "Handle not found" });
+    res.status(401).json(genericPasskeyError());
     return;
   }
 
   if (!handleState.active || (handleState.expiresAt && handleState.expiresAt <= new Date())) {
-    res.status(403).json({ error: "Handle is disabled or expired. Enable it from an active session before using it to log in." });
+    res.status(401).json(genericPasskeyError());
     return;
   }
 
@@ -430,7 +433,7 @@ router.post("/auth/passkey/login/options", async (req, res) => {
     }));
 
   if (allowCredentials.length === 0) {
-    res.status(404).json({ error: "No passkey found for that handle" });
+    res.status(401).json(genericPasskeyError());
     return;
   }
 
@@ -446,9 +449,15 @@ router.post("/auth/passkey/login/options", async (req, res) => {
 
 router.post("/auth/passkey/login/verify", async (req, res) => {
   const body = req.body as { handle?: unknown; response?: unknown };
-  const handle = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
-  if (!isValidStoredIdentityCode(handle) || !isAuthenticationResponse(body.response)) {
+  const handleInput = typeof body.handle === "string" ? normalizeIdentityCode(body.handle) : "";
+  if (!canAcceptIdentityLookupInput(handleInput) || !isAuthenticationResponse(body.response)) {
     res.status(400).json({ error: "Handle and passkey response are required" });
+    return;
+  }
+  const handle = serverLookupCode(handleInput);
+
+  if (!consumeHandleGuessBudget(req.ip, "login-verify", handle)) {
+    res.status(429).json({ error: "Too many handle attempts. Try again later." });
     return;
   }
 
@@ -505,7 +514,7 @@ router.post("/auth/passkey/login/verify", async (req, res) => {
     .where(eq(deviceCredentialsTable.id, row.credential.id));
 
   const token = await createSession(row.user.id);
-  res.json(authUser(row.user, generateAuthHandle(), token, handle, handle));
+  res.json(authUser(row.user, generateAuthHandle(), token));
 });
 
 router.post("/auth/login", async (req, res) => {
@@ -516,10 +525,15 @@ router.post("/auth/login", async (req, res) => {
   }
 
   const { handle, passcode } = parse.data;
-  const normalizedHandle = normalizeIdentityCode(handle);
+  const handleInput = normalizeIdentityCode(handle);
+  if (!canAcceptIdentityLookupInput(handleInput)) {
+    res.status(401).json({ error: "Invalid handle or passcode" });
+    return;
+  }
+  const normalizedHandle = serverLookupCode(handleInput);
   const throttleKey = loginKey(req.ip, normalizedHandle);
 
-  if (isLoginThrottled(throttleKey)) {
+  if (!consumeHandleGuessBudget(req.ip, "device-login", throttleKey)) {
     res.status(429).json({ error: "Too many login attempts. Try again later." });
     return;
   }
@@ -540,7 +554,6 @@ router.post("/auth/login", async (req, res) => {
     );
 
   if (rows.length === 0) {
-    recordLoginFailure(throttleKey);
     res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
@@ -554,14 +567,12 @@ router.post("/auth/login", async (req, res) => {
   }
 
   if (!validRow) {
-    recordLoginFailure(throttleKey);
     res.status(401).json({ error: "Invalid handle or passcode" });
     return;
   }
 
-  loginFailures.delete(throttleKey);
   const token = await createSession(validRow.user.id);
-  res.json(authUser(validRow.user, generateAuthHandle(), token, normalizedHandle, normalizedHandle));
+  res.json(authUser(validRow.user, generateAuthHandle(), token));
 });
 
 router.post("/auth/link-device", async (req, res) => {
@@ -638,16 +649,10 @@ router.post("/auth/link-device", async (req, res) => {
 
 router.get("/auth/me", requireAuth, async (req: AuthRequest, res) => {
   const u = req.user!;
-  const [primary] = await db
-    .select({ code: identityCodesTable.code })
-    .from(identityCodesTable)
-    .where(and(eq(identityCodesTable.ownerUserId, u.id), eq(identityCodesTable.kind, "alias"), eq(identityCodesTable.active, true)))
-    .limit(1);
-
   res.json({
     id: u.id,
-    username: primary?.code ?? "sealed",
-    primaryCode: primary?.code ?? null,
+    username: "sealed",
+    primaryCode: null,
     displayName: u.displayName,
     avatarColor: u.avatarColor,
     kemPublicKey: u.kemPublicKey,
