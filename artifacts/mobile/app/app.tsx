@@ -150,6 +150,7 @@ type Message = {
   availableAt?: string | null;
   createdAt: string;
   localFuzzing?: boolean;
+  localOptimistic?: boolean;
 };
 
 type WrappedMessageKey = {
@@ -798,6 +799,7 @@ function ChatView({
         live.ciphertext === local.ciphertext
       ));
       if (hasLiveCopy) return false;
+      if (local.localOptimistic && !local.localFuzzing) return true;
       const sentMs = new Date(local.createdAt).getTime();
       if (!Number.isFinite(sentMs)) return true;
       return now <= sentMs + Math.max(1, fuzzSeconds) * 1000;
@@ -843,31 +845,30 @@ function ChatView({
         return;
       }
       const sentAt = new Date().toISOString();
-      const optimistic: Message | null = room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0
-        ? {
-            id: `local-fuzz-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-            senderId: myId,
-            senderUsername: null,
-            ciphertext,
-            nonce,
-            algorithm: CIPHER_SUITE,
-            signature,
-            senderDsaPublicKey: await getDsaPublicKey(),
-            recipientEncryptedKeys,
-            expiresAt: null,
-            decayAttestation: null,
-            decayedAt: null,
-            availableAt: sentAt,
-            createdAt: sentAt,
-            localFuzzing: true,
-          }
-        : null;
-      if (optimistic) setOptimisticMessages((current) => [...current, optimistic]);
+      const optimistic: Message = {
+        id: `local-sent-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        senderId: myId,
+        senderUsername: null,
+        ciphertext,
+        nonce,
+        algorithm: CIPHER_SUITE,
+        signature,
+        senderDsaPublicKey: await getDsaPublicKey(),
+        recipientEncryptedKeys,
+        expiresAt: null,
+        decayAttestation: null,
+        decayedAt: null,
+        availableAt: sentAt,
+        createdAt: sentAt,
+        localFuzzing: !!room.deliveryFuzzSeconds && room.deliveryFuzzSeconds > 0,
+        localOptimistic: true,
+      };
+      setOptimisticMessages((current) => [...current, optimistic]);
       sendMsg.mutate(
         { roomId: room.id, data: { ciphertext, nonce, algorithm: CIPHER_SUITE, signature, recipientEncryptedKeys, ttlSeconds: room.ttlSeconds } },
         {
           onError: () => {
-            if (optimistic) setOptimisticMessages((current) => current.filter((msg) => msg.id !== optimistic.id));
+            setOptimisticMessages((current) => current.filter((msg) => msg.id !== optimistic.id));
             setInput(text);
           },
         }

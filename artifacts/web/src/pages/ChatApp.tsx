@@ -2643,13 +2643,10 @@ export default function ChatApp() {
       try {
         const localComplete = !!keys.kemSecretKey && !!keys.kemPublicKey && !!keys.dsaSecretKey && !!keys.dsaPublicKey;
         if (!localComplete) {
-          if (!autoKeyRepairAttemptedRef.current) {
-            autoKeyRepairAttemptedRef.current = true;
-            void rotateLocalKeys();
-          }
+          autoKeyRepairAttemptedRef.current = true;
           setKeyRepairStatus({
             ok: false,
-            reason: "Local private keys were missing on this install. Linking fresh keys now so new messages work here.",
+            reason: "Local private keys are missing on this install. Do not rotate yet if you need old messages here; use an install that still has the original keys, then relink or add this device.",
           });
           return;
         }
