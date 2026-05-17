@@ -65,7 +65,12 @@ WEB_PID=$!
 wait_for_url "${WEB_URL}" "PWA"
 wait_for_url "${WEB_URL}/api/version" "PWA API proxy"
 
-INDEX_JS="$(curl -fsS "${WEB_URL}" | rg -m 1 -o '/assets/index-[^"]+\\.js')"
+INDEX_HTML="$(curl -fsS "${WEB_URL}")"
+INDEX_JS="$(node -e '
+const html = process.argv[1] ?? "";
+const match = html.match(/["'\''](\/assets\/index-[^"'\'']+\.js)["'\'']/);
+if (match) process.stdout.write(match[1]);
+' "$INDEX_HTML")"
 if [[ -z "$INDEX_JS" ]]; then
   echo "Could not find built index asset in served PWA HTML." >&2
   exit 1
