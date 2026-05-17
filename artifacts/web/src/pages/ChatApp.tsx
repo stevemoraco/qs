@@ -767,6 +767,8 @@ const CODE_NAMES = [
 
 const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 const DELIVERY_FUZZ_OPTIONS = [
+  { label: "No fuzzing", value: 0 },
+  { label: "14 sec", value: 14 },
   { label: "89 sec", value: 89 },
   { label: "7 minutes", value: 420 },
   { label: "28 minutes", value: 1680 },

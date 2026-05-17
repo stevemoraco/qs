@@ -59,6 +59,8 @@ const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const DEFAULT_DELIVERY_FUZZ_SECONDS = 89;
 const EXPO_PASSKEY_LIMITATION = "Expo native does not expose the browser WebAuthn passkey ceremony used by the PWA. Mobile saves a SecureStore device key gated by Face ID or biometrics instead.";
 const DELIVERY_FUZZ_OPTIONS = [
+  { label: "No fuzz", v: 0 },
+  { label: "14 sec", v: 14 },
   { label: "89 sec", v: 89 },
   { label: "7 min", v: 420 },
   { label: "28 min", v: 1680 },
