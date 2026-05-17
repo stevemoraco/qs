@@ -73,6 +73,7 @@ function trackedRepoDigest(root: string, algorithm: "md5" | "sha256"): string {
 function gitSnapshot() {
   const root = repoRoot();
   const commit = safeGit(["rev-parse", "HEAD"]);
+  const originMainCommit = safeGit(["rev-parse", "origin/main"]);
   const status = safeGit(["status", "--porcelain"], "");
   return {
     root,
@@ -81,7 +82,11 @@ function gitSnapshot() {
     shortCommit: safeGit(["rev-parse", "--short", "HEAD"]),
     commitSubject: safeGit(["log", "-1", "--format=%s"]),
     committedAtUtc: safeGit(["log", "-1", "--format=%cI"]),
-    originMainCommit: safeGit(["rev-parse", "origin/main"]),
+    displayVersion: versionLabelFromIso(safeGit(["log", "-1", "--format=%cI"])),
+    originMainCommit,
+    originMainShortCommit: originMainCommit === "unavailable" ? "unavailable" : originMainCommit.slice(0, 7),
+    originMainCommittedAtUtc: originMainCommit === "unavailable" ? "unavailable" : safeGit(["log", "-1", "--format=%cI", originMainCommit]),
+    originMainDisplayVersion: originMainCommit === "unavailable" ? "unavailable" : versionLabelFromIso(safeGit(["log", "-1", "--format=%cI", originMainCommit])),
     dirty: status.length > 0,
     dirtySummary: status ? status.split("\n").slice(0, 50) : [],
     commitMd5: md5(commit),

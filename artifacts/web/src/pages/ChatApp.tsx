@@ -72,6 +72,7 @@ const GITHUB_URL = "https://github.com/stevemoraco/qs";
 const VERSION_LABEL_FALLBACK = "VERSION";
 declare const __QS_CLIENT_COMMIT__: string;
 const CLIENT_COMMIT = typeof __QS_CLIENT_COMMIT__ === "string" ? __QS_CLIENT_COMMIT__ : "unknown";
+type VersionTone = "ok" | "remote-behind" | "mismatch";
 const CAPTURE_WARNING_MS = 8000;
 const FLASH_SCAN_MS = 60;
 const FLASH_FRAME_WIDTH = 64;
@@ -157,7 +158,11 @@ type VersionGitSnapshot = {
   shortCommit: string;
   commitSubject: string;
   committedAtUtc: string;
+  displayVersion: string;
   originMainCommit: string;
+  originMainShortCommit: string;
+  originMainCommittedAtUtc: string;
+  originMainDisplayVersion: string;
   dirty: boolean;
   dirtySummary: string[];
   commitMd5: string;
@@ -247,12 +252,37 @@ function versionLabelFromIso(value: string): string {
   return `v${part("year")}.${part("month")}.${part("day")}.${part("hour")}.${part("minute")}${part("dayPeriod").toUpperCase()}.${part("timeZoneName")}`;
 }
 
-function VersionBadge({ label, onClick, className = "", mismatch = false }: { label: string; onClick: () => void; className?: string; mismatch?: boolean }) {
+function versionLabelForSnapshot(snapshot?: VersionGitSnapshot): string {
+  return snapshot?.displayVersion || versionLabelFromIso(snapshot?.committedAtUtc ?? "");
+}
+
+function shortCommit(value?: string | null): string {
+  return value ? value.slice(0, 7) : "unknown";
+}
+
+function versionStatus(audit: VersionAudit | null): VersionTone {
+  if (!audit) return "mismatch";
+  const client = CLIENT_COMMIT;
+  const server = audit.git.boot.shortCommit;
+  const local = audit.git.current.shortCommit;
+  const remote = shortCommit(audit.git.current.originMainCommit || audit.git.boot.originMainCommit);
+  const runtimeClean = audit.runningState.serverBootMatchesCurrentGit && !audit.runningState.serverBootDirty && !audit.runningState.currentWorkspaceDirty;
+  if (client !== server || server !== local || !runtimeClean) return "mismatch";
+  if (remote !== local) return "remote-behind";
+  return "ok";
+}
+
+function VersionBadge({ label, onClick, className = "", tone = "ok" }: { label: string; onClick: () => void; className?: string; tone?: VersionTone }) {
+  const toneClass = tone === "mismatch"
+    ? "text-destructive hover:text-destructive"
+    : tone === "remote-behind"
+      ? "text-amber-500 hover:text-amber-500"
+      : "text-muted-foreground hover:text-primary";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`font-mono text-[10px] leading-none transition-colors ${mismatch ? "text-destructive hover:text-destructive" : "text-muted-foreground hover:text-primary"} ${className}`}
+      className={`font-mono text-[10px] leading-none transition-colors ${toneClass} ${className}`}
       data-testid="button-version-audit"
     >
       {label}
@@ -299,7 +329,17 @@ function VersionAuditModal({ open, onClose }: { open: boolean; onClose: () => vo
   };
   const boot = audit?.git.boot;
   const publishUtc = audit?.publishTimeUtc ?? "";
-  const clientServerMismatch = !!boot?.shortCommit && boot.shortCommit !== CLIENT_COMMIT;
+  const tone = versionStatus(audit);
+  const current = audit?.git.current;
+  const remoteCommit = shortCommit(current?.originMainCommit || boot?.originMainCommit);
+  const versionBoxClass = "border border-border/50 bg-background/50 p-3 min-w-0";
+  const versionValueClass = "mt-1 break-all text-sm font-bold text-foreground";
+  const versionHashClass = "mt-2 break-all text-[10px] text-muted-foreground";
+  const statusCopy = tone === "ok"
+    ? "CLIENT, SERVER, LOCAL, AND REMOTE MATCH"
+    : tone === "remote-behind"
+      ? "CLIENT, SERVER, AND LOCAL MATCH. GITHUB REMOTE IS BEHIND."
+      : "CLIENT, SERVER, OR LOCAL VERSION MISMATCH";
 
   return (
     <div className="fixed inset-0 z-[120] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -319,12 +359,33 @@ function VersionAuditModal({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="text-muted-foreground">Loading version audit...</div>
           ) : audit ? (
             <>
-              <div className={`border p-3 ${audit.latestCodeRunning && !clientServerMismatch ? "border-primary/40 bg-primary/5 text-primary" : "border-destructive/40 bg-destructive/10 text-destructive"}`}>
-                {audit.latestCodeRunning && !clientServerMismatch ? "LATEST CODE RUNNING" : "VERSION MISMATCH OR UNCOMMITTED WORKSPACE"}
+              <div className={`border p-3 ${tone === "ok" ? "border-border/60 bg-muted/20 text-muted-foreground" : tone === "remote-behind" ? "border-amber-500/40 bg-amber-500/10 text-amber-500" : "border-destructive/40 bg-destructive/10 text-destructive"}`}>
+                {statusCopy}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-4">
+                <div className={versionBoxClass}>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">client version</div>
+                  <div className={versionValueClass}>{versionLabelForSnapshot(boot)}</div>
+                  <div className={versionHashClass}>client {CLIENT_COMMIT}</div>
+                </div>
+                <div className={versionBoxClass}>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">server version</div>
+                  <div className={versionValueClass}>{versionLabelForSnapshot(boot)}</div>
+                  <div className={versionHashClass}>server {boot?.shortCommit ?? "unknown"}</div>
+                </div>
+                <div className={versionBoxClass}>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">local commit</div>
+                  <div className={versionValueClass}>{versionLabelForSnapshot(current)}</div>
+                  <div className={versionHashClass}>local {current?.shortCommit ?? "unknown"}</div>
+                </div>
+                <div className={versionBoxClass}>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">remote commit</div>
+                  <div className={versionValueClass}>{current?.originMainDisplayVersion || boot?.originMainDisplayVersion || "unavailable"}</div>
+                  <div className={versionHashClass}>remote {remoteCommit}</div>
+                </div>
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <AuditRow label="commit" value={`${boot?.shortCommit ?? "unknown"} / ${boot?.commitSubject ?? "unknown"}`} />
-                <AuditRow label="client bundle" value={CLIENT_COMMIT} />
                 <AuditRow label="package" value={audit.packageVersion} />
                 <AuditRow label="mountain publish" value={formatAuditTime(publishUtc, "America/Denver")} />
                 <AuditRow label="utc publish" value={formatAuditTime(publishUtc, "UTC")} />
@@ -2873,7 +2934,7 @@ export default function ChatApp() {
   const [showProfile, setShowProfile] = useState(false);
   const [showVersionAudit, setShowVersionAudit] = useState(false);
   const [versionLabel, setVersionLabel] = useState(VERSION_LABEL_FALLBACK);
-  const [versionMismatch, setVersionMismatch] = useState(false);
+  const [versionToneValue, setVersionToneValue] = useState<VersionTone>("mismatch");
   const [privacyShield, setPrivacyShield] = useState<{ active: boolean; reason: string; error?: string }>({ active: false, reason: "" });
   const [captureWarning, setCaptureWarning] = useState<string | null>(null);
   const [privacyHandle, setPrivacyHandle] = useState(() => getLastHandle() ?? "");
@@ -3193,11 +3254,14 @@ export default function ChatApp() {
         if (!cancelled && audit) {
           const label = audit.displayVersion || versionLabelFromIso(audit.publishTimeUtc);
           setVersionLabel(label);
-          setVersionMismatch(audit.git.boot.shortCommit !== CLIENT_COMMIT || !audit.latestCodeRunning);
+          setVersionToneValue(versionStatus(audit));
         }
       })
       .catch(() => {
-        if (!cancelled) setVersionLabel(VERSION_LABEL_FALLBACK);
+        if (!cancelled) {
+          setVersionLabel(VERSION_LABEL_FALLBACK);
+          setVersionToneValue("mismatch");
+        }
       });
     return () => {
       cancelled = true;
@@ -3618,7 +3682,7 @@ export default function ChatApp() {
             label={versionLabel}
             onClick={() => setShowVersionAudit(true)}
             className="absolute left-4 top-4"
-            mismatch={versionMismatch}
+            tone={versionToneValue}
           />
           <button
             type="button"
@@ -3736,7 +3800,7 @@ export default function ChatApp() {
             </div>
             <div className="flex flex-col leading-none">
               <span className="font-mono font-bold tracking-widest text-xs">QUANTUMSHIELD</span>
-              <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mt-1 text-left" mismatch={versionMismatch} />
+              <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mt-1 text-left" tone={versionToneValue} />
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -3900,7 +3964,7 @@ export default function ChatApp() {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <h2 className="font-mono font-bold text-xl tracking-tight mb-3">QuantumShield</h2>
-            <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mb-4" mismatch={versionMismatch} />
+            <VersionBadge label={versionLabel} onClick={() => setShowVersionAudit(true)} className="mb-4" tone={versionToneValue} />
             <p className="font-mono text-sm text-muted-foreground max-w-sm mb-2">
               Select a channel or create a new encrypted conversation
             </p>
