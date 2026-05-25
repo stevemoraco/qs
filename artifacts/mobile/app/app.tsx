@@ -2098,7 +2098,7 @@ const styles = StyleSheet.create({
   confirmActions: { flexDirection: "row", gap: 8, marginTop: 18 },
   confirmBtn: { flex: 1, borderWidth: 1, paddingVertical: 12, alignItems: "center" },
   confirmBtnText: { fontFamily: "Inter_700Bold", fontSize: 10, letterSpacing: 1.5 },
-  privacyLock: { ...StyleSheet.absoluteFillObject, zIndex: 1000, alignItems: "center", justifyContent: "center", padding: 28 },
+  privacyLock: { ...StyleSheet.absoluteFill, zIndex: 1000, alignItems: "center", justifyContent: "center", padding: 28 },
   privacyLockTitle: { fontFamily: "Inter_700Bold", fontSize: 13, letterSpacing: 3, marginTop: 18 },
   privacyLockText: { fontFamily: "Inter_400Regular", fontSize: 12, lineHeight: 19, textAlign: "center", marginTop: 10 },
   privacyUnlockButton: { marginTop: 24, paddingHorizontal: 22, paddingVertical: 14 },
