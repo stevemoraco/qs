@@ -13,21 +13,21 @@
   "dependencies": {
     "@noble/post-quantum": "^0.6.1",
     "@simplewebauthn/browser": "^13.3.0",
-    "@simplewebauthn/server": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.2",
     "@types/ws": "^8.18.1",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
-    "argon2": "^0.44.0",
+    "argon2": "^0.45.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
-    "jose": "^6.2.3",
+    "jose": "^6.2.8",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "web-push": "^3.6.7",
-    "ws": "^8.20.1"
+    "ws": "^8.21.2"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -35,7 +35,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "catalog:",
     "@types/web-push": "^3.6.4",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "esbuild-plugin-pino": "^2.3.3",
     "pino-pretty": "^13.1.3",
     "thread-stream": "4.2.0"
