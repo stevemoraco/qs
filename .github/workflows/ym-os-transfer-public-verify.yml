@@ -54,7 +54,8 @@ jobs:
             YMOsterwalderSchraderObstructions.lean \
             YMSU2PolynomialClosure.lean \
             YMCharacterGalerkinFinite.lean \
-            YMRGClockFinite.lean; do
+            YMRGClockFinite.lean \
+            YMCompactOSSlackFinite.lean; do
             echo "===== $file =====" | tee -a lean-output.log
             set +e
             lake env lean "$file" > current-lean.log 2>&1
@@ -74,7 +75,7 @@ jobs:
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite YM transfer, scaling, stochastic, SU(2) polynomial, character-Galerkin, and RG-clock cores: clean pinned build, zero reported sorry/admit.'
+          echo 'VERIFIED finite YM transfer, scaling, stochastic, SU(2) polynomial, character-Galerkin, RG-clock, and compact OS-slack cores: clean pinned build, zero reported sorry/admit.'
 
       - name: Upload compiler evidence
         if: always()
