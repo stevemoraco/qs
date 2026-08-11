@@ -51,10 +51,32 @@ jobs:
           fi
           echo 'VERIFIED finite PNP sparse-restriction/counting core.'
 
-      - name: Upload compiler evidence
+      - name: Verify explicit seven-gate marker gadget
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 verification/pnp-sparse-restriction/pnp_h4_exact_gate_audit.py \
+            | tee verification/pnp-sparse-restriction/h4-seven-gate-output.log
+
+      - name: Exhaustively exclude full-basis circuits of at most six gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++20 -Wall -Wextra -pedantic \
+            verification/pnp-sparse-restriction/pnp_h4_full_basis_bfs.cpp \
+            -o /tmp/pnp_h4_full_basis_bfs
+          /tmp/pnp_h4_full_basis_bfs 6 2>&1 \
+            | tee verification/pnp-sparse-restriction/h4-bfs-output.log
+          grep -Fx 'NOTFOUND up to 6' \
+            verification/pnp-sparse-restriction/h4-bfs-output.log
+
+      - name: Upload compiler and finite-audit evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnp-sparse-restriction-finite-core-lean-evidence
-          path: verification/pnp-sparse-restriction/lean-output.log
+          name: pnp-sparse-restriction-finite-core-evidence
+          path: |
+            verification/pnp-sparse-restriction/lean-output.log
+            verification/pnp-sparse-restriction/h4-seven-gate-output.log
+            verification/pnp-sparse-restriction/h4-bfs-output.log
           if-no-files-found: warn
