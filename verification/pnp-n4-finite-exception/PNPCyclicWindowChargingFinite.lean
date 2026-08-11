@@ -44,7 +44,8 @@ theorem card_le_mul_card_of_bounded_charge
     _ = ((Finset.univ : Finset Unit).biUnion
           (fun u =>
             (Finset.univ : Finset Witness).filter
-              (fun w => charge w = u))).card := by rw [hcover]
+              (fun w => charge w = u))).card :=
+      congrArg Finset.card hcover
     _ ≤ ∑ u : Unit,
           ((Finset.univ : Finset Witness).filter
             (fun w => charge w = u)).card := by
@@ -66,6 +67,7 @@ theorem card_le_mul_card_of_owner_local_charge
     (charge : Witness → Unit)
     (owner : Unit → Owner)
     (Admissible : Witness → Owner → Prop)
+    [DecidableRel Admissible]
     (q : ℕ)
     (hlocal : ∀ w : Witness, Admissible w (owner (charge w)))
     (howner :
@@ -102,6 +104,7 @@ theorem card_le_mul_mul_card_of_multi_owner_charge
     (charge : Witness → Unit)
     (owners : Unit → Finset Owner)
     (Admissible : Witness → Owner → Prop)
+    [DecidableRel Admissible]
     (a q : ℕ)
     (howners : ∀ u : Unit, (owners u).card ≤ a)
     (hlocal :
@@ -201,8 +204,9 @@ theorem card_le_exception_plus_mul_card
           ((Finset.univ : Finset Witness) \ exceptional)).card :=
       Finset.card_le_card hunion
     _ ≤ exceptional.card +
-          ((Finset.univ : Finset Witness) \ exceptional).card :=
-      Finset.card_union_le
+          ((Finset.univ : Finset Witness) \ exceptional).card := by
+      exact Finset.card_union_le exceptional
+        ((Finset.univ : Finset Witness) \ exceptional)
     _ ≤ r + q * Fintype.card Unit :=
       Nat.add_le_add hexceptional hremaining
 
@@ -213,7 +217,8 @@ theorem rational_frontier_from_bounded_congestion
     (hcongestion : 0 < congestion)
     (hcount : witnesses ≤ congestion * units) :
     witnesses / congestion ≤ units := by
-  exact (div_le_iff₀ hcongestion).2 hcount
+  apply (div_le_iff₀ hcongestion).2
+  simpa [mul_comm] using hcount
 
 /-- If the exact circuit surplus equals the number of slack units, the finite
 charge inequality transfers directly to a gate lower bound. -/
