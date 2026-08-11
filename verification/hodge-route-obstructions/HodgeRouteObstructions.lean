@@ -33,14 +33,35 @@ theorem universal_hodge_property_accepts_nonalgebraic
 theorem good_and_bad_fibers_refute_point_to_all_persistence
     {B C : Type*}
     (isAlgebraic : B → C → Prop)
-    (section : B → C)
+    (flatSection : B → C)
     (good bad : B)
-    (hgood : isAlgebraic good (section good))
-    (hbad : ¬ isAlgebraic bad (section bad)) :
-    ¬ (∀ b₀, isAlgebraic b₀ (section b₀) →
-        ∀ b, isAlgebraic b (section b)) := by
+    (hgood : isAlgebraic good (flatSection good))
+    (hbad : ¬ isAlgebraic bad (flatSection bad)) :
+    ¬ (∀ b₀, isAlgebraic b₀ (flatSection b₀) →
+        ∀ b, isAlgebraic b (flatSection b)) := by
   intro hpersist
   exact hbad (hpersist good hgood bad)
+
+/--
+If the retained data are identical at a good and a bad point, no classifier
+using only those data can characterize the varying property on every point.
+-/
+theorem constant_data_cannot_classify_varying_property
+    {B D : Type*}
+    (data : B → D)
+    (property : B → Prop)
+    (good bad : B)
+    (hconst : data good = data bad)
+    (hgood : property good)
+    (hbad : ¬ property bad) :
+    ¬ ∃ classifier : D → Prop,
+      ∀ b, property b ↔ classifier (data b) := by
+  rintro ⟨classifier, hclass⟩
+  have hgoodData : classifier (data good) := (hclass good).mp hgood
+  have hbadData : classifier (data bad) := by
+    rw [← hconst]
+    exact hgoodData
+  exact hbad ((hclass bad).mpr hbadData)
 
 theorem projected_nonalgebraic_forces_source_nonalgebraic
     {V : Type*}
@@ -156,6 +177,7 @@ theorem total_bijection_need_not_preserve_grade :
 #print axioms positive_test_accepts_nonalgebraic
 #print axioms universal_hodge_property_accepts_nonalgebraic
 #print axioms good_and_bad_fibers_refute_point_to_all_persistence
+#print axioms constant_data_cannot_classify_varying_property
 #print axioms projected_nonalgebraic_forces_source_nonalgebraic
 #print axioms badProjector_idempotent
 #print axioms badProjector_does_not_preserve_algebraicAxis
