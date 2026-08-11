@@ -4,9 +4,10 @@ import Mathlib
 # Yang--Mills OS transfer audit: finite obstruction cores
 
 Honesty status: elementary scalar and quadratic-form mathematics only. This file
-formalizes finite logical cores from an audit of Osterwalder--Schrader transfer
-arguments. It does not formalize Yang--Mills theory, OS reconstruction,
-continuum limits, gauge invariance, or any official Millennium statement.
+formalizes finite logical cores from audits of Osterwalder--Schrader transfer,
+physical scaling, and stochastic-quantization arguments. It does not formalize
+Yang--Mills theory, OS reconstruction, continuum limits, gauge invariance, or
+any official Millennium statement.
 -/
 
 namespace MillenniumBraid
@@ -55,12 +56,29 @@ theorem fixed_half_step_contraction_forces_large_energy
   apply (le_div_iff₀ ha).2
   nlinarith
 
+/-- A curvature lower bound `ric - β*hess` is negative beyond its exact threshold. -/
+theorem bakry_emery_curvature_negative_above_threshold
+    (ric hess β : ℝ) (hhess : 0 < hess)
+    (hβ : ric / hess < β) :
+    ric - β * hess < 0 := by
+  have hmul : ric < β * hess := (div_lt_iff₀ hhess).mp hβ
+  linarith
+
+/-- Auxiliary stochastic time can rescale a positive generator gap to any target value. -/
+theorem auxiliary_time_gap_can_be_rescaled_to_target
+    (gap target : ℝ) (hgap : 0 < gap) (htarget : 0 < target) :
+    ∃ c : ℝ, 0 < c ∧ c * gap = target := by
+  refine ⟨target / gap, div_pos htarget hgap, ?_⟩
+  field_simp
+
 #print axioms positive_isometry_scalar_trivial
 #print axioms lower_order_bound_does_not_give_upper_control
 #print axioms difference_of_nonnegative_squares_can_be_negative
 #print axioms nonnegative_symmetric_kernel_need_not_be_psd
 #print axioms fixed_physical_time_mass_numerator
 #print axioms fixed_half_step_contraction_forces_large_energy
+#print axioms bakry_emery_curvature_negative_above_threshold
+#print axioms auxiliary_time_gap_can_be_rescaled_to_target
 
 end YMOsterwalderSchrader
 end MillenniumBraid
