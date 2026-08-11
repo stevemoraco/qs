@@ -52,7 +52,7 @@ theorem scalar_similitude_determinant
   have hdet := congrArg Matrix.det h
   rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_transpose,
       Matrix.det_smul] at hdet
-  nlinarith
+  simpa [pow_two, mul_assoc, mul_left_comm, mul_comm] using hdet
 
 end BSDGlobalDeterminant
 end Millennium
