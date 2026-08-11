@@ -1,0 +1,66 @@
+name: RH Galerkin Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/rh-galerkin-public-verifier-20260811
+    paths:
+      - 'verification/rh-galerkin/**'
+      - '.github/workflows/rh-galerkin-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-galerkin/**'
+      - '.github/workflows/rh-galerkin-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-galerkin/RHGalerkinProjectionFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and Mathlib environment
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/rh-galerkin
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: true
+          use-mathlib-cache: true
+          nanoda: false
+
+      - name: Compile exact RH Galerkin finite core
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/rh-galerkin
+          lake update
+          lake exe cache get
+          lake env lean RHGalerkinProjectionFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite RH Galerkin core: clean pinned build, zero reported sorry/admit.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-galerkin-finite-core-lean-evidence
+          path: verification/rh-galerkin/lean-output.log
+          if-no-files-found: warn
