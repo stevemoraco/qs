@@ -1,0 +1,157 @@
+name: PNP Primary-Source Interface Audit
+
+on:
+  push:
+    branches:
+      - pnp/primary-source-interface-audit-20260811
+    paths:
+      - '.github/workflows/pnp-primary-source-interface-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract-and-bank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pnp/primary-source-interface-audit-20260811
+
+      - name: Download exact current arXiv source bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/pnp-primary-source/raw
+          for id in 2607.15848 2606.12175; do
+            curl --retry 8 --retry-delay 5 --fail --location \
+              "https://export.arxiv.org/e-print/${id}" \
+              -o "verification/pnp-primary-source/raw/${id}.tar"
+            mkdir -p "verification/pnp-primary-source/raw/${id}"
+            tar -xf "verification/pnp-primary-source/raw/${id}.tar" \
+              -C "verification/pnp-primary-source/raw/${id}" || {
+                echo "Source bundle for ${id} was not a tar archive" >&2
+                file "verification/pnp-primary-source/raw/${id}.tar"
+                exit 1
+              }
+          done
+
+      - name: Extract theorem neighborhoods without interpretation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+
+          root = Path('verification/pnp-primary-source/raw')
+          out = Path('verification/pnp-primary-source')
+          out.mkdir(parents=True, exist_ok=True)
+
+          def tex_files(arxiv_id):
+              base = root / arxiv_id
+              return sorted(
+                  p for p in base.rglob('*')
+                  if p.is_file() and p.suffix.lower() in {'.tex', '.ltx'}
+              )
+
+          def source_digest(arxiv_id):
+              p = root / f'{arxiv_id}.tar'
+              return hashlib.sha256(p.read_bytes()).hexdigest()
+
+          def neighborhoods(arxiv_id, patterns, radius=35):
+              blocks = []
+              for p in tex_files(arxiv_id):
+                  try:
+                      lines = p.read_text(errors='replace').splitlines()
+                  except Exception:
+                      continue
+                  hits = []
+                  for i, line in enumerate(lines):
+                      if any(re.search(pattern, line, re.I) for pattern in patterns):
+                          hits.append(i)
+                  merged = []
+                  for i in hits:
+                      lo = max(0, i-radius)
+                      hi = min(len(lines), i+radius+1)
+                      if merged and lo <= merged[-1][1]:
+                          merged[-1] = (merged[-1][0], max(merged[-1][1], hi))
+                      else:
+                          merged.append((lo, hi))
+                  for lo, hi in merged:
+                      numbered = '\n'.join(
+                          f'{j+1:06d}: {lines[j]}' for j in range(lo, hi)
+                      )
+                      blocks.append(
+                          f'===== FILE {p.relative_to(root/arxiv_id)} '
+                          f'LINES {lo+1}-{hi} =====\n{numbered}\n'
+                      )
+              return '\n'.join(blocks)
+
+          nar = neighborhoods(
+              '2607.15848',
+              [
+                  r'\\begin\{theorem\}',
+                  r'Theorem\s*2',
+                  r'Theorem\s*4',
+                  r'4\s*\^\s*\{?s\}?',
+                  r'n\s*\^\s*\{?8s\}?',
+                  r's/r',
+                  r'expander',
+              ],
+          )
+          vio = neighborhoods(
+              '2606.12175',
+              [
+                  r'\\begin\{theorem\}',
+                  r'Theorem\s*1\.1',
+                  r'entrop',
+                  r'2\s*\^',
+                  r'circuit',
+                  r'distribution',
+                  r'support',
+              ],
+          )
+
+          header = lambda aid: (
+              f'# Exact primary-source extraction for arXiv:{aid}\n\n'
+              f'- Retrieved by GitHub Actions run: $GITHUB_RUN_ID\n'
+              f'- Bundle SHA-256: {source_digest(aid)}\n'
+              f'- Extraction is verbatim line-numbered TeX context.\n'
+              f'- No mathematical interpretation is asserted by this file.\n\n'
+          )
+
+          (out / 'NARAYANAN_2607.15848_THEOREM_CONTEXT.txt').write_text(
+              header('2607.15848') + nar
+          )
+          (out / 'VIOLA_2606.12175_THEOREM_CONTEXT.txt').write_text(
+              header('2606.12175') + vio
+          )
+
+          index = f'''# PNP primary-source interface audit receipt
+
+- Workflow run: {__import__('os').environ.get('GITHUB_RUN_ID')}
+- Verified commit: {__import__('os').environ.get('GITHUB_SHA')}
+- Narayanan source SHA-256: {source_digest('2607.15848')}
+- Viola source SHA-256: {source_digest('2606.12175')}
+
+## Boundary
+
+These artifacts preserve exact TeX neighborhoods from the downloaded primary arXiv source bundles. They deliberately make no claim about theorem interpretation, correctness, novelty, or implications. They exist to prevent another source-interface transcription error.
+'''
+          (out / 'PRIMARY_SOURCE_AUDIT_RECEIPT.md').write_text(index)
+          PY
+
+      - name: Bank immutable extraction artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf verification/pnp-primary-source/raw
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add verification/pnp-primary-source
+          git commit -m '🔎 Bank exact arXiv theorem-interface extracts [skip ci]'
+          git push origin HEAD:pnp/primary-source-interface-audit-20260811
