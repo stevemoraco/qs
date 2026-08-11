@@ -15,16 +15,16 @@ namespace YMSpectralEdgeWitness
 /-- A visible near-edge witness with relative Rayleigh defect transfers a scalar
 spectral lower bound. This is finite real algebra only. -/
 theorem visibility_normalized_witness
-    (λ target s r z θ : ℝ)
+    (lam target s r z θ : ℝ)
     (hs : 0 < s)
     (htarget : 0 ≤ target)
     (hθ0 : 0 ≤ θ)
     (hθ1 : θ < 1)
-    (hupper : z ≤ λ * s)
+    (hupper : z ≤ lam * s)
     (hlower : target * s - r ≤ z)
     (hrel : r ≤ θ * target * s) :
-    (1 - θ) * target ≤ λ := by
-  have hmul : ((1 - θ) * target) * s ≤ λ * s := by
+    (1 - θ) * target ≤ lam := by
+  have hmul : ((1 - θ) * target) * s ≤ lam * s := by
     nlinarith
   exact (mul_le_mul_right hs).mp hmul
 
@@ -32,10 +32,10 @@ theorem visibility_normalized_witness
 spectral bound when visibility shrinks at the same rate. -/
 theorem small_absolute_defect_can_hide_zero_visibility
     (ε : ℝ) (hε : 0 < ε) :
-    ∃ s r z λ target : ℝ,
+    ∃ s r z lam target : ℝ,
       0 < s ∧ 0 < r ∧ r < ε ∧
-      target = 1 ∧ λ = 0 ∧
-      z ≤ λ * s ∧ target * s - r ≤ z ∧ λ < target := by
+      target = 1 ∧ lam = 0 ∧
+      z ≤ lam * s ∧ target * s - r ≤ z ∧ lam < target := by
   refine ⟨ε / 2, ε / 2, 0, 0, 1, ?_⟩
   constructor
   · linarith
