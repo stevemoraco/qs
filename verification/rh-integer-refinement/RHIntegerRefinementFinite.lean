@@ -20,12 +20,12 @@ theorem binomialEightWeightSum :
     (1 : ℤ) + 8 + 28 + 56 + 70 + 56 + 28 + 8 + 1 = 256 := by
   norm_num
 
-/--
+/-
 Finite weighted Jensen inequality for the exact low-pass mask
 `(1,8,28,56,70,56,28,8,1)/256`.
 
-The larger heartbeat allowance is computational only: `nlinarith` expands the
-nine exact weighted-square inequalities. It adds no mathematical hypothesis.
+The larger heartbeat allowance is computational only: `nlinarith` expands one
+exact nonnegative weighted-variance expression. It adds no hypothesis.
 -/
 set_option maxHeartbeats 1000000 in
 theorem binomialEightJensen
@@ -38,16 +38,12 @@ theorem binomialEightJensen
   let μ : ℝ :=
     (x0 + 8*x1 + 28*x2 + 56*x3 + 70*x4 +
       56*x5 + 28*x6 + 8*x7 + x8) / 256
-  have h0 : 0 ≤ (x0 - μ)^2 := sq_nonneg (x0 - μ)
-  have h1 : 0 ≤ (x1 - μ)^2 := sq_nonneg (x1 - μ)
-  have h2 : 0 ≤ (x2 - μ)^2 := sq_nonneg (x2 - μ)
-  have h3 : 0 ≤ (x3 - μ)^2 := sq_nonneg (x3 - μ)
-  have h4 : 0 ≤ (x4 - μ)^2 := sq_nonneg (x4 - μ)
-  have h5 : 0 ≤ (x5 - μ)^2 := sq_nonneg (x5 - μ)
-  have h6 : 0 ≤ (x6 - μ)^2 := sq_nonneg (x6 - μ)
-  have h7 : 0 ≤ (x7 - μ)^2 := sq_nonneg (x7 - μ)
-  have h8 : 0 ≤ (x8 - μ)^2 := sq_nonneg (x8 - μ)
-  dsimp [μ] at h0 h1 h2 h3 h4 h5 h6 h7 h8 ⊢
+  have hvar :
+      0 ≤ (x0 - μ)^2 + 8*(x1 - μ)^2 + 28*(x2 - μ)^2 +
+        56*(x3 - μ)^2 + 70*(x4 - μ)^2 + 56*(x5 - μ)^2 +
+        28*(x6 - μ)^2 + 8*(x7 - μ)^2 + (x8 - μ)^2 := by
+    positivity
+  dsimp [μ] at hvar ⊢
   nlinarith
 
 /-- A zero fine-scale exponential budget forces zero horizontal depth. -/
