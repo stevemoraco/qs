@@ -31,22 +31,16 @@ jobs:
             exit 1
           fi
 
-      - name: Install pinned Lean and Mathlib environment
-        uses: leanprover/lean-action@v1
-        with:
-          lake-package-directory: verification/rh-galerkin
-          auto-config: false
-          build: false
-          test: false
-          lint: false
-          use-github-cache: true
-          use-mathlib-cache: true
-          nanoda: false
-
-      - name: Compile exact RH Galerkin finite core
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
         run: |
           set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
           cd verification/rh-galerkin
           lake update
           lake exe cache get
