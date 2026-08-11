@@ -23,7 +23,11 @@ theorem binomialEightWeightSum :
 /--
 Finite weighted Jensen inequality for the exact low-pass mask
 `(1,8,28,56,70,56,28,8,1)/256`.
+
+The larger heartbeat allowance is computational only: `nlinarith` expands the
+nine exact weighted-square inequalities. It adds no mathematical hypothesis.
 -/
+set_option maxHeartbeats 1000000 in
 theorem binomialEightJensen
     (x0 x1 x2 x3 x4 x5 x6 x7 x8 : ℝ) :
     ((x0 + 8*x1 + 28*x2 + 56*x3 + 70*x4 +
