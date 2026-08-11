@@ -1,9 +1,15 @@
 name = "ym-os-transfer"
 version = "0.1.0"
-defaultTargets = ["YMOsterwalderSchraderObstructions"]
+defaultTargets = ["YMOsterwalderSchraderObstructions", "YMSU2PolynomialClosure", "YMCharacterGalerkinFinite"]
 
 [[lean_lib]]
 name = "YMOsterwalderSchraderObstructions"
+
+[[lean_lib]]
+name = "YMSU2PolynomialClosure"
+
+[[lean_lib]]
+name = "YMCharacterGalerkinFinite"
 
 [[require]]
 name = "mathlib"
