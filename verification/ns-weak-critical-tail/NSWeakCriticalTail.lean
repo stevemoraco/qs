@@ -18,7 +18,6 @@ namespace NSWeakCriticalTail
 `2*K*scaleFactor*c^2*tail ≤ 1` is the small-tail gate. -/
 theorem tail_radius_polynomial_budget
     (amplitude c scaleFactor K tail threshold radius : ℝ)
-    (hc : 0 ≤ c)
     (hscale : 0 ≤ scaleFactor)
     (hthreshold : threshold * scaleFactor = amplitude)
     (hradius : radius * threshold ≤ K * tail)
@@ -49,7 +48,7 @@ theorem tail_radius_below_analyticity_scale
     radius ≤ 1 / (2 * c ^ 2 * amplitude) := by
   have hpoly : 2 * c ^ 2 * amplitude * radius ≤ 1 :=
     tail_radius_polynomial_budget amplitude c scaleFactor K tail threshold radius
-      hc.le hscale hthreshold hradius htail
+      hscale hthreshold hradius htail
   have hden : 0 < 2 * c ^ 2 * amplitude := by
     positivity
   apply (le_div_iff₀ hden).2
