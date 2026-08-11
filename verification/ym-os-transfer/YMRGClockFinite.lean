@@ -21,7 +21,7 @@ def defect (F : ℕ → ℝ) (ell : ℝ) (k : ℕ) : ℝ :=
 /-- The exact finite telescoping identity behind the matching-scale clock. -/
 theorem defect_sum_telescope
     (F : ℕ → ℝ) (ell : ℝ) (N : ℕ) :
-    (∑ k in Finset.range N, defect F ell k) =
+    (∑ k ∈ Finset.range N, defect F ell k) =
       F N - F 0 + (N : ℝ) * ell := by
   induction N with
   | zero => simp [defect]
@@ -36,7 +36,7 @@ clock defects and the terminal clock value. -/
 theorem clock_log_identity
     (F : ℕ → ℝ) (ell : ℝ) (N : ℕ) :
     (N : ℝ) * ell - F 0 =
-      (∑ k in Finset.range N, defect F ell k) - F N := by
+      (∑ k ∈ Finset.range N, defect F ell k) - F N := by
   have h := defect_sum_telescope F ell N
   linarith
 
@@ -44,13 +44,13 @@ theorem clock_log_identity
 matching logarithm. -/
 theorem clock_log_abs_le
     (F : ℕ → ℝ) (ell D B : ℝ) (N : ℕ)
-    (hdef : |∑ k in Finset.range N, defect F ell k| ≤ D)
+    (hdef : |∑ k ∈ Finset.range N, defect F ell k| ≤ D)
     (hterminal : |F N| ≤ B) :
     |(N : ℝ) * ell - F 0| ≤ D + B := by
   rw [clock_log_identity]
   calc
-    |(∑ k in Finset.range N, defect F ell k) - F N|
-        ≤ |∑ k in Finset.range N, defect F ell k| + |F N| := abs_sub _ _
+    |(∑ k ∈ Finset.range N, defect F ell k) - F N|
+        ≤ |∑ k ∈ Finset.range N, defect F ell k| + |F N| := abs_sub _ _
     _ ≤ D + B := add_le_add hdef hterminal
 
 /-- Exponentiating an absolute logarithmic bound gives a two-sided positive
@@ -66,7 +66,7 @@ theorem exp_abs_window
 lemmas. -/
 theorem clock_exp_window
     (F : ℕ → ℝ) (ell D B : ℝ) (N : ℕ)
-    (hdef : |∑ k in Finset.range N, defect F ell k| ≤ D)
+    (hdef : |∑ k ∈ Finset.range N, defect F ell k| ≤ D)
     (hterminal : |F N| ≤ B) :
     Real.exp (-(D + B)) ≤ Real.exp ((N : ℝ) * ell - F 0) ∧
       Real.exp ((N : ℝ) * ell - F 0) ≤ Real.exp (D + B) := by
