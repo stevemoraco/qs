@@ -1,0 +1,158 @@
+name: PNP Capacity Suite Self-Banking Receipt v2
+
+on:
+  push:
+    branches:
+      - pnp/generator-count-capacity-public-verify-20260811
+    paths:
+      - 'verification/pnp-generator-count/PNPGeneratorCountCapacity.lean'
+      - 'verification/pnp-generator-count/PNPAffineSliceCapacity.lean'
+      - 'verification/pnp-generator-count/PNPFiniteEncoderCollision.lean'
+      - 'verification/pnp-generator-count/lakefile.toml'
+      - 'verification/pnp-generator-count/lean-toolchain'
+      - '.github/workflows/pnp-capacity-suite-self-receipt-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-bank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pnp/generator-count-capacity-public-verify-20260811
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            verification/pnp-generator-count/PNPGeneratorCountCapacity.lean \
+            verification/pnp-generator-count/PNPAffineSliceCapacity.lean \
+            verification/pnp-generator-count/PNPFiniteEncoderCollision.lean
+          do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder found in $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean and compile exact suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/pnp-generator-count
+          lake update
+          lake exe cache get
+          : > capacity-suite-v2-output.log
+          for file in \
+            PNPGeneratorCountCapacity.lean \
+            PNPAffineSliceCapacity.lean \
+            PNPFiniteEncoderCollision.lean
+          do
+            echo "===== COMPILE $file =====" | tee -a capacity-suite-v2-output.log
+            lake env lean "$file" 2>&1 | tee -a capacity-suite-v2-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' capacity-suite-v2-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+
+      - name: Generate consolidated receipt safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/pnp-generator-count
+          export LEAN_VERSION="$(lean --version | head -n1)"
+          export MATHLIB_REV="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('lake-manifest.json').read_text())
+          for package in data.get('packages', []):
+              if package.get('name') == 'mathlib':
+                  print(package.get('rev', ''))
+                  break
+          PY
+          )"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          log = Path('capacity-suite-v2-output.log').read_text(errors='replace')
+          axioms = '\n'.join(
+              line for line in log.splitlines()
+              if 'depends on axioms:' in line
+          )
+          receipt = f'''# PNP capacity suite — Lean verification receipt
+
+- Workflow run: {os.environ.get('GITHUB_RUN_ID')}
+- Job attempt: {os.environ.get('GITHUB_RUN_ATTEMPT')}
+- Verified commit at checkout: {os.environ.get('GITHUB_SHA')}
+- Repository: {os.environ.get('GITHUB_REPOSITORY')}
+- Ref: {os.environ.get('GITHUB_REF')}
+- Lean: {os.environ.get('LEAN_VERSION')}
+- Mathlib resolved revision: {os.environ.get('MATHLIB_REV')}
+- Explicit placeholder scans: passed
+- Compiler placeholder scan: passed
+
+## Exact files compiled
+
+- PNPGeneratorCountCapacity.lean
+- PNPAffineSliceCapacity.lean
+- PNPFiniteEncoderCollision.lean
+
+## Printed theorem axiom report
+
+```text
+{axioms}
+```
+
+## Boundary
+
+The suite verifies only finite image-cardinality, represented-set, affine-slice state-space, noninjectivity/collision, and elementary scalar endpoint declarations. It does not verify stars-and-bars, rank or affine-dimension projection, integer kernel extraction, any external paper, asymptotics, arithmetic complexity, VP/VNP, or P versus NP.
+'''
+          Path('CAPACITY_SUITE_V2_LEAN_RECEIPT.md').write_text(receipt)
+          PY
+
+      - name: Commit successful receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git pull --rebase origin pnp/generator-count-capacity-public-verify-20260811
+          git add verification/pnp-generator-count/CAPACITY_SUITE_V2_LEAN_RECEIPT.md verification/pnp-generator-count/lake-manifest.json verification/pnp-generator-count/capacity-suite-v2-output.log
+          git commit -m '✅ Bank consolidated PNP capacity-suite Lean receipt v2 [skip ci]' || exit 0
+          git push origin HEAD:pnp/generator-count-capacity-public-verify-20260811
+
+      - name: Bank compiler failure evidence
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/pnp-generator-count
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          Path('verification/pnp-generator-count/CAPACITY_SUITE_V2_FAILURE.md').write_text(
+              '# PNP capacity suite — Lean verification failure\n\n'
+              f'- Workflow run: {os.environ.get("GITHUB_RUN_ID")}\n'
+              f'- Attempted commit: {os.environ.get("GITHUB_SHA")}\n'
+              '- Status: compiler or honesty gate failed\n\n'
+              'No formal-verification label is authorized.\n'
+          )
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git pull --rebase origin pnp/generator-count-capacity-public-verify-20260811 || true
+          git add verification/pnp-generator-count/CAPACITY_SUITE_V2_FAILURE.md verification/pnp-generator-count/capacity-suite-v2-output.log 2>/dev/null || true
+          git commit -m '🔴 Bank PNP capacity-suite Lean failure evidence v2 [skip ci]' || exit 0
+          git push origin HEAD:pnp/generator-count-capacity-public-verify-20260811 || true
