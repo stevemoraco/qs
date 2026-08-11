@@ -1,0 +1,43 @@
+name: PNP Primary-Source Extract Size Guard
+
+on:
+  push:
+    branches:
+      - pnp/primary-source-interface-audit-20260811
+
+permissions:
+  contents: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pnp/primary-source-interface-audit-20260811
+          fetch-depth: 2
+
+      - name: Roll back oversized generated source extracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          total=0
+          if [ -d verification/pnp-primary-source ]; then
+            total=$(find verification/pnp-primary-source -type f -printf '%s\n' | awk '{s+=$1} END {print s+0}')
+          fi
+          echo "generated source extraction bytes: ${total}"
+          if [ "${total}" -gt 60000 ]; then
+            subject=$(git log -1 --pretty=%s)
+            echo "oversized source extract detected at commit: ${subject}"
+            if [ "${subject}" = '🔎 Bank exact arXiv theorem-interface extracts [skip ci]' ]; then
+              git reset --hard HEAD^
+              git push --force-with-lease origin HEAD:pnp/primary-source-interface-audit-20260811
+            else
+              rm -rf verification/pnp-primary-source
+              git config user.name github-actions[bot]
+              git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+              git add -A
+              git commit -m '🛡️ Remove oversized primary-source extraction [skip ci]'
+              git push origin HEAD:pnp/primary-source-interface-audit-20260811
+            fi
+          fi
