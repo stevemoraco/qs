@@ -63,7 +63,7 @@ theorem weighted_slack_identity
       have hprev : ∀ j < n,
           (1 - ε j) * s (j + 1) = s j - (ε j + η j) := by
         intro j hj
-        exact hrec j (Nat.lt.step hj)
+        exact hrec j (Nat.lt_succ_of_lt hj)
       have hih := ih hprev
       have hn := hrec n (Nat.lt_succ_self n)
       rw [retentionProduct_succ, weightedLoss_succ]
@@ -71,8 +71,12 @@ theorem weighted_slack_identity
         (retentionProduct ε n * (1 - ε n)) * s (n + 1) =
             retentionProduct ε n * ((1 - ε n) * s (n + 1)) := by ring
         _ = retentionProduct ε n * (s n - (ε n + η n)) := by rw [hn]
+        _ = retentionProduct ε n * s n -
+            retentionProduct ε n * (ε n + η n) := by ring
         _ = (s 0 - weightedLoss ε η n) -
-            retentionProduct ε n * (ε n + η n) := by rw [hih]; ring
+            retentionProduct ε n * (ε n + η n) := by rw [hih]
+        _ = s 0 - (weightedLoss ε η n +
+            retentionProduct ε n * (ε n + η n)) := by ring
 
 /-- Positive cumulative retention and a strict weighted-loss budget force
 positive final slack. -/
@@ -112,7 +116,7 @@ theorem one_sub_retentionProduct
   induction n with
   | zero => simp
   | succ n ih =>
-      rw [retentionProduct_succ, Finset.sum_range_succ, ih]
+      rw [retentionProduct_succ, Finset.sum_range_succ, ← ih]
       ring
 
 #print axioms retentionProduct_zero
