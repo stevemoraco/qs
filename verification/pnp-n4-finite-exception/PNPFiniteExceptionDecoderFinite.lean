@@ -93,10 +93,11 @@ theorem source_exact_union_budget
   have hpow : 0 < (2 : ℝ) ^ s := by positivity
   have hcountReal : (positiveCount : ℝ) ≤ (2 : ℝ) ^ s := by
     exact_mod_cast hcount
-  apply (div_le_div_iff_of_pos_right (sq_pos_of_pos hpow)).2
-  rw [div_eq_mul_inv]
-  field_simp
-  nlinarith
+  apply (div_le_iff₀ (sq_pos_of_pos hpow)).2
+  calc
+    (positiveCount : ℝ) ≤ (2 : ℝ) ^ s := hcountReal
+    _ = (1 / (2 : ℝ) ^ s) * ((2 : ℝ) ^ s) ^ 2 := by
+      field_simp [ne_of_gt hpow]
 
 /-- Adding a bounded exceptional-image equality layer to a base decoder with
 cost `baseCost` and image length `ell` has the finite gate-count budget shown
