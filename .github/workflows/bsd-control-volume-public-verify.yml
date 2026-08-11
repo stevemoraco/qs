@@ -1,0 +1,60 @@
+name: BSD Control Volume Finite Core Lean
+
+on:
+  push:
+    branches:
+      - b4/bsd-control-volume-public-verify-20260811
+    paths:
+      - 'verification/bsd-control-volume/**'
+      - '.github/workflows/bsd-control-volume-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/bsd-control-volume/**'
+      - '.github/workflows/bsd-control-volume-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/bsd-control-volume/BSDControlVolume.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/bsd-control-volume
+          lake update
+          lake exe cache get
+          lake env lean BSDControlVolume.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite BSD control-volume core: clean pinned build, zero reported sorry/admit.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-control-volume-finite-core-lean-evidence
+          path: verification/bsd-control-volume/lean-output.log
+          if-no-files-found: warn
