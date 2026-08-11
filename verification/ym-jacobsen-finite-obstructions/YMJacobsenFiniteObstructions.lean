@@ -44,7 +44,8 @@ theorem quartic2_swap (x y : ℚ) :
 
 theorem quartic2_sign_left (x y : ℚ) :
     quartic2 (-x) y = quartic2 x y := by
-  simp [quartic2]
+  unfold quartic2
+  ring
 
 theorem rational_points_same_radius :
     (1 : ℚ) ^ 2 + 0 ^ 2 = (3 / 5 : ℚ) ^ 2 + (4 / 5 : ℚ) ^ 2 := by
@@ -70,7 +71,7 @@ theorem scaled_vacuum_power_exceeds_one
     (N : ℕ)
     (hN : 0 < N) :
     1 < q ^ N := by
-  exact one_lt_pow₀ hq hN
+  exact one_lt_pow₀ hq (Nat.ne_of_gt hN)
 
 #print axioms activity_floor_from_half_boltzmann
 #print axioms first_polymer_factor_exceeds_one
