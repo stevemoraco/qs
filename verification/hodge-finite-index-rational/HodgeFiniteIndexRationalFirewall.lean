@@ -57,12 +57,13 @@ theorem finite_defect_closed_under_addition
     (hx : m • x ∈ A) (hy : n • y ∈ A) :
     (m * n) • (x + y) ∈ A := by
   rw [nsmul_add]
-  have hmx : (m * n) • x = n • (m • x) := by
-    simp [mul_comm, mul_left_comm, mul_assoc]
-  have hny : (m * n) • y = m • (n • y) := by
-    simp [mul_comm, mul_left_comm, mul_assoc]
-  rw [hmx, hny]
-  exact A.add_mem (A.nsmul_mem hx n) (A.nsmul_mem hy m)
+  have hx' : (m * n) • x ∈ A := by
+    rw [mul_nsmul]
+    exact A.nsmul_mem hx n
+  have hy' : (m * n) • y ∈ A := by
+    rw [Nat.mul_comm, mul_nsmul]
+    exact A.nsmul_mem hy m
+  exact A.add_mem hx' hy'
 
 /-- An explicit Bezout identity shows that an `n`-torsion element is divisible
 by `p` whenever `p` is invertible modulo `n`. -/
