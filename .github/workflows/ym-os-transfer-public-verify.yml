@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - research/ym-os-transfer-public-verifier-20260811
+      - research/ym-character-galerkin-public-verifier-20260811
     paths:
       - 'verification/ym-os-transfer/**'
       - '.github/workflows/ym-os-transfer-public-verify.yml'
@@ -50,7 +51,8 @@ jobs:
           : > lean-output.log
           for file in \
             YMOsterwalderSchraderObstructions.lean \
-            YMSU2PolynomialClosure.lean; do
+            YMSU2PolynomialClosure.lean \
+            YMCharacterGalerkinFinite.lean; do
             echo "===== $file =====" | tee -a lean-output.log
             set +e
             lake env lean "$file" > current-lean.log 2>&1
@@ -70,7 +72,7 @@ jobs:
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite YM transfer, scaling, stochastic, and SU(2) polynomial cores: clean pinned build, zero reported sorry/admit.'
+          echo 'VERIFIED finite YM transfer, scaling, stochastic, SU(2) polynomial, and character-Galerkin cores: clean pinned build, zero reported sorry/admit.'
 
       - name: Upload compiler evidence
         if: always()
