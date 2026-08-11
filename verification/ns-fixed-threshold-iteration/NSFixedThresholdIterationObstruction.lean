@@ -19,7 +19,7 @@ namespace MillenniumBraid
 namespace NSFixedThresholdIteration
 
 /-- The equilibrium of `q_next = theta * q + ledger`. -/
-def equilibrium (theta ledger : ℝ) : ℝ :=
+noncomputable def equilibrium (theta ledger : ℝ) : ℝ :=
   ledger / (1 - theta)
 
 /-- A positive ledger and a contraction factor below one give a positive equilibrium. -/
@@ -41,17 +41,16 @@ theorem equilibrium_step
   ring
 
 /-- A constant sequence at the positive affine equilibrium. -/
-def floorSequence (theta threshold : ℝ) : ℕ → ℝ :=
+noncomputable def floorSequence (theta threshold : ℝ) : ℕ → ℝ :=
   fun _ => equilibrium theta (threshold / 2)
 
 /--
 A positive ledger can be strictly below the fixed activity threshold and still
-prevent any decay to zero.  The constant sequence satisfies the recurrence with
+prevent any decay to zero. The constant sequence satisfies the recurrence with
 equality at every step.
 -/
-theorem positive_subthreshold_ledger_supports_nondecreasing_floor
+theorem positive_subthreshold_ledger_supports_positive_floor
     (theta threshold : ℝ)
-    (htheta_nonneg : 0 ≤ theta)
     (htheta_lt_one : theta < 1)
     (hthreshold : 0 < threshold) :
     let ledger := threshold / 2
@@ -79,7 +78,6 @@ subthreshold ledger bound does not force convergence to zero.
 -/
 theorem affine_decay_claim_has_positive_countermodel
     (theta threshold : ℝ)
-    (htheta_nonneg : 0 ≤ theta)
     (htheta_lt_one : theta < 1)
     (hthreshold : 0 < threshold) :
     ∃ q : ℕ → ℝ, ∃ ledger : ℝ,
@@ -87,20 +85,20 @@ theorem affine_decay_claim_has_positive_countermodel
       (∀ n, q (n + 1) ≤ theta * q n + ledger) ∧
       (∀ n, 0 < q n) := by
   refine ⟨floorSequence theta threshold, threshold / 2, ?_⟩
+  have hmodel := positive_subthreshold_ledger_supports_positive_floor
+    theta threshold htheta_lt_one hthreshold
   constructor
-  · linarith
+  · exact hmodel.1
   constructor
-  · linarith
+  · exact hmodel.2.1
   constructor
   · intro n
-    rw [positive_subthreshold_ledger_supports_nondecreasing_floor
-      theta threshold htheta_nonneg htheta_lt_one hthreshold |>.2.2.2 n]
-  · exact positive_subthreshold_ledger_supports_nondecreasing_floor
-      theta threshold htheta_nonneg htheta_lt_one hthreshold |>.2.2.1
+    exact le_of_eq (hmodel.2.2.2 n)
+  · exact hmodel.2.2.1
 
 #print axioms equilibrium_pos
 #print axioms equilibrium_step
-#print axioms positive_subthreshold_ledger_supports_nondecreasing_floor
+#print axioms positive_subthreshold_ledger_supports_positive_floor
 #print axioms affine_decay_claim_has_positive_countermodel
 
 end NSFixedThresholdIteration
