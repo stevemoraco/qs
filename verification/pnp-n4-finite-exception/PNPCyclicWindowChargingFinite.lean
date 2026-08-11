@@ -139,8 +139,8 @@ theorem card_le_mul_mul_card_of_multi_owner_charge
             (fun w => Admissible w owner)).card := by
       exact Finset.card_biUnion_le
     _ ≤ ∑ _owner ∈ owners u, q := by
-      exact Finset.sum_le_sum
-        (fun owner _hownerMem => howner owner)
+      gcongr with owner hownerMem
+      exact howner owner
     _ = (owners u).card * q := by simp
     _ ≤ a * q := Nat.mul_le_mul_right q (howners u)
 
@@ -163,38 +163,48 @@ theorem card_le_exception_plus_mul_card
           (fun w => charge w = u)).card ≤ q) :
     Fintype.card Witness ≤ r + q * Fintype.card Unit := by
   classical
-  let remaining : Finset Witness :=
-    (Finset.univ : Finset Witness) \ exceptional
-  have hremaining : remaining.card ≤ q * Fintype.card Unit := by
-    have hcover :
-        remaining =
-          (Finset.univ : Finset Unit).biUnion
-            (fun u => remaining.filter (fun w => charge w = u)) := by
-      ext w
-      simp [remaining]
+  have hcover :
+      ((Finset.univ : Finset Witness) \ exceptional) =
+        (Finset.univ : Finset Unit).biUnion
+          (fun u =>
+            (((Finset.univ : Finset Witness) \ exceptional).filter
+              (fun w => charge w = u))) := by
+    ext w
+    simp
+  have hremaining :
+      ((Finset.univ : Finset Witness) \ exceptional).card ≤
+        q * Fintype.card Unit := by
     calc
-      remaining.card =
+      ((Finset.univ : Finset Witness) \ exceptional).card =
           ((Finset.univ : Finset Unit).biUnion
-            (fun u => remaining.filter (fun w => charge w = u))).card := by
-        rw [hcover]
+            (fun u =>
+              (((Finset.univ : Finset Witness) \ exceptional).filter
+                (fun w => charge w = u)))).card :=
+        congrArg Finset.card hcover
       _ ≤ ∑ u : Unit,
-            (remaining.filter (fun w => charge w = u)).card := by
+            (((Finset.univ : Finset Witness) \ exceptional).filter
+              (fun w => charge w = u)).card := by
         exact Finset.card_biUnion_le
       _ ≤ ∑ _u : Unit, q := by
-        exact Finset.sum_le_sum (fun u _hu => by
-          simpa [remaining] using hfiber u)
+        exact Finset.sum_le_sum (fun u _hu => hfiber u)
       _ = q * Fintype.card Unit := by simp [Nat.mul_comm]
   have hunion :
-      (Finset.univ : Finset Witness) ⊆ exceptional ∪ remaining := by
+      (Finset.univ : Finset Witness) ⊆
+        exceptional ∪ ((Finset.univ : Finset Witness) \ exceptional) := by
     intro w hw
     by_cases hwe : w ∈ exceptional
     · exact Finset.mem_union_left _ hwe
-    · exact Finset.mem_union_right _ (by simp [remaining, hwe])
+    · exact Finset.mem_union_right _ (by simp [hwe])
   calc
     Fintype.card Witness = (Finset.univ : Finset Witness).card := by simp
-    _ ≤ (exceptional ∪ remaining).card := Finset.card_le_card hunion
-    _ ≤ exceptional.card + remaining.card := Finset.card_union_le
-    _ ≤ r + q * Fintype.card Unit := Nat.add_le_add hexceptional hremaining
+    _ ≤ (exceptional ∪
+          ((Finset.univ : Finset Witness) \ exceptional)).card :=
+      Finset.card_le_card hunion
+    _ ≤ exceptional.card +
+          ((Finset.univ : Finset Witness) \ exceptional).card :=
+      Finset.card_union_le
+    _ ≤ r + q * Fintype.card Unit :=
+      Nat.add_le_add hexceptional hremaining
 
 /-- Rational scalar endpoint: `n` witnesses charged with congestion `b`
 force at least `n / b` units. -/
@@ -216,7 +226,12 @@ theorem gate_lower_from_exact_slack
   have hfrontier : witnesses / congestion ≤ slack :=
     rational_frontier_from_bounded_congestion
       witnesses congestion slack hcongestion hcount
-  linarith
+  calc
+    2 * n - 2 + witnesses / congestion ≤ 2 * n - 2 + slack := by
+      linarith only [hfrontier]
+    _ = g := by
+      rw [← hexact]
+      ring
 
 #print axioms card_le_mul_card_of_bounded_charge
 #print axioms card_le_mul_card_of_owner_local_charge
