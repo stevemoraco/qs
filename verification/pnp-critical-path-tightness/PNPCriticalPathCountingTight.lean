@@ -76,19 +76,24 @@ theorem equality_model_counts_nonnegative
     0 ≤ outsideToOutside n ∧
     0 ≤ outsideToCritical n ∧
     0 ≤ criticalToCritical n := by
-  simp [criticalNodes, outsideNodes, gateCount, criticalToOutside,
-    outsideToOutside, outsideToCritical, criticalToCritical]
   constructor
-  · linarith
+  · simp [criticalNodes]
+    linarith
   constructor
-  · linarith
+  · simp [outsideNodes]
+    linarith
   constructor
-  · linarith
+  · simp [gateCount, criticalNodes, outsideNodes]
+    linarith
   constructor
-  · linarith
+  · simp [criticalToOutside]
+    linarith
   constructor
-  · linarith
-  constructor <;> norm_num
+  · simp [outsideToOutside]
+    linarith
+  constructor
+  · norm_num [outsideToCritical]
+  · norm_num [criticalToCritical]
 
 /--
 The equality model falsifies every positive additive strengthening of the
