@@ -41,8 +41,9 @@ theorem factorization_exists_iff_of_one_sided_inverses
       (Pinv * X') * (Y' * Qinv) = Pinv * (X' * Y') * Qinv := by
         simp [Matrix.mul_assoc]
       _ = Pinv * (P * A * Q) * Qinv := by rw [hXY]
-      _ = A := by
-        simp [Matrix.mul_assoc, hPinvP, hQQinv]
+      _ = (Pinv * P) * A * (Q * Qinv) := by
+        simp only [Matrix.mul_assoc]
+      _ = A := by simp [hPinvP, hQQinv]
 
 theorem no_factorization_transports_forward
     {m n : ℕ}
