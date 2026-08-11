@@ -14,7 +14,7 @@ namespace MillenniumBraid
 namespace YMSU2PolynomialClosure
 
 /-- The degree-raising part of the SU(2) Wilson radial drift. -/
-def degreeRaisingDrift (κ : ℝ) (p : ℝ[X]) : ℝ[X] :=
+noncomputable def degreeRaisingDrift (κ : ℝ) (p : ℝ[X]) : ℝ[X] :=
   -C κ * X ^ 2 * derivative p
 
 /-- On a positive-degree monomial, the Wilson drift has an explicit nonzero
