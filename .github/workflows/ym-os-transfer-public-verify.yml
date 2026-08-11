@@ -52,7 +52,19 @@ jobs:
             YMOsterwalderSchraderObstructions.lean \
             YMSU2PolynomialClosure.lean; do
             echo "===== $file =====" | tee -a lean-output.log
+            set +e
             lake env lean "$file" 2>&1 | tee -a lean-output.log
+            rc=${PIPESTATUS[0]}
+            set -e
+            if [ "$rc" -ne 0 ]; then
+              tail -n 120 lean-output.log | while IFS= read -r line; do
+                escaped="${line//'%'/'%25'}"
+                escaped="${escaped//$'\r'/'%0D'}"
+                escaped="${escaped//$'\n'/'%0A'}"
+                echo "::error file=verification/ym-os-transfer/$file::$escaped"
+              done
+              exit "$rc"
+            fi
           done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
