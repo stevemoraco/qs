@@ -26,7 +26,11 @@ theorem visibility_normalized_witness
     (1 - θ) * target ≤ lam := by
   have hmul : ((1 - θ) * target) * s ≤ lam * s := by
     nlinarith
-  exact (mul_le_mul_right hs).mp hmul
+  by_contra hnot
+  have hlt : lam < (1 - θ) * target := lt_of_not_ge hnot
+  have hstrict : lam * s < ((1 - θ) * target) * s :=
+    mul_lt_mul_of_pos_right hlt hs
+  exact (not_lt_of_ge hmul) hstrict
 
 /-- Arbitrarily small absolute defects do not imply a positive transferred
 spectral bound when visibility shrinks at the same rate. -/
@@ -51,6 +55,7 @@ theorem small_absolute_defect_can_hide_zero_visibility
   · norm_num
   constructor
   · ring_nf
+    norm_num
   · norm_num
 
 /-- The exact logarithmic loss corresponding to a multiplicative transfer
@@ -81,7 +86,7 @@ theorem reverse_physical_gap_step
   apply (div_le_iff₀ hacoarse).2
   have hrhs : (δfine / afine) * acoarse = b * δfine := by
     rw [hscale]
-    field_simp [ne_of_gt hafine] <;> ring
+    field_simp [ne_of_gt hafine]
   rw [hrhs]
   linarith
 
