@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
 
   std::unordered_set<std::vector<Truth>, VectorHash> current;
   std::unordered_set<std::vector<Truth>, VectorHash> next;
-  current.insert({});
+  current.insert(std::vector<Truth>{});
 
   for (int depth = 0; depth < maximum_gates; ++depth) {
     next.clear();
