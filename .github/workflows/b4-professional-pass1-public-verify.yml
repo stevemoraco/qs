@@ -1,0 +1,72 @@
+name: B4 Professional Pass One Finite Cores Lean
+
+on:
+  push:
+    branches:
+      - agent/b4-professional-pass1-public-verify-20260811
+    paths:
+      - 'verification/b4-professional-pass1/**'
+      - '.github/workflows/b4-professional-pass1-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/b4-professional-pass1/**'
+      - '.github/workflows/b4-professional-pass1-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and trust shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            verification/b4-professional-pass1/B4CriticalPathSlackFinite.lean \
+            verification/b4-professional-pass1/B4YangMillsScaleCovarianceFinite.lean
+          do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|native_decide)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder or trust shortcut in $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/b4-professional-pass1
+          lake update
+          lake exe cache get
+          : > lean-output.log
+          for file in B4CriticalPathSlackFinite.lean B4YangMillsScaleCovarianceFinite.lean
+          do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|ofReduceBool|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder/native trust axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite B4 pass-one cores: clean pinned build, zero reported sorry/admit.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-professional-pass1-finite-core-lean-evidence
+          path: verification/b4-professional-pass1/lean-output.log
+          if-no-files-found: warn
