@@ -29,7 +29,7 @@ spectral separation `d` gives the standard rationalized error bound. -/
 theorem enclosure_width_le
     (d c w : ℝ)
     (hd : 0 < d)
-    (hw : 0 ≤ w)
+    (_hw : 0 ≤ w)
     (hrel : w * (d + w) = c ^ 2) :
     w ≤ c ^ 2 / d := by
   have hdw : d * w ≤ c ^ 2 := by
@@ -42,8 +42,8 @@ theorem positive_lower_endpoint
     (α β c E : ℝ)
     (hα : 0 < α)
     (hβ : 0 < β)
-    (hEα : E ≤ α)
-    (hEβ : E ≤ β)
+    (_hEα : E ≤ α)
+    (_hEβ : E ≤ β)
     (hprod : (α - E) * (β - E) = c ^ 2)
     (hdet : c ^ 2 < α * β) :
     0 < E := by
@@ -52,7 +52,6 @@ theorem positive_lower_endpoint
   have h1 : α ≤ α - E := by linarith
   have h2 : β ≤ β - E := by linarith
   have hnonneg1 : 0 ≤ α - E := by linarith
-  have hnonneg2 : 0 ≤ β - E := by linarith
   have hmul : α * β ≤ (α - E) * (β - E) :=
     mul_le_mul h1 h2 (le_of_lt hβ) hnonneg1
   rw [hprod] at hmul
@@ -63,9 +62,9 @@ variables `x,y` represent the norms of the low and complement components. -/
 theorem schur_scalar_lower
     (α β c E x y q : ℝ)
     (hd : 0 < β - E)
-    (hc : 0 ≤ c)
-    (hx : 0 ≤ x)
-    (hy : 0 ≤ y)
+    (_hc : 0 ≤ c)
+    (_hx : 0 ≤ x)
+    (_hy : 0 ≤ y)
     (hbudget : c ^ 2 ≤ (α - E) * (β - E))
     (hq : α * x ^ 2 + β * y ^ 2 - 2 * c * x * y ≤ q) :
     E * (x ^ 2 + y ^ 2) ≤ q := by
@@ -78,22 +77,25 @@ theorem schur_scalar_lower
     have hmul : 0 ≤ (β - E) *
         ((α - E) * x ^ 2 + (β - E) * y ^ 2 - 2 * c * x * y) := by
       nlinarith
-    exact nonneg_of_mul_nonneg_left hmul hd
+    have hmul' : 0 ≤
+        ((α - E) * x ^ 2 + (β - E) * y ^ 2 - 2 * c * x * y) * (β - E) := by
+      simpa [mul_comm] using hmul
+    exact nonneg_of_mul_nonneg_left hmul' hd
   nlinarith
 
 /-- The exact squared singular-value formula for the upper triangular
 cross-block matrix `[[a,b],[0,a]]` satisfies its characteristic equation. -/
 theorem cross_norm_square_characteristic
-    (a b λ : ℝ)
-    (ha : 0 ≤ a)
-    (hb : 0 ≤ b)
-    (hλ : λ = a ^ 2 + b ^ 2 / 2 +
+    (a b eig : ℝ)
+    (_ha : 0 ≤ a)
+    (_hb : 0 ≤ b)
+    (heig : eig = a ^ 2 + b ^ 2 / 2 +
       (b / 2) * Real.sqrt (b ^ 2 + 4 * a ^ 2)) :
-    λ ^ 2 - (2 * a ^ 2 + b ^ 2) * λ + a ^ 4 = 0 := by
+    eig ^ 2 - (2 * a ^ 2 + b ^ 2) * eig + a ^ 4 = 0 := by
   have hrad : 0 ≤ b ^ 2 + 4 * a ^ 2 := by positivity
   have hsqrt : (Real.sqrt (b ^ 2 + 4 * a ^ 2)) ^ 2 =
       b ^ 2 + 4 * a ^ 2 := Real.sq_sqrt hrad
-  rw [hλ]
+  rw [heig]
   nlinarith
 
 #print axioms lower_root_product
