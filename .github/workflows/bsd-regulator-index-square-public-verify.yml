@@ -1,0 +1,82 @@
+name: BSD Regulator Index-Square Public Lean Replay
+
+on:
+  push:
+    branches:
+      - bsd/regulator-index-square-public-verify-20260811
+    paths:
+      - 'verification/bsd-regulator-index-square/**'
+      - '.github/workflows/bsd-regulator-index-square-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/bsd-regulator-index-square/**'
+      - '.github/workflows/bsd-regulator-index-square-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file='verification/bsd-regulator-index-square/BSDRegulatorIndexSquare.lean'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|native_decide)([^[:alnum:]_]|$)' "$source_file"; then
+            echo 'Forbidden Lean placeholder or native trust shortcut found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$source_file"; then
+            echo 'Forbidden custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/bsd-regulator-index-square/toolchain.log
+          lake --version | tee -a verification/bsd-regulator-index-square/toolchain.log
+          cd verification/bsd-regulator-index-square
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean BSDRegulatorIndexSquare.lean > lean-output.log 2>&1
+          rc=$?
+          set -e
+          cat lean-output.log
+          if [ "$rc" -ne 0 ]; then
+            message="$(tail -c 6000 lean-output.log)"
+            message="${message//'%'/'%25'}"
+            message="${message//$'\r'/'%0D'}"
+            message="${message//$'\n'/'%0A'}"
+            echo "::error file=verification/bsd-regulator-index-square/BSDRegulatorIndexSquare.lean::$message"
+            exit "$rc"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder/native trust axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED BSD regulator index-square finite algebra: pinned Lean/Mathlib 4.31.0, zero reported sorry/admit/custom axioms.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-regulator-index-square-lean-evidence
+          path: |
+            verification/bsd-regulator-index-square/lean-output.log
+            verification/bsd-regulator-index-square/toolchain.log
+            verification/bsd-regulator-index-square/lake-manifest.json
+          if-no-files-found: warn
