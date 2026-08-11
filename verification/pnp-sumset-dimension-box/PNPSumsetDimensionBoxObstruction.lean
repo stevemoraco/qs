@@ -129,48 +129,121 @@ theorem boxEval_boundedRowCoeff_eq_sum_rowEval
   rw [sum_rowEval_eq_eval_rowCoeff]
   rfl
 
-/-- A description consists of a positive length `k ≤ ℓ` and a sequence of `k` rows. -/
-def SumDescription (m ℓ : ℕ) :=
-  Σ k : Fin ℓ, Fin (k.val + 1) → Fin m
+/--
+A padded description of a sum of at most `ℓ` rows. `none` is an unused slot;
+`some i` contributes row `i`. This includes the empty sum, which only enlarges
+the represented image and therefore is harmless for an upper bound.
+-/
+abbrev SumDescription (m ℓ : ℕ) := Fin ℓ → Option (Fin m)
 
-/-- The dependent description type is finite. -/
-noncomputable instance sumDescriptionFintype (m ℓ : ℕ) :
-    Fintype (SumDescription m ℓ) :=
-  Fintype.ofFinite (SumDescription m ℓ)
+/-- One coordinate contributed by an optional row. -/
+def optionalCoeff {m d : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (row : Option (Fin m))
+    (j : Fin d) : ℕ :=
+  match row with
+  | none => 0
+  | some i => A i j
 
-/-- The evaluated sum represented by a positive-length row description. -/
+/-- The evaluated contribution of an optional row. -/
+def optionalEval {m d : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (beta : Fin d → ℕ)
+    (row : Option (Fin m)) : ℕ :=
+  ∑ j, optionalCoeff A row j * beta j
+
+/-- Every optional-row coefficient is bounded by `M`. -/
+theorem optionalCoeff_le
+    {m d M : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (hA : ∀ i j, A i j ≤ M)
+    (row : Option (Fin m))
+    (j : Fin d) :
+    optionalCoeff A row j ≤ M := by
+  cases row with
+  | none => simp [optionalCoeff]
+  | some i => simpa [optionalCoeff] using hA i j
+
+/-- Evaluate a padded row-sum description. -/
 def sumDescriptionEval
     {m d ℓ : ℕ}
     (A : Fin m → Fin d → ℕ)
     (beta : Fin d → ℕ)
     (q : SumDescription m ℓ) : ℕ :=
-  ∑ t, rowEval A beta (q.2 t)
+  ∑ t, optionalEval A beta (q t)
 
-/-- The bounded coefficient vector attached to a row-sum description. -/
-def descriptionCoeff
+/-- The aggregate exponent in coordinate `j` of a padded description. -/
+def descriptionCoeffNat
+    {m d ℓ : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (q : SumDescription m ℓ)
+    (j : Fin d) : ℕ :=
+  ∑ t, optionalCoeff A (q t) j
+
+/-- Description evaluation factors through its aggregate coefficient vector. -/
+theorem sumDescriptionEval_eq_eval_descriptionCoeffNat
+    {m d ℓ : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (beta : Fin d → ℕ)
+    (q : SumDescription m ℓ) :
+    sumDescriptionEval A beta q =
+      ∑ j, descriptionCoeffNat A q j * beta j := by
+  classical
+  calc
+    sumDescriptionEval A beta q
+        = ∑ t, ∑ j, optionalCoeff A (q t) j * beta j := by rfl
+    _ = ∑ j, ∑ t, optionalCoeff A (q t) j * beta j := by
+      exact Finset.sum_comm
+    _ = ∑ j, (∑ t, optionalCoeff A (q t) j) * beta j := by
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [Finset.sum_mul]
+    _ = ∑ j, descriptionCoeffNat A q j * beta j := by rfl
+
+/-- Every aggregate description coefficient is at most `ℓ*M`. -/
+theorem descriptionCoeffNat_le
+    {m d ℓ M : ℕ}
+    (A : Fin m → Fin d → ℕ)
+    (hA : ∀ i j, A i j ≤ M)
+    (q : SumDescription m ℓ)
+    (j : Fin d) :
+    descriptionCoeffNat A q j ≤ ℓ * M := by
+  classical
+  unfold descriptionCoeffNat
+  calc
+    (∑ t, optionalCoeff A (q t) j) ≤ ∑ _t : Fin ℓ, M := by
+      apply Finset.sum_le_sum
+      intro t _
+      exact optionalCoeff_le A hA (q t) j
+    _ = ℓ * M := by simp
+
+/-- Encode a padded description by its bounded aggregate coefficient vector. -/
+def boundedDescriptionCoeff
     {m d ℓ M : ℕ}
     (A : Fin m → Fin d → ℕ)
     (hA : ∀ i j, A i j ≤ M)
     (q : SumDescription m ℓ) :
     CoeffBox d (ℓ * M) :=
-  boundedRowCoeff A q.2 hA q.1.isLt
+  fun j =>
+    ⟨descriptionCoeffNat A q j,
+      Nat.lt_succ_of_le (descriptionCoeffNat_le A hA q j)⟩
 
-/-- Description evaluation factors through the coefficient box. -/
-theorem boxEval_descriptionCoeff_eq
+/-- The bounded description encoding evaluates to the represented row sum. -/
+theorem boxEval_boundedDescriptionCoeff_eq
     {m d ℓ M : ℕ}
     (A : Fin m → Fin d → ℕ)
     (beta : Fin d → ℕ)
     (hA : ∀ i j, A i j ≤ M)
     (q : SumDescription m ℓ) :
-    boxEval beta (descriptionCoeff A hA q) =
+    boxEval beta (boundedDescriptionCoeff A hA q) =
       sumDescriptionEval A beta q := by
-  exact boxEval_boundedRowCoeff_eq_sum_rowEval
-    A beta q.2 hA q.1.isLt
+  rw [sumDescriptionEval_eq_eval_descriptionCoeffNat]
+  rfl
 
 /--
-**Dimension-box bound.**  The number of distinct sums of between one and `ℓ`
-evaluated rows is at most `(ℓ*M+1)^d`, independently of `beta` and of the
-number of rows `m`.
+**Dimension-box bound.** The number of values represented by padded sums of at
+most `ℓ` rows is at most `(ℓ*M+1)^d`, independently of `beta` and of `m`.
+Consequently the positive-length union `ℓ^{≤} A^beta` obeys the same bound.
 -/
 theorem bounded_evaluated_sumset_card_le
     {m d ℓ M : ℕ}
@@ -186,8 +259,8 @@ theorem bounded_evaluated_sumset_card_le
     intro y hy
     rcases Finset.mem_image.mp hy with ⟨q, _hq, rfl⟩
     apply Finset.mem_image.mpr
-    exact ⟨descriptionCoeff A hA q, Finset.mem_univ _,
-      boxEval_descriptionCoeff_eq A beta hA q⟩
+    exact ⟨boundedDescriptionCoeff A hA q, Finset.mem_univ _,
+      boxEval_boundedDescriptionCoeff_eq A beta hA q⟩
   calc
     (Finset.univ.image (sumDescriptionEval A beta : SumDescription m ℓ → ℕ)).card
         ≤ (Finset.univ.image (boxEval beta : CoeffBox d (ℓ * M) → ℕ)).card :=
@@ -250,7 +323,10 @@ theorem theorem4_exponent_budget
 #print axioms rowCoeff_le_length_mul
 #print axioms rowCoeff_le_iteration_box
 #print axioms boxEval_boundedRowCoeff_eq_sum_rowEval
-#print axioms boxEval_descriptionCoeff_eq
+#print axioms optionalCoeff_le
+#print axioms sumDescriptionEval_eq_eval_descriptionCoeffNat
+#print axioms descriptionCoeffNat_le
+#print axioms boxEval_boundedDescriptionCoeff_eq
 #print axioms bounded_evaluated_sumset_card_le
 #print axioms expander_capacity_bound
 #print axioms no_expansion_above_dimension_box
