@@ -133,6 +133,11 @@ theorem boxEval_boundedRowCoeff_eq_sum_rowEval
 def SumDescription (m ℓ : ℕ) :=
   Σ k : Fin ℓ, Fin (k.val + 1) → Fin m
 
+/-- The dependent description type is finite. -/
+noncomputable instance sumDescriptionFintype (m ℓ : ℕ) :
+    Fintype (SumDescription m ℓ) :=
+  Fintype.ofFinite (SumDescription m ℓ)
+
 /-- The evaluated sum represented by a positive-length row description. -/
 def sumDescriptionEval
     {m d ℓ : ℕ}
