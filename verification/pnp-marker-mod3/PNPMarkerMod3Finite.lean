@@ -13,7 +13,7 @@ def markerWeightLabel (w : ℕ) : Bool := decide (w = 1 ∨ w = 4)
 theorem marker_agrees_with_mod3_on_relevant_weights
     (w : ℕ) (hw : w ≤ 4) :
     markerWeightLabel w = mod3Label w := by
-  interval_cases w <;> native_decide
+  interval_cases w <;> norm_num [markerWeightLabel, mod3Label]
 
 /-- One complementary Boolean pair contributes exactly one to Hamming weight. -/
 theorem bool_complement_pair_weight (b : Bool) :
