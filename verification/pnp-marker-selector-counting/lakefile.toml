@@ -1,0 +1,11 @@
+name = "pnp-marker-selector-counting"
+version = "0.1.0"
+defaultTargets = ["PNPMarkerSelectorCountingFinite"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.32.1"
+
+[[lean_lib]]
+name = "PNPMarkerSelectorCountingFinite"
