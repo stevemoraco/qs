@@ -1,0 +1,41 @@
+name: PNP Primary-Source Manual Cleanup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pnp/primary-source-interface-audit-20260811
+          fetch-depth: 5
+
+      - name: Remove generated source excerpts and bank only digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/pnp-primary-source
+          if [ -f verification/pnp-primary-source/PRIMARY_SOURCE_AUDIT_RECEIPT.md ]; then
+            cp verification/pnp-primary-source/PRIMARY_SOURCE_AUDIT_RECEIPT.md /tmp/source-receipt.md
+          fi
+          rm -rf verification/pnp-primary-source
+          mkdir -p verification/pnp-primary-source
+          if [ -f /tmp/source-receipt.md ]; then
+            cp /tmp/source-receipt.md verification/pnp-primary-source/PRIMARY_SOURCE_AUDIT_RECEIPT.md
+          else
+            cat > verification/pnp-primary-source/PRIMARY_SOURCE_AUDIT_RECEIPT.md <<EOF
+          # PNP primary-source audit cleanup receipt
+
+          Generated theorem excerpts were removed. No source text is banked by this cleanup commit. A future extractor must enforce a strict line/byte cap before commit.
+          EOF
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m '🧹 Remove generated theorem excerpts; retain receipt only' || exit 0
+          git push origin HEAD:pnp/primary-source-interface-audit-20260811
