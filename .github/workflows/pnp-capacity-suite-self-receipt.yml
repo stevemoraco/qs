@@ -1,0 +1,134 @@
+name: PNP Capacity Suite Self-Banking Receipt
+
+on:
+  push:
+    branches:
+      - pnp/generator-count-capacity-public-verify-20260811
+    paths:
+      - 'verification/pnp-generator-count/PNPGeneratorCountCapacity.lean'
+      - 'verification/pnp-generator-count/PNPAffineSliceCapacity.lean'
+      - 'verification/pnp-generator-count/PNPFiniteEncoderCollision.lean'
+      - 'verification/pnp-generator-count/lakefile.toml'
+      - 'verification/pnp-generator-count/lean-toolchain'
+      - '.github/workflows/pnp-capacity-suite-self-receipt.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-bank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: pnp/generator-count-capacity-public-verify-20260811
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            verification/pnp-generator-count/PNPGeneratorCountCapacity.lean \
+            verification/pnp-generator-count/PNPAffineSliceCapacity.lean \
+            verification/pnp-generator-count/PNPFiniteEncoderCollision.lean
+          do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder found in $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean and compile exact suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/pnp-generator-count
+          lake update
+          lake exe cache get
+          : > capacity-suite-output.log
+          for file in \
+            PNPGeneratorCountCapacity.lean \
+            PNPAffineSliceCapacity.lean \
+            PNPFiniteEncoderCollision.lean
+          do
+            echo "===== COMPILE $file =====" | tee -a capacity-suite-output.log
+            lake env lean "$file" 2>&1 | tee -a capacity-suite-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' capacity-suite-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+
+      - name: Bank consolidated machine-verifiable receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/pnp-generator-count
+          LEAN_VERSION=$(lean --version | head -n1)
+          MATHLIB_REV=$(grep -A8 'name = "mathlib"' lake-manifest.json | grep 'rev' | head -n1 | sed -E 's/.*"rev"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/' || true)
+          AXIOMS=$(grep '^.*depends on axioms:' capacity-suite-output.log || true)
+          cat > CAPACITY_SUITE_LEAN_RECEIPT.md <<EOF
+          # PNP capacity suite — Lean verification receipt
+
+          - Workflow run: ${GITHUB_RUN_ID}
+          - Job attempt: ${GITHUB_RUN_ATTEMPT}
+          - Verified commit at checkout: ${GITHUB_SHA}
+          - Repository: ${GITHUB_REPOSITORY}
+          - Ref: ${GITHUB_REF}
+          - Lean: ${LEAN_VERSION}
+          - Mathlib resolved revision: ${MATHLIB_REV}
+          - Explicit placeholder scans: passed
+          - Compiler placeholder scan: passed
+
+          ## Exact files compiled
+
+          - `PNPGeneratorCountCapacity.lean`
+          - `PNPAffineSliceCapacity.lean`
+          - `PNPFiniteEncoderCollision.lean`
+
+          ## Printed theorem axiom report
+
+          \`\`\`
+          ${AXIOMS}
+          \`\`\`
+
+          ## Boundary
+
+          The suite verifies only finite image-cardinality, represented-set, affine-slice state-space, noninjectivity/collision, and elementary scalar endpoint declarations. It does not verify stars-and-bars, rank or affine-dimension projection, integer kernel extraction, any external paper, asymptotics, arithmetic complexity, VP/VNP, or P versus NP.
+          EOF
+          cd ../..
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git pull --rebase origin pnp/generator-count-capacity-public-verify-20260811
+          git add verification/pnp-generator-count/CAPACITY_SUITE_LEAN_RECEIPT.md verification/pnp-generator-count/lake-manifest.json verification/pnp-generator-count/capacity-suite-output.log
+          git commit -m '✅ Bank consolidated PNP capacity-suite Lean receipt [skip ci]' || exit 0
+          git push origin HEAD:pnp/generator-count-capacity-public-verify-20260811
+
+      - name: Bank compiler failure evidence
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/pnp-generator-count
+          cat > verification/pnp-generator-count/CAPACITY_SUITE_FAILURE.md <<EOF
+          # PNP capacity suite — Lean verification failure
+
+          - Workflow run: ${GITHUB_RUN_ID}
+          - Attempted commit: ${GITHUB_SHA}
+          - Status: compiler or honesty gate failed
+
+          The relevant logs are in `capacity-suite-output.log` when compilation reached that stage. No formal-verification label is authorized.
+          EOF
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git pull --rebase origin pnp/generator-count-capacity-public-verify-20260811 || true
+          git add verification/pnp-generator-count/CAPACITY_SUITE_FAILURE.md verification/pnp-generator-count/capacity-suite-output.log 2>/dev/null || true
+          git commit -m '🔴 Bank PNP capacity-suite Lean failure evidence [skip ci]' || exit 0
+          git push origin HEAD:pnp/generator-count-capacity-public-verify-20260811 || true
