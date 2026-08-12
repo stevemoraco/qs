@@ -55,7 +55,7 @@ jobs:
         working-directory: lean-replay/run16
         run: |
           set -euo pipefail
-          lake env lean AxiomReport.lean | tee axiom-report.txt
+          lake env lean AxiomReport.lean 2>&1 | tee axiom-report.txt
           if grep -q 'sorryAx' axiom-report.txt; then
             echo "sorryAx found in axiom report"
             exit 1
