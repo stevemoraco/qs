@@ -6,10 +6,11 @@ import Mathlib
 HONESTY BOUNDARY:
 
 This file formalizes only an abstract finite-expression range-preservation
-argument, logical countermodels, and scalar intersection-form arithmetic. It
-does not formalize smooth projective varieties, Hodge structures, André motives,
-Chow groups, algebraic cycles, Hirzebruch surfaces, Lefschetz operators, or the
-Hodge conjecture.
+argument, logical countermodels, scalar intersection-form arithmetic, and a
+finite rank mismatch. It does not formalize smooth projective varieties, Hodge
+structures, André motives, Chow groups, algebraic cycles, Hirzebruch surfaces,
+Dwork families, Gauss--Manin systems, Lefschetz operators, or the Hodge
+conjecture.
 -/
 
 namespace Millennium
@@ -128,6 +129,27 @@ theorem product_effective_has_no_minus_one_class
   rw [hminus] at hnonneg
   norm_num at hnonneg
 
+/-- Rank of the displayed quintic Dwork hypergeometric parameter list. -/
+def quinticHypergeometricRank : ℕ := 5 - 1
+
+/-- Rank obtained from the classical quintic Hodge numbers
+`h^(3,0)=1`, `h^(2,1)=101`. -/
+def quinticPrimitiveMiddleRank : ℕ := 2 * 1 + 2 * 101
+
+theorem quintic_hypergeometric_rank_eq_four :
+    quinticHypergeometricRank = 4 := by
+  norm_num [quinticHypergeometricRank]
+
+theorem quintic_primitive_middle_rank_eq_two_hundred_four :
+    quinticPrimitiveMiddleRank = 204 := by
+  norm_num [quinticPrimitiveMiddleRank]
+
+/-- The rank-four mirror hypergeometric subsystem cannot equal the rank-204
+primitive middle cohomology. -/
+theorem quintic_subsystem_rank_mismatch :
+    quinticHypergeometricRank ≠ quinticPrimitiveMiddleRank := by
+  norm_num [quinticHypergeometricRank, quinticPrimitiveMiddleRank]
+
 #print axioms Presentation.eval_mem_algebraic
 #print axioms algebraic_correspondence_composition
 #print axioms safe_inclusions_do_not_reverse
@@ -135,6 +157,9 @@ theorem product_effective_has_no_minus_one_class
 #print axioms hirzebruch_exceptional_section_negative
 #print axioms product_effective_self_intersection_nonnegative
 #print axioms product_effective_has_no_minus_one_class
+#print axioms quintic_hypergeometric_rank_eq_four
+#print axioms quintic_primitive_middle_rank_eq_two_hundred_four
+#print axioms quintic_subsystem_rank_mismatch
 
 end Round210Hodge
 end Millennium
