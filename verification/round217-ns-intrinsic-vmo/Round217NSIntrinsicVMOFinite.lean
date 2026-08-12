@@ -27,11 +27,11 @@ theorem annular_commutator_budget_below_epsilon
 choose a tail budget, then choose the local modulus for that fixed shell. -/
 theorem fixed_shell_rate_free_choice
     (C K beta tail eps : ℝ)
-    (hC : 0 ≤ C)
-    (hK : 0 ≤ K + 1)
-    (hbeta : 0 ≤ beta)
-    (htail : 0 ≤ tail)
-    (heps : 0 < eps)
+    (_hC : 0 ≤ C)
+    (_hK : 0 ≤ K + 1)
+    (_hbeta : 0 ≤ beta)
+    (_htail : 0 ≤ tail)
+    (_heps : 0 < eps)
     (hnear : beta ≤ eps / (2 * C * (K + 1)))
     (hfar : tail ≤ eps / (2 * C))
     (hdenNear : 0 < 2 * C * (K + 1))
@@ -52,14 +52,12 @@ theorem critical_blob_scale_identity
     (r : ℝ) (hr : r ≠ 0) :
     (1 / r ^ 2) ^ 3 * (r ^ 3) ^ 2 = 1 := by
   field_simp
-  ring
 
 /-- A velocity of size `r^-1` on volume `r^3` has squared `L^2` scale `r`. -/
 theorem finite_energy_blob_scale_identity
     (r : ℝ) (hr : r ≠ 0) :
     (1 / r) ^ 2 * r ^ 3 = r := by
   field_simp
-  ring
 
 /-- Two scalar core values `0` and `1` cannot both be close to one common
 mean. This is the finite shadow of the nonvanishing BMO oscillation. -/
@@ -91,7 +89,7 @@ theorem amplification_upper_lower_contradiction
 the strict analytic contradiction. -/
 theorem error_below_margin_closes_amplification
     (lowerCoeff upperBase err : ℝ)
-    (hmargin : 0 < lowerCoeff - upperBase)
+    (_hmargin : 0 < lowerCoeff - upperBase)
     (herr : err < lowerCoeff - upperBase) :
     upperBase + err < lowerCoeff := by
   linarith
