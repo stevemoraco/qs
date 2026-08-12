@@ -1,0 +1,83 @@
+name: NS Ancient Horizon Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/ns-ancient-horizon-public-verifier-20260812
+    paths:
+      - 'verification/ns-ancient-horizon/**'
+      - '.github/workflows/ns-ancient-horizon-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-ancient-horizon/**'
+      - '.github/workflows/ns-ancient-horizon-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and verify canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-ancient-horizon/NSAncientHorizonFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/ns-ancient-horizon/lean-git-blob-sha.txt
+          test "$(cat verification/ns-ancient-horizon/lean-git-blob-sha.txt)" = '1d59bd69acc3a4140afe2c4617f6ca05314fdc9f'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ns-ancient-horizon/lean-version.txt
+          lake --version | tee verification/ns-ancient-horizon/lake-version.txt
+          cd verification/ns-ancient-horizon
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          set +e
+          lake env lean NSAncientHorizonFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              line=${line//$'\r'/'%0D'}
+              line=${line//$'\n'/'%0A'}
+              echo "::error file=verification/ns-ancient-horizon/NSAncientHorizonFinite.lean::$line"
+            done < lean-output.log
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED NS ancient-horizon finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-ancient-horizon-finite-core-lean-evidence
+          path: |
+            verification/ns-ancient-horizon/lean-output.log
+            verification/ns-ancient-horizon/lean-git-blob-sha.txt
+            verification/ns-ancient-horizon/lean-version.txt
+            verification/ns-ancient-horizon/lake-version.txt
+            verification/ns-ancient-horizon/mathlib-commit.txt
+          if-no-files-found: warn
