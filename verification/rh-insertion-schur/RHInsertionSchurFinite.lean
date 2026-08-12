@@ -83,7 +83,11 @@ by the insertion gate. -/
 theorem positive_schur_determinant_iff
     (A b eta : ℝ) :
     0 < A * b - eta ^ 2 ↔ eta ^ 2 < A * b := by
-  linarith
+  constructor
+  · intro h
+    nlinarith
+  · intro h
+    nlinarith
 
 #print axioms lower_bound_restricts_through_isometric_extension
 #print axioms insertion_quadratic_positive
