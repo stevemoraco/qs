@@ -1,0 +1,78 @@
+name: Hodge Markman Beta Kernel Finite Core
+
+on:
+  push:
+    paths:
+      - "verification/hodge-markman-beta-kernel/**"
+      - ".github/workflows/hodge-markman-beta-kernel-public-verify.yml"
+  pull_request:
+    paths:
+      - "verification/hodge-markman-beta-kernel/**"
+      - ".github/workflows/hodge-markman-beta-kernel-public-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and native_decide
+        run: |
+          set -euo pipefail
+          file=verification/hodge-markman-beta-kernel/HodgeMarkmanBetaKernelFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|native_decide)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or native_decide found.' >&2
+            exit 1
+          fi
+
+      - name: Run exact symbolic exterior-algebra certificate
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-cache-dir 'sympy==1.14.0'
+          python verification/hodge-markman-beta-kernel/hodge_markman_beta_kernel_certificate.py \
+            | tee verification/hodge-markman-beta-kernel/python-output.json
+          grep -q '"status": "PASS"' verification/hodge-markman-beta-kernel/python-output.json
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/hodge-markman-beta-kernel
+          lake update
+          lake exe cache get
+          lake env lean HodgeMarkmanBetaKernelFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|_native\.native_decide\.ax_' lean-output.log; then
+            echo 'Forbidden placeholder or native_decide trust axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Markman beta determinant/kernel logic core.'
+
+      - name: Record source hashes
+        run: |
+          set -euo pipefail
+          sha256sum \
+            verification/hodge-markman-beta-kernel/HodgeMarkmanBetaKernelFinite.lean \
+            verification/hodge-markman-beta-kernel/hodge_markman_beta_kernel_certificate.py \
+            > verification/hodge-markman-beta-kernel/source-sha256.txt
+          cat verification/hodge-markman-beta-kernel/source-sha256.txt
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-markman-beta-kernel-evidence
+          path: |
+            verification/hodge-markman-beta-kernel/lean-output.log
+            verification/hodge-markman-beta-kernel/python-output.json
+            verification/hodge-markman-beta-kernel/source-sha256.txt
+          if-no-files-found: warn
