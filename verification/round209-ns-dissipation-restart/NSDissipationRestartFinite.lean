@@ -75,26 +75,24 @@ theorem square_root_tail_suffices
     (D c s : ℝ) (hD : 0 ≤ D) (hc : 0 ≤ c) (hs : 0 ≤ s)
     (hroot : 2 * D ≤ Real.sqrt c * Real.sqrt s) :
     4 * D ^ 2 ≤ c * s := by
-  let a : ℝ := 2 * D
-  let b : ℝ := Real.sqrt c * Real.sqrt s
-  have ha : 0 ≤ a := by
-    dsimp [a]
-    positivity
-  have hb : 0 ≤ b := by
-    dsimp [b]
-    exact mul_nonneg (Real.sqrt_nonneg c) (Real.sqrt_nonneg s)
-  have hab : a ≤ b := by
-    simpa [a, b] using hroot
-  have hdiff : 0 ≤ b - a := sub_nonneg.mpr hab
-  have hsum : 0 ≤ b + a := add_nonneg hb ha
-  have hprod : 0 ≤ (b - a) * (b + a) := mul_nonneg hdiff hsum
-  have hsq : a ^ 2 ≤ b ^ 2 := by
+  have hsqrtc : 0 ≤ Real.sqrt c := Real.sqrt_nonneg c
+  have hsqrts : 0 ≤ Real.sqrt s := Real.sqrt_nonneg s
+  have hdiff : 0 ≤ Real.sqrt c * Real.sqrt s - 2 * D := by
+    linarith
+  have hsum : 0 ≤ Real.sqrt c * Real.sqrt s + 2 * D := by
+    exact add_nonneg (mul_nonneg hsqrtc hsqrts) (by positivity)
+  have hprod :
+      0 ≤ (Real.sqrt c * Real.sqrt s - 2 * D) *
+        (Real.sqrt c * Real.sqrt s + 2 * D) :=
+    mul_nonneg hdiff hsum
+  have hsq :
+      (2 * D) ^ 2 ≤ (Real.sqrt c * Real.sqrt s) ^ 2 := by
     nlinarith
   calc
-    4 * D ^ 2 = a ^ 2 := by simp [a]; ring
-    _ ≤ b ^ 2 := hsq
+    4 * D ^ 2 = (2 * D) ^ 2 := by ring
+    _ ≤ (Real.sqrt c * Real.sqrt s) ^ 2 := hsq
     _ = c * s := by
-      simp [b, mul_pow, Real.sq_sqrt hc, Real.sq_sqrt hs]
+      rw [mul_pow, Real.sq_sqrt hc, Real.sq_sqrt hs]
 
 #print axioms terminal_tail_budget_implies_restart_budget
 #print axioms shell_dissipation_identity
