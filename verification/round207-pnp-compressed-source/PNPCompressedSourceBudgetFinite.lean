@@ -16,7 +16,7 @@ compressed descriptor length. -/
 theorem ambient_polynomial_is_descriptor_exponential
     (base k d : ℕ) :
     (base ^ k) ^ d = base ^ (k * d) := by
-  exact pow_mul base k d
+  exact (pow_mul base k d).symm
 
 /-- A positive exponential-time coefficient remains a positive polynomial
 exponent after changing variables `N = exp(gamma*k)`. -/
