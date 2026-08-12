@@ -43,7 +43,6 @@ theorem three_channel_weighted_frame_identity
       + w1 * w2 * (a1 * a2 + b1 * b2) ^ 2
   let W : ℝ := w0 + w1 + w2
   let Q : ℝ := w0 ^ 2 + w1 ^ 2 + w2 ^ 2
-  change P = (W ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2
   have hframe : A ^ 2 + B ^ 2 + 2 * D ^ 2 = Q + 2 * P := by
     dsimp [A, B, D, Q, P]
     calc
@@ -83,9 +82,12 @@ theorem three_channel_weighted_frame_identity
   have hid :
       P = ((A + B) ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := by
     nlinarith [hframe]
-  calc
-    P = ((A + B) ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := hid
-    _ = (W ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := by rw [htrace]
+  have hmain :
+      P = (W ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := by
+    calc
+      P = ((A + B) ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := hid
+      _ = (W ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := by rw [htrace]
+  simpa [P, W, Q, A, B, D] using hmain
 
 /-- Three unit channel directions in a real two-dimensional plane have total
 squared pair-correlation at least `3/4`. -/
