@@ -178,14 +178,17 @@ theorem disconnected_add_one_not_isUnit :
   intro h
   obtain ⟨v, hv⟩ := h
   have hv2 : (v : ZMod 3 × ZMod 3).2 = 0 := by
-    simpa [disconnectedUnit] using congrArg Prod.snd hv
-  have hunit :
-      (v : ZMod 3 × ZMod 3) * (↑(v⁻¹) : ZMod 3 × ZMod 3) = 1 :=
-    v.val_inv
-  have hsnd := congrArg Prod.snd hunit
-  have hzero_one : (0 : ZMod 3) = 1 := by
-    simpa [hv2] using hsnd
-  exact zero_ne_one hzero_one
+    rw [hv]
+    norm_num [disconnectedUnit]
+  have hone :
+      (((v : ZMod 3 × ZMod 3) *
+        (↑(v⁻¹) : ZMod 3 × ZMod 3)).2) = 1 := by
+    simp
+  change
+    (v : ZMod 3 × ZMod 3).2 *
+      (↑(v⁻¹) : ZMod 3 × ZMod 3).2 = 1 at hone
+  rw [hv2, zero_mul] at hone
+  exact zero_ne_one hone
 
 end Countermodels
 
