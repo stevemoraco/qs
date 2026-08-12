@@ -27,11 +27,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/round210-hodge-zero-defect/HodgeZeroDefectFinite.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
-            echo 'Forbidden Lean placeholder found.' >&2
-            exit 1
-          fi
+          for file in verification/round210-hodge-zero-defect/*.lean; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder found in $file." >&2
+              exit 1
+            fi
+          done
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
         run: |
@@ -43,12 +44,16 @@ jobs:
           cd verification/round210-hodge-zero-defect
           lake update
           lake exe cache get
-          lake env lean HodgeZeroDefectFinite.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in HodgeZeroDefectFinite.lean HodgeProductCrossTypeFinite.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite Round 210 Hodge zero-defect cores.'
+          echo 'VERIFIED finite Round 210 Hodge cores.'
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
