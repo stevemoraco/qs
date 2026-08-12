@@ -1,0 +1,63 @@
+name: B4 Auto9 AXLE Independent Replay
+
+on:
+  push:
+    branches: [agent/b4-auto9-public-verifier-20260812]
+    paths:
+      - 'verification/b4-auto9/B4Auto9FiniteCores.lean'
+      - '.github/workflows/b4-auto9-axle-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  axle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact canonical blob with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/b4-auto9/B4Auto9FiniteCores.lean
+          test "$(git hash-object "$file")" = '2e7816867a2722c8e665c2a56b5ec0d5a7dab90d'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden placeholder/custom trust declaration found.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          text = pathlib.Path('verification/b4-auto9/B4Auto9FiniteCores.lean').read_text()
+          payload = json.dumps({
+              'content': text,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('verification/b4-auto9/axle-result.json').write_text(json.dumps(result, indent=2))
+          print(json.dumps(result, indent=2))
+          if (not result.get('okay')
+              or result.get('lean_messages', {}).get('errors', [])
+              or result.get('tool_messages', {}).get('errors', [])
+              or result.get('failed_declarations', [])):
+              raise SystemExit(1)
+          print('VERIFIED: AXLE Lean 4.30 accepted exact B4 auto9 canonical source')
+          PY
+      - name: Upload AXLE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-auto9-axle-evidence
+          path: verification/b4-auto9/axle-result.json
+          if-no-files-found: warn
