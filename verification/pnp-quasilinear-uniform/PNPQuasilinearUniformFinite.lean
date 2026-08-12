@@ -9,7 +9,7 @@ This file formalizes only stable finite arithmetic, padding, promise-type, and
 logical interfaces used by a conditional magnification theorem.
 
 It does not formalize Boolean circuits, MCSP, probability spaces, P-uniformity,
-P, NP, P/poly, asymptotics, or the Clay statement.
+P, NP, P/poly, #P, PP, asymptotics, or the Clay statement.
 -/
 
 namespace MillenniumBraid
@@ -89,6 +89,38 @@ theorem spare_exponent_absorbs_multiplier
     _ = b ^ (C + 1) := by simp [pow_succ, Nat.mul_comm]
     _ ≤ b ^ H := Nat.pow_le_pow_right (by omega) hCH
 
+/-- If the average of two rational child potentials is below one, at least one
+child potential is below one. This is the finite descent step used by exact
+conditional expectation. -/
+theorem one_child_lt_one_of_average_lt_one
+    (left right : ℚ)
+    (havg : (left + right) / 2 < 1) :
+    left < 1 ∨ right < 1 := by
+  by_contra h
+  push_neg at h
+  linarith
+
+/-- At a terminal leaf, a nonnegative integer potential strictly below one is
+zero. -/
+theorem terminal_nat_potential_zero
+    (potential : ℕ)
+    (hlt : (potential : ℚ) < 1) :
+    potential = 0 := by
+  have hNat : potential < 1 := by exact_mod_cast hlt
+  omega
+
+/-- A complete finite conditional-expectation endpoint: if one selected child
+retains a rational potential below one and the terminal potential counts bad
+witnesses, then the terminal bad-witness count is zero. -/
+theorem terminal_count_vanishes
+    (terminalCount : ℕ)
+    (terminalPotential : ℚ)
+    (hCount : terminalPotential = terminalCount)
+    (hlt : terminalPotential < 1) :
+    terminalCount = 0 := by
+  apply terminal_nat_potential_zero terminalCount
+  simpa [hCount] using hlt
+
 /-- YES, NO, and outside-promise inputs remain distinct. -/
 inductive PromiseStatus where
   | yes
@@ -118,6 +150,9 @@ theorem quarter_radius_integral
 #print axioms nonuniform_majorant_contrapositive
 #print axioms eventual_exponent_majorant
 #print axioms spare_exponent_absorbs_multiplier
+#print axioms one_child_lt_one_of_average_lt_one
+#print axioms terminal_nat_potential_zero
+#print axioms terminal_count_vanishes
 #print axioms yes_ne_no
 #print axioms yes_ne_outside
 #print axioms no_ne_outside
