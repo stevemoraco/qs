@@ -56,9 +56,9 @@ theorem pointwise_finite_does_not_force_finite_support :
 /-- A finite list of local scalar equalities cannot determine one additional
 unconstrained Archimedean scalar. -/
 theorem finite_local_data_leave_archimedean_coordinate_free
-    (local : Fin n → ℚ) :
+    (localData : Fin n → ℚ) :
     ∃ x y : ℚ, x ≠ y ∧
-      (∀ i, local i = local i) := by
+      (∀ i, localData i = localData i) := by
   refine ⟨0, 1, by norm_num, ?_⟩
   intro i
   rfl
