@@ -1,0 +1,5 @@
+import HodgeThomasRelationCore
+
+#print axioms HodgeThomasRelationCore.exists_detected_relation_iff_not_le_kernel
+#print axioms HodgeThomasRelationCore.no_detected_relation_of_injective
+#print axioms HodgeThomasRelationCore.detected_relation_strictly_shrinks_kernel
