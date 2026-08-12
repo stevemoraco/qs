@@ -51,6 +51,12 @@ jobs:
           use-mathlib-cache: 'false'
           use-github-cache: 'false'
 
+      - name: Restore dependency workspace
+        uses: actions/cache@v4
+        with:
+          path: verification/b4-auto20-run1/.lake
+          key: b4-auto20-run1-${{ runner.os }}-${{ hashFiles('verification/b4-auto20-run1/lean-toolchain', 'verification/b4-auto20-run1/lakefile.toml') }}
+
       - name: Resolve pinned Mathlib and cache
         shell: bash
         run: |
@@ -62,17 +68,32 @@ jobs:
           lake exe cache get 2>&1 | tee -a lean-output.log
           git -C .lake/packages/mathlib rev-parse HEAD | tee -a lean-output.log
 
-      - name: Compile exact mirrored sources
+      - name: Compile all mirrored sources with hostile diagnostics
         shell: bash
         run: |
           set -euo pipefail
           cd verification/b4-auto20-run1
+          failed=0
           for file in ../../B4Auto20Run1/*.lean; do
             echo "=== compiling $file ===" | tee -a lean-output.log
-            lake env lean "$file" 2>&1 | tee -a lean-output.log
+            set +e
+            out="$(lake env lean "$file" 2>&1)"
+            code=$?
+            set -e
+            printf '%s\n' "$out" | tee -a lean-output.log
+            if [ "$code" -ne 0 ]; then
+              safe="${out//'%'/'%25'}"
+              safe="${safe//$'\r'/'%0D'}"
+              safe="${safe//$'\n'/'%0A'}"
+              echo "::error file=$file::$safe"
+              failed=1
+            fi
           done
-          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool|error:' lean-output.log; then
-            echo 'Forbidden placeholder axiom or compiler error found.' >&2
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            failed=1
+          fi
+          if [ "$failed" -ne 0 ]; then
             exit 1
           fi
           test -s lean-output.log
