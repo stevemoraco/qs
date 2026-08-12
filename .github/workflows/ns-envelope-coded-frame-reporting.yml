@@ -1,0 +1,157 @@
+name: Report NS envelope-coded frame verifier verdict
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify-and-report:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-envelope-coded-complementary-frame/NSGolayEnvelopeFactorRepair.lean
+          EXPECTED=564f322671ac6d787964a070ac7caa9d7f5100401fcfb6e424c787bb2ef1f242
+          ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
+          test "$ACTUAL" = "$EXPECTED"
+          python3 - <<'PY'
+          import pathlib, re
+          text = pathlib.Path(
+              'verification/ns-envelope-coded-complementary-frame/NSGolayEnvelopeFactorRepair.lean'
+          ).read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          if 'Lean.ofReduceBool' in text:
+              raise SystemExit('forbidden source token: Lean.ofReduceBool')
+          if text.count('#print axioms') != 11:
+              raise SystemExit('expected exactly eleven staged #print axioms commands')
+          PY
+
+      - name: Execute AXLE Lean 4.30 and preserve raw response
+        id: axle
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-envelope-coded-complementary-frame/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          out = pathlib.Path('verification/ns-envelope-coded-complementary-frame/evidence/axle-response.json')
+          source = pathlib.Path(
+              'verification/ns-envelope-coded-complementary-frame/NSGolayEnvelopeFactorRepair.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': []},
+                  'tool_messages': {'errors': []},
+                  'failed_declarations': [],
+              }
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-envelope-coded-complementary-frame-reported-evidence
+          path: verification/ns-envelope-coded-complementary-frame/evidence/
+          if-no-files-found: error
+
+      - name: Publish machine verdict to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'verification/ns-envelope-coded-complementary-frame/evidence/axle-response.json';
+            let result = {okay:false, missing_response:true};
+            if (fs.existsSync(path)) result = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const leanErrors = result?.lean_messages?.errors ?? [];
+            const toolErrors = result?.tool_messages?.errors ?? [];
+            const failed = result?.failed_declarations ?? [];
+            const verdict = Boolean(result.okay) && leanErrors.length === 0 && toolErrors.length === 0 && failed.length === 0;
+            const body = [
+              '<!-- NS_ENVELOPE_CODED_FRAME_VERDICT -->',
+              '### AXLE Lean 4.30 exact-source verdict',
+              '',
+              `- verdict: **${verdict ? 'SUCCESS' : 'FAILURE'}**`,
+              `- workflow run: ${context.runId}`,
+              `- head SHA: `${context.sha}``,
+              '- canonical source SHA-256: `564f322671ac6d787964a070ac7caa9d7f5100401fcfb6e424c787bb2ef1f242`',
+              `- AXLE okay: `${Boolean(result.okay)}``,
+              `- failed declarations: `${failed.length}``,
+              `- Lean errors: `${leanErrors.length}``,
+              `- tool errors: `${toolErrors.length}``,
+              `- warnings: `${(result?.lean_messages?.warnings ?? []).length}``,
+              `- request id: `${result?.request_id ?? result?.id ?? 'not reported'}``,
+              '',
+              'This verdict covers only the eleven finite algebraic declarations; it is not a Navier–Stokes result.'
+            ].join('\n');
+            const {owner, repo} = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {owner, repo, issue_number, per_page: 100});
+            const prior = comments.find(c => c.body && c.body.includes('NS_ENVELOPE_CODED_FRAME_VERDICT'));
+            if (prior) {
+              await github.rest.issues.updateComment({owner, repo, comment_id: prior.id, body});
+            } else {
+              await github.rest.issues.createComment({owner, repo, issue_number, body});
+            }
+
+      - name: Enforce compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/ns-envelope-coded-complementary-frame/evidence/axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response')
+          result = json.loads(p.read_text())
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit('AXLE verification failed')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          PY
