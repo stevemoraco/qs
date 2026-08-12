@@ -4,9 +4,9 @@ This directory mirrors byte-for-byte the finite Lean source from:
 
 - private repository: `stevemoraco/RH-Lean`
 - research branch: `run19/ns-triad-gauge-holonomy`
-- research head at mirroring: `16f991e6a456bc4396f847b8207fc1da9ab1d06d`
+- research head at mirroring: `d7411b552788aeadbd90fd4298ae4579bc34add3`
 - source path: `lean-worker/NSTriadHolonomyFirewall.lean`
-- canonical private/public Git blob: `c626a300dac6296b1c56e573f6f7848147fc6929`
+- canonical private/public Git blob: `358f1669ffc4ae40ecd193aa7b186d5ea56385ce`
 - research PR: `stevemoraco/RH-Lean#691`
 
 The source formalizes only exact finite group identities: triangle coboundary holonomy, obstruction by nontrivial cycle product, exact realizability of a two-edge chain, gauge conjugation of cycle holonomy, the additive triangle identity, and a `ZMod 4` three-quarter-turn countermodel.
