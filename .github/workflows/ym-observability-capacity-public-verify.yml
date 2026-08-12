@@ -1,0 +1,60 @@
+name: YM Observability Capacity Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/ym-observability-capacity-public-verifier-20260811
+    paths:
+      - 'verification/ym-observability-capacity/**'
+      - '.github/workflows/ym-observability-capacity-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-observability-capacity/**'
+      - '.github/workflows/ym-observability-capacity-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-observability-capacity/YMObservabilityCapacityFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/ym-observability-capacity
+          lake update
+          lake exe cache get
+          lake env lean YMObservabilityCapacityFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED YM observability-capacity finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-observability-capacity-finite-core-lean-evidence
+          path: verification/ym-observability-capacity/lean-output.log
+          if-no-files-found: warn
