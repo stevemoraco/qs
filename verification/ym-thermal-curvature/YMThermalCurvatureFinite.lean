@@ -48,6 +48,17 @@ theorem finite_endpoint_telescope (d : ℕ → ℝ) (n N : ℕ) :
           simpa only [Nat.succ_eq_add_one] using
             congrArg d (Nat.add_assoc n N 1)
 
+/-- Directly indexed endpoint form. For `n ≤ M`, the finite sum contains
+exactly the curvatures with offsets `0, ..., M - n - 1` and leaves `d M`. -/
+theorem finite_endpoint_telescope_to
+    (d : ℕ → ℝ) (n M : ℕ) (hnM : n ≤ M) :
+    d n - ∑ j ∈ Finset.range (M - n), discreteCurvature d (n + j) =
+      d M := by
+  calc
+    d n - ∑ j ∈ Finset.range (M - n), discreteCurvature d (n + j) =
+        d (n + (M - n)) := finite_endpoint_telescope d n (M - n)
+    _ = d M := by rw [Nat.add_sub_of_le hnM]
+
 /-- Equivalent finite sum form of the endpoint identity. -/
 theorem finite_curvature_sum (d : ℕ → ℝ) (n N : ℕ) :
     (∑ j ∈ Finset.range N, discreteCurvature d (n + j)) =
@@ -136,6 +147,7 @@ theorem explicit_hidden_mode_snapshot :
   norm_num
 
 #print axioms finite_endpoint_telescope
+#print axioms finite_endpoint_telescope_to
 #print axioms finite_curvature_sum
 #print axioms two_mode_cross_product_identity
 #print axioms two_mode_cross_product_nonnegative
