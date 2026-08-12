@@ -64,6 +64,12 @@ jobs:
           PY
 
       - name: Install pinned Lean action
+        # Bootstrap note: lean-action installs the pinned toolchain before its
+        # configuration phase checks for lake-manifest.json.  The first replay
+        # intentionally continues past that configuration check so the next
+        # step can generate and preserve the manifest; this flag is removed
+        # once that generated manifest is committed.
+        continue-on-error: true
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1.5.0
         with:
           auto-config: false
