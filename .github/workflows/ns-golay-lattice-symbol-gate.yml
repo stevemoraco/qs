@@ -81,27 +81,42 @@ jobs:
           )
           with urllib.request.urlopen(request, timeout=960) as response:
               result = json.load(response)
-          pathlib.Path('verification/ns-golay-lattice-symbol-gate/axle-result.json').write_text(
-              json.dumps(result, indent=2)
-          )
+          result_path = pathlib.Path('verification/ns-golay-lattice-symbol-gate/axle-result.json')
+          result_path.write_text(json.dumps(result, indent=2))
           print(json.dumps(result, indent=2))
           lean_errors = result.get('lean_messages', {}).get('errors', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           failed = result.get('failed_declarations', [])
           output = json.dumps(result)
+
+          def annotate(kind, item):
+              msg = json.dumps(item, ensure_ascii=False) if not isinstance(item, str) else item
+              msg = msg.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::error title={kind}::{msg[:6000]}')
+
           if not result.get('okay') or lean_errors or tool_errors or failed:
+              for item in lean_errors[:20]:
+                  annotate('Lean error', item)
+              for item in tool_errors[:20]:
+                  annotate('AXLE tool error', item)
+              for item in failed[:20]:
+                  annotate('Failed declaration', item)
+              if not (lean_errors or tool_errors or failed):
+                  annotate('AXLE failure', result)
               raise SystemExit(1)
           for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
               if forbidden in output:
-                  raise SystemExit(f'forbidden postcompile dependency: {forbidden}')
+                  annotate('Forbidden postcompile dependency', forbidden)
+                  raise SystemExit(1)
           print('VERIFIED: AXLE Lean 4.30 compiled all 12 finite cores with no failed declarations')
           PY
 
       - name: Upload exact verification evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ns-golay-lattice-symbol-gate-evidence
+          name: ns-golay-lattice-symbol-gate-evidence-${{ github.run_attempt }}
           path: |
             verification/ns-golay-lattice-symbol-gate/NSGolayLatticeSymbolGate.lean
             verification/ns-golay-lattice-symbol-gate/axle-result.json
-          if-no-files-found: error
+          if-no-files-found: warn
