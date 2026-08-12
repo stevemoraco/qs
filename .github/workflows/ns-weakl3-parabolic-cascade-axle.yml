@@ -60,6 +60,11 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import hashlib, json, pathlib, urllib.request
+
+          def workflow_escape(value):
+              text = value if isinstance(value, str) else json.dumps(value, sort_keys=True)
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
           path = pathlib.Path(
               'verification/ns-weakl3-parabolic-cascade/NSWeakL3ParabolicCascade.lean'
           )
@@ -91,8 +96,17 @@ jobs:
           failed = result.get('failed_declarations', [])
           rendered = json.dumps(result)
           if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
-              raise SystemExit('postcompile trust gate found forbidden axiom/escape')
+              print('::error title=Postcompile trust failure::forbidden axiom or escape found')
+              raise SystemExit(1)
           if not result.get('okay') or lean_errors or tool_errors or failed:
+              for item in lean_errors:
+                  print('::error title=AXLE Lean error::' + workflow_escape(item))
+              for item in tool_errors:
+                  print('::error title=AXLE tool error::' + workflow_escape(item))
+              for item in failed:
+                  print('::error title=AXLE failed declaration::' + workflow_escape(item))
+              if not lean_errors and not tool_errors and not failed:
+                  print('::error title=AXLE non-okay result::' + workflow_escape(result))
               raise SystemExit(1)
           print('VERIFIED: AXLE Lean 4.30 compiled all 8 finite cores')
           PY
