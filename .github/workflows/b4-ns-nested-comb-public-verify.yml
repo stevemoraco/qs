@@ -35,8 +35,10 @@ jobs:
           import subprocess
           import urllib.request
 
-          source = pathlib.Path('verification/b4_ns_nested_comb/B4NSNestedComb.lean')
-          text = source.read_text()
+          sources = [
+              pathlib.Path('verification/b4_ns_nested_comb/B4NSNestedComb.lean'),
+              pathlib.Path('verification/b4_ns_nested_comb/B4NSHelicalPair.lean'),
+          ]
           forbidden = [
               r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
               r'(^|[^A-Za-z0-9_])admit([^A-Za-z0-9_]|$)',
@@ -45,23 +47,37 @@ jobs:
               r'^\s*opaque\b',
               r'^\s*unsafe\b',
           ]
-          for pattern in forbidden:
-              if re.search(pattern, text, flags=re.MULTILINE):
-                  print(f'::error title=source trust gate::{pattern}')
-                  raise SystemExit(f'forbidden source token matched: {pattern}')
-
-          theorem_count = len(re.findall(r'^theorem\s+', text, flags=re.MULTILINE))
-          print_count = len(re.findall(r'^#print axioms\s+', text, flags=re.MULTILINE))
+          parts = []
+          source_records = []
+          theorem_count = 0
+          print_count = 0
+          for source in sources:
+              text = source.read_text()
+              for pattern in forbidden:
+                  if re.search(pattern, text, flags=re.MULTILINE):
+                      print(f'::error title=source trust gate::{source}: {pattern}')
+                      raise SystemExit(f'forbidden source token matched in {source}: {pattern}')
+              theorem_count += len(re.findall(r'^theorem\s+', text, flags=re.MULTILINE))
+              print_count += len(re.findall(r'^#print axioms\s+', text, flags=re.MULTILINE))
+              body = '\n'.join(line for line in text.splitlines()
+                               if not line.startswith('import '))
+              parts.append(body)
+              source_records.append({
+                  'path': str(source),
+                  'git_blob': subprocess.check_output(
+                      ['git', 'hash-object', str(source)], text=True).strip(),
+                  'sha256': hashlib.sha256(text.encode()).hexdigest(),
+              })
           if theorem_count != print_count:
               print(f'::error title=axiom-print mismatch::theorems={theorem_count} prints={print_count}')
               raise SystemExit(f'axiom print mismatch: {theorem_count} vs {print_count}')
 
-          blob = subprocess.check_output(['git', 'hash-object', str(source)], text=True).strip()
-          sha256 = hashlib.sha256(text.encode()).hexdigest()
+          combined = 'import Mathlib\n\n' + '\n\n'.join(parts) + '\n'
+          combined_sha256 = hashlib.sha256(combined.encode()).hexdigest()
           request = urllib.request.Request(
               'https://axle.axiommath.ai/api/v1/check',
               data=json.dumps({
-                  'content': text,
+                  'content': combined,
                   'environment': 'lean-4.30.0',
                   'ignore_imports': True,
                   'mathlib_options': False,
@@ -77,9 +93,8 @@ jobs:
               'repository': '${{ github.repository }}',
               'branch': '${{ github.ref_name }}',
               'commit': '${{ github.sha }}',
-              'source_path': str(source),
-              'source_git_blob': blob,
-              'source_sha256': sha256,
+              'sources': source_records,
+              'combined_sha256': combined_sha256,
               'environment': 'lean-4.30.0',
               'theorem_count': theorem_count,
               'print_axioms_count': print_count,
@@ -107,7 +122,7 @@ jobs:
               raise SystemExit('postcompile trust gate found forbidden dependency')
           if not result.get('okay') or errors or tool_errors or failed:
               raise SystemExit(1)
-          print('VERIFIED: exact canonical B4 NS source compiled under AXLE Lean 4.30')
+          print('VERIFIED: exact canonical B4 NS sources compiled under AXLE Lean 4.30')
           PY
 
       - name: Replay exact finite Fourier certificate
