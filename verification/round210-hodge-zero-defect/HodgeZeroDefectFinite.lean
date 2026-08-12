@@ -6,9 +6,10 @@ import Mathlib
 HONESTY BOUNDARY:
 
 This file formalizes only an abstract finite-expression range-preservation
-argument and two logical countermodels. It does not formalize smooth projective
-varieties, Hodge structures, André motives, Chow groups, algebraic cycles,
-Lefschetz operators, or the Hodge conjecture.
+argument, logical countermodels, and scalar intersection-form arithmetic. It
+does not formalize smooth projective varieties, Hodge structures, André motives,
+Chow groups, algebraic cycles, Hirzebruch surfaces, Lefschetz operators, or the
+Hodge conjecture.
 -/
 
 namespace Millennium
@@ -95,10 +96,45 @@ theorem finiteness_does_not_supply_lowerability :
   refine ⟨Fin 1, inferInstance, fun _ => False, ?_⟩
   simp
 
+/-- Scalar intersection-form shadow for the first Hirzebruch surface in the
+basis consisting of its negative section and a fibre. -/
+def hirzebruchOneSelfIntersection (a b : ℤ) : ℤ :=
+  -(a ^ 2) + 2 * a * b
+
+/-- Scalar intersection-form shadow for `P^1 × P^1` in its two ruling classes. -/
+def productRulingSelfIntersection (a b : ℤ) : ℤ :=
+  2 * a * b
+
+/-- The distinguished section in the `F_1` intersection form has square `-1`. -/
+theorem hirzebruch_exceptional_section_negative :
+    hirzebruchOneSelfIntersection 1 0 = -1 := by
+  norm_num [hirzebruchOneSelfIntersection]
+
+/-- Every class with nonnegative ruling coefficients has nonnegative square in
+the product intersection form. -/
+theorem product_effective_self_intersection_nonnegative
+    (a b : ℤ) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    0 ≤ productRulingSelfIntersection a b := by
+  unfold productRulingSelfIntersection
+  exact mul_nonneg (mul_nonneg (by norm_num) ha) hb
+
+/-- Consequently no class with nonnegative ruling coefficients has square
+`-1` in the product form. -/
+theorem product_effective_has_no_minus_one_class
+    (a b : ℤ) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    productRulingSelfIntersection a b ≠ -1 := by
+  intro hminus
+  have hnonneg := product_effective_self_intersection_nonnegative a b ha hb
+  rw [hminus] at hnonneg
+  norm_num at hnonneg
+
 #print axioms Presentation.eval_mem_algebraic
 #print axioms algebraic_correspondence_composition
 #print axioms safe_inclusions_do_not_reverse
 #print axioms finiteness_does_not_supply_lowerability
+#print axioms hirzebruch_exceptional_section_negative
+#print axioms product_effective_self_intersection_nonnegative
+#print axioms product_effective_has_no_minus_one_class
 
 end Round210Hodge
 end Millennium
