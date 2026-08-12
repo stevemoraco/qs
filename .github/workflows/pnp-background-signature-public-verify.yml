@@ -1,0 +1,100 @@
+name: PNP Background-Signature Public Verifier
+
+on:
+  push:
+    branches:
+      - agent/pnp-background-signature-public-verifier-20260812
+    paths:
+      - 'verification/pnp-background-signature/**'
+      - '.github/workflows/pnp-background-signature-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-background-signature/**'
+      - '.github/workflows/pnp-background-signature-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-certificate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile and replay exact Python certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/pnp-background-signature
+          python3 -m py_compile pnp_background_signature_capacity_certificate.py
+          python3 pnp_background_signature_capacity_certificate.py 2>&1 | tee python-certificate.log
+          grep -F 'EXACT CERTIFICATE: PASS' python-certificate.log
+          git hash-object pnp_background_signature_capacity_certificate.py | tee python-git-blob-sha.txt
+          test "$(cat python-git-blob-sha.txt)" = '0fedb6130c4a5177c1a895868f4d38de6b096806'
+
+      - name: Upload exact-certificate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-background-signature-python-evidence
+          path: |
+            verification/pnp-background-signature/python-certificate.log
+            verification/pnp-background-signature/python-git-blob-sha.txt
+          if-no-files-found: warn
+
+  lean-firewall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-background-signature/PNPBackgroundSignatureCapacity.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/pnp-background-signature/lean-git-blob-sha.txt
+          test "$(cat verification/pnp-background-signature/lean-git-blob-sha.txt)" = 'e0d573ff3f1a1ed5687ea5071a16c09d8dbddccc'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/pnp-background-signature/lean-version.txt
+          lake --version | tee verification/pnp-background-signature/lake-version.txt
+          cd verification/pnp-background-signature
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          lake build 2>&1 | tee lake-build.log
+          lake env lean PNPBackgroundSignatureCapacity.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED PNP background-signature finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-background-signature-lean-evidence
+          path: |
+            verification/pnp-background-signature/lean-output.log
+            verification/pnp-background-signature/lake-build.log
+            verification/pnp-background-signature/lean-git-blob-sha.txt
+            verification/pnp-background-signature/lean-version.txt
+            verification/pnp-background-signature/lake-version.txt
+            verification/pnp-background-signature/mathlib-commit.txt
+          if-no-files-found: warn
