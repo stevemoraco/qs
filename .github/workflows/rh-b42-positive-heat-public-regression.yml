@@ -25,12 +25,18 @@ jobs:
           python-version: '3.12'
       - name: Compile
         run: python -m py_compile verification/rh-b42-positive-heat/verify.py
-      - name: Run
-        run: python verification/rh-b42-positive-heat/verify.py | tee verification/rh-b42-positive-heat/output.log
+      - name: Run and preserve nonempty evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u verification/rh-b42-positive-heat/verify.py \
+            > verification/rh-b42-positive-heat/output.log
+          test -s verification/rh-b42-positive-heat/output.log
+          cat verification/rh-b42-positive-heat/output.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rh-b42-positive-heat-public-regression-evidence
           path: verification/rh-b42-positive-heat/output.log
-          if-no-files-found: warn
+          if-no-files-found: error
