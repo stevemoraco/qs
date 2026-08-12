@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           git hash-object "$file" | tee verification/rh-insertion-schur/lean-git-blob-sha.txt
-          test "$(cat verification/rh-insertion-schur/lean-git-blob-sha.txt)" = '2ba12cc6c67f78d4987287a27dacb58448936933'
+          test "$(cat verification/rh-insertion-schur/lean-git-blob-sha.txt)" = 'f2165218743d75cff18df92adb85240dab6987b5'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
