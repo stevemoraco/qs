@@ -1,0 +1,36 @@
+name: RH B42 positive heat public regression
+
+on:
+  push:
+    branches:
+      - agent/rh-b42-positive-heat-public-regression-20260812
+    paths:
+      - 'verification/rh-b42-positive-heat/**'
+      - '.github/workflows/rh-b42-positive-heat-public-regression.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-b42-positive-heat/**'
+      - '.github/workflows/rh-b42-positive-heat-public-regression.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile
+        run: python -m py_compile verification/rh-b42-positive-heat/verify.py
+      - name: Run
+        run: python verification/rh-b42-positive-heat/verify.py | tee verification/rh-b42-positive-heat/output.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-b42-positive-heat-public-regression-evidence
+          path: verification/rh-b42-positive-heat/output.log
+          if-no-files-found: warn
