@@ -75,7 +75,8 @@ theorem unrelated_source_does_not_supply_basis :
 index. -/
 theorem zero_residual_index_iff_basis (d : ℕ) :
     SameLatticeExponent 0 d ↔ d = 0 := by
-  simp [SameLatticeExponent]
+  change 0 = d ↔ d = 0
+  exact eq_comm
 
 #print axioms one_divisibility_allows_arbitrary_gap
 #print axioms reverse_divisibility_allows_arbitrary_gap
