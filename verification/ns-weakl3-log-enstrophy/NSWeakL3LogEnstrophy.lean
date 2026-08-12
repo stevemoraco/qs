@@ -56,12 +56,11 @@ theorem dimensional_exponential_lower_bound
     _ = F := by
       field_simp [ne_of_gt hA, ne_of_gt hE]
 
-/-- CRITIC: a positive power blow-up with exponent below one still has a finite
-model antiderivative budget. This is the finite algebra behind why positivity
-of the Barker–Prange-derived exponent is not an energy contradiction. -/
+/-- CRITIC: a power model with exponent below one still has a finite
+antiderivative budget. Positivity of the exponent is not needed for this upper
+bound; only `gamma < 1` and nonnegative cutoff are load-bearing. -/
 theorem subunit_power_antiderivative_budget
     (gamma epsilon : ℝ)
-    (hgamma0 : 0 ≤ gamma)
     (hgamma1 : gamma < 1)
     (hepsilon : 0 ≤ epsilon) :
     (1 - epsilon ^ (1 - gamma)) / (1 - gamma)
