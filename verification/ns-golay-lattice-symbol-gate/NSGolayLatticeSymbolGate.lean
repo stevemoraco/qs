@@ -82,16 +82,15 @@ theorem two_species_energy_stability
     {ι : Type*} (s : Finset ι)
     (e₁ e₂ r₁ r₂ : ι → ℝ) (ε E : ℝ)
     (he₁ : ∀ i, |e₁ i| ≤ ε) (he₂ : ∀ i, |e₂ i| ≤ ε)
-    (hE : (∑ i in s, (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
-    (∑ i in s, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
+    (hE : s.sum (fun i => (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
+    s.sum (fun i => (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
   calc
-    (∑ i in s, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
-        ≤ ∑ i in s, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
-          apply Finset.sum_le_sum
-          intro i hi
-          exact two_species_weighted_residual_sq
-            (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
-    _ = 2 * ε ^ 2 * (∑ i in s, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
+    s.sum (fun i => (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
+        ≤ s.sum (fun i => 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2)) := by
+          exact Finset.sum_le_sum fun i hi =>
+            two_species_weighted_residual_sq
+              (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
+    _ = 2 * ε ^ 2 * s.sum (fun i => (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
       rw [Finset.mul_sum]
     _ ≤ 2 * ε ^ 2 * E := by
       exact mul_le_mul_of_nonneg_left hE (by positivity)
@@ -129,7 +128,7 @@ theorem quasisteady_triad_carrier_nonpositive
 
 /-- A per-channel `δ` bound alone permits an exact `J δ²` total squared leakage budget. -/
 theorem repeated_cellwise_mismatch_energy (J : ℕ) (δ : ℝ) :
-    (∑ _i : Fin J, δ ^ 2) = (J : ℝ) * δ ^ 2 := by
+    (Finset.univ.sum (fun _i : Fin J => δ ^ 2)) = (J : ℝ) * δ ^ 2 := by
   simp
 
 #print axioms pythagorean_parameter_identity
