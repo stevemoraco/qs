@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean
-          EXPECTED=ece639eb17884c0caf5f35b6f5d7958ee4c3b57ff94c6037e12caf4f39a44402
+          EXPECTED=810b46cbc9a4a18bde613ddab1a87eb52a9b9c319427a597f79702dfa8ae70ad
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
@@ -36,8 +36,8 @@ jobs:
               raise SystemExit(f'forbidden source token: {match.group(2)}')
           if 'Lean.ofReduceBool' in text:
               raise SystemExit('forbidden source token: Lean.ofReduceBool')
-          if text.count('#print axioms') != 4:
-              raise SystemExit('expected exactly four staged #print axioms commands')
+          if text.count('#print axioms') != 5:
+              raise SystemExit('expected exactly five staged #print axioms commands')
           print('source trust preflight: clean')
           PY
 
