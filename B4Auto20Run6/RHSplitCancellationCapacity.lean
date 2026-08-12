@@ -31,11 +31,11 @@ theorem rh_split_capacity_too_small_blocks_budget
     D G H B ε β hbudget hG hH
   linarith
 
-/-- CLEANER: the combined threshold is sharp. For nonnegative capacities,
-choosing the two pieces at their most negative allowed values exactly closes an
-excess of `ε + β`. -/
+/-- CLEANER: the combined threshold is sharp. For `ε ≥ 0`, choosing the two
+pieces at their most negative allowed values exactly closes an excess `ε + β`.
+No sign premise on `β` is needed for this exact algebraic saturation witness. -/
 theorem rh_split_cancellation_threshold_is_sharp
-    (B ε β : ℝ) (hε : 0 ≤ ε) (hβ : 0 ≤ β) :
+    (B ε β : ℝ) (hε : 0 ≤ ε) :
     let D := B + ε + β
     let G := -ε
     let H := -β
