@@ -67,7 +67,7 @@ theorem finite_pool_minimax_scalar
     (hcap : total ≤ N * pmax) :
     1 / N ≤ pmax := by
   rw [div_le_iff₀ hN]
-  exact htotal.trans hcap
+  simpa [mul_comm] using htotal.trans hcap
 
 /-- Combining the incidence ledger and compression gate directly. -/
 theorem incidence_budget_to_dense_core
