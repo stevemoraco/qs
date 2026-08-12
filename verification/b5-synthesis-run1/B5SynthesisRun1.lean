@@ -115,11 +115,11 @@ end B5SynthesisRun1.NavierStokes
 
 namespace B5SynthesisRun1.YangMills
 
-/-- A regulator-dependent physical mass estimate with error below half the target
-has a uniform positive half-gap. This is the pointwise core of the `o(a)` margin. -/
+/-- If the physical mass ratio lies within an error smaller than half the target,
+then it lies strictly above the target half-gap. Positivity is application data,
+not needed by this scalar implication itself. -/
 theorem half_gap_from_small_ratio_error
     (a M eps g : ℝ)
-    (ha : 0 < a) (hM : 0 < M)
     (hsmall : eps < M / 2)
     (herr : |g / a - M| ≤ eps) :
     M / 2 < g / a := by
