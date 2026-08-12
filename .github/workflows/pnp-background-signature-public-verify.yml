@@ -1,4 +1,4 @@
-name: PNP Background-Signature Public Verifier
+name: PNP Round203 Finite-Core Public Verifier
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnp-background-signature-python-evidence
+          name: pnp-round203-python-evidence
           path: |
             verification/pnp-background-signature/python-certificate.log
             verification/pnp-background-signature/python-git-blob-sha.txt
@@ -51,17 +51,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reject placeholders and custom trust declarations
+      - name: Reject placeholders and verify canonical blobs
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/pnp-background-signature/PNPBackgroundSignatureCapacity.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
-            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
-            exit 1
-          fi
-          git hash-object "$file" | tee verification/pnp-background-signature/lean-git-blob-sha.txt
-          test "$(cat verification/pnp-background-signature/lean-git-blob-sha.txt)" = '1d23b48f2f4918aed66fd4a2f2faf1baa8588d58'
+          dir=verification/pnp-background-signature
+          files=(
+            "$dir/PNPBackgroundSignatureCapacity.lean"
+            "$dir/PNPCriticalComponentDefect.lean"
+          )
+          for file in "${files[@]}"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder or custom trust declaration found in $file." >&2
+              exit 1
+            fi
+          done
+          git hash-object "${files[0]}" | tee "$dir/background-signature-git-blob-sha.txt"
+          test "$(cat "$dir/background-signature-git-blob-sha.txt")" = '1d23b48f2f4918aed66fd4a2f2faf1baa8588d58'
+          git hash-object "${files[1]}" | tee "$dir/critical-component-git-blob-sha.txt"
+          test "$(cat "$dir/critical-component-git-blob-sha.txt")" = 'cc383ee1a70c0a908ae8d848da7e41d857c6c60a'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
@@ -78,22 +86,26 @@ jobs:
           git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
           lake exe cache get
           lake build 2>&1 | tee lake-build.log
-          lake env lean PNPBackgroundSignatureCapacity.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in PNPBackgroundSignatureCapacity.lean PNPCriticalComponentDefect.lean; do
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
             exit 1
           fi
-          echo 'VERIFIED PNP background-signature finite core: clean pinned build.'
+          echo 'VERIFIED PNP round203 finite cores: clean pinned build.'
 
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnp-background-signature-lean-evidence
+          name: pnp-round203-lean-evidence
           path: |
             verification/pnp-background-signature/lean-output.log
             verification/pnp-background-signature/lake-build.log
-            verification/pnp-background-signature/lean-git-blob-sha.txt
+            verification/pnp-background-signature/background-signature-git-blob-sha.txt
+            verification/pnp-background-signature/critical-component-git-blob-sha.txt
             verification/pnp-background-signature/lean-version.txt
             verification/pnp-background-signature/lake-version.txt
             verification/pnp-background-signature/mathlib-commit.txt
