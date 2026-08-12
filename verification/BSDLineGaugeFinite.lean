@@ -56,6 +56,20 @@ theorem twoGaugeCovariance {R : Type*} [CommRing R]
             ac_rfl
     _ = (↑b : R) * (L * δ) := by rw [gaugeProductInvariant]
 
+/-- If the coordinate changes by `b*a⁻¹` while the basis tensor changes by
+`a*b⁻¹`, the represented line element is unchanged. -/
+theorem doubleGaugeTensorCoordinateInvariant {R : Type*} [CommRing R]
+    (a b : Rˣ) (L e : R) :
+    ((((↑b : R) * (↑(a⁻¹) : R)) * L) *
+      (((↑a : R) * (↑(b⁻¹) : R)) * e)) = L * e := by
+  calc
+    ((((↑b : R) * (↑(a⁻¹) : R)) * L) *
+      (((↑a : R) * (↑(b⁻¹) : R)) * e))
+        = (((↑b : R) * (↑(b⁻¹) : R)) *
+          ((↑(a⁻¹) : R) * (↑a : R))) * (L * e) := by
+            ac_rfl
+    _ = L * e := by simp
+
 theorem ratioGaugeInvariant {K : Type*} [Field K]
     (a : Kˣ) (x y : K) (hy : y ≠ 0) :
     (((↑(a⁻¹) : K) * x) / ((↑(a⁻¹) : K) * y)) = x / y := by
@@ -88,6 +102,7 @@ theorem oneSpecializationDoesNotFixPolynomialElement :
 #print axioms unit_rescaling_associated
 #print axioms gaugeProductInvariant
 #print axioms twoGaugeCovariance
+#print axioms doubleGaugeTensorCoordinateInvariant
 #print axioms ratioGaugeInvariant
 #print axioms associatedGeneratorsNeedNotBeEqual
 #print axioms oneSpecializationDoesNotFixPolynomialElement
