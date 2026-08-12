@@ -91,10 +91,6 @@ jobs:
           lean_errors = result.get('lean_messages', {}).get('errors', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           failed = result.get('failed_declarations', [])
-          rendered = json.dumps(result)
-          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
-              print('::error title=Postcompile trust failure::forbidden escape')
-              raise SystemExit(1)
           if not result.get('okay') or lean_errors or tool_errors or failed:
               for item in lean_errors:
                   print('::error title=AXLE Lean error::' + esc(item))
@@ -104,6 +100,10 @@ jobs:
                   print('::error title=AXLE failed declaration::' + esc(item))
               if not lean_errors and not tool_errors and not failed:
                   print('::error title=AXLE non-okay result::' + esc(result))
+              raise SystemExit(1)
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              print('::error title=Postcompile trust failure::forbidden escape')
               raise SystemExit(1)
           compact = {key: value for key, value in result.items() if key != 'content'}
           print('::notice title=AXLE compact exact result::' + esc(compact))
