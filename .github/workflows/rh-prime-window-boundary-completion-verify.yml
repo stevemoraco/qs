@@ -1,0 +1,102 @@
+name: RH Prime Window Boundary Completion Finite Core
+
+on:
+  push:
+    branches:
+      - research/rh-prime-window-boundary-completion-public-verifier-20260812
+    paths:
+      - 'verification/rh-prime-window-boundary-completion/**'
+      - '.github/workflows/rh-prime-window-boundary-completion-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-prime-window-boundary-completion/**'
+      - '.github/workflows/rh-prime-window-boundary-completion-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-prime-window-boundary-completion
+          sha256sum "$root/RHPrimeWindowBoundaryCompletionFinite.lean" \
+                    "$root/verify_prime_window_boundary_completion.py" \
+            | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              "$root/RHPrimeWindowBoundaryCompletionFinite.lean"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay deterministic boundary-completion falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-prime-window-boundary-completion
+          python3 --version | tee "$root/python-version.txt"
+          python3 "$root/verify_prime_window_boundary_completion.py" \
+            --tolerance 1e-9 \
+            --output "$root/finite-certificate.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/rh-prime-window-boundary-completion/finite-certificate.json')
+          data = json.loads(path.read_text())
+          assert data['complete_moment_zero_within_tolerance'] is True
+          assert data['upper_boundary_constant_positive'] is True
+          assert data['lower_boundary_constant_positive'] is True
+          assert data['all_coherent_identities_exact'] is True
+          print('complete_weighted_moment=', data['complete_weighted_moment'])
+          print('upper_boundary_energy_constant=', data['upper_boundary_energy_constant'])
+          print('lower_boundary_energy_constant=', data['lower_boundary_energy_constant'])
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/rh-prime-window-boundary-completion
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHPrimeWindowBoundaryCompletionFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite RH prime-window boundary-completion firewalls.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-prime-window-boundary-completion-finite-evidence
+          path: |
+            verification/rh-prime-window-boundary-completion/source-sha256.txt
+            verification/rh-prime-window-boundary-completion/python-version.txt
+            verification/rh-prime-window-boundary-completion/finite-certificate.json
+            verification/rh-prime-window-boundary-completion/lean-version.txt
+            verification/rh-prime-window-boundary-completion/lean-output.log
+          if-no-files-found: warn
