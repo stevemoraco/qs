@@ -1,0 +1,89 @@
+name: NS Triad Gauge-Holonomy Public Verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-triad-gauge-holonomy-public-verify-20260812
+    paths:
+      - 'verification/ns-triad-gauge-holonomy-public/**'
+      - '.github/workflows/ns-triad-gauge-holonomy-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-triad-gauge-holonomy-public/**'
+      - '.github/workflows/ns-triad-gauge-holonomy-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact private-source blob and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-triad-gauge-holonomy-public'
+          file="$dir/NSTriadHolonomyFirewall.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='c626a300dac6296b1c56e573f6f7848147fc6929'
+          test "$actual_blob" = "$expected_blob"
+          printf 'private_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden custom trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En 'native_decide|Lean\.ofReduceBool' "$file"; then
+            echo 'Forbidden evaluation shortcut found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-triad-gauge-holonomy-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSTriadHolonomyFirewall.lean > lean-output.log 2>&1
+          lean_status=$?
+          set -e
+          cat lean-output.log
+          test "$lean_status" -eq 0
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          test -s lean-output.log
+          echo 'VERIFIED exact NS triad gauge-holonomy finite core.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-triad-gauge-holonomy-public-evidence
+          path: |
+            verification/ns-triad-gauge-holonomy-public/source-blob.txt
+            verification/ns-triad-gauge-holonomy-public/source-sha256.txt
+            verification/ns-triad-gauge-holonomy-public/lean-version.txt
+            verification/ns-triad-gauge-holonomy-public/lean-output.log
+            verification/ns-triad-gauge-holonomy-public/lake-manifest.json
+          if-no-files-found: warn
