@@ -1,0 +1,11 @@
+name = "ns-strict-descendant-nontermination-public"
+version = "0.1.0"
+defaultTargets = ["NSStrictDescendantNontermination"]
+
+[[lean_lib]]
+name = "NSStrictDescendantNontermination"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.32.1"
