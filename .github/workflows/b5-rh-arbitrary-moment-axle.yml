@@ -1,0 +1,98 @@
+name: B5 RH arbitrary-moment hostile AXLE replay
+
+on:
+  push:
+    branches: [agent/b5-rh-arbitrary-moment-public-verifier-20260812]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b5-rh-arbitrary-moment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            verification/b5-rh-arbitrary-moments/B5RHArbitraryMoments.lean
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Source trust gate
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          path = pathlib.Path('verification/b5-rh-arbitrary-moments/B5RHArbitraryMoments.lean')
+          text = path.read_text()
+          forbidden = [
+              r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])admit([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])axiom([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])opaque([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])unsafe([^A-Za-z0-9_]|$)',
+          ]
+          for pat in forbidden:
+              if re.search(pat, text):
+                  raise SystemExit(f'forbidden source construct matches {pat}')
+          count = len(re.findall(r'(?m)^theorem\s+', text))
+          prints = len(re.findall(r'(?m)^#print axioms\s+', text))
+          if count != 2 or prints != 2:
+              raise SystemExit(f'expected 2 theorems and 2 axiom prints, got {count} / {prints}')
+          print(f'PRECHECK OK: {count} theorems, {prints} axiom prints')
+          PY
+
+      - name: Verify exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          path = pathlib.Path('verification/b5-rh-arbitrary-moments/B5RHArbitraryMoments.lean')
+          content = path.read_text()
+          sha256 = hashlib.sha256(content.encode()).hexdigest()
+          print('source_sha256=' + sha256)
+          payload = json.dumps({
+              'content': content,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('verification/b5-rh-arbitrary-moments/axle-result.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
+          print(json.dumps(result, indent=2))
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('postcompile trust gate found forbidden axiom/escape')
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit(1)
+          print('VERIFIED: arbitrary fixed-moment obstruction core compiled')
+          PY
+
+      - name: Upload exact verifier evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b5-rh-arbitrary-moment-axle-evidence
+          path: |
+            verification/b5-rh-arbitrary-moments/B5RHArbitraryMoments.lean
+            verification/b5-rh-arbitrary-moments/axle-result.json
+          if-no-files-found: warn
