@@ -51,6 +51,12 @@ jobs:
           lake env lean Run16FiniteCores/SuzukiApproximatePythagoras.lean
           lake env lean Run16FiniteCores/PNPManyToOneSelector.lean
 
+      - name: Diagnose axiom sources
+        working-directory: lean-replay/run16
+        run: |
+          set -euo pipefail
+          lake env lean AxiomProbe.lean 2>&1 | tee axiom-probe.txt
+
       - name: Print and enforce axiom report
         working-directory: lean-replay/run16
         run: |
