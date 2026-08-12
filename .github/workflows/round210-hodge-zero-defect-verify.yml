@@ -48,7 +48,8 @@ jobs:
           for file in \
             HodgeZeroDefectFinite.lean \
             HodgeProductCrossTypeFinite.lean \
-            HodgeSpinorRankFinite.lean; do
+            HodgeSpinorRankFinite.lean \
+            HodgeCMHilbertFinite.lean; do
             echo "===== $file =====" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
           done
