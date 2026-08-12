@@ -12,9 +12,10 @@ theorem model_cancellation_error_bound
   rw [hD, hO]
   have hcancel : A + eD + (-A + eO) = eD + eO := by ring
   rw [hcancel]
-  calc
-    |eD + eO| ≤ |eD| + |eO| := abs_add _ _
-    _ ≤ εD + εO := add_le_add heD heO
+  have hd := abs_le.mp heD
+  have ho := abs_le.mp heO
+  apply abs_le.mpr
+  constructor <;> linarith
 
 theorem leading_cancellation_without_error_control_counterexample
     (M : ℝ) :
