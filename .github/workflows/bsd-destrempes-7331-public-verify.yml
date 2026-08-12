@@ -30,6 +30,7 @@ jobs:
           set -euo pipefail
           sha256sum \
             verification/bsd-destrempes-7331/BSDQuotientZeroFirewall.lean \
+            verification/bsd-destrempes-7331/BSDReciprocalTraceFirewall.lean \
             verification/bsd-destrempes-7331/verify_e4_21_minus233.py \
             | tee verification/bsd-destrempes-7331/source-sha256.txt
 
@@ -53,7 +54,7 @@ jobs:
           grep -q '"verified": true' \
             verification/bsd-destrempes-7331/arithmetic-output.json
 
-      - name: Install pinned Lean and compile finite logical core
+      - name: Install pinned Lean and compile finite logical cores
         shell: bash
         run: |
           set -euo pipefail
@@ -66,14 +67,19 @@ jobs:
           cd verification/bsd-destrempes-7331
           lake update
           lake exe cache get
-          lake env lean BSDQuotientZeroFirewall.lean \
-            > lean-output.log 2>&1
-          cat lean-output.log
+          : > lean-output.log
+          for file in \
+            BSDQuotientZeroFirewall.lean \
+            BSDReciprocalTraceFirewall.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" > current-lean.log 2>&1
+            cat current-lean.log | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite BSD quotient-zero core and exact arithmetic replay.'
+          echo 'VERIFIED finite BSD reciprocal-trace and quotient-zero cores plus exact arithmetic replay.'
 
       - name: Upload verification evidence
         if: always()
@@ -86,4 +92,5 @@ jobs:
             verification/bsd-destrempes-7331/arithmetic-output.json
             verification/bsd-destrempes-7331/lean-version.txt
             verification/bsd-destrempes-7331/lean-output.log
+            verification/bsd-destrempes-7331/current-lean.log
           if-no-files-found: warn
