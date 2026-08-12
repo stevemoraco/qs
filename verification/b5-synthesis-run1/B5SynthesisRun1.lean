@@ -61,7 +61,6 @@ theorem smith_summand_stabilizes_iff_depth_below
   constructor
   · intro hstab
     by_contra hnot
-    have hpa : p ≤ a := by omega
     have hnotp : ¬ a < p := by omega
     have hnotp1 : ¬ a < p - 1 := by omega
     simp [truncLength, hnotp, hnotp1] at hstab
@@ -70,7 +69,8 @@ theorem smith_summand_stabilizes_iff_depth_below
     by_cases h2 : a < p - 1
     · simp [truncLength, h, h2]
     · have heq : a = p - 1 := by omega
-      simp [truncLength, h, h2, heq]
+      have hprev : p - 1 < p := by omega
+      simp [truncLength, heq, hprev]
 
 #print axioms smith_summand_stabilizes_iff_depth_below
 
