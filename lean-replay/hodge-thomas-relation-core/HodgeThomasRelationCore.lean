@@ -1,2 +1,3 @@
 import HodgeThomasRelationCore.LocalRelation
 import HodgeThomasRelationCore.CentralScalarCocycle
+import HodgeThomasRelationCore.IsotropicCollisionObstruction
