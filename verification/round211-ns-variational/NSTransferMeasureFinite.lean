@@ -30,8 +30,9 @@ theorem support_volume_proxy_pos (n : ℕ) :
 /-- The reciprocal support proxy has the exact shrinking-scale identity. -/
 theorem support_volume_scale_identity (n : ℕ) :
     (((n + 1 : ℕ) : ℚ)) * supportVolumeProxy n = 1 := by
-  change ((n : ℚ) + 1) * (((n : ℚ) + 1)⁻¹) = 1
-  exact mul_inv_cancel₀ (by positivity)
+  rw [supportVolumeProxy]
+  have hnonzero : (((n + 1 : ℕ) : ℚ)) ≠ 0 := by positivity
+  field_simp [hnonzero]
 
 /-- Concentrated transfer remains exactly one. -/
 theorem concentrated_transfer_stays_one (n : ℕ) :
