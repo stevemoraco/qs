@@ -136,12 +136,11 @@ theorem variable_persistence_charge_budget
     (lower charge : ι → ℝ)
     {C E : ℝ}
     (hpoint : ∀ i ∈ s, lower i ≤ charge i)
-    (hbudget : ∑ i in s, charge i ≤ C * E) :
-    ∑ i in s, lower i ≤ C * E := by
-  calc
-    ∑ i in s, lower i ≤ ∑ i in s, charge i :=
-      Finset.sum_le_sum (fun i hi => hpoint i hi)
-    _ ≤ C * E := hbudget
+    (hbudget : s.sum charge ≤ C * E) :
+    s.sum lower ≤ C * E := by
+  have hsum : s.sum lower ≤ s.sum charge :=
+    Finset.sum_le_sum (fun i hi => hpoint i hi)
+  exact hsum.trans hbudget
 
 theorem uniform_episode_price_budget
     {ι : Type*}
@@ -149,11 +148,11 @@ theorem uniform_episode_price_budget
     (charge : ι → ℝ)
     {c C E : ℝ}
     (hpoint : ∀ i ∈ s, c ≤ charge i)
-    (hbudget : ∑ i in s, charge i ≤ C * E) :
+    (hbudget : s.sum charge ≤ C * E) :
     (s.card : ℝ) * c ≤ C * E := by
-  have hsum : ∑ i in s, c ≤ ∑ i in s, charge i :=
+  have hsum : s.sum (fun _ => c) ≤ s.sum charge :=
     Finset.sum_le_sum (fun i hi => hpoint i hi)
-  have hconst : ∑ _i in s, c = (s.card : ℝ) * c := by
+  have hconst : s.sum (fun _ => c) = (s.card : ℝ) * c := by
     simp
   rw [hconst] at hsum
   exact hsum.trans hbudget
@@ -181,7 +180,7 @@ theorem scaled_gap_survives_additive_error
     (hobs : a * (m + ε) ≤ observed) :
     m ≤ trueGap / a := by
   have hdiff : observed - trueGap ≤ a * ε := (abs_le.mp herr).2
-  have htrue : a * m ≤ trueGap := by
+  have htrue : m * a ≤ trueGap := by
     nlinarith
   exact (le_div_iff₀ ha).2 htrue
 
@@ -201,7 +200,7 @@ theorem strict_scaled_gap_survives_additive_error
     (hobs : a * (m + ε) < observed) :
     m < trueGap / a := by
   have hdiff : observed - trueGap ≤ a * ε := (abs_le.mp herr).2
-  have htrue : a * m < trueGap := by
+  have htrue : m * a < trueGap := by
     nlinarith
   exact (lt_div_iff₀ ha).2 htrue
 
