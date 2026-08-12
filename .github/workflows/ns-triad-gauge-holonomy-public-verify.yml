@@ -31,7 +31,7 @@ jobs:
           dir='verification/ns-triad-gauge-holonomy-public'
           file="$dir/NSTriadHolonomyFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='c626a300dac6296b1c56e573f6f7848147fc6929'
+          expected_blob='358f1669ffc4ae40ecd193aa7b186d5ea56385ce'
           test "$actual_blob" = "$expected_blob"
           printf 'private_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
