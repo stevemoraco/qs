@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from itertools import combinations_with_replacement, product
-from typing import Optional, Sequence
+from typing import Iterable, Optional, Sequence
 
 
 @dataclass(frozen=True)
@@ -90,6 +90,7 @@ def verify_topology(
 
     output = n + g - 1
 
+    # Single-output normalization and the no-isolated-input hypothesis.
     if any(len(outgoing[input_vertex]) == 0 for input_vertex in range(n)):
         return None
     if any(len(outgoing[gate]) == 0 for gate in range(n, output)):
@@ -100,6 +101,8 @@ def verify_topology(
     path_sets = [set(path) for path in paths]
     components = _component_count(path_sets)
     terminals = {path[-1] for path in paths}
+
+    # Intersecting critical paths merge permanently; one terminal per component.
     assert len(terminals) == components
 
     t1 = set().union(*path_sets)
@@ -124,22 +127,63 @@ def verify_topology(
     assert offpath_excess >= 0
     total_excess = terminal_excess + offpath_excess
 
-    ell = sum(1 for source in t1 for target in outgoing[source] if target in t1)
-    e12 = sum(1 for source in t1 for target in outgoing[source] if target in t2)
-    e21 = sum(1 for source in t2 for target in outgoing[source] if target in t1)
-    e22 = sum(1 for source in t2 for target in outgoing[source] if target in t2)
+    ell = sum(
+        1
+        for source in t1
+        for target in outgoing[source]
+        if target in t1
+    )
+    e12 = sum(
+        1
+        for source in t1
+        for target in outgoing[source]
+        if target in t2
+    )
+    e21 = sum(
+        1
+        for source in t2
+        for target in outgoing[source]
+        if target in t1
+    )
+    e22 = sum(
+        1
+        for source in t2
+        for target in outgoing[source]
+        if target in t2
+    )
 
+    # Detailed wire ledger.
     assert e12 == c1 + components - 2 * output_on_path + terminal_excess - ell
     assert e21 == 2 * (c1 - n) - ell
     assert e22 == (
-        c2 - 1 + output_on_path + offpath_excess - 2 * (c1 - n) + ell
+        c2
+        - 1
+        + output_on_path
+        + offpath_excess
+        - 2 * (c1 - n)
+        + ell
     )
     assert 2 * c2 == e12 + e22
 
-    assert c1 + c2 == 2 * n + components - 1 - output_on_path + total_excess
-    assert g == n + components - 1 - output_on_path + total_excess
+    # Critical-component identity and single-output defect conservation.
+    assert c1 + c2 == (
+        2 * n
+        + components
+        - 1
+        - output_on_path
+        + total_excess
+    )
+    assert g == (
+        n
+        + components
+        - 1
+        - output_on_path
+        + total_excess
+    )
     assert g - (2 * n - 2) == (
-        total_excess - (n - components) + (1 - output_on_path)
+        total_excess
+        - (n - components)
+        + (1 - output_on_path)
     )
 
     return Invariants(
@@ -159,6 +203,7 @@ def enumerate_topologies(n: int, g: int) -> tuple[int, int]:
         tuple(combinations_with_replacement(range(n + gate_index), 2))
         for gate_index in range(g)
     ]
+
     enumerated = 0
     normalized = 0
     for gate_parents in product(*predecessor_options):
