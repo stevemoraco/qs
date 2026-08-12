@@ -24,22 +24,22 @@ def vorticityAmplitude (A r : ℚ) : ℚ := A / r
 theorem fixed_energy_many_core_identity
     (N : ℚ) (hN : N ≠ 0) :
     multicoreEnergy N N (1 / N) = 1 := by
-  field_simp [multicoreEnergy, hN]
-  ring
+  unfold multicoreEnergy
+  field_simp [hN]
 
 /-- Under the same scaling, the total support-volume proxy is `1/N^2`. -/
 theorem shrinking_total_volume_identity
     (N : ℚ) (hN : N ≠ 0) :
     multicoreVolume N (1 / N) = 1 / N ^ 2 := by
-  field_simp [multicoreVolume, hN]
-  ring
+  unfold multicoreVolume
+  field_simp [hN]
 
 /-- Under the same scaling, the vorticity-amplitude proxy is `N^2`. -/
 theorem growing_vorticity_amplitude_identity
     (N : ℚ) (hN : N ≠ 0) :
     vorticityAmplitude N (1 / N) = N ^ 2 := by
-  field_simp [vorticityAmplitude, hN]
-  ring
+  unfold vorticityAmplitude
+  field_simp [hN]
 
 /-- The three identities hold simultaneously. -/
 theorem fixed_energy_multicore_scaling
@@ -61,7 +61,7 @@ theorem energy_chebyshev_cube_has_extra_threshold
   calc
     (Lambda * tail) ^ 3 = Lambda ^ 3 * tail ^ 3 := by ring
     _ = Lambda ^ 3 * (energy / Lambda ^ 2) := by rw [hidentity]
-    _ = energy * Lambda := by field_simp [hLambda]; ring
+    _ = energy * Lambda := by field_simp [hLambda]
 
 #print axioms fixed_energy_many_core_identity
 #print axioms shrinking_total_volume_identity
