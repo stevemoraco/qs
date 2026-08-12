@@ -1,0 +1,89 @@
+name: BSD Destrempes 7331 Finite Core
+
+on:
+  push:
+    branches:
+      - research/bsd-destrempes-7331-public-verifier-20260812
+    paths:
+      - 'verification/bsd-destrempes-7331/**'
+      - '.github/workflows/bsd-destrempes-7331-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/bsd-destrempes-7331/**'
+      - '.github/workflows/bsd-destrempes-7331-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record exact source hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum \
+            verification/bsd-destrempes-7331/BSDQuotientZeroFirewall.lean \
+            verification/bsd-destrempes-7331/verify_e4_21_minus233.py \
+            | tee verification/bsd-destrempes-7331/source-sha256.txt
+
+      - name: Reject explicit Lean placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -REn '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' \
+            verification/bsd-destrempes-7331 --include='*.lean'; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Replay exact arithmetic certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 --version | tee verification/bsd-destrempes-7331/python-version.txt
+          python3 verification/bsd-destrempes-7331/verify_e4_21_minus233.py \
+            | tee verification/bsd-destrempes-7331/arithmetic-output.json
+          grep -q '"verified": true' \
+            verification/bsd-destrempes-7331/arithmetic-output.json
+
+      - name: Install pinned Lean and compile finite logical core
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/bsd-destrempes-7331/lean-version.txt
+          lake --version | tee -a verification/bsd-destrempes-7331/lean-version.txt
+          cd verification/bsd-destrempes-7331
+          lake update
+          lake exe cache get
+          lake env lean BSDQuotientZeroFirewall.lean \
+            > lean-output.log 2>&1
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite BSD quotient-zero core and exact arithmetic replay.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-destrempes-7331-finite-core-evidence
+          path: |
+            verification/bsd-destrempes-7331/source-sha256.txt
+            verification/bsd-destrempes-7331/python-version.txt
+            verification/bsd-destrempes-7331/arithmetic-output.json
+            verification/bsd-destrempes-7331/lean-version.txt
+            verification/bsd-destrempes-7331/lean-output.log
+          if-no-files-found: warn
