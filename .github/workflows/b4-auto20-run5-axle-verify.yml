@@ -1,0 +1,83 @@
+name: B4 AUTO20 run5 AXLE hostile verifier
+
+on:
+  push:
+    branches:
+      - agent/b4-auto20-run5-public-verifier-20260812-1418
+    paths:
+      - 'B4Auto20Run5/**'
+      - '.github/workflows/b4-auto20-run5-axle-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(B4Auto20Run5/*.lean)
+          test ${#files[@]} -eq 6
+          if grep -nE '(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)([^A-Za-z0-9_]|$)' "${files[@]}"; then
+            echo 'Forbidden proof hole / custom axiom / trust escape found'
+            exit 1
+          fi
+
+      - name: Build canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/b4-auto20-run5-axle
+          python3 - <<'PY'
+          import hashlib, pathlib
+          files = sorted(pathlib.Path('B4Auto20Run5').glob('*.lean'))
+          assert len(files) == 6, len(files)
+          parts=[]
+          for path in files:
+              text=path.read_text()
+              body='\n'.join(line for line in text.splitlines() if not line.startswith('import '))
+              parts.append(f'-- BEGIN {path}\n{body}\n-- END {path}')
+          content='import Mathlib\n\n'+'\n\n'.join(parts)+'\n'
+          out=pathlib.Path('verification/b4-auto20-run5-axle/B4Auto20Run5Combined.lean')
+          out.write_text(content)
+          digest=hashlib.sha256(content.encode()).hexdigest()
+          pathlib.Path('verification/b4-auto20-run5-axle/CANONICAL_SHA256.txt').write_text(digest+'\n')
+          print('canonical_sha256',digest,'files',len(files))
+          PY
+
+      - name: Verify canonical source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source=pathlib.Path('verification/b4-auto20-run5-axle/B4Auto20Run5Combined.lean').read_text()
+          payload=json.dumps({'content':source,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=960) as r: result=json.load(r)
+          pathlib.Path('verification/b4-auto20-run5-axle/AXLE_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(result,indent=2))
+          if (not result.get('okay') or result.get('lean_messages',{}).get('errors',[]) or result.get('tool_messages',{}).get('errors',[]) or result.get('failed_declarations',[])):
+              raise SystemExit(1)
+          PY
+
+      - name: Postcompile firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '(^|[^A-Za-z0-9_])(sorryAx|admit|axiom|unsafe|Lean\.ofReduceBool)([^A-Za-z0-9_]|$)' verification/b4-auto20-run5-axle/B4Auto20Run5Combined.lean; then exit 1; fi
+          echo 'postcompile firewall clean'
+
+      - name: Upload AXLE evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-auto20-run5-axle-evidence
+          path: verification/b4-auto20-run5-axle
+          if-no-files-found: error
+          retention-days: 90
