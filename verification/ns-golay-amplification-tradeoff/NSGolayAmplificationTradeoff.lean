@@ -65,7 +65,7 @@ theorem active_output_rank_floor
       _ ≤ K * B ^ 2 * E ^ 2 := hupper
       _ = (K * B ^ 2) * E ^ 2 := by ring
   have hE2 : 0 < E ^ 2 := by positivity
-  exact (mul_le_mul_right hE2).mp hscaled
+  exact le_of_mul_le_mul_right hscaled hE2
 
 /-- Splitting unit shell energy equally among `J` orthogonal output branches
 produces squared output weight `1/J`, not a coherent order-one output. -/
