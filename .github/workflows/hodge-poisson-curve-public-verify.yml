@@ -1,0 +1,72 @@
+name: Hodge Poisson Curve Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/hodge-poisson-curve-public-20260811
+    paths:
+      - 'verification/hodge-poisson-curve/**'
+      - '.github/workflows/hodge-poisson-curve-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/hodge-poisson-curve/**'
+      - '.github/workflows/hodge-poisson-curve-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/hodge-poisson-curve/HodgePoissonCurveFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/hodge-poisson-curve
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean HodgePoissonCurveFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              line=${line//$'\r'/'%0D'}
+              line=${line//$'\n'/'%0A'}
+              echo "::error file=verification/hodge-poisson-curve/HodgePoissonCurveFinite.lean::$line"
+            done < lean-output.log
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED Hodge Poisson curve finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-poisson-curve-finite-core-lean-evidence
+          path: verification/hodge-poisson-curve/lean-output.log
+          if-no-files-found: warn
