@@ -89,7 +89,8 @@ theorem three_component_triangle (a b c : ℝ) :
     |a + b + c| ≤ |a| + |b| + |c| := by
   calc
     |a + b + c| ≤ |a + b| + |c| := abs_add_le _ _
-    _ ≤ (|a| + |b|) + |c| := add_le_add_right (abs_add_le _ _) _
+    _ ≤ (|a| + |b|) + |c| := by
+      simpa [add_comm] using add_le_add_right (abs_add_le a b) |c|
     _ = |a| + |b| + |c| := by ring
 
 #print axioms frozen_cross_cancellation
