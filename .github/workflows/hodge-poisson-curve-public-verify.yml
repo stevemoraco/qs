@@ -25,8 +25,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/hodge-poisson-curve/HodgePoissonCurveFinite.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+          if grep -RInE '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              verification/hodge-poisson-curve --include='*.lean'; then
             echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
             exit 1
           fi
@@ -44,24 +44,27 @@ jobs:
           cd verification/hodge-poisson-curve
           lake update
           lake exe cache get
-          set +e
-          lake env lean HodgePoissonCurveFinite.lean 2>&1 | tee lean-output.log
-          status=${PIPESTATUS[0]}
-          set -e
-          if [ "$status" -ne 0 ]; then
-            while IFS= read -r line; do
-              line=${line//'%'/'%25'}
-              line=${line//$'\r'/'%0D'}
-              line=${line//$'\n'/'%0A'}
-              echo "::error file=verification/hodge-poisson-curve/HodgePoissonCurveFinite.lean::$line"
-            done < lean-output.log
-            exit "$status"
-          fi
+          : > lean-output.log
+          for file in HodgePoissonCurveFinite.lean HodgeTraceCommutatorFinite.lean; do
+            set +e
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+            status=${PIPESTATUS[0]}
+            set -e
+            if [ "$status" -ne 0 ]; then
+              while IFS= read -r line; do
+                line=${line//'%'/'%25'}
+                line=${line//$'\r'/'%0D'}
+                line=${line//$'\n'/'%0A'}
+                echo "::error file=verification/hodge-poisson-curve/$file::$line"
+              done < lean-output.log
+              exit "$status"
+            fi
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
             exit 1
           fi
-          echo 'VERIFIED Hodge Poisson curve finite core: clean pinned build.'
+          echo 'VERIFIED Hodge Poisson curve and trace finite cores: clean pinned build.'
 
       - name: Upload compiler evidence
         if: always()
