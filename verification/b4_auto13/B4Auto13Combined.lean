@@ -4,9 +4,7 @@ namespace B4Auto13.RH
 
 theorem sampled_margin_transfer
     {f : ℝ → ℝ} {x a δ L h : ℝ}
-    (hδ : 0 < δ)
     (hL : 0 ≤ L)
-    (hh : 0 ≤ h)
     (hclose : |x - a| ≤ h)
     (hsample : δ ≤ f a)
     (hlip : f a - L * |x - a| ≤ f x)
