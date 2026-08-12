@@ -1,0 +1,58 @@
+name: BSD Selmer Rank Identifiability Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/bsd-selmer-rank-identifiability-public-verifier-20260811
+    paths:
+      - 'verification/bsd-selmer-rank-identifiability/**'
+      - '.github/workflows/bsd-selmer-rank-identifiability-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/bsd-selmer-rank-identifiability/**'
+      - '.github/workflows/bsd-selmer-rank-identifiability-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/bsd-selmer-rank-identifiability/BSDSelmerRankIdentifiabilityFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden placeholder or custom axiom found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/bsd-selmer-rank-identifiability
+          lake update
+          lake exe cache get
+          lake env lean BSDSelmerRankIdentifiabilityFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite BSD Selmer-rank identifiability core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-selmer-rank-identifiability-lean-evidence
+          path: verification/bsd-selmer-rank-identifiability/lean-output.log
+          if-no-files-found: warn
