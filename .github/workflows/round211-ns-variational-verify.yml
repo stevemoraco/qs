@@ -1,4 +1,4 @@
-name: Round 211 Navier-Stokes Variational Finite Core
+name: Round 211 Navier-Stokes Variational Finite Cores
 
 on:
   push:
@@ -27,11 +27,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/round211-ns-variational/NSVariationalStationarityFinite.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
-            echo 'Forbidden Lean placeholder found.' >&2
-            exit 1
-          fi
+          for file in verification/round211-ns-variational/*.lean; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden Lean placeholder found in $file." >&2
+              exit 1
+            fi
+          done
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
         run: |
@@ -43,12 +44,16 @@ jobs:
           cd verification/round211-ns-variational
           lake update
           lake exe cache get
-          lake env lean NSVariationalStationarityFinite.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in NSVariationalStationarityFinite.lean NSRigidUnionFinite.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite Round 211 Navier-Stokes variational core.'
+          echo 'VERIFIED finite Round 211 Navier-Stokes variational cores.'
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
