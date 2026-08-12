@@ -16,29 +16,29 @@ These are helper/obstruction theorems, not the Clay Navier–Stokes statement.
 namespace NSFluxScalingObstruction
 
 /-- For every nonnegative proposed quadratic coefficient `D`, a positive
-amplitude exists for which the cubic model `λ^3/4` exceeds `D λ^2`. -/
+amplitude exists for which the cubic model `amp^3/4` exceeds `D * amp^2`. -/
 theorem cubic_beats_quadratic (D : ℝ) (hD : 0 ≤ D) :
-    ∃ λ : ℝ, 0 < λ ∧ D * λ ^ 2 < λ ^ 3 / 4 := by
-  let λ : ℝ := 4 * D + 1
-  have hλ : 0 < λ := by
-    dsimp [λ]
+    ∃ amp : ℝ, 0 < amp ∧ D * amp ^ 2 < amp ^ 3 / 4 := by
+  let amp : ℝ := 4 * D + 1
+  have hamp : 0 < amp := by
+    dsimp [amp]
     linarith
-  refine ⟨λ, hλ, ?_⟩
-  have hbase : D < λ / 4 := by
-    dsimp [λ]
+  refine ⟨amp, hamp, ?_⟩
+  have hbase : D < amp / 4 := by
+    dsimp [amp]
     linarith
-  have hsq : 0 < λ ^ 2 := by positivity
+  have hsq : 0 < amp ^ 2 := by positivity
   calc
-    D * λ ^ 2 < (λ / 4) * λ ^ 2 := mul_lt_mul_of_pos_right hbase hsq
-    _ = λ ^ 3 / 4 := by ring
+    D * amp ^ 2 < (amp / 4) * amp ^ 2 := mul_lt_mul_of_pos_right hbase hsq
+    _ = amp ^ 3 / 4 := by ring
 
 /-- There is no finite nonnegative coefficient that bounds the cubic model by
 a quadratic model at every positive amplitude. -/
 theorem no_global_cubic_by_quadratic_ceiling :
-    ¬ ∃ D : ℝ, 0 ≤ D ∧ ∀ λ : ℝ, 0 < λ → λ ^ 3 / 4 ≤ D * λ ^ 2 := by
+    ¬ ∃ D : ℝ, 0 ≤ D ∧ ∀ amp : ℝ, 0 < amp → amp ^ 3 / 4 ≤ D * amp ^ 2 := by
   rintro ⟨D, hD, hceiling⟩
-  obtain ⟨λ, hλ, hstrict⟩ := cubic_beats_quadratic D hD
-  exact (not_lt_of_ge (hceiling λ hλ)) hstrict
+  obtain ⟨amp, hamp, hstrict⟩ := cubic_beats_quadratic D hD
+  exact (not_lt_of_ge (hceiling amp hamp)) hstrict
 
 /-- For every nonnegative proposed inverse-scale coefficient `D`, a positive
 scale exists for which the linear model `s/4` exceeds `D/s`. -/
