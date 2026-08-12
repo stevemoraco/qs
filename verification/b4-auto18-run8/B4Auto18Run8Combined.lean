@@ -5,11 +5,13 @@ namespace B4Auto18Run8.RH
 theorem same_sum_second_moment_iff_same_product
     (a b c d : ℤ) (hsum : a + b = c + d) :
     a^2 + b^2 = c^2 + d^2 ↔ a * b = c * d := by
+  have hsum_sq : (a + b)^2 = (c + d)^2 :=
+    congrArg (fun z : ℤ => z^2) hsum
   constructor
   · intro hsq
-    nlinarith [sq_nonneg (a + b), sq_nonneg (c + d)]
+    nlinarith [hsum_sq]
   · intro hprod
-    nlinarith [sq_nonneg (a + b), sq_nonneg (c + d)]
+    nlinarith [hsum_sq]
 
 theorem same_sum_does_not_force_same_product :
     ((0 : ℤ) + (-4) = (-1) + (-3)) ∧
@@ -191,7 +193,9 @@ theorem strict_scaled_error_margin_gives_positive_physical_gap
       exact mul_pos ha (sub_pos.mpr hstrict)
     have hg : 0 < g := lt_of_lt_of_le hpos hga
     exact div_pos hg ha
-  · exact (le_div_iff₀ ha).2 hga
+  · have hga' : (M - eta) * a ≤ g := by
+      simpa [mul_comm] using hga
+    exact (le_div_iff₀ ha).2 hga'
 
 #print axioms physical_gap_from_ratio_error
 #print axioms boundary_scaled_error_can_erase_gap
