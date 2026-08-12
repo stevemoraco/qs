@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           git hash-object "$file" | tee verification/ym-pinned-schur/lean-git-blob-sha.txt
-          test "$(cat verification/ym-pinned-schur/lean-git-blob-sha.txt)" = 'fb9d162940c80b5a69e414f0f14e2cbfc17faf67'
+          test "$(cat verification/ym-pinned-schur/lean-git-blob-sha.txt)" = '6ad7c6c809ba1639185ec18d6ec1effd79742d85'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
@@ -55,7 +55,7 @@ jobs:
             echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
             exit 1
           fi
-          echo 'VERIFIED YM pinned-Schur null-mode finite core: clean pinned build.'
+          echo 'VERIFIED YM pinned-Schur finite cores: clean pinned build.'
 
       - name: Upload compiler evidence
         if: always()
