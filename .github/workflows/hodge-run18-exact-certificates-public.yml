@@ -1,0 +1,70 @@
+name: Hodge run18 exact certificates public verifier
+
+on:
+  pull_request:
+    paths:
+      - "verification/hodge_run18/**"
+      - ".github/workflows/hodge-run18-exact-certificates-public.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical private-source blobs
+        run: |
+          declare -A expected
+          expected[verification/hodge_run18/hodge_markman_kernel_block_basis.py]=adf61a24205702928486223743a3657de3c190f5
+          expected[verification/hodge_run18/hodge_markman_glue_component_kernel.py]=a9e5c022df095d88cb947172351823492997b02c
+          expected[verification/hodge_run18/hodge_self_dual_monad_chern.py]=db921399378ba8a65faa47604db00d9f9b6a5093
+          for file in "${!expected[@]}"; do
+            actual=$(git hash-object "$file")
+            echo "$file expected=${expected[$file]} actual=$actual"
+            test "$actual" = "${expected[$file]}"
+          done
+
+      - name: Reject placeholders
+        run: |
+          files=(verification/hodge_run18/*.py)
+          if grep -nE '\b(TODO|FIXME|NotImplementedError)\b|^[[:space:]]*pass([[:space:]]*(#.*)?)?$' "${files[@]}"; then
+            echo "Placeholder found in exact certificate source"
+            exit 1
+          fi
+
+      - name: Byte-compile exact sources
+        run: python3 -m py_compile verification/hodge_run18/*.py
+
+      - name: Replay kernel block basis
+        working-directory: verification/hodge_run18
+        run: python3 hodge_markman_kernel_block_basis.py | tee kernel-block.log
+
+      - name: Replay gluing component-kernel intersection
+        working-directory: verification/hodge_run18
+        run: python3 hodge_markman_glue_component_kernel.py | tee gluing-kernel.log
+
+      - name: Replay centered monad Chern character
+        working-directory: verification/hodge_run18
+        run: python3 hodge_self_dual_monad_chern.py | tee monad-chern.log
+
+      - name: Require exact PASS receipts
+        working-directory: verification/hodge_run18
+        run: |
+          grep -q 'EXACT CERTIFICATE: PASS' kernel-block.log
+          grep -q 'EXACT CERTIFICATE: PASS' gluing-kernel.log
+          grep -q 'EXACT CERTIFICATE: PASS' monad-chern.log
+          echo 'VERIFIED Hodge run18 exact-rational certificate packet.'
+
+      - name: Upload replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-run18-exact-certificates
+          path: |
+            verification/hodge_run18/kernel-block.log
+            verification/hodge_run18/gluing-kernel.log
+            verification/hodge_run18/monad-chern.log
