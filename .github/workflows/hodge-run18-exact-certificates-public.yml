@@ -23,6 +23,7 @@ jobs:
           expected[verification/hodge_run18/hodge_markman_kernel_block_basis.py]=adf61a24205702928486223743a3657de3c190f5
           expected[verification/hodge_run18/hodge_markman_glue_component_kernel.py]=a9e5c022df095d88cb947172351823492997b02c
           expected[verification/hodge_run18/hodge_self_dual_monad_chern.py]=db921399378ba8a65faa47604db00d9f9b6a5093
+          expected[verification/hodge_run18/hodge_monad_direct_sum_kernel_nogo.py]=fb75b93aaf7025a90353ae4b578019f4737bd94c
           for file in "${!expected[@]}"; do
             actual=$(git hash-object "$file")
             echo "$file expected=${expected[$file]} actual=$actual"
@@ -52,12 +53,17 @@ jobs:
         working-directory: verification/hodge_run18
         run: python3 hodge_self_dual_monad_chern.py | tee monad-chern.log
 
+      - name: Replay direct-sum common-kernel no-go
+        working-directory: verification/hodge_run18
+        run: python3 hodge_monad_direct_sum_kernel_nogo.py | tee direct-sum-nogo.log
+
       - name: Require exact PASS receipts
         working-directory: verification/hodge_run18
         run: |
           grep -q 'EXACT CERTIFICATE: PASS' kernel-block.log
           grep -q 'EXACT CERTIFICATE: PASS' gluing-kernel.log
           grep -q 'EXACT CERTIFICATE: PASS' monad-chern.log
+          grep -q 'EXACT CERTIFICATE: PASS' direct-sum-nogo.log
           echo 'VERIFIED Hodge run18 exact-rational certificate packet.'
 
       - name: Upload replay evidence
@@ -68,3 +74,4 @@ jobs:
             verification/hodge_run18/kernel-block.log
             verification/hodge_run18/gluing-kernel.log
             verification/hodge_run18/monad-chern.log
+            verification/hodge_run18/direct-sum-nogo.log
