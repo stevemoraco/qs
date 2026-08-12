@@ -1,0 +1,72 @@
+name: PNP exact full-adder B2 certificate replay
+
+on:
+  push:
+    branches:
+      - agent/pnp-full-adder-exact-b2-replay-20260811
+    paths:
+      - "verification/pnp-full-adder/**"
+      - ".github/workflows/pnp-full-adder-exact-b2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='verification/pnp-full-adder/full_adder_exact_b2.py'
+          actual=$(git hash-object "$target")
+          expected='db9303e57caaa2d8042191d5ac83077ccf46821a'
+          echo "certificate blob: $actual"
+          test "$actual" = "$expected"
+
+      - name: Static source checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile verification/pnp-full-adder/full_adder_exact_b2.py
+          grep -q 'expected_counts = \[1, 33, 828, 20360, 528991\]' \
+            verification/pnp-full-adder/full_adder_exact_b2.py
+          grep -q 'for depth in range(1, 5)' \
+            verification/pnp-full-adder/full_adder_exact_b2.py
+          grep -q 'for operation in range(16)' \
+            verification/pnp-full-adder/full_adder_exact_b2.py
+
+      - name: Replay exhaustive certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 verification/pnp-full-adder/full_adder_exact_b2.py \
+            | tee full-adder-certificate.txt
+          grep -q 'EXACT LOWER CERTIFICATE: no <=4-gate full-adder circuit' \
+            full-adder-certificate.txt
+          grep -q 'EXACT UPPER CERTIFICATE: a 5-gate full-adder circuit exists' \
+            full-adder-certificate.txt
+          grep -q 'EXACT TOTAL B2 COMPLEXITY: 5' \
+            full-adder-certificate.txt
+
+      - name: Record environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 --version | tee environment.txt
+          uname -a | tee -a environment.txt
+          git rev-parse HEAD | tee -a environment.txt
+
+      - name: Upload exact replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-full-adder-exact-b2-evidence
+          path: |
+            full-adder-certificate.txt
+            environment.txt
+          retention-days: 90
