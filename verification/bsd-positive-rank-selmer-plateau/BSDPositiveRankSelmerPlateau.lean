@@ -37,10 +37,13 @@ theorem growth_succ (depths : List ℕ) (m : ℕ) :
       simp only [growth, deepCount]
       rw [ih]
       by_cases h : m < a
-      · simp [h]
+      · rw [Nat.min_eq_left (Nat.le_of_lt h), Nat.min_eq_left h]
+        simp [h]
         omega
       · have ham : a ≤ m := Nat.le_of_not_gt h
-        simp [h, Nat.min_eq_right ham, Nat.min_eq_right (Nat.le_trans ham (Nat.le_add_right m 1))]
+        have hasucc : a ≤ m + 1 := Nat.le_trans ham (Nat.le_add_right m 1)
+        rw [Nat.min_eq_right ham, Nat.min_eq_right hasucc]
+        simp [h, Nat.add_assoc]
 
 /-- No factor remains deeper than `m` exactly when the deep-factor count is
 zero. -/
@@ -93,7 +96,7 @@ theorem rank_corrected_increment_iff_saturation
         selmerGrowth rank depths m + rank ↔
       ∀ a ∈ depths, a ≤ m := by
   have hs : (m + 1) * rank = m * rank + rank := by
-    omega
+    simp [Nat.add_mul]
   constructor
   · intro h
     have hplateau : growth depths (m + 1) = growth depths m := by
@@ -117,10 +120,10 @@ theorem two_level_target_closure
     depths.sum = target ∧ ∀ a ∈ depths, a ≤ m := by
   have hgm : growth depths m = target := by
     unfold selmerGrowth at hm
-    omega
+    exact Nat.add_left_cancel hm
   have hgnext : growth depths (m + 1) = target := by
     unfold selmerGrowth at hnext
-    omega
+    exact Nat.add_left_cancel hnext
   have hplateau : growth depths (m + 1) = growth depths m := by
     omega
   have hall := (growth_plateau_iff depths m).1 hplateau
