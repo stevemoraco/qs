@@ -28,10 +28,6 @@ theorem real_ring_identity (a b : ℝ) :
     (a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2 := by
   ring
 
-theorem generic_sq_nonneg
-    {α : Type*} [LinearOrderedRing α] (a : α) : 0 ≤ a ^ 2 := by
-  exact sq_nonneg a
-
 theorem real_sq_nonneg (a : ℝ) : 0 ≤ a ^ 2 := by
   exact sq_nonneg a
 
@@ -42,7 +38,6 @@ theorem real_sq_nonneg (a : ℝ) : 0 ≤ a ^ 2 := by
 #print axioms Run16AxiomProbe.generic_ring_identity
 #print axioms Run16AxiomProbe.int_ring_identity
 #print axioms Run16AxiomProbe.real_ring_identity
-#print axioms Run16AxiomProbe.generic_sq_nonneg
 #print axioms Run16AxiomProbe.real_sq_nonneg
 
 end Run16AxiomProbe
