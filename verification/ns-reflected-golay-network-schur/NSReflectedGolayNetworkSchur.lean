@@ -69,9 +69,14 @@ theorem reflected_pair_remainder_bound
     (rPlus rMinus w delta : ℝ)
     (hrPlus : |rPlus| ≤ delta) (hrMinus : |rMinus| ≤ delta) :
     |(rPlus + rMinus) * w| ≤ 2 * delta * |w| := by
+  have hPlusBounds := abs_le.mp (le_rfl : |rPlus| ≤ |rPlus|)
+  have hMinusBounds := abs_le.mp (le_rfl : |rMinus| ≤ |rMinus|)
+  have htriangle : |rPlus + rMinus| ≤ |rPlus| + |rMinus| := by
+    apply abs_le.mpr
+    constructor <;> linarith
   have hsum : |rPlus + rMinus| ≤ 2 * delta := by
     calc
-      |rPlus + rMinus| ≤ |rPlus| + |rMinus| := abs_add rPlus rMinus
+      |rPlus + rMinus| ≤ |rPlus| + |rMinus| := htriangle
       _ ≤ delta + delta := add_le_add hrPlus hrMinus
       _ = 2 * delta := by ring
   rw [abs_mul]
