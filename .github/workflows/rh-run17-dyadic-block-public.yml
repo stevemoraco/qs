@@ -1,0 +1,75 @@
+name: RH run17 dyadic block public verifier
+
+on:
+  pull_request:
+    paths:
+      - "verification/rh_run17_block/**"
+      - ".github/workflows/rh-run17-dyadic-block-public.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical private-source blob
+        run: |
+          file=verification/rh_run17_block/RHDyadicBlockFinite.lean
+          expected=c30dadd83cc7b0f92cd282202af64dc5dba6c3d2
+          actual=$(git hash-object "$file")
+          echo "expected=$expected"
+          echo "actual=$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject explicit proof holes or local trust declarations
+        run: |
+          file=verification/rh_run17_block/RHDyadicBlockFinite.lean
+          if grep -nE '\b(sorry|admit)\b|sorryAx|^[[:space:]]*axiom\b|^[[:space:]]*opaque\b|^[[:space:]]*unsafe\b' "$file"; then
+            echo "Explicit proof hole or custom trust declaration found"
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Record Lean version
+        run: |
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+
+      - name: Resolve pinned Mathlib and fetch cache
+        working-directory: verification/rh_run17_block
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Clean build and axiom report
+        working-directory: verification/rh_run17_block
+        run: |
+          set -euo pipefail
+          lake build
+          lake env lean RHDyadicBlockFinite.lean | tee rh-run17-axioms.txt
+          if grep -qE 'sorryAx|Lean\.ofReduceBool' rh-run17-axioms.txt; then
+            echo "Rejected hidden trust dependency found"
+            exit 1
+          fi
+          echo "VERIFIED RH run17 dyadic block finite core: clean pinned build."
+
+      - name: Upload verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-run17-dyadic-block-verification
+          path: |
+            lean-version.txt
+            lake-version.txt
+            verification/rh_run17_block/rh-run17-axioms.txt
+            verification/rh_run17_block/lake-manifest.json
