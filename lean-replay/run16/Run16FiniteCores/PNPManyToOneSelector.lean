@@ -27,19 +27,19 @@ theorem range_eq_fixedPoints
   · exact protected_subset_fixedPoints (Set.range G) G D hselect
   · exact fixedPoints_subset_range G D
 
+/-- Pure cancellation form of the near-`2n` selector budget. -/
 theorem nearTwoN_selector_cost
     (sG sD n Δ : ℕ)
-    (hn : 1 ≤ n)
-    (hcost : 2 * n + Δ < sG + sD + 2 * n - 1) :
+    (hcost : 2 * n + (Δ + 1) < 2 * n + (sG + sD)) :
     Δ + 1 < sG + sD := by
-  omega
+  exact Nat.lt_of_add_lt_add_left hcost
 
+/-- Pure cancellation form of the near-`2n` retraction budget. -/
 theorem nearTwoN_retraction_cost
     (sR n Δ : ℕ)
-    (hn : 1 ≤ n)
-    (hcost : 2 * n + Δ < sR + 2 * n - 1) :
+    (hcost : 2 * n + (Δ + 1) < 2 * n + sR) :
     Δ + 1 < sR := by
-  omega
+  exact Nat.lt_of_add_lt_add_left hcost
 
 end PNPManyToOneSelector
 end Run16FiniteCores
