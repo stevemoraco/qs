@@ -48,13 +48,12 @@ theorem scaled_tent_energy_lt_twelve
 theorem hidden_energy_of_transfer_contraction
     (a delta E : ℝ)
     (ha : 0 < a)
-    (hdelta0 : 0 < delta)
+    (_hdelta0 : 0 < delta)
     (hdelta1 : delta < 1)
     (hJensen : Real.exp (-a * E) ≤ 1 - delta) :
     -Real.log (1 - delta) / a ≤ E := by
-  have hright : 0 < 1 - delta := sub_pos.mpr hdelta1
   have hleft : 0 < Real.exp (-a * E) := Real.exp_pos _
-  have hlog := Real.log_le_log hleft hright hJensen
+  have hlog := Real.log_le_log hleft hJensen
   rw [Real.log_exp] at hlog
   apply (div_le_iff₀ ha).2
   nlinarith [hlog]
@@ -72,9 +71,13 @@ theorem majority_markov_lag_two_difference (r : ℚ) :
 theorem majority_markov_lag_two_difference_pos
     (r : ℝ) (hr0 : 0 < r) (hr1 : r < 1) :
     0 < (3 / 16 : ℝ) * (r - r ^ 3) ^ 2 := by
+  have h1mr : 0 < 1 - r := sub_pos.mpr hr1
+  have h1pr : 0 < 1 + r := by linarith
+  have hfactor : r - r ^ 3 = r * (1 - r) * (1 + r) := by ring
   have hrm : 0 < r - r ^ 3 := by
-    have hrp : 0 < 1 + r := by linarith
-    nlinarith
+    rw [hfactor]
+    positivity
+  have hsquare : 0 < (r - r ^ 3) ^ 2 := sq_pos_of_pos hrm
   positivity
 
 /-- Concrete exact values used by the finite certificate at `r=1/2`. -/
