@@ -61,7 +61,7 @@ jobs:
             exit 1
           fi
           git hash-object "$file" | tee verification/pnp-background-signature/lean-git-blob-sha.txt
-          test "$(cat verification/pnp-background-signature/lean-git-blob-sha.txt)" = '2f0a08797421ce2cc18b097919c07b6dce4ba7d2'
+          test "$(cat verification/pnp-background-signature/lean-git-blob-sha.txt)" = '1d23b48f2f4918aed66fd4a2f2faf1baa8588d58'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
