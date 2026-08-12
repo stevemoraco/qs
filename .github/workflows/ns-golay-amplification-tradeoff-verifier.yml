@@ -41,7 +41,7 @@ jobs:
           print('source trust preflight: clean')
           PY
 
-      - name: Compile exact source with AXLE Lean 4.30
+      - name: Execute AXLE Lean 4.30 and preserve raw response
         shell: bash
         run: |
           set -euo pipefail
@@ -52,6 +52,7 @@ jobs:
           import pathlib
           import urllib.request
 
+          out = pathlib.Path('verification/ns-golay-amplification-tradeoff/evidence/axle-response.json')
           source = pathlib.Path(
               'verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean'
           ).read_text()
@@ -68,31 +69,28 @@ jobs:
               headers={'Content-Type': 'application/json'},
               method='POST',
           )
-          with urllib.request.urlopen(request, timeout=960) as response:
-              result = json.load(response)
-
-          out = pathlib.Path('verification/ns-golay-amplification-tradeoff/evidence/axle-response.json')
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': []},
+                  'tool_messages': {'errors': []},
+                  'failed_declarations': [],
+              }
           out.write_text(json.dumps(result, indent=2, sort_keys=True))
           print(json.dumps(result, indent=2))
-
-          lean_errors = result.get('lean_messages', {}).get('errors', [])
-          tool_errors = result.get('tool_messages', {}).get('errors', [])
-          failed = result.get('failed_declarations', [])
-          if not result.get('okay') or lean_errors or tool_errors or failed:
-              raise SystemExit('Lean/AXLE verification failed')
-
-          rendered = json.dumps(result)
-          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
-              if forbidden in rendered:
-                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
-          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
           PY
 
       - name: Record replay metadata
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           OUT=verification/ns-golay-amplification-tradeoff/evidence
+          mkdir -p "$OUT"
           {
             echo "repository=${GITHUB_REPOSITORY}"
             echo "ref=${GITHUB_REF}"
@@ -103,9 +101,34 @@ jobs:
             echo "environment=lean-4.30.0"
           } > "$OUT/replay-metadata.txt"
 
-      - name: Upload exact compiler evidence
+      - name: Upload exact compiler evidence before verdict
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ns-golay-amplification-tradeoff-evidence
           path: verification/ns-golay-amplification-tradeoff/evidence/
           if-no-files-found: error
+
+      - name: Enforce compiler and postcompile trust verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          p = pathlib.Path('verification/ns-golay-amplification-tradeoff/evidence/axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response evidence')
+          result = json.loads(p.read_text())
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit('Lean/AXLE verification failed; inspect uploaded response artifact')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
+          PY
