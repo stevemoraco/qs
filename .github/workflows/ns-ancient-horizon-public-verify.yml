@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           git hash-object "$file" | tee verification/ns-ancient-horizon/lean-git-blob-sha.txt
-          test "$(cat verification/ns-ancient-horizon/lean-git-blob-sha.txt)" = '1d59bd69acc3a4140afe2c4617f6ca05314fdc9f'
+          test "$(cat verification/ns-ancient-horizon/lean-git-blob-sha.txt)" = '39300fc467b3fa6c6b92765a8c7d42f63bb12e4c'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
