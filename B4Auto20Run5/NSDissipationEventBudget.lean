@@ -14,13 +14,28 @@ theorem ns_uniform_event_cost_bounds_event_count
   exact (le_div_iff₀ hδ).2 hbudget
 
 /-- CRITIC: if the event cost is allowed to vanish, the counting mechanism gives
-no control at all: every finite event count is compatible with zero total cost.
-Thus positivity of dissipation without a uniform positive lower bound is not
-sufficient for this particular exclusion mechanism. -/
+no control at all: every finite event count is compatible with zero total cost. -/
 theorem ns_zero_event_cost_allows_arbitrary_finite_count
     (N : ℕ) :
     (N : ℝ) * 0 ≤ 1 := by
   norm_num
+
+/-- CRITIC, stronger: even strict positivity at each event count is insufficient
+without a uniform lower floor. For every finite `N`, the positive cost
+`δ_N = 1/(N+1)` keeps total charged dissipation strictly below one. Thus a family
+of positive but shrinking event prices can accommodate arbitrarily large finite
+counts inside one fixed budget. -/
+theorem ns_positive_nonuniform_cost_allows_arbitrary_count
+    (N : ℕ) :
+    let δ : ℝ := 1 / ((N : ℝ) + 1)
+    0 < δ ∧ (N : ℝ) * δ < 1 := by
+  dsimp
+  have hden : 0 < (N : ℝ) + 1 := by positivity
+  constructor
+  · positivity
+  · have hfrac : (N : ℝ) / ((N : ℝ) + 1) < 1 := by
+      exact (div_lt_iff₀ hden).2 (by linarith)
+    simpa [div_eq_mul_inv] using hfrac
 
 /-- CLEANER: a strict event-count violation certifies that the assumed uniform
 per-event dissipation price cannot simultaneously hold with the global budget.
@@ -35,6 +50,7 @@ theorem ns_too_many_events_contradict_uniform_cost
 
 #print axioms B4Auto20Run5.ns_uniform_event_cost_bounds_event_count
 #print axioms B4Auto20Run5.ns_zero_event_cost_allows_arbitrary_finite_count
+#print axioms B4Auto20Run5.ns_positive_nonuniform_cost_allows_arbitrary_count
 #print axioms B4Auto20Run5.ns_too_many_events_contradict_uniform_cost
 
 end B4Auto20Run5
