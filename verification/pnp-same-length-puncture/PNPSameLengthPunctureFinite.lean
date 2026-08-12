@@ -53,7 +53,8 @@ theorem exists_puncture_outside_queries_and_output
       (queries ∪ {output}).card ≤ queries.card + 1 := by
     calc
       (queries ∪ {output}).card
-          ≤ queries.card + ({output} : Finset U).card := Finset.card_union_le
+          ≤ queries.card + ({output} : Finset U).card := by
+              exact Finset.card_union_le queries {output}
       _ = queries.card + 1 := by simp
   omega
 
