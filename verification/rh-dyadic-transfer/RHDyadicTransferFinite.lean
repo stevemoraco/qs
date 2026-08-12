@@ -54,7 +54,7 @@ theorem kappaNormSqArithmetic :
       - 4368 * 6 ^ 15
       + 8008 * 4 ^ 15
       - 11440 * 2 ^ 15)
-      / (2 ^ 16 * 15.factorial)
+      / (2 ^ 16 * Nat.factorial 15)
       = 233487 / 524288 := by
   norm_num
 
@@ -68,7 +68,7 @@ theorem kappaPrimeNormSqArithmetic :
       - 4368 * 6 ^ 13
       + 8008 * 4 ^ 13
       - 11440 * 2 ^ 13)
-      / (2 ^ 16 * 13.factorial))
+      / (2 ^ 16 * Nat.factorial 13))
       = 5725 / 32768 := by
   norm_num
 
@@ -82,7 +82,7 @@ theorem kappaSecondNormSqArithmetic :
       - 4368 * 6 ^ 11
       + 8008 * 4 ^ 11
       - 11440 * 2 ^ 11)
-      / (2 ^ 16 * 11.factorial)
+      / (2 ^ 16 * Nat.factorial 11)
       = 35 / 128 := by
   norm_num
 
