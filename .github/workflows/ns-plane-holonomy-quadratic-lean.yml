@@ -1,0 +1,80 @@
+name: NS Plane Holonomy Quadratic Finite Lean
+
+on:
+  push:
+    branches:
+      - automation/ns-plane-holonomy-public-verify-20260812
+  pull_request:
+    paths:
+      - verification/ns-plane-holonomy/**
+      - .github/workflows/ns-plane-holonomy-quadratic-lean.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical blob and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-plane-holonomy/NSPlaneHolonomyQuadraticFinite.lean
+          EXPECTED=47042da3c3dc41e3f4b88be8c89098f547b6d2e1
+          ACTUAL=$(git hash-object "$SRC")
+          test "$ACTUAL" = "$EXPECTED" || {
+            echo "Canonical blob mismatch: expected $EXPECTED got $ACTUAL" >&2
+            exit 1
+          }
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ns-plane-holonomy/NSPlaneHolonomyQuadraticFinite.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|opaque|unsafe)\b',
+              r'\bnative_decide\b',
+              r'Lean\.ofReduceBool',
+          ]
+          for pattern in patterns:
+              m = re.search(pattern, stripped, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden declaration or trust escape: {m.group(0)!r}')
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ns-plane-holonomy/toolchain.log
+          lake --version | tee -a verification/ns-plane-holonomy/toolchain.log
+          cd verification/ns-plane-holonomy
+          lake update
+          lake exe cache get
+          lake env lean NSPlaneHolonomyQuadraticFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|native_decide|Lean\.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite NS plane-holonomy quadratic core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-plane-holonomy-quadratic-lean-evidence
+          path: |
+            verification/ns-plane-holonomy/lean-output.log
+            verification/ns-plane-holonomy/toolchain.log
+            verification/ns-plane-holonomy/lake-manifest.json
+          if-no-files-found: warn
