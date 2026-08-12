@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
           git hash-object "$file" | tee verification/pnp-distinguisher-geometry/lean-git-blob-sha.txt
-          test "$(cat verification/pnp-distinguisher-geometry/lean-git-blob-sha.txt)" = '4df286150faa9c318d2e2ef4aa1281e96ab0fd9f'
+          test "$(cat verification/pnp-distinguisher-geometry/lean-git-blob-sha.txt)" = 'd0a572ad97fbbd84c93effa38038031f241e2427'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
