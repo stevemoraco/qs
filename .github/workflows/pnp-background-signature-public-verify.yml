@@ -84,7 +84,7 @@ jobs:
           git hash-object "${files[0]}" | tee "$dir/background-signature-git-blob-sha.txt"
           test "$(cat "$dir/background-signature-git-blob-sha.txt")" = '1d23b48f2f4918aed66fd4a2f2faf1baa8588d58'
           git hash-object "${files[1]}" | tee "$dir/critical-component-git-blob-sha.txt"
-          test "$(cat "$dir/critical-component-git-blob-sha.txt")" = 'cc383ee1a70c0a908ae8d848da7e41d857c6c60a'
+          test "$(cat "$dir/critical-component-git-blob-sha.txt")" = '4b695f1d5cd3dd3f78e7aa57393c0ff21c0e0bc7'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
