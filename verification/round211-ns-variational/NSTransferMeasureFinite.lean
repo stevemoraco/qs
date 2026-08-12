@@ -31,7 +31,7 @@ theorem support_volume_proxy_pos (n : ℕ) :
 theorem support_volume_scale_identity (n : ℕ) :
     (((n + 1 : ℕ) : ℚ)) * supportVolumeProxy n = 1 := by
   have hnonzero : (((n + 1 : ℕ) : ℚ)) ≠ 0 := by positivity
-  field_simp [supportVolumeProxy, hnonzero]
+  simp [supportVolumeProxy, hnonzero]
 
 /-- Concentrated transfer remains exactly one. -/
 theorem concentrated_transfer_stays_one (n : ℕ) :
