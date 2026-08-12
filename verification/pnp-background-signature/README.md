@@ -12,7 +12,7 @@ Canonical private branch:
 
 Canonical private Lean blob:
 
-`e0d573ff3f1a1ed5687ea5071a16c09d8dbddccc`
+`2f0a08797421ce2cc18b097919c07b6dce4ba7d2`
 
 Canonical private Python blob:
 
