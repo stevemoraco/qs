@@ -4,9 +4,10 @@ import Mathlib
 # Finite algebra for the strong-log-concavity RH obstruction
 
 Honesty boundary: these theorems verify only polynomial identities and scalar
-inequalities used in the Gaussian-polynomial counterexample. They do not
-formalize Fourier transforms, complex zero location, Pringsheim's theorem,
-complete monotonicity, the Riemann Xi function, or RH.
+inequalities used in the Gaussian-polynomial and compact-support counterexamples.
+They do not formalize Fourier transforms, complex zero location, Laguerre's
+canonical-product theorem, Prékopa's theorem, Pringsheim's theorem, complete
+monotonicity, the Riemann Xi function, or RH.
 -/
 
 namespace MillenniumBraid.RHStrongLogConcavity
@@ -55,6 +56,29 @@ theorem secondQuartic_pos (s : ℝ) : 0 < s^4 + 24*s^2 + 1648 := by
   have h4 : 0 ≤ s^4 := by positivity
   nlinarith
 
+theorem laguerreCleared_identity (ε a : ℝ) :
+    144*ε^2 - 4*ε*a^2 - 4*ε^2*(36 - a^2) =
+      4*ε*(ε - 1)*a^2 := by
+  ring
+
+theorem laguerreCleared_neg (ε a : ℝ)
+    (hε0 : 0 < ε) (hε1 : ε < 1) (ha : 0 < a) :
+    4*ε*(ε - 1)*a^2 < 0 := by
+  have hεm : ε - 1 < 0 := sub_neg.mpr hε1
+  have h4ε : 0 < 4*ε := by positivity
+  have hbase : 4*ε*(ε - 1) < 0 :=
+    mul_neg_of_pos_of_neg h4ε hεm
+  have ha2 : 0 < a^2 := by positivity
+  exact mul_neg_of_neg_of_pos hbase ha2
+
+theorem laguerreHalf_exact (a : ℝ) :
+    4*(1/2 : ℝ)*((1/2 : ℝ) - 1)*a^2 = -a^2 := by
+  ring
+
+theorem convolutionCurvature :
+    ((1 : ℝ) * 2) / (1 + 2) = 2 / 3 := by
+  norm_num
+
 #print axioms logConcavityPolynomial_decomposition
 #print axioms logConcavityPolynomial_pos
 #print axioms fourierPolynomial_pos
@@ -63,5 +87,9 @@ theorem secondQuartic_pos (s : ℝ) : 0 < s^4 + 24*s^2 + 1648 := by
 #print axioms dyadicNumerator_pos_of_four_le
 #print axioms firstQuartic_pos
 #print axioms secondQuartic_pos
+#print axioms laguerreCleared_identity
+#print axioms laguerreCleared_neg
+#print axioms laguerreHalf_exact
+#print axioms convolutionCurvature
 
 end MillenniumBraid.RHStrongLogConcavity
