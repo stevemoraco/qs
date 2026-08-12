@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            verification/b4_ns_nested_comb/B4NSNestedComb.lean
+            verification/b4_ns_nested_comb
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
@@ -110,9 +110,46 @@ jobs:
           print('VERIFIED: exact canonical B4 NS source compiled under AXLE Lean 4.30')
           PY
 
+      - name: Replay exact finite Fourier certificate
+        shell: bash
+        run: |
+          cp verification/b4_ns_nested_comb/ns_nested_comb_exact_certificate.json /tmp/expected_nested_comb.json
+          python3 verification/b4_ns_nested_comb/ns_nested_comb_exact_certificate.py
+          cmp /tmp/expected_nested_comb.json verification/b4_ns_nested_comb/ns_nested_comb_exact_certificate.json
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import subprocess
+
+          base = pathlib.Path('verification/b4_ns_nested_comb')
+          script = base / 'ns_nested_comb_exact_certificate.py'
+          receipt = base / 'ns_nested_comb_exact_certificate.json'
+          result = json.loads(receipt.read_text())
+          if not result.get('all_assertions_passed'):
+              raise SystemExit('certificate receipt did not report all assertions passed')
+          evidence = {
+              'repository': '${{ github.repository }}',
+              'branch': '${{ github.ref_name }}',
+              'commit': '${{ github.sha }}',
+              'python_version': subprocess.check_output(['python3', '--version'], text=True).strip(),
+              'script_git_blob': subprocess.check_output(['git', 'hash-object', str(script)], text=True).strip(),
+              'script_sha256': hashlib.sha256(script.read_bytes()).hexdigest(),
+              'receipt_git_blob': subprocess.check_output(['git', 'hash-object', str(receipt)], text=True).strip(),
+              'receipt_sha256': hashlib.sha256(receipt.read_bytes()).hexdigest(),
+              'receipt': result,
+          }
+          out = base / 'evidence' / 'certificate_replay.json'
+          out.write_text(json.dumps(evidence, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(evidence, indent=2))
+          PY
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: public-b4-ns-nested-comb-${{ github.sha }}
-          path: verification/b4_ns_nested_comb/evidence/evidence.json
+          path: |
+            verification/b4_ns_nested_comb/evidence/evidence.json
+            verification/b4_ns_nested_comb/evidence/certificate_replay.json
+            verification/b4_ns_nested_comb/ns_nested_comb_exact_certificate.json
           if-no-files-found: error
