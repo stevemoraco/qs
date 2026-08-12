@@ -69,6 +69,7 @@ jobs:
           git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
 
       - name: Upload proof evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: bsd-line-gauge-public-lean-evidence
@@ -77,4 +78,4 @@ jobs:
             verifier/lean-version.txt
             verifier/lake-version.txt
             verifier/mathlib-commit.txt
-          if-no-files-found: error
+          if-no-files-found: warn
