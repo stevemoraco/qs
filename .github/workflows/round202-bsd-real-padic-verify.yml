@@ -1,0 +1,63 @@
+name: Round 202 BSD Real-p-adic Finite Cores
+
+on:
+  push:
+    branches:
+      - agent/round202-bsd-real-padic-verify-20260811
+    paths:
+      - 'verification/round202-bsd-real-padic/**'
+      - '.github/workflows/round202-bsd-real-padic-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/round202-bsd-real-padic/**'
+      - '.github/workflows/round202-bsd-real-padic-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/round202-bsd-real-padic/BSDRealPadicBridgeFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/round202-bsd-real-padic
+          lake update
+          lake exe cache get
+          lake env lean BSDRealPadicBridgeFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Round 202 BSD bridge/countermodel cores.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round202-bsd-real-padic-lean-evidence
+          path: verification/round202-bsd-real-padic/lean-output.log
+          if-no-files-found: warn
