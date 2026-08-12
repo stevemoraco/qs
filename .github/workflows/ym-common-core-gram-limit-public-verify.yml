@@ -1,0 +1,68 @@
+name: YM Common Core Gram Limit Finite Core
+
+on:
+  push:
+    branches:
+      - research/ym-common-core-gram-limit-public-verifier-20260812
+    paths:
+      - 'verification/ym-common-core-gram-limit/**'
+      - '.github/workflows/ym-common-core-gram-limit-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-common-core-gram-limit/**'
+      - '.github/workflows/ym-common-core-gram-limit-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hash and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-common-core-gram-limit/YMCommonCoreGramLimitFinite.lean
+          sha256sum "$file" | tee verification/ym-common-core-gram-limit/source-sha256.txt
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ym-common-core-gram-limit/lean-version.txt
+          lake --version | tee -a verification/ym-common-core-gram-limit/lean-version.txt
+          cd verification/ym-common-core-gram-limit
+          lake update
+          lake exe cache get
+          lake env lean YMCommonCoreGramLimitFinite.lean > lean-output.log 2>&1
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite YM common-core Gram-limit firewalls.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-common-core-gram-limit-finite-evidence
+          path: |
+            verification/ym-common-core-gram-limit/source-sha256.txt
+            verification/ym-common-core-gram-limit/lean-version.txt
+            verification/ym-common-core-gram-limit/lean-output.log
+          if-no-files-found: warn
