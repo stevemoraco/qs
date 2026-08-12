@@ -27,8 +27,9 @@ theorem sixIncidenceCountIdentity (n : ℚ) :
 theorem pairCountAtMostQuarterFourSetCount
     (n : ℚ) (hn : 10 ≤ n) :
     pairCount n ≤ fourSetCount n / 4 := by
-  have hnonneg : 0 ≤ n * (n - 1) := by
-    positivity
+  have hn0 : 0 ≤ n := by linarith
+  have hn1 : 0 ≤ n - 1 := by linarith
+  have hnonneg : 0 ≤ n * (n - 1) := mul_nonneg hn0 hn1
   have hprod : 48 ≤ (n - 2) * (n - 3) := by
     nlinarith [sq_nonneg (n - 10)]
   have hmul := mul_le_mul_of_nonneg_left hprod hnonneg
@@ -37,8 +38,6 @@ theorem pairCountAtMostQuarterFourSetCount
 
 theorem twoThirdsNegativeAcceptanceLedger
     (W S A : ℚ)
-    (hW : 0 < W)
-    (hS0 : 0 ≤ S)
     (hS : S ≤ W / 4)
     (hA : 3 * W / 4 ≤ A) :
     (2 / 3 : ℚ) * (W - S) ≤ A - S := by
@@ -52,24 +51,23 @@ theorem nearLinearSelectorRejectionScale
     (A n : ℝ) (hn : 0 < n) :
     n ^ 2 * (A * Real.log n / n) = A * n * Real.log n := by
   field_simp
-  ring
 
 theorem deterministicFloorSurvivesConvexMixing
     (weights errors : ℕ → ℝ)
     (e : ℝ)
     (S : Finset ℕ)
-    (hweights : ∑ s in S, weights s = 1)
+    (hweights : S.sum weights = 1)
     (hweightNonneg : ∀ s ∈ S, 0 ≤ weights s)
     (hfloor : ∀ s ∈ S, e ≤ errors s) :
-    e ≤ ∑ s in S, weights s * errors s := by
-  have hsum :
-      e * (∑ s in S, weights s) ≤
-        ∑ s in S, weights s * errors s := by
-    rw [Finset.mul_sum]
-    exact Finset.sum_le_sum fun s hs =>
-      mul_le_mul_of_nonneg_left (hfloor s hs) (hweightNonneg s hs)
-  rw [hweights, mul_one] at hsum
-  exact hsum
+    e ≤ S.sum (fun s => weights s * errors s) := by
+  calc
+    e = 1 * e := by ring
+    _ = S.sum weights * e := by rw [hweights]
+    _ = S.sum (fun s => weights s * e) := by
+      rw [Finset.sum_mul]
+    _ ≤ S.sum (fun s => weights s * errors s) := by
+      exact Finset.sum_le_sum fun s hs =>
+        mul_le_mul_of_nonneg_left (hfloor s hs) (hweightNonneg s hs)
 
 #print axioms sixIncidenceCountIdentity
 #print axioms pairCountAtMostQuarterFourSetCount
