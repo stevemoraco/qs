@@ -55,20 +55,21 @@ theorem nearLinearSelectorRejectionScale
   ring
 
 theorem deterministicFloorSurvivesConvexMixing
-    (weights errors e : Finset ℕ -> ℝ)
-    (S : Finset (Finset ℕ))
-    (hweights : ∑ s ∈ S, weights s = 1)
+    (weights errors : ℕ → ℝ)
+    (e : ℝ)
+    (S : Finset ℕ)
+    (hweights : ∑ s in S, weights s = 1)
     (hweightNonneg : ∀ s ∈ S, 0 ≤ weights s)
     (hfloor : ∀ s ∈ S, e ≤ errors s) :
-    e ≤ ∑ s ∈ S, weights s * errors s := by
-  calc
-    e = ∑ s ∈ S, weights s * e := by
-      rw [← Finset.sum_mul]
-      rw [hweights]
-      simp
-    _ ≤ ∑ s ∈ S, weights s * errors s := by
-      gcongr with s hs
-      exact hfloor s hs
+    e ≤ ∑ s in S, weights s * errors s := by
+  have hsum :
+      e * (∑ s in S, weights s) ≤
+        ∑ s in S, weights s * errors s := by
+    rw [Finset.mul_sum]
+    exact Finset.sum_le_sum fun s hs =>
+      mul_le_mul_of_nonneg_left (hfloor s hs) (hweightNonneg s hs)
+  rw [hweights, mul_one] at hsum
+  exact hsum
 
 #print axioms sixIncidenceCountIdentity
 #print axioms pairCountAtMostQuarterFourSetCount
