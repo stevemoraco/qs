@@ -44,7 +44,9 @@ theorem finite_endpoint_telescope (d : ℕ → ℝ) (n N : ℕ) :
               discreteCurvature d (n + N) := by ring
         _ = d (n + N) - discreteCurvature d (n + N) := by rw [ih]
         _ = d (n + N + 1) := by simp [discreteCurvature]
-        _ = d (n + N.succ) := by simp
+        _ = d (n + N.succ) := by
+          simpa only [Nat.succ_eq_add_one] using
+            congrArg d (Nat.add_assoc n N 1)
 
 /-- Equivalent finite sum form of the endpoint identity. -/
 theorem finite_curvature_sum (d : ℕ → ℝ) (n N : ℕ) :
