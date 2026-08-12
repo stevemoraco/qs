@@ -1,0 +1,10 @@
+import Run16FiniteCores
+
+#print axioms Run16FiniteCores.SuzukiApproximatePythagoras.sharp_identity
+#print axioms Run16FiniteCores.SuzukiApproximatePythagoras.sharp_generalized_cauchy
+#print axioms Run16FiniteCores.SuzukiApproximatePythagoras.sharp_lower_bound
+#print axioms Run16FiniteCores.PNPManyToOneSelector.protected_subset_fixedPoints
+#print axioms Run16FiniteCores.PNPManyToOneSelector.fixedPoints_subset_range
+#print axioms Run16FiniteCores.PNPManyToOneSelector.range_eq_fixedPoints
+#print axioms Run16FiniteCores.PNPManyToOneSelector.nearTwoN_selector_cost
+#print axioms Run16FiniteCores.PNPManyToOneSelector.nearTwoN_retraction_cost
