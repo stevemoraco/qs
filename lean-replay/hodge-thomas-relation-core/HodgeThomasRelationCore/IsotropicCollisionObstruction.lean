@@ -33,7 +33,7 @@ def d : 𝕜 × 𝕜 := (1, 1)
 /-- Every relation among `e`, `f`, and `d=e+f` is a scalar multiple of
 `(-1,-1,1)`. -/
 theorem relation_normal_form (a b c : 𝕜)
-    (hrel : a • e + b • f + c • d = 0) :
+    (hrel : a • (e : 𝕜 × 𝕜) + b • (f : 𝕜 × 𝕜) + c • (d : 𝕜 × 𝕜) = 0) :
     a = -c ∧ b = -c := by
   have hfirst := congrArg Prod.fst hrel
   have hsecond := congrArg Prod.snd hrel
@@ -45,7 +45,7 @@ theorem relation_normal_form (a b c : 𝕜)
 
 /-- Any nonzero relation uses all three vectors. -/
 theorem nonzero_relation_uses_all_three (a b c : 𝕜)
-    (hrel : a • e + b • f + c • d = 0)
+    (hrel : a • (e : 𝕜 × 𝕜) + b • (f : 𝕜 × 𝕜) + c • (d : 𝕜 × 𝕜) = 0)
     (hnonzero : a ≠ 0 ∨ b ≠ 0 ∨ c ≠ 0) :
     a ≠ 0 ∧ b ≠ 0 ∧ c ≠ 0 := by
   obtain ⟨ha, hb⟩ := relation_normal_form a b c hrel
@@ -64,21 +64,21 @@ theorem nonzero_relation_uses_all_three (a b c : 𝕜)
 /-- The three required vectors are pairwise nonorthogonal for the standard
 alternating form. -/
 theorem required_pairings_nonzero :
-    omega (e : 𝕜 × 𝕜) f ≠ 0 ∧
-    omega (e : 𝕜 × 𝕜) d ≠ 0 ∧
-    omega (f : 𝕜 × 𝕜) d ≠ 0 := by
+    omega (e : 𝕜 × 𝕜) (f : 𝕜 × 𝕜) ≠ 0 ∧
+    omega (e : 𝕜 × 𝕜) (d : 𝕜 × 𝕜) ≠ 0 ∧
+    omega (f : 𝕜 × 𝕜) (d : 𝕜 × 𝕜) ≠ 0 := by
   simp [omega, e, f, d]
 
 /-- Consequently, this relation space contains no nonzero relation whose
 support is pairwise orthogonal: every nonzero relation uses all three vectors,
 and every pair among them has nonzero intersection. -/
 theorem nonzero_relation_forces_nonorthogonal_support (a b c : 𝕜)
-    (hrel : a • e + b • f + c • d = 0)
+    (hrel : a • (e : 𝕜 × 𝕜) + b • (f : 𝕜 × 𝕜) + c • (d : 𝕜 × 𝕜) = 0)
     (hnonzero : a ≠ 0 ∨ b ≠ 0 ∨ c ≠ 0) :
     a ≠ 0 ∧ b ≠ 0 ∧ c ≠ 0 ∧
-    omega (e : 𝕜 × 𝕜) f ≠ 0 ∧
-    omega (e : 𝕜 × 𝕜) d ≠ 0 ∧
-    omega (f : 𝕜 × 𝕜) d ≠ 0 := by
+    omega (e : 𝕜 × 𝕜) (f : 𝕜 × 𝕜) ≠ 0 ∧
+    omega (e : 𝕜 × 𝕜) (d : 𝕜 × 𝕜) ≠ 0 ∧
+    omega (f : 𝕜 × 𝕜) (d : 𝕜 × 𝕜) ≠ 0 := by
   obtain ⟨ha, hb, hc⟩ := nonzero_relation_uses_all_three a b c hrel hnonzero
   obtain ⟨hef, hed, hfd⟩ := (required_pairings_nonzero (𝕜 := 𝕜))
   exact ⟨ha, hb, hc, hef, hed, hfd⟩
