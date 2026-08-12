@@ -27,61 +27,86 @@ jobs:
           import json
           import pathlib
           import re
+          import urllib.error
           import urllib.request
 
-          path = pathlib.Path('verification/ns-flux-scaling/NSFluxScalingObstruction.lean')
+          root = pathlib.Path('verification/ns-flux-scaling')
+          path = root / 'NSFluxScalingObstruction.lean'
+          result_path = root / 'axle-result.json'
+          status_path = root / 'verification-status.json'
           content = path.read_text()
           digest = hashlib.sha256(content.encode()).hexdigest()
+          status = {'source_sha256': digest}
           print('source_sha256=' + digest)
 
-          forbidden = {
-              'sorry/admit': r'(^|[^A-Za-z0-9_])(sorry|admit)([^A-Za-z0-9_]|$)',
-              'custom axiom': r'^\s*axiom\s+',
-              'opaque': r'^\s*opaque\s+',
-              'unsafe': r'(^|\s)unsafe(\s|$)',
-          }
-          for label, pattern in forbidden.items():
-              if re.search(pattern, content, flags=re.MULTILINE):
-                  raise SystemExit(f'forbidden source construct ({label})')
+          try:
+              forbidden = {
+                  'sorry/admit': r'(^|[^A-Za-z0-9_])(sorry|admit)([^A-Za-z0-9_]|$)',
+                  'custom axiom': r'^\s*axiom\s+',
+                  'opaque': r'^\s*opaque\s+',
+                  'unsafe': r'(^|\s)unsafe(\s|$)',
+              }
+              for label, pattern in forbidden.items():
+                  if re.search(pattern, content, flags=re.MULTILINE):
+                      raise RuntimeError(f'forbidden source construct ({label})')
 
-          payload = json.dumps({
-              'content': content,
-              'environment': 'lean-4.30.0',
-              'ignore_imports': True,
-              'mathlib_options': False,
-              'timeout_seconds': 900,
-          }).encode()
-          request = urllib.request.Request(
-              'https://axle.axiommath.ai/api/v1/check',
-              data=payload,
-              headers={'Content-Type': 'application/json'},
-              method='POST',
-          )
-          with urllib.request.urlopen(request, timeout=960) as response:
-              result = json.load(response)
+              payload = json.dumps({
+                  'content': content,
+                  'environment': 'lean-4.30.0',
+                  'ignore_imports': True,
+                  'mathlib_options': False,
+                  'timeout_seconds': 900,
+              }).encode()
+              request = urllib.request.Request(
+                  'https://axle.axiommath.ai/api/v1/check',
+                  data=payload,
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=960) as response:
+                      result = json.load(response)
+              except urllib.error.HTTPError as exc:
+                  body = exc.read().decode('utf-8', errors='replace')
+                  status['http_error'] = {'code': exc.code, 'body': body}
+                  print(body)
+                  raise
 
-          pathlib.Path('verification/ns-flux-scaling/axle-result.json').write_text(
-              json.dumps(result, indent=2, sort_keys=True)
-          )
-          print(json.dumps(result, indent=2))
+              result_path.write_text(json.dumps(result, indent=2, sort_keys=True))
+              print(json.dumps(result, indent=2))
 
-          lean_errors = result.get('lean_messages', {}).get('errors', [])
-          tool_errors = result.get('tool_messages', {}).get('errors', [])
-          failed = result.get('failed_declarations', [])
-          rendered = json.dumps(result)
-          if not result.get('okay') or lean_errors or tool_errors or failed:
-              raise SystemExit('Lean/AXLE verification failed')
-          for token in ('sorryAx', 'Lean.ofReduceBool'):
-              if token in rendered:
-                  raise SystemExit(f'forbidden postcompile dependency: {token}')
+              lean_errors = result.get('lean_messages', {}).get('errors', [])
+              tool_errors = result.get('tool_messages', {}).get('errors', [])
+              failed = result.get('failed_declarations', [])
+              rendered = json.dumps(result)
+              status.update({
+                  'okay': result.get('okay'),
+                  'lean_errors': lean_errors,
+                  'tool_errors': tool_errors,
+                  'failed_declarations': failed,
+              })
+              if not result.get('okay') or lean_errors or tool_errors or failed:
+                  raise RuntimeError('Lean/AXLE verification failed')
+              for token in ('sorryAx', 'Lean.ofReduceBool'):
+                  if token in rendered:
+                      raise RuntimeError(f'forbidden postcompile dependency: {token}')
 
-          print('VERIFIED: exact source compiled under AXLE Lean 4.30 with no failed declarations')
+              status['verified'] = True
+              print('VERIFIED: exact source compiled under AXLE Lean 4.30 with no failed declarations')
+          except Exception as exc:
+              status['verified'] = False
+              status['exception'] = repr(exc)
+              raise
+          finally:
+              status_path.write_text(json.dumps(status, indent=2, sort_keys=True))
           PY
       - name: Upload exact verification evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ns-helical-flux-scaling-evidence
           path: |
             verification/ns-flux-scaling/NSFluxScalingObstruction.lean
             verification/ns-flux-scaling/axle-result.json
+            verification/ns-flux-scaling/verification-status.json
           if-no-files-found: error
