@@ -6,7 +6,7 @@
 
 - Repository/branch: `stevemoraco/RH-Lean:agent/pnp-distinguisher-sensitivity-alternation-barrier-20260812`
 - Private note: `millennium/p-vs-np/PNP_DISTINGUISHER_SENSITIVITY_ALTERNATION_BARRIER_2026-08-12.md`
-- Exact Lean blob: `4df286150faa9c318d2e2ef4aa1281e96ab0fd9f`
+- Exact Lean blob: `d0a572ad97fbbd84c93effa38038031f241e2427`
 
 ## Replayed declarations
 
