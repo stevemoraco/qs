@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - b4/ns-ym-hodge-run14-public-verify-20260811
+      - agent/hodge-projector-range-equiv-20260812
     paths:
       - 'verification/run14-crosslane/**'
       - '.github/workflows/run14-crosslane-public-verify.yml'
@@ -44,14 +45,14 @@ jobs:
           lake update
           lake exe cache get
           : > lean-output.log
-          for f in NSVanishingThreshold.lean YMGapBudget.lean HodgeTransfer.lean; do
+          for f in NSVanishingThreshold.lean YMGapBudget.lean HodgeTransfer.lean HodgeProjectorRangeEquiv.lean; do
             lake env lean "$f" 2>&1 | tee -a lean-output.log
           done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite NS/YM/Hodge cores: clean pinned build, zero reported sorry/admit.'
+          echo 'VERIFIED finite NS/YM/Hodge cores and Hodge projector range equivalence: clean pinned build, zero reported sorry/admit.'
 
       - name: Upload compiler evidence
         if: always()
