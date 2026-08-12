@@ -30,23 +30,23 @@ end B4Auto11.RH
 namespace B4Auto11.PNP
 
 theorem simultaneousWitnessThreshold
-    (universe badUnion circuits perCircuit : ℕ)
+    (witnessCount badUnion circuits perCircuit : ℕ)
     (hunion : badUnion ≤ circuits * perCircuit)
-    (hstrict : circuits * perCircuit < universe) :
-    badUnion < universe := by
+    (hstrict : circuits * perCircuit < witnessCount) :
+    badUnion < witnessCount := by
   omega
 
 theorem uncoveredCountPositive
-    (universe badUnion circuits perCircuit : ℕ)
+    (witnessCount badUnion circuits perCircuit : ℕ)
     (hunion : badUnion ≤ circuits * perCircuit)
-    (hstrict : circuits * perCircuit < universe) :
-    0 < universe - badUnion := by
+    (hstrict : circuits * perCircuit < witnessCount) :
+    0 < witnessCount - badUnion := by
   omega
 
 theorem saturationBlocksStrictCounting
-    (universe circuits perCircuit : ℕ)
-    (hsat : circuits * perCircuit = universe) :
-    ¬ circuits * perCircuit < universe := by
+    (witnessCount circuits perCircuit : ℕ)
+    (hsat : circuits * perCircuit = witnessCount) :
+    ¬ circuits * perCircuit < witnessCount := by
   omega
 
 #print axioms B4Auto11.PNP.simultaneousWitnessThreshold
