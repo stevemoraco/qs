@@ -40,9 +40,11 @@ theorem pascal_two_floor (x₀ x₁ : ℝ) :
         (4 / 5 : ℝ) * (x₀ + (5 / 4 : ℝ) * x₁) ^ 2 +
           (11 / 20 : ℝ) * x₁ ^ 2 := by
     ring
-  rw [sub_eq_iff_eq_add] at hid
-  rw [hid]
-  positivity
+  have hnonneg :
+      0 ≤ (4 / 5 : ℝ) * (x₀ + (5 / 4 : ℝ) * x₁) ^ 2 +
+          (11 / 20 : ℝ) * x₁ ^ 2 := by
+    positivity
+  nlinarith [hid, hnonneg]
 
 /-- The local Pascal Gram of a multiplicity-three block dominates `1/21 I`. -/
 theorem pascal_three_floor (x₀ x₁ x₂ : ℝ) :
@@ -59,9 +61,14 @@ theorem pascal_three_floor (x₀ x₁ x₂ : ℝ) :
             (x₁ + (819 / 379 : ℝ) * x₂) ^ 2 +
           (5480 / 7959 : ℝ) * x₂ ^ 2 := by
     ring
-  rw [sub_eq_iff_eq_add] at hid
-  rw [hid]
-  positivity
+  have hnonneg :
+      0 ≤ (20 / 21 : ℝ) *
+            (x₀ + (21 / 20 : ℝ) * x₁ + (21 / 20 : ℝ) * x₂) ^ 2 +
+          (379 / 420 : ℝ) *
+            (x₁ + (819 / 379 : ℝ) * x₂) ^ 2 +
+          (5480 / 7959 : ℝ) * x₂ ^ 2 := by
+    positivity
+  nlinarith [hid, hnonneg]
 
 /-- The local Pascal Gram of a multiplicity-four block dominates `1/85 I`. -/
 theorem pascal_four_floor (x₀ x₁ x₂ x₃ : ℝ) :
@@ -84,9 +91,18 @@ theorem pascal_four_floor (x₀ x₁ x₂ x₃ : ℝ) :
             (x₂ + (215050 / 68733 : ℝ) * x₃) ^ 2 +
           (4363592 / 5842305 : ℝ) * x₃ ^ 2 := by
     ring
-  rw [sub_eq_iff_eq_add] at hid
-  rw [hid]
-  positivity
+  have hnonneg :
+      0 ≤ (84 / 85 : ℝ) *
+            (x₀ + (85 / 84 : ℝ) * x₁ + (85 / 84 : ℝ) * x₂ +
+              (85 / 84 : ℝ) * x₃) ^ 2 +
+          (6971 / 7140 : ℝ) *
+            (x₁ + (14195 / 6971 : ℝ) * x₂ +
+              (21335 / 6971 : ℝ) * x₃) ^ 2 +
+          (549864 / 592535 : ℝ) *
+            (x₂ + (215050 / 68733 : ℝ) * x₃) ^ 2 +
+          (4363592 / 5842305 : ℝ) * x₃ ^ 2 := by
+    positivity
+  nlinarith [hid, hnonneg]
 
 /-- The transparent block coefficient is strictly positive whenever the
 analytic shape and local floor are positive. -/
@@ -103,7 +119,7 @@ theorem inverse_spacing_debt_monotone
     (ha : 0 ≤ a)
     (hK : 0 ≤ K)
     (hh₁ : 0 < h₁)
-    (hh₂ : 0 < h₂)
+    (_hh₂ : 0 < h₂)
     (hle : h₁ ≤ h₂) :
     a * K / h₂ ≤ a * K / h₁ := by
   have hnum : 0 ≤ a * K := mul_nonneg ha hK
