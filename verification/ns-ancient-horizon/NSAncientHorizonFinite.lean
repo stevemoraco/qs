@@ -56,7 +56,6 @@ theorem future_dissipation_scaling_identity
     (D U dt : ℝ) (hU : U ≠ 0) :
     (D / U) * (U ^ 2 * dt) = U * (D * dt) := by
   field_simp
-  ring
 
 /-- Integrability of a tail and growth of an amplitude do not by themselves
 force their product to vanish: this exact family is constantly one. -/
