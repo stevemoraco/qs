@@ -45,9 +45,10 @@ theorem comparison_rayleigh
     (hD : D = V - R) :
     R ≤ (1 - 1 / (C * M)) * V := by
   have hpoly := comparison_polynomial V E D C M R hC hVE hED hD
-  apply (le_div_iff₀ hCM).mp at hpoly
+  have hdiv : R ≤ ((C * M - 1) * V) / (C * M) :=
+    (le_div_iff₀ hCM).2 hpoly
   calc
-    R ≤ ((C * M - 1) * V) / (C * M) := hpoly
+    R ≤ ((C * M - 1) * V) / (C * M) := hdiv
     _ = (1 - 1 / (C * M)) * V := by
       field_simp [ne_of_gt hCM]
       ring
@@ -67,7 +68,7 @@ theorem wrong_direction_can_hold_uniformly
     (V E ε : ℝ)
     (hV : 0 ≤ V)
     (hVE : V ≤ E)
-    (hε0 : 0 ≤ ε)
+    (_hε0 : 0 ≤ ε)
     (hε1 : ε ≤ 1) :
     ε * V ≤ E := by
   have hprod : 0 ≤ (1 - ε) * V :=
@@ -81,9 +82,13 @@ theorem reverse_comparison_forces_inverse_speed
     (hV : 0 < V)
     (hcomp : V ≤ M * (ε * V)) :
     1 ≤ M * ε := by
-  have h : V * 1 ≤ V * (M * ε) := by
-    simpa [mul_assoc, mul_comm, mul_left_comm] using hcomp
-  exact (mul_le_mul_left hV).mp h
+  by_contra hnot
+  have hlt : M * ε < 1 := lt_of_not_ge hnot
+  have hpos : 0 < V * (1 - M * ε) :=
+    mul_pos hV (sub_pos.mpr hlt)
+  have hle : V * (1 - M * ε) ≤ 0 := by
+    nlinarith [hcomp]
+  linarith
 
 /-- Exact scalar witness that a strict cutoff contraction can approach one. -/
 theorem lazy_factor_defect (ε : ℝ) :
