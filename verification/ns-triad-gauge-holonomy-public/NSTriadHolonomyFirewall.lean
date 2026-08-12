@@ -38,7 +38,7 @@ theorem two_edge_chain_always_realizable
       g12 = f1⁻¹ * f2 := by
   refine ⟨1, g01, g01 * g12, ?_, ?_⟩
   · simp
-  · simp [mul_assoc]
+  · simp
 
 /-- Under an arbitrary change of vertex frames, triangle holonomy changes only
 by conjugation at the base vertex.  Hence the conjugacy class of the cycle
@@ -68,6 +68,8 @@ theorem three_quarter_turns_block_zmod4_vertex_frames :
   have hzero := additive_triangle_frame_coboundary_holonomy f0 f1 f2
   rw [h01, h12, h20] at hzero
   norm_num at hzero
+  have hne : (3 : ZMod 4) ≠ 0 := by decide
+  exact hne hzero
 
 #print axioms triangle_frame_coboundary_holonomy
 #print axioms nontrivial_triangle_holonomy_blocks_global_frames
