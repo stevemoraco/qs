@@ -44,7 +44,7 @@ theorem cocycle_is_coboundary_of_central_scalar
   simp only [smul_sub, smul_smul] at hscaled
   have hinv : (a - 1)⁻¹ * (a - 1) = 1 := inv_mul_cancel₀ hne
   rw [hinv, one_smul] at hscaled
-  simpa only [map_smul] using hscaled.symm
+  simpa only [map_smul] using hscaled
 
 /-- In particular, over a field of characteristic different from two, a
 central element acting by `-1` annihilates first cohomology in the standard
@@ -65,7 +65,10 @@ theorem cocycle_is_coboundary_of_central_negation
     simpa using hneg x
   · intro h
     have htwo : (2 : 𝕜) = 0 := by
-      linear_combination h
+      calc
+        (2 : 𝕜) = 1 + 1 := by norm_num
+        _ = -1 + 1 := by rw [h]
+        _ = 0 := neg_add_cancel 1
     exact (NeZero.ne (2 : 𝕜)) htwo
 
 end HodgeThomasRelationCore
