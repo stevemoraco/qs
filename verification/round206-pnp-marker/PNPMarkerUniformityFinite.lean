@@ -33,11 +33,15 @@ theorem single_output_critical_path_excess_slack
     n 1 o c1 c2 g e1 e2 hnodes houtputs hwire
 
 /-- Three marker blocks of size `m` contain enough unordered marker pairs to
-assign two distinct candidates to every one of the `m^2` cross pairs. The
-inequality is written without division. -/
+assign two distinct candidates to every one of the `m^2` cross pairs. This
+subtraction-free inequality is exactly twice the required binomial capacity. -/
 theorem marker_pair_capacity (m : ℕ) (hm : 1 ≤ m) :
-    4 * (m * m) ≤ (3 * m) * (3 * m - 1) := by
-  nlinarith
+    4 * (m * m) + 3 * m ≤ 9 * (m * m) := by
+  have hmul : m ≤ m * m := by
+    calc
+      m = m * 1 := by simp
+      _ ≤ m * m := Nat.mul_le_mul_left m hm
+  omega
 
 /-- A selector with one bit for each of `q` pair contexts has exactly `2^q`
 possible assignments. -/
@@ -54,7 +58,7 @@ abbrev CircuitDescription (n g : ℕ) :=
 /-- The overcounted circuit-description universe has the advertised cardinality. -/
 theorem circuit_description_card (n g : ℕ) :
     Fintype.card (CircuitDescription n g) =
-      (16 * (n + g + 2) * (n + g + 2)) ^ g * (n + g + 2) := by
+      (16 * ((n + g + 2) * (n + g + 2))) ^ g * (n + g + 2) := by
   simp [CircuitDescription]
 
 /-- If the selector family is larger than the circuit-description universe,
@@ -76,7 +80,7 @@ theorem marker_selector_counting_obstruction
     (n g q : ℕ)
     (decode : CircuitDescription n g → (Fin q → Bool))
     (hcard :
-      (16 * (n + g + 2) * (n + g + 2)) ^ g * (n + g + 2) < 2 ^ q) :
+      (16 * ((n + g + 2) * (n + g + 2))) ^ g * (n + g + 2) < 2 ^ q) :
     ¬ Function.Surjective decode := by
   apply more_selectors_than_descriptions_not_surjective decode
   simpa [circuit_description_card, selector_bits_card] using hcard
