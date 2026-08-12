@@ -12,11 +12,9 @@ the analytic depth equivalence.
 namespace MillenniumRun17
 namespace RHDyadicBlock
 
-open scoped BigOperators
-
 /-- Polynomial geometric telescoping, stated without division. -/
 lemma one_sub_mul_geom_sum (r : ℝ) : ∀ n : ℕ,
-    (1 - r) * (∑ k in Finset.range n, r ^ k) = 1 - r ^ n := by
+    (1 - r) * (Finset.sum (Finset.range n) fun k => r ^ k) = 1 - r ^ n := by
   intro n
   induction n with
   | zero => simp
@@ -26,23 +24,27 @@ lemma one_sub_mul_geom_sum (r : ℝ) : ∀ n : ℕ,
 
 /-- Exact finite geometric identity behind the dyadic block kernel. -/
 theorem geometric_block_identity (r : ℝ) (D : ℕ) :
-    (1 - r) * (∑ k in Finset.range (D + 1), r ^ (D + k)) =
+    (1 - r) *
+        (Finset.sum (Finset.range (D + 1)) fun k => r ^ (D + k)) =
       r ^ D - r ^ (2 * D + 1) := by
   have hsum :
-      (∑ k in Finset.range (D + 1), r ^ (D + k)) =
-        r ^ D * ∑ k in Finset.range (D + 1), r ^ k := by
+      (Finset.sum (Finset.range (D + 1)) fun k => r ^ (D + k)) =
+        r ^ D * (Finset.sum (Finset.range (D + 1)) fun k => r ^ k) := by
     calc
-      (∑ k in Finset.range (D + 1), r ^ (D + k)) =
-          ∑ k in Finset.range (D + 1), r ^ D * r ^ k := by
+      (Finset.sum (Finset.range (D + 1)) fun k => r ^ (D + k)) =
+          Finset.sum (Finset.range (D + 1)) (fun k => r ^ D * r ^ k) := by
             apply Finset.sum_congr rfl
             intro k hk
             rw [pow_add]
-      _ = r ^ D * ∑ k in Finset.range (D + 1), r ^ k := by
+      _ = r ^ D * (Finset.sum (Finset.range (D + 1)) fun k => r ^ k) := by
             rw [Finset.mul_sum]
   rw [hsum]
   calc
-    (1 - r) * (r ^ D * ∑ k in Finset.range (D + 1), r ^ k) =
-        r ^ D * ((1 - r) * ∑ k in Finset.range (D + 1), r ^ k) := by ring
+    (1 - r) *
+        (r ^ D * (Finset.sum (Finset.range (D + 1)) fun k => r ^ k)) =
+        r ^ D *
+          ((1 - r) * (Finset.sum (Finset.range (D + 1)) fun k => r ^ k)) := by
+            ring
     _ = r ^ D * (1 - r ^ (D + 1)) := by
       rw [one_sub_mul_geom_sum]
     _ = r ^ D - r ^ (D + (D + 1)) := by
@@ -69,11 +71,11 @@ theorem block_kernel_nonneg (r : ℝ) (D : ℕ)
 endpoint times the number of terms. -/
 theorem antitone_block_lower (B : ℕ → ℝ) (hanti : Antitone B) (D : ℕ) :
     (D + 1 : ℝ) * B (2 * D) ≤
-      ∑ k in Finset.range (D + 1), B (D + k) := by
+      Finset.sum (Finset.range (D + 1)) (fun k => B (D + k)) := by
   calc
     (D + 1 : ℝ) * B (2 * D) =
-        ∑ k in Finset.range (D + 1), B (2 * D) := by simp
-    _ ≤ ∑ k in Finset.range (D + 1), B (D + k) := by
+        Finset.sum (Finset.range (D + 1)) (fun _ => B (2 * D)) := by simp
+    _ ≤ Finset.sum (Finset.range (D + 1)) (fun k => B (D + k)) := by
       apply Finset.sum_le_sum
       intro k hk
       apply hanti
@@ -83,11 +85,11 @@ theorem antitone_block_lower (B : ℕ → ℝ) (hanti : Antitone B) (D : ℕ) :
 /-- A dyadic block sum of an antitone sequence is bounded above by its left
 endpoint times the number of terms. -/
 theorem antitone_block_upper (B : ℕ → ℝ) (hanti : Antitone B) (D : ℕ) :
-    (∑ k in Finset.range (D + 1), B (D + k)) ≤
+    Finset.sum (Finset.range (D + 1)) (fun k => B (D + k)) ≤
       (D + 1 : ℝ) * B D := by
   calc
-    (∑ k in Finset.range (D + 1), B (D + k)) ≤
-        ∑ k in Finset.range (D + 1), B D := by
+    Finset.sum (Finset.range (D + 1)) (fun k => B (D + k)) ≤
+        Finset.sum (Finset.range (D + 1)) (fun _ => B D) := by
       apply Finset.sum_le_sum
       intro k hk
       apply hanti
