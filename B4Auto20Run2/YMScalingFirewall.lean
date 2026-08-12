@@ -5,7 +5,8 @@ theorem ym_linear_raw_bound_to_normalized
     (a g c Λ : ℝ) (ha : 0 < a)
     (hraw : a * (c * Λ) ≤ g) :
     c * Λ ≤ g / a := by
-  exact (le_div_iff₀ ha).2 hraw
+  apply (le_div_iff₀ ha).2
+  simpa [mul_comm, mul_left_comm, mul_assoc] using hraw
 
 theorem ym_positive_gap_can_miss_linear_scale
     (c Λ : ℝ) (hc : 0 < c) (hΛ : 0 < Λ) :
