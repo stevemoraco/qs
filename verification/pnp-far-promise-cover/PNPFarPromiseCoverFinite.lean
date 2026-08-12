@@ -53,15 +53,18 @@ theorem exists_uncovered_of_cover_capacity_lt
     (hcap : #centers * B < Fintype.card α) :
     ∃ x : α, x ∉ centers.biUnion ball := by
   classical
-  by_contra hnone
-  push_neg at hnone
-  have hfull : centers.biUnion ball = Finset.univ := by
-    ext x
-    simp only [mem_biUnion, mem_univ, iff_true]
+  by_contra hex
+  have hnone : ∀ x : α, x ∈ centers.biUnion ball := by
+    intro x
+    by_contra hx
+    exact hex ⟨x, hx⟩
+  have hsub : (Finset.univ : Finset α) ⊆ centers.biUnion ball := by
+    intro x _hx
     exact hnone x
+  have hcard : Fintype.card α ≤ #(centers.biUnion ball) := by
+    simpa using Finset.card_le_card hsub
   have hcover := finite_ball_cover_card_le centers ball B hball
-  rw [hfull, Finset.card_univ] at hcover
-  exact (not_le_of_gt hcap) hcover
+  exact (not_le_of_gt hcap) (hcard.trans hcover)
 
 /-- Abstract terminality shadow for one fixed promise problem. -/
 theorem fixed_far_promise_magnification_contrapositive
