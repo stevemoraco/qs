@@ -17,35 +17,30 @@ namespace B5SynthesisRun1.PNP
 
 open Finset
 
-/-- If every decoder succeeds on at most `K` inputs, an input-dependent selector
+/-- If every decoder success set has at most `K` inputs, an input-dependent selector
 that succeeds everywhere must use enough distinct decoders to cover the whole input set. -/
 theorem selector_cover_capacity
-    {X D : Type*} [Fintype X] [Fintype D]
-    (solves : D → X → Prop)
+    {X D : Type*} [Fintype X] [Fintype D] [DecidableEq X] [DecidableEq D]
+    (success : D → Finset X)
     (sel : X → D)
-    (hsolve : ∀ x, solves (sel x) x)
+    (hsolve : ∀ x, x ∈ success (sel x))
     (K : ℕ)
-    (hcap : ∀ d, #(Finset.univ.filter (solves d)) ≤ K) :
+    (hcap : ∀ d, #(success d) ≤ K) :
     Fintype.card X ≤ #(Finset.univ.image sel) * K := by
-  classical
   let R : Finset D := Finset.univ.image sel
-  let S : D → Finset X := fun d => Finset.univ.filter (solves d)
-  have hsubset : (Finset.univ : Finset X) ⊆ R.biUnion S := by
+  have hsubset : (Finset.univ : Finset X) ⊆ R.biUnion success := by
     intro x hx
     have hd : sel x ∈ R := by
       dsimp [R]
       exact Finset.mem_image.mpr ⟨x, Finset.mem_univ x, rfl⟩
-    have hxS : x ∈ S (sel x) := by
-      dsimp [S]
-      exact Finset.mem_filter.mpr ⟨Finset.mem_univ x, hsolve x⟩
-    exact Finset.mem_biUnion.mpr ⟨sel x, hd, hxS⟩
+    exact Finset.mem_biUnion.mpr ⟨sel x, hd, hsolve x⟩
   calc
     Fintype.card X = #(Finset.univ : Finset X) := by simp
-    _ ≤ #(R.biUnion S) := Finset.card_le_card hsubset
-    _ ≤ ∑ d ∈ R, #(S d) := Finset.card_biUnion_le
+    _ ≤ #(R.biUnion success) := Finset.card_le_card hsubset
+    _ ≤ ∑ d ∈ R, #(success d) := Finset.card_biUnion_le
     _ ≤ ∑ d ∈ R, K := by
       gcongr with d hd
-      simpa [S] using hcap d
+      exact hcap d
     _ = #R * K := by simp
     _ = #(Finset.univ.image sel) * K := by rfl
 
@@ -55,15 +50,27 @@ end B5SynthesisRun1.PNP
 
 namespace B5SynthesisRun1.BSD
 
-def truncLength (a k : ℕ) : ℕ := Nat.min a k
+/-- Truncated length of one Smith summand at finite level `k`; this is `min a k`. -/
+def truncLength (a k : ℕ) : ℕ := if a < k then a else k
 
-/-- A single Smith summand `R/(T^a)` contributes no new finite-quotient length
-between levels `p-1` and `p` exactly when its depth is already below `p`. -/
+/-- A single Smith summand contributes no new finite-level length between `p-1`
+and `p` exactly when its depth is already below `p`. -/
 theorem smith_summand_stabilizes_iff_depth_below
     (a p : ℕ) (hp : 0 < p) :
     truncLength a p = truncLength a (p - 1) ↔ a < p := by
-  unfold truncLength
-  omega
+  constructor
+  · intro hstab
+    by_contra hnot
+    have hpa : p ≤ a := by omega
+    have hnotp : ¬ a < p := by omega
+    have hnotp1 : ¬ a < p - 1 := by omega
+    simp [truncLength, hnotp, hnotp1] at hstab
+    omega
+  · intro h
+    by_cases h2 : a < p - 1
+    · simp [truncLength, h, h2]
+    · have heq : a = p - 1 := by omega
+      simp [truncLength, h, h2, heq]
 
 #print axioms smith_summand_stabilizes_iff_depth_below
 
