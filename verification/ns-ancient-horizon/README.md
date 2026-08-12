@@ -6,7 +6,7 @@
 
 - Repository/branch: `stevemoraco/RH-Lean:agent/ns-ancient-liouville-pressure-horizon-audit-20260812`
 - Private note: `research/navier_stokes/NS_ANCIENT_LIOUVILLE_PRESSURE_HORIZON_AUDIT_2026-08-12.md`
-- Exact Lean blob: `1d59bd69acc3a4140afe2c4617f6ca05314fdc9f`
+- Exact Lean blob: `39300fc467b3fa6c6b92765a8c7d42f63bb12e4c`
 
 ## Replayed declarations
 
