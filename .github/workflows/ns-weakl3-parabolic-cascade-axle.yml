@@ -108,6 +108,8 @@ jobs:
               if not lean_errors and not tool_errors and not failed:
                   print('::error title=AXLE non-okay result::' + workflow_escape(result))
               raise SystemExit(1)
+          print('::notice title=AXLE successful exact result::' + workflow_escape(result))
+          print('::notice title=Canonical source SHA-256::' + workflow_escape(sha256))
           print('VERIFIED: AXLE Lean 4.30 compiled all 8 finite cores')
           PY
 
