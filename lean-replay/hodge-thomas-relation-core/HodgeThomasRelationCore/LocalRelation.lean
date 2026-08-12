@@ -1,10 +1,10 @@
-import Mathlib.LinearAlgebra.Basic
+import Mathlib
 
 /-!
 # Finite local-relation core for the generalized Thomas route
 
 This file formalizes only the elementary linear-algebra firewall behind a
-local vanishing-cycle relation criterion.  It does not formalize admissible
+local vanishing-cycle relation criterion. It does not formalize admissible
 normal functions, Picard--Lefschetz theory, the generalized Thomas theorem,
 or the Hodge conjecture.
 
@@ -55,7 +55,7 @@ theorem no_detected_relation_of_injective
   exact hxℓ (by simp)
 
 /-- A detected relation witnesses strict kernel shrinkage after adjoining the
-coefficient functional.  This is the coordinate-free form of the rank-one
+coefficient functional. This is the coordinate-free form of the rank-one
 augmentation test. -/
 theorem detected_relation_strictly_shrinks_kernel
     (Δ : E →ₗ[𝕜] V) (ℓ : E →ₗ[𝕜] 𝕜)
