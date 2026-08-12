@@ -9,6 +9,7 @@ exact BSD identity, but only after integrality has been proved. -/
 theorem bsd_integer_defect_abs_lt_one_exactifies
     (z : ℤ) (hsmall : |z| < 1) :
     z = 0 := by
+  have hzrange : -(1 : ℤ) < z ∧ z < 1 := (abs_lt.mp hsmall)
   omega
 
 /-- CLEANER: equivalently, every nonzero integer defect has magnitude at least
@@ -17,7 +18,9 @@ has independently been shown to lie in `ℤ`. -/
 theorem bsd_nonzero_integer_defect_has_unit_gap
     (z : ℤ) (hz : z ≠ 0) :
     1 ≤ |z| := by
-  omega
+  by_contra hgap
+  have hsmall : |z| < 1 := lt_of_not_ge hgap
+  exact hz (bsd_integer_defect_abs_lt_one_exactifies z hsmall)
 
 /-- CRITIC: the strict inequality is load-bearing. A non-strict unit bound can
 still hide the nonzero defect `z = 1`, so `|z| ≤ 1` is not an exactification
