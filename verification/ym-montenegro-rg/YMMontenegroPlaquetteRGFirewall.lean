@@ -56,6 +56,7 @@ theorem plaquette_coupling_cross_ratio_defect (t : ℚ) :
     plaquetteCoupling t 1 1 1 * plaquetteCoupling t 1 (-1) (-1) -
         plaquetteCoupling t 1 1 (-1) * plaquetteCoupling t 1 (-1) 1 =
       4 * t ^ 2 * (1 - t ^ 2) := by
+  unfold plaquetteCoupling
   ring
 
 /-- Convert a Boolean boundary label to the center sign `+1` or `-1`. -/
@@ -97,6 +98,7 @@ theorem generated_coupling_not_single_plaquette_factorizable
         plaquetteCoupling t (-1) (-1) 1 *
           plaquetteCoupling t (-1) 1 (-1) =
         4 * t ^ 2 * (1 - t ^ 2) := by
+    unfold plaquetteCoupling
     ring
   have htSqPos : 0 < t ^ 2 := sq_pos_of_pos ht₀
   have htSqLt : t ^ 2 < 1 := by nlinarith
