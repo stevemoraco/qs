@@ -24,7 +24,7 @@ def valuation(n: int, prime: int) -> int:
 
 def count_points_mod_prime(a2: int, a4: int, prime: int) -> int:
     """Count points on y^2=x^3+a2*x^2+a4*x over F_prime."""
-    count = 1
+    count = 1  # point at infinity
     for x in range(prime):
         rhs = (x**3 + a2 * x**2 + a4 * x) % prime
         if rhs == 0:
@@ -38,48 +38,71 @@ def main() -> None:
     n = 21
     parameter_p = -233
     ell = 7331
-    t = 3 ** (2 * n + 1)
+    t = 3 ** (2 * n + 1)  # 3^43
+
+    # E_4(n,p): y^2=x^3+2(p-8*3^(2n+1))*x^2+p^2*x.
     a2 = 2 * (parameter_p - 8 * t)
     a4 = parameter_p**2
     discriminant = 16 * a4**2 * (a2**2 - 4 * a4)
     c4 = 16 * a2**2 - 48 * a4
 
     delta_factorization = {
-        2: 10, 3: 43, 7: 3, 11: 1, 53: 1, 233: 4,
-        446773: 1, 14696852993: 1,
+        2: 10,
+        3: 43,
+        7: 3,
+        11: 1,
+        53: 1,
+        233: 4,
+        446773: 1,
+        14696852993: 1,
     }
-    assert abs(discriminant) == prod(
-        p**e for p, e in delta_factorization.items()
-    )
+    reconstructed_delta = prod(p**e for p, e in delta_factorization.items())
+    assert abs(discriminant) == reconstructed_delta
 
     conductor = 149845956054714394972728
     conductor_factorization = {
-        2: 3, 3: 1, 7: 1, 11: 1, 53: 1, 233: 1,
-        446773: 1, 14696852993: 1,
+        2: 3,
+        3: 1,
+        7: 1,
+        11: 1,
+        53: 1,
+        233: 1,
+        446773: 1,
+        14696852993: 1,
     }
     assert conductor == prod(p**e for p, e in conductor_factorization.items())
     assert conductor % ell != 0
+
+    # At 11 the displayed E_4 model is minimal because v_11(Delta)=1;
+    # c4 is a unit, so the reduction is multiplicative.
     assert valuation(discriminant, 11) == 1
     assert c4 % 11 == 9
 
+    # Integral short model obtained from z=x+a2/3, X=9z, Y=27y.
     A = 81 * a4 - 27 * a2**2
     B = 54 * a2**3 - 243 * a2 * a4
     delta_prime = 4 * A**3 + 27 * B**2
     short_discriminant = -16 * delta_prime
     assert short_discriminant == 3**12 * discriminant
     assert delta_prime % ell == 1475
+    assert delta_prime % ell != 0
 
+    # Exact good-ordinary check at ell.
     point_count = count_points_mod_prime(a2 % ell, a4 % ell, ell)
     frobenius_trace = ell + 1 - point_count
     assert point_count == 7376
     assert frobenius_trace == -44
     assert frobenius_trace % ell != 0
 
+    # Published true Sha order is 410536^2.
     sha_square_root = 410536
     assert sha_square_root == 2**3 * 7 * ell
     sha_order = sha_square_root**2
     assert valuation(sha_order, ell) == 2
 
+    # E_1 has full rational 2-torsion and is 2-power isogenous to E_4.
+    # Its j-denominator has 11-adic valuation 2, not divisible by ell;
+    # this is the local input used in the standard Serre image criterion.
     e1_a2 = 2 * parameter_p - 4 * t
     e1_a4 = parameter_p * (parameter_p - 4 * t)
     e1_delta = 16 * e1_a4**2 * (e1_a2**2 - 4 * e1_a4)
@@ -88,7 +111,7 @@ def main() -> None:
     assert e1_c4 % 11 == 9
     assert valuation(e1_delta, 11) % ell != 0
 
-    print(json.dumps({
+    output = {
         "curve": "E_4(21,-233)",
         "ell": ell,
         "a2": a2,
@@ -107,7 +130,8 @@ def main() -> None:
         "v_ell_sha_order": valuation(sha_order, ell),
         "e1_v_11_discriminant": valuation(e1_delta, 11),
         "verified": True,
-    }, indent=2, sort_keys=True))
+    }
+    print(json.dumps(output, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
