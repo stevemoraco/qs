@@ -5,11 +5,12 @@ import Mathlib
 
 HONESTY BOUNDARY
 
-This file formalizes only the finite pigeonhole/cardinality theorem used in
-round 203. A family of backgrounds mapped to `s` Boolean signature bits has at
-most `2^s` signature classes. If every class has cardinality at most `q`, the
-whole family has cardinality at most `q * 2^s`; equivalently, if the family is
-larger, some signature has congestion greater than `q`.
+This file formalizes only finite pigeonhole/cardinality theorems used in round
+203. A family of backgrounds mapped to `s` Boolean signature bits has at most
+`2^s` signature classes. If every class has cardinality at most `q`, the whole
+family has cardinality at most `q * 2^s`. With a finite family of structural
+units, the joint `(unit, signature)` capacity is at most
+`q * card(units) * 2^s`.
 
 It does not formalize Boolean circuits, critical paths, branching excess,
 hardness magnification, `P`, `NP`, or `P != NP`.
@@ -90,10 +91,61 @@ theorem insufficient_signature_bits
     ¬ W ≤ q * 2 ^ s := by
   omega
 
+/-- If each background is assigned both to one finite structural unit and to
+an `s`-bit local signature, and every joint fiber has cardinality at most `q`,
+then the total family has cardinality at most
+`q * card(units) * 2^s`. -/
+theorem multiunit_bit_signature_capacity
+    {W U : Type*}
+    [Fintype W]
+    [Fintype U]
+    [DecidableEq U]
+    (s q : ℕ)
+    (unit : W → U)
+    (signature : W → (Fin s → Bool))
+    (hfiber : ∀ u y,
+      Fintype.card {x : W // unit x = u ∧ signature x = y} ≤ q) :
+    Fintype.card W ≤ q * Fintype.card U * 2 ^ s := by
+  classical
+  let joint : W → U × (Fin s → Bool) := fun x => (unit x, signature x)
+  have hjoint : ∀ z : U × (Fin s → Bool),
+      Fintype.card {x : W // joint x = z} ≤ q := by
+    rintro ⟨u, y⟩
+    simpa [joint, Prod.ext_iff] using hfiber u y
+  have h := card_le_signature_card_mul joint q hjoint
+  simpa [Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using h
+
+/-- If the family exceeds the total joint unit/signature capacity, some
+structural unit and some signature have congestion greater than `q`. -/
+theorem exists_overloaded_unit_signature
+    {W U : Type*}
+    [Fintype W]
+    [Fintype U]
+    [DecidableEq U]
+    (s q : ℕ)
+    (unit : W → U)
+    (signature : W → (Fin s → Bool))
+    (hlarge : q * Fintype.card U * 2 ^ s < Fintype.card W) :
+    ∃ u y,
+      q < Fintype.card {x : W // unit x = u ∧ signature x = y} := by
+  classical
+  by_contra hnone
+  have hfiber : ∀ u y,
+      Fintype.card {x : W // unit x = u ∧ signature x = y} ≤ q := by
+    intro u y
+    by_contra hnot
+    have hgt : q < Fintype.card {x : W // unit x = u ∧ signature x = y} :=
+      Nat.lt_of_not_ge hnot
+    exact hnone ⟨u, y, hgt⟩
+  have hcap := multiunit_bit_signature_capacity s q unit signature hfiber
+  omega
+
 #print axioms card_le_signature_card_mul
 #print axioms bit_signature_capacity
 #print axioms exists_overloaded_bit_signature
 #print axioms insufficient_signature_bits
+#print axioms multiunit_bit_signature_capacity
+#print axioms exists_overloaded_unit_signature
 
 end PNPBackgroundSignature
 end MillenniumRun203
