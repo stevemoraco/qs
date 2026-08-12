@@ -26,9 +26,10 @@ theorem fixedPowerResidualNotSmall
   linarith
 
 /-- No fixed normal-form order can yield a positive net decay exponent for
-    every derivative order. -/
+    every derivative order.  No positivity assumption on `eta` is needed for
+    this hostile quantifier statement. -/
 theorem fixedOrderCannotControlAllDerivatives
-    {eta : ℝ} (hEta : 0 < eta) (L : ℕ) :
+    (eta : ℝ) (L : ℕ) :
     ¬ ∀ s : ℝ, 0 < netExponent eta s L := by
   intro hAll
   have hBad := hAll (eta * L)
@@ -37,7 +38,7 @@ theorem fixedOrderCannotControlAllDerivatives
 
 /-- Explicit hostile derivative order for a fixed normal-form depth. -/
 theorem explicitDerivativeDefeatsFixedOrder
-    {eta : ℝ} (hEta : 0 < eta) (L : ℕ) :
+    (eta : ℝ) (L : ℕ) :
     netExponent eta (eta * L + 1) L = -1 := by
   unfold netExponent
   ring
