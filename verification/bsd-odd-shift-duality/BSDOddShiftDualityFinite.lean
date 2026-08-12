@@ -71,7 +71,9 @@ theorem sign_separating_specialization
     the positive sign. -/
 theorem modulo_two_does_not_separate_sign :
     (-1 : ℤ) ≠ 1 ∧ (((-1 : ℤ) : ZMod 2) = 1) := by
-  constructor <;> norm_num
+  constructor
+  · norm_num
+  · decide
 
 /-- Concrete determinant parity exponents for shifts three and two. -/
 theorem shift_three_has_same_line_polarity :
@@ -83,6 +85,7 @@ theorem shift_two_has_inverse_line_polarity :
   norm_num
 
 /-- Coefficients of `F_5[epsilon]/(epsilon^3)`. -/
+@[ext]
 structure Trunc3 where
   c0 : ZMod 5
   c1 : ZMod 5
@@ -121,14 +124,14 @@ theorem tIota_multiplicative (x y : Trunc3) :
 
 theorem tUnit_has_inverse :
     tMul tUnit tUnitInv = tOne := by
-  native_decide
+  decide
 
 theorem invariant_augmented_unit_without_norm :
     tIota tUnit = tUnit ∧
     tAug tUnit = 1 ∧
     tUnit ≠ tOne ∧
     tMul tUnit (tIota tUnit) ≠ tOne := by
-  native_decide
+  decide
 
 #print axioms invariant_norm_one_implies_square_one
 #print axioms square_one_implies_sign
