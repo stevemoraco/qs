@@ -48,7 +48,7 @@ theorem geometric_block_identity (r : ℝ) (D : ℕ) :
     _ = r ^ D * (1 - r ^ (D + 1)) := by
       rw [one_sub_mul_geom_sum]
     _ = r ^ D - r ^ (D + (D + 1)) := by
-      rw [mul_sub, mul_one, pow_add]
+      rw [mul_sub, mul_one, ← pow_add]
     _ = r ^ D - r ^ (2 * D + 1) := by
       congr 2 <;> omega
 
