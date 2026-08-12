@@ -51,11 +51,19 @@ theorem changed_multiplier_eq_iff
       Units.map iota u = u := by
   constructor
   · intro h
-    have h' := congrArg (fun z : Aˣ => z * u * lambda⁻¹) h
-    simpa [mul_assoc, mul_comm, mul_left_comm] using h'
+    have hmul : Units.map iota u * lambda = u * lambda := by
+      calc
+        Units.map iota u * lambda =
+            (Units.map iota u * lambda * u⁻¹) * u := by
+              simp [mul_assoc]
+        _ = lambda * u := by rw [h]
+        _ = u * lambda := mul_comm lambda u
+    exact mul_right_cancel hmul
   · intro h
     rw [h]
-    simp [mul_comm]
+    calc
+      u * lambda * u⁻¹ = lambda * (u * u⁻¹) := by ac_rfl
+      _ = lambda := by simp
 
 end Semilinear
 
@@ -119,27 +127,27 @@ does not imply norm one. -/
 def degenerateUnit : (ZMod 9)ˣ where
   val := 4
   inv := 7
-  val_inv := by norm_num
-  inv_val := by norm_num
+  val_inv := by decide
+  inv_val := by decide
 
 def degeneratePairing (x y : ZMod 9) : ZMod 9 := 3 * x * y
 
 theorem degenerate_pairing_equal :
     degeneratePairing degenerateUnit degenerateUnit =
       degeneratePairing 1 1 := by
-  norm_num [degeneratePairing, degenerateUnit]
+  decide
 
 theorem degenerate_pairing_unit_not_norm_one :
     ((degenerateUnit : ZMod 9) * degenerateUnit) ≠ 1 := by
-  norm_num [degenerateUnit]
+  decide
 
 /-- The smallest convenient disconnected sign model.  It is the split
 product analogue of the two idempotent components in `Z_3[C_2]`. -/
 def disconnectedUnit : (ZMod 3 × ZMod 3)ˣ where
   val := (1, -1)
   inv := (1, -1)
-  val_inv := by norm_num
-  inv_val := by norm_num
+  val_inv := by decide
+  inv_val := by decide
 
 def disconnectedPairing
     (x y : ZMod 3 × ZMod 3) : ZMod 3 × ZMod 3 := x * y
@@ -150,33 +158,34 @@ theorem disconnected_unit_fixed_by_identity :
 
 theorem disconnected_unit_norm_one :
     ((disconnectedUnit : ZMod 3 × ZMod 3) * disconnectedUnit) = 1 := by
-  norm_num [disconnectedUnit]
+  decide
 
 theorem disconnected_unit_first_augmentation_one :
     (disconnectedUnit : ZMod 3 × ZMod 3).1 = 1 := by
-  norm_num [disconnectedUnit]
+  decide
 
 theorem disconnected_perfect_multiplication_value_equal :
     disconnectedPairing disconnectedUnit disconnectedUnit =
       disconnectedPairing 1 1 := by
-  norm_num [disconnectedPairing, disconnectedUnit]
+  decide
 
 theorem disconnected_unit_ne_one :
     (disconnectedUnit : ZMod 3 × ZMod 3) ≠ 1 := by
-  norm_num [disconnectedUnit]
+  decide
 
 theorem disconnected_add_one_not_isUnit :
     ¬ IsUnit ((disconnectedUnit : ZMod 3 × ZMod 3) + 1) := by
   intro h
-  have hz : ((disconnectedUnit : ZMod 3 × ZMod 3) + 1).2 = 0 := by
-    norm_num [disconnectedUnit]
   obtain ⟨v, hv⟩ := h
   have hv2 : (v : ZMod 3 × ZMod 3).2 = 0 := by
-    simpa [← hv] using hz
-  have hone : ((v : ZMod 3 × ZMod 3) * ↑(v⁻¹)).2 = 1 := by
-    simp
-  rw [Prod.mul_snd, hv2, zero_mul] at hone
-  exact zero_ne_one hone
+    simpa [disconnectedUnit] using congrArg Prod.snd hv
+  have hunit :
+      (v : ZMod 3 × ZMod 3) * (↑(v⁻¹) : ZMod 3 × ZMod 3) = 1 :=
+    v.val_inv
+  have hsnd := congrArg Prod.snd hunit
+  have hzero_one : (0 : ZMod 3) = 1 := by
+    simpa [hv2] using hsnd
+  exact zero_ne_one hzero_one
 
 end Countermodels
 
