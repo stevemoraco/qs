@@ -1,0 +1,109 @@
+name: B4 AUTO20 run5 exactification-transfer cores
+
+on:
+  push:
+    branches:
+      - agent/b4-auto20-run5-public-verifier-20260812-1418
+    paths:
+      - 'B4Auto20Run5/**'
+      - 'verification/b4-auto20-run5/**'
+      - '.github/workflows/b4-auto20-run5-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(B4Auto20Run5/*.lean)
+          test ${#files[@]} -eq 6
+          if grep -En '^[[:space:]]*(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "${files[@]}"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*.*(native_decide|Lean\.ofReduceBool)' "${files[@]}"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Initialize evidence log
+        shell: bash
+        run: |
+          mkdir -p verification/b4-auto20-run5
+          : > verification/b4-auto20-run5/lean-output.log
+          echo 'B4 AUTO20 run5 verifier start' | tee -a verification/b4-auto20-run5/lean-output.log
+
+      - name: Set up pinned Lean
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/b4-auto20-run1
+          auto-config: 'false'
+          build: 'false'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'false'
+          use-github-cache: 'false'
+
+      - name: Restore proven dependency workspace
+        uses: actions/cache@v4
+        with:
+          path: verification/b4-auto20-run1/.lake
+          key: b4-auto20-run1-${{ runner.os }}-${{ hashFiles('verification/b4-auto20-run1/lean-toolchain', 'verification/b4-auto20-run1/lakefile.toml') }}
+
+      - name: Resolve pinned Mathlib and record environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/b4-auto20-run1
+          lean --version | tee -a ../b4-auto20-run5/lean-output.log
+          lake --version | tee -a ../b4-auto20-run5/lean-output.log
+          lake update 2>&1 | tee -a ../b4-auto20-run5/lean-output.log
+          lake exe cache get 2>&1 | tee -a ../b4-auto20-run5/lean-output.log
+          git -C .lake/packages/mathlib rev-parse HEAD | tee -a ../b4-auto20-run5/lean-output.log
+
+      - name: Compile all six mirrored sources with hostile diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/b4-auto20-run1
+          failed=0
+          count=0
+          for file in ../../B4Auto20Run5/*.lean; do
+            count=$((count+1))
+            echo "=== compiling $file ===" | tee -a ../b4-auto20-run5/lean-output.log
+            set +e
+            out="$(lake env lean "$file" 2>&1)"
+            code=$?
+            set -e
+            printf '%s\n' "$out" | tee -a ../b4-auto20-run5/lean-output.log
+            if [ "$code" -ne 0 ]; then
+              safe="${out//'%'/'%25'}"
+              safe="${safe//$'\r'/'%0D'}"
+              safe="${safe//$'\n'/'%0A'}"
+              echo "::error file=$file::$safe"
+              failed=1
+            fi
+          done
+          echo "compiled source count=$count" | tee -a ../b4-auto20-run5/lean-output.log
+          test "$count" -eq 6
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' ../b4-auto20-run5/lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            failed=1
+          fi
+          if [ "$failed" -ne 0 ]; then exit 1; fi
+          echo 'VERIFIED B4 AUTO20 run5 finite/logical quantitative cores.' | tee -a ../b4-auto20-run5/lean-output.log
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-auto20-run5-sixproblem-lean-evidence
+          path: verification/b4-auto20-run5/lean-output.log
+          if-no-files-found: error
