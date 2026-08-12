@@ -47,6 +47,26 @@ theorem macroscopic_gain_forces_symbol_mismatch
   rw [hrewrite] at hdiv
   linarith
 
+/-- A target output with squared norm at least `c^2 * M * E^2`, assembled
+from `K` active orthogonal coordinates each bounded by `B * E`, requires
+`K * B^2 ≥ c^2 * M`. Thus bounded-amplitude active support must have
+linear rank in the mode count to retain a fixed square-root gain. -/
+theorem active_output_rank_floor
+    (K M c B E S : ℝ)
+    (hE : 0 < E)
+    (hlower : c ^ 2 * M * E ^ 2 ≤ S)
+    (hupper : S ≤ K * B ^ 2 * E ^ 2) :
+    c ^ 2 * M ≤ K * B ^ 2 := by
+  have hscaled :
+      (c ^ 2 * M) * E ^ 2 ≤ (K * B ^ 2) * E ^ 2 := by
+    calc
+      (c ^ 2 * M) * E ^ 2 = c ^ 2 * M * E ^ 2 := by ring
+      _ ≤ S := hlower
+      _ ≤ K * B ^ 2 * E ^ 2 := hupper
+      _ = (K * B ^ 2) * E ^ 2 := by ring
+  have hE2 : 0 < E ^ 2 := by positivity
+  exact (mul_le_mul_right hE2).mp hscaled
+
 /-- Splitting unit shell energy equally among `J` orthogonal output branches
 produces squared output weight `1/J`, not a coherent order-one output. -/
 theorem equal_block_orthogonal_branching_tax
@@ -59,6 +79,7 @@ theorem equal_block_orthogonal_branching_tax
 #print axioms residual_lag_energy_ceiling
 #print axioms exact_complementarity_no_sqrt_gain
 #print axioms macroscopic_gain_forces_symbol_mismatch
+#print axioms active_output_rank_floor
 #print axioms equal_block_orthogonal_branching_tax
 
 end NSGolayAmplificationTradeoff
