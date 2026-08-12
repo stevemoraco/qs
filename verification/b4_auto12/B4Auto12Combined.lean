@@ -44,9 +44,9 @@ theorem twoBadSetsLeaveWitness
   push_neg at h
   have hcover : U ⊆ B₁ ∪ B₂ := by
     intro x hx
-    rcases h x hx with hx1 | hx2
+    by_cases hx1 : x ∈ B₁
     · exact Finset.mem_union_left B₂ hx1
-    · exact Finset.mem_union_right B₁ hx2
+    · exact Finset.mem_union_right B₁ (h x hx hx1)
   have hcardU : U.card ≤ (B₁ ∪ B₂).card := Finset.card_le_card hcover
   have hunion : (B₁ ∪ B₂).card ≤ B₁.card + B₂.card := Finset.card_union_le B₁ B₂
   omega
@@ -58,8 +58,6 @@ theorem saturationCanCoverTwoWitnessUniverse :
     B₁.card + B₂.card = U.card ∧
       ∀ x ∈ U, x ∈ B₁ ∨ x ∈ B₂ := by
   norm_num
-  intro x hx
-  fin_cases x <;> simp
 
 #print axioms B4Auto12.PNP.twoBadSetsLeaveWitness
 #print axioms B4Auto12.PNP.saturationCanCoverTwoWitnessUniverse
@@ -124,8 +122,10 @@ namespace B4Auto12.NS
 theorem dyadicBudgetLowerBound
     (a : ℕ → ℝ) (N : ℕ) (ε : ℝ)
     (h : ∀ i < N, ε ≤ a i) :
-    (N : ℝ) * ε ≤ ∑ i in Finset.range N, a i := by
-  have hsum : (∑ _i in Finset.range N, ε) ≤ ∑ i in Finset.range N, a i := by
+    (N : ℝ) * ε ≤ Finset.sum (Finset.range N) a := by
+  have hsum :
+      Finset.sum (Finset.range N) (fun _ => ε) ≤
+        Finset.sum (Finset.range N) a := by
     exact Finset.sum_le_sum (fun i hi => h i (Finset.mem_range.mp hi))
   simpa using hsum
 
@@ -133,7 +133,7 @@ theorem persistentShellCountBound
     (a : ℕ → ℝ) (N : ℕ) (ε E : ℝ)
     (hε : 0 < ε)
     (hshell : ∀ i < N, ε ≤ a i)
-    (hbudget : (∑ i in Finset.range N, a i) ≤ E) :
+    (hbudget : Finset.sum (Finset.range N) a ≤ E) :
     (N : ℝ) ≤ E / ε := by
   have hlower := dyadicBudgetLowerBound a N ε hshell
   have htotal : (N : ℝ) * ε ≤ E := le_trans hlower hbudget
