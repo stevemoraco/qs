@@ -31,7 +31,7 @@ theorem terminal_tail_budget_implies_restart_budget
   have hsc : s ^ 2 * X ^ 2 ≤ c * s := hsq.trans htail
   have hmul : s * (s * X ^ 2) ≤ s * c := by
     nlinarith
-  exact (mul_le_mul_left hs).mp hmul
+  exact (mul_le_mul_iff_of_pos_left hs).mp hmul
 
 /-- Dyadic terminal shell length for the scalar countermodel. -/
 def shellLength (n : ℕ) : ℚ := (1 / 16 : ℚ) ^ n
@@ -42,13 +42,13 @@ def shellEnstrophy (n : ℕ) : ℚ := (8 : ℚ) ^ n
 /-- Every shell contributes the summable amount `2^{-n}` to total dissipation. -/
 theorem shell_dissipation_identity (n : ℕ) :
     shellLength n * shellEnstrophy n = (1 / 2 : ℚ) ^ n := by
-  simp [shellLength, shellEnstrophy, ← mul_pow]
+  rw [shellLength, shellEnstrophy, ← mul_pow]
   norm_num
 
 /-- The same shell has restart product `4^n`, which grows rather than shrinks. -/
 theorem shell_restart_product_identity (n : ℕ) :
     shellLength n * shellEnstrophy n ^ 2 = (4 : ℚ) ^ n := by
-  simp [shellLength, shellEnstrophy, pow_two, ← mul_pow]
+  rw [shellLength, shellEnstrophy, pow_two, ← mul_pow, ← mul_pow]
   norm_num
 
 /-- The energy-interpolation Sobolev restart exponent is strictly superlinear
@@ -75,12 +75,13 @@ theorem square_root_tail_suffices
     (D c s : ℝ) (hD : 0 ≤ D) (hc : 0 ≤ c) (hs : 0 ≤ s)
     (hroot : 2 * D ≤ Real.sqrt c * Real.sqrt s) :
     4 * D ^ 2 ≤ c * s := by
-  have hsqrtc : 0 ≤ Real.sqrt c := Real.sqrt_nonneg c
-  have hsqrts : 0 ≤ Real.sqrt s := Real.sqrt_nonneg s
   have hsq : (2 * D) ^ 2 ≤ (Real.sqrt c * Real.sqrt s) ^ 2 := by
     exact sq_le_sq₀ (by positivity) hroot
-  rw [mul_pow, Real.sq_sqrt hc, Real.sq_sqrt hs] at hsq
-  nlinarith
+  calc
+    4 * D ^ 2 = (2 * D) ^ 2 := by ring
+    _ ≤ (Real.sqrt c * Real.sqrt s) ^ 2 := hsq
+    _ = c * s := by
+      rw [mul_pow, Real.sq_sqrt hc, Real.sq_sqrt hs]
 
 #print axioms terminal_tail_budget_implies_restart_budget
 #print axioms shell_dissipation_identity
