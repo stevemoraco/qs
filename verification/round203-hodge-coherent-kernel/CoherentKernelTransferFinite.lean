@@ -64,7 +64,7 @@ theorem nonperfect_existence_does_not_force_detector
     (detector : K → ℚ)
     (hexists : ∃ k, nonperfect k) :
     (∃ k, nonperfect k) ∧
-      (detector = fun _ => 0 → ¬ ∃ k, detector k ≠ 0) := by
+      ((detector = fun _ => 0) → ¬ ∃ k, detector k ≠ 0) := by
   constructor
   · exact hexists
   · intro hzero
