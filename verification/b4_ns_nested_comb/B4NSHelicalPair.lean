@@ -2,15 +2,48 @@ import Mathlib
 
 namespace B4NSHelicalPair
 
-/-- Polynomial core of the explicit same-helicity low-output estimate.
-    For the pair `p=(n,n,0)` and `q=(1-n,-n,0)`, this is the
-    cross-multiplied inequality giving a uniform desired-channel margin. -/
+/-- Polynomial core of a norm lower bound for the explicit same-helicity
+    low-output pair `p=(n,n,0)`, `q=(1-n,-n,0)`. -/
 theorem desiredChannelPolynomialMargin {n : ℝ} (hn : 1 ≤ n) :
     2 * (2 * n - 1)^2 ≥ 2 * n^2 - 2 * n + 1 := by
   have hn0 : 0 ≤ n := by linarith
   have hnm1 : 0 ≤ n - 1 := by linarith
   have hprod : 0 ≤ n * (n - 1) := mul_nonneg hn0 hnm1
   nlinarith
+
+/-- Stronger polynomial core for projection onto the positive-helicity parent
+    mode at output `(1,0,0)`.  It yields a `K/4` coefficient floor after
+    substituting `t^2=2n^2-2n+1`. -/
+theorem desiredParentHelicityPolynomialMargin {n : ℝ} (hn : 1 ≤ n) :
+    (2 * n - 1)^2 ≥ 2 * n^2 - 2 * n + 1 := by
+  have hn0 : 0 ≤ n := by linarith
+  have hnm1 : 0 ≤ n - 1 := by linarith
+  have hprod : 0 ≤ n * (n - 1) := mul_nonneg hn0 hnm1
+  nlinarith
+
+/-- Square-root-free transfer of the preceding polynomial margin. -/
+theorem desiredParentHelicityRootMargin
+    {n t : ℝ}
+    (hn : 1 ≤ n)
+    (ht : 0 ≤ t)
+    (htsq : t^2 = 2 * n^2 - 2 * n + 1) :
+    t ≤ 2 * n - 1 := by
+  have hright : 0 ≤ 2 * n - 1 := by linarith
+  have hsq := desiredParentHelicityPolynomialMargin hn
+  nlinarith
+
+/-- Cross-multiplied form of the positive-helicity coefficient floor.  In the
+    explicit vector formula the additional term is `sqrt(2)n-t ≥ 0`. -/
+theorem desiredParentHelicityCrossMultiplied
+    {K n t extra : ℝ}
+    (hK : 0 ≤ K)
+    (hn : 1 ≤ n)
+    (ht : 0 ≤ t)
+    (htsq : t^2 = 2 * n^2 - 2 * n + 1)
+    (hExtra : 0 ≤ extra) :
+    K * t ≤ K * ((2 * n - 1) + extra) := by
+  have hroot := desiredParentHelicityRootMargin hn ht htsq
+  exact mul_le_mul_of_nonneg_left (le_trans hroot (by linarith)) hK
 
 /-- The squared child radius denominator dominates `n^2`, yielding the
     angular factor `O(1/n)` for the undesired conjugate high output. -/
@@ -57,6 +90,9 @@ theorem pairedTransferEnergySkew (c X Y : ℝ) :
   ring
 
 #print axioms desiredChannelPolynomialMargin
+#print axioms desiredParentHelicityPolynomialMargin
+#print axioms desiredParentHelicityRootMargin
+#print axioms desiredParentHelicityCrossMultiplied
 #print axioms angularDenominatorDominatesSquare
 #print axioms radialSplitNumeratorPositive
 #print axioms relativeLeakageCrossMultiplied
