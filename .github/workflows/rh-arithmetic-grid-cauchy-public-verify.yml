@@ -51,7 +51,15 @@ jobs:
             --trials 40 \
             --seed 260812 \
             | tee verification/rh-arithmetic-grid-cauchy/spectral-replay.json
-          test "$(grep -c '"'"'verified'"'"': true' verification/rh-arithmetic-grid-cauchy/spectral-replay.json)" -eq 16
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/rh-arithmetic-grid-cauchy/spectral-replay.json')
+          rows = json.loads(path.read_text())
+          assert len(rows) == 16, len(rows)
+          assert all(row.get('verified') is True for row in rows)
+          print('validated 16 spectral replay rows')
+          PY
 
       - name: Install pinned Lean, fetch pinned Mathlib, and compile
         shell: bash
