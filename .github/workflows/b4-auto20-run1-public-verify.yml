@@ -40,7 +40,7 @@ jobs:
           : > verification/b4-auto20-run1/lean-output.log
           echo 'B4 AUTO20 verifier start' | tee -a verification/b4-auto20-run1/lean-output.log
 
-      - name: Set up pinned Lean and Mathlib cache
+      - name: Set up pinned Lean
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: verification/b4-auto20-run1
@@ -48,16 +48,18 @@ jobs:
           build: 'false'
           test: 'false'
           lint: 'false'
-          use-mathlib-cache: 'true'
-          use-github-cache: 'true'
+          use-mathlib-cache: 'false'
+          use-github-cache: 'false'
 
-      - name: Record toolchain
+      - name: Resolve pinned Mathlib and cache
         shell: bash
         run: |
           set -euo pipefail
-          lean --version | tee -a verification/b4-auto20-run1/lean-output.log
-          lake --version | tee -a verification/b4-auto20-run1/lean-output.log
           cd verification/b4-auto20-run1
+          lean --version | tee -a lean-output.log
+          lake --version | tee -a lean-output.log
+          lake update 2>&1 | tee -a lean-output.log
+          lake exe cache get 2>&1 | tee -a lean-output.log
           git -C .lake/packages/mathlib rev-parse HEAD | tee -a lean-output.log
 
       - name: Compile exact mirrored sources
