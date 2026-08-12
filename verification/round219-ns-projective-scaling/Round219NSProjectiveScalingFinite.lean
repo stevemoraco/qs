@@ -18,7 +18,6 @@ theorem critical_amplitude_radius_invariant
     (L lambda r : ℝ) (hL : L ≠ 0) :
     (L ^ 2 * lambda) * (r / L) ^ 2 = lambda * r ^ 2 := by
   field_simp [hL]
-  ring
 
 /-- The scalar exponent ledger for one instantaneous projective-twist integral:
 `q` contributes `L^2`, `|grad P|^2` contributes `L^2`, and volume contributes
@@ -28,7 +27,6 @@ theorem instantaneous_twist_scaling
     (L ^ 2 * q) * (L ^ 2 * gradSq) * (volume / L ^ 3) =
       L * (q * gradSq * volume) := by
   field_simp [hL]
-  ring
 
 /-- Adding the parabolic time factor `L⁻2` makes the spacetime projective-twist
 charge scale as `L⁻1`. -/
@@ -38,7 +36,6 @@ theorem spacetime_twist_scaling
         (time / L ^ 2) =
       (q * gradSq * volume * time) / L := by
   field_simp [hL]
-  ring
 
 /-- The weighted-Poincare lower-price monomial `lambda * r`, integrated for a
 parabolic time, obeys the same `L⁻1` scaling. -/
@@ -47,7 +44,6 @@ theorem weighted_price_episode_scaling
     (L ^ 2 * lambda) * (r / L) * (time / L ^ 2) =
       (lambda * r * time) / L := by
   field_simp [hL]
-  ring
 
 /-- At a critical radius, an instantaneous `lambda*r` price integrated for a
 parabolic time `c*r^2` is exactly `c*(lambda*r^2)*r`; hence it carries one
@@ -79,7 +75,6 @@ theorem successive_scale_charge_ratio
     (J L K : ℝ) (hL : L ≠ 0) (hK : K ≠ 0) :
     J / (K * L) = (1 / K) * (J / L) := by
   field_simp [hL, hK]
-  ring
 
 /-- The normalized charge `L * (J/L)` is invariant. When vorticity amplitude
 is parameterized by `lambda_L=L^2 lambda_0`, this corresponds to the
