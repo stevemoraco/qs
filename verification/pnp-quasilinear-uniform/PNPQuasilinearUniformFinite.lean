@@ -74,7 +74,7 @@ theorem eventual_exponent_majorant
     (C : ℕ) :
     ∃ n0 : ℕ, ∀ n : ℕ, n0 ≤ n → C < h n := by
   obtain ⟨n0, hn0⟩ := hgrow C
-  exact ⟨n0, fun n hn => by omega⟩
+  exact ⟨n0, fun n hn => Nat.lt_of_succ_le (hn0 n hn)⟩
 
 /-- One spare exponent absorbs a fixed multiplicative constant once the base
 itself dominates that constant. -/
