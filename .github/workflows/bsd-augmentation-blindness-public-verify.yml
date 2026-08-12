@@ -1,0 +1,83 @@
+name: BSD Augmentation Blindness Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/bsd-augmentation-blindness-public-verifier-20260812
+    paths:
+      - 'verification/bsd-augmentation-blindness/**'
+      - '.github/workflows/bsd-augmentation-blindness-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/bsd-augmentation-blindness/**'
+      - '.github/workflows/bsd-augmentation-blindness-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and verify canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/bsd-augmentation-blindness/BSDAugmentationBlindness.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/bsd-augmentation-blindness/lean-git-blob-sha.txt
+          test "$(cat verification/bsd-augmentation-blindness/lean-git-blob-sha.txt)" = '6eb3913dc24e954cdafd4e9f4e62a0b6fccd5bc4'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/bsd-augmentation-blindness/lean-version.txt
+          lake --version | tee verification/bsd-augmentation-blindness/lake-version.txt
+          cd verification/bsd-augmentation-blindness
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          set +e
+          lake env lean BSDAugmentationBlindness.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              line=${line//$'\r'/'%0D'}
+              line=${line//$'\n'/'%0A'}
+              echo "::error file=verification/bsd-augmentation-blindness/BSDAugmentationBlindness.lean::$line"
+            done < lean-output.log
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED BSD augmentation-blindness finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-augmentation-blindness-finite-core-lean-evidence
+          path: |
+            verification/bsd-augmentation-blindness/lean-output.log
+            verification/bsd-augmentation-blindness/lean-git-blob-sha.txt
+            verification/bsd-augmentation-blindness/lean-version.txt
+            verification/bsd-augmentation-blindness/lake-version.txt
+            verification/bsd-augmentation-blindness/mathlib-commit.txt
+          if-no-files-found: warn
