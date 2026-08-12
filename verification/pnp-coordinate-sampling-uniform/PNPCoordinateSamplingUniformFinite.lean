@@ -38,7 +38,7 @@ theorem simultaneous_union_lt_one
     (hN : 0 < N) :
     (2 : ℝ) ^ N * (1 / 4 : ℝ) ^ N < 1 := by
   rw [simultaneous_union_identity]
-  exact pow_lt_one₀ (by norm_num) (by norm_num) hN
+  exact pow_lt_one₀ (by norm_num) (by norm_num) (Nat.ne_of_gt hN)
 
 /-- If every fixed NO input has false-accept probability at most `1/4`, then
 `N` independent repetitions give the scalar budget `4^{-N}`. -/
@@ -55,13 +55,15 @@ theorem one_quarter_amplification
 theorem sparse_collision_budget
     (T collision : ℝ)
     (hT : 0 ≤ T)
+    (hcollision0 : 0 ≤ collision)
     (hTupper : T ≤ Real.exp 1)
     (hcollision : collision ≤ Real.exp (-3)) :
     T * collision ≤ Real.exp (-2) := by
   calc
-    T * collision ≤ Real.exp 1 * Real.exp (-3) := by
-      exact mul_le_mul hTupper hcollision
-        (by positivity) hT
+    T * collision ≤ Real.exp 1 * collision := by
+      exact mul_le_mul_of_nonneg_right hTupper hcollision0
+    _ ≤ Real.exp 1 * Real.exp (-3) := by
+      exact mul_le_mul_of_nonneg_left hcollision (by positivity)
     _ = Real.exp (-2) := by
       rw [← Real.exp_add]
       norm_num
@@ -109,7 +111,7 @@ theorem yes_ne_outside : PromiseStatus.yes ≠ PromiseStatus.outside := by decid
 `N*(m+1)`, isolating the one leading simultaneous-derandomization factor. -/
 theorem one_leading_factor (N m : ℕ) :
     N * m + N = N * (m + 1) := by
-  omega
+  simp [Nat.mul_add]
 
 #print axioms simultaneous_union_identity
 #print axioms simultaneous_union_lt_one
