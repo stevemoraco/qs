@@ -87,10 +87,10 @@ theorem two_species_energy_stability
   calc
     (∑ i : ι, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
         ≤ ∑ i : ι, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
-          apply Finset.sum_le_sum
-          intro i hi
-          exact two_species_weighted_residual_sq
-            (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
+          exact Finset.sum_le_sum
+            (fun (i : ι) (_hi : i ∈ Finset.univ) =>
+              two_species_weighted_residual_sq
+                (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i))
     _ = 2 * ε ^ 2 * (∑ i : ι, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
       rw [Finset.mul_sum]
     _ ≤ 2 * ε ^ 2 * E := by
@@ -119,7 +119,12 @@ theorem quasisteady_triad_carrier_dissipation
 theorem quasisteady_triad_carrier_nonpositive
     (x y a b γ : ℝ) (hγ : 0 < γ) :
     -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 / γ ≤ 0 := by
-  have hnum : -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 ≤ 0 := by positivity
+  have hprod : 0 ≤ 2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 := by positivity
+  have hnum : -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 ≤ 0 := by
+    calc
+      -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2
+          = -(2 * (a + b) ^ 2 * x ^ 2 * y ^ 2) := by ring
+      _ ≤ 0 := neg_nonpos.mpr hprod
   exact div_nonpos_of_nonpos_of_nonneg hnum (le_of_lt hγ)
 
 /-- A per-channel `δ` bound alone permits an exact `J δ²` total squared leakage budget. -/
