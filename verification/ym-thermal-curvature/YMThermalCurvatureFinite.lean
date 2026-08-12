@@ -29,7 +29,7 @@ def discreteCurvature (d : ℕ → ℝ) (n : ℕ) : ℝ :=
 first `N` discrete curvatures leaves exactly the endpoint `d (n + N)`.
 No infinite summation or limit is present. -/
 theorem finite_endpoint_telescope (d : ℕ → ℝ) (n N : ℕ) :
-    d n - ∑ j in Finset.range N, discreteCurvature d (n + j) =
+    d n - ∑ j ∈ Finset.range N, discreteCurvature d (n + j) =
       d (n + N) := by
   induction N with
   | zero =>
@@ -38,9 +38,9 @@ theorem finite_endpoint_telescope (d : ℕ → ℝ) (n N : ℕ) :
       rw [Finset.sum_range_succ]
       calc
         d n -
-              ((∑ j in Finset.range N, discreteCurvature d (n + j)) +
+              ((∑ j ∈ Finset.range N, discreteCurvature d (n + j)) +
                 discreteCurvature d (n + N)) =
-            (d n - ∑ j in Finset.range N, discreteCurvature d (n + j)) -
+            (d n - ∑ j ∈ Finset.range N, discreteCurvature d (n + j)) -
               discreteCurvature d (n + N) := by ring
         _ = d (n + N) - discreteCurvature d (n + N) := by rw [ih]
         _ = d (n + N + 1) := by simp [discreteCurvature]
@@ -48,7 +48,7 @@ theorem finite_endpoint_telescope (d : ℕ → ℝ) (n N : ℕ) :
 
 /-- Equivalent finite sum form of the endpoint identity. -/
 theorem finite_curvature_sum (d : ℕ → ℝ) (n N : ℕ) :
-    (∑ j in Finset.range N, discreteCurvature d (n + j)) =
+    (∑ j ∈ Finset.range N, discreteCurvature d (n + j)) =
       d n - d (n + N) := by
   have h := finite_endpoint_telescope d n N
   linarith
