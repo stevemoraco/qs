@@ -41,7 +41,7 @@ theorem abelDenominatorFloor
 theorem sameEdgeSameFrequencyKernel
     (delta : ℝ) (hdelta : delta ≠ 0) :
     delta / (delta + 0 + 0) = 1 := by
-  simpa using div_self delta hdelta
+  simpa using (div_self hdelta)
 
 /-- Two coefficients at one identical edge frequency must be grouped before
 squaring; their four pair terms equal the square of the grouped amplitude. -/
