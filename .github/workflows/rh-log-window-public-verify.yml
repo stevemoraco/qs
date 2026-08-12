@@ -1,0 +1,60 @@
+name: RH Logarithmic Window Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/rh-admissible-window-public-verifier-20260811
+    paths:
+      - 'verification/rh-log-window/**'
+      - '.github/workflows/rh-log-window-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-log-window/**'
+      - '.github/workflows/rh-log-window-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-log-window/RHLogWindowFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/rh-log-window
+          lake update
+          lake exe cache get
+          lake env lean RHLogWindowFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED RH logarithmic-window finite core: clean pinned build, zero reported sorry/admit.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-log-window-finite-core-lean-evidence
+          path: verification/rh-log-window/lean-output.log
+          if-no-files-found: warn
