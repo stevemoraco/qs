@@ -10,7 +10,7 @@ theorem variance_lower_of_abs_close
     (hclose : |v - v₀| ≤ v₀ / 2) :
     v₀ / 2 ≤ v := by
   have hlow : -(v₀ / 2) ≤ v - v₀ := (abs_le.mp hclose).1
-  linarith
+  linarith [hv₀]
 
 /-- The scalar endpoint of the double-commutator Rayleigh budget. -/
 theorem rayleigh_upper_of_double_commutator
@@ -45,34 +45,34 @@ theorem mass_upper_of_exp_sandwich
 /-- Two-sided dimensionless spectral control plus a two-sided physical
     prefactor gives a two-sided physical mass window. -/
 theorem physical_mass_window
-    {z δ z₋ z₊ δ₋ δ₊ : ℝ}
-    (hz₋0 : 0 ≤ z₋)
-    (hz₋ : z₋ ≤ z)
-    (hz₊ : z ≤ z₊)
-    (hδ₋0 : 0 ≤ δ₋)
-    (hδ₋ : δ₋ ≤ δ)
-    (hδ₊ : δ ≤ δ₊) :
-    z₋ * δ₋ ≤ z * δ ∧ z * δ ≤ z₊ * δ₊ := by
-  have hz0 : 0 ≤ z := le_trans hz₋0 hz₋
-  have hz₊0 : 0 ≤ z₊ := le_trans hz0 hz₊
-  have hδ0 : 0 ≤ δ := le_trans hδ₋0 hδ₋
+    {z delta zlo zhi dlo dhi : ℝ}
+    (hzlo0 : 0 ≤ zlo)
+    (hzlo : zlo ≤ z)
+    (hzhi : z ≤ zhi)
+    (hdlo0 : 0 ≤ dlo)
+    (hdlo : dlo ≤ delta)
+    (hdhi : delta ≤ dhi) :
+    zlo * dlo ≤ z * delta ∧ z * delta ≤ zhi * dhi := by
+  have hz0 : 0 ≤ z := le_trans hzlo0 hzlo
+  have hzhi0 : 0 ≤ zhi := le_trans hz0 hzhi
+  have hdelta0 : 0 ≤ delta := le_trans hdlo0 hdlo
   constructor
   · calc
-      z₋ * δ₋ ≤ z * δ₋ := mul_le_mul_of_nonneg_right hz₋ hδ₋0
-      _ ≤ z * δ := mul_le_mul_of_nonneg_left hδ₋ hz0
+      zlo * dlo ≤ z * dlo := mul_le_mul_of_nonneg_right hzlo hdlo0
+      _ ≤ z * delta := mul_le_mul_of_nonneg_left hdlo hz0
   · calc
-      z * δ ≤ z₊ * δ := mul_le_mul_of_nonneg_right hz₊ hδ0
-      _ ≤ z₊ * δ₊ := mul_le_mul_of_nonneg_left hδ₊ hz₊0
+      z * delta ≤ zhi * delta := mul_le_mul_of_nonneg_right hzhi hdelta0
+      _ ≤ zhi * dhi := mul_le_mul_of_nonneg_left hdhi hzhi0
 
 /-- Transport error smaller than the endpoint correlation margin leaves a
     strictly positive continuum witness. -/
 theorem witness_survives_transport
-    {c ε : ℝ}
+    {c eps : ℝ}
     (hc : 0 < c)
-    (hε0 : 0 ≤ ε)
-    (hε : ε < c) :
-    0 < c - ε := by
-  linarith
+    (heps0 : 0 ≤ eps)
+    (heps : eps < c) :
+    0 < c - eps := by
+  linarith [hc, heps0]
 
 #print axioms variance_lower_of_abs_close
 #print axioms rayleigh_upper_of_double_commutator
