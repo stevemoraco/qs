@@ -1,0 +1,62 @@
+name: Run16 finite-core Lean replay
+
+on:
+  push:
+    branches:
+      - agent/run16-finite-cores-replay-20260811
+    paths:
+      - "lean-replay/run16/**"
+      - ".github/workflows/run16-finite-cores-lean.yml"
+  pull_request:
+    paths:
+      - "lean-replay/run16/**"
+      - ".github/workflows/run16-finite-cores-lean.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes
+        run: |
+          if grep -RInE '\b(sorry|admit)\b' lean-replay/run16 --include='*.lean'; then
+            echo "Explicit proof hole found"
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned dependencies and fetch cache
+        working-directory: lean-replay/run16
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Build and independently replay finite cores
+        working-directory: lean-replay/run16
+        run: |
+          set -euo pipefail
+          lake build Run16FiniteCores
+          lake env lean Run16FiniteCores/SuzukiApproximatePythagoras.lean
+          lake env lean Run16FiniteCores/PNPManyToOneSelector.lean
+
+      - name: Print and enforce axiom report
+        working-directory: lean-replay/run16
+        run: |
+          set -euo pipefail
+          lake env lean AxiomReport.lean | tee axiom-report.txt
+          if grep -q 'sorryAx' axiom-report.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
