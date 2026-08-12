@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean
-          EXPECTED=e8bb0cd35cefb8f907126fab66c808384eb559c0fe509937c3c3909ead6bab3c
+          EXPECTED=ece639eb17884c0caf5f35b6f5d7958ee4c3b57ff94c6037e12caf4f39a44402
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
