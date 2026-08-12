@@ -75,7 +75,7 @@ jobs:
           fi
           git hash-object "$file" | tee "$dir/lean-git-blob-sha.txt"
           test "$(cat "$dir/lean-git-blob-sha.txt")" \
-            = '28655dd247b1068910aca4fb15e692db253fb3ad'
+            = '39721b4cf55b192ebb0bfe411fc6d048b30ac72f'
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
