@@ -54,17 +54,25 @@ jobs:
               method='POST')
           with urllib.request.urlopen(req, timeout=960) as response:
               result = json.load(response)
-          pathlib.Path('verification/b4-auto15-run9/AXLE_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          out = pathlib.Path('verification/b4-auto15-run9/AXLE_RESULT.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
           print(json.dumps(result, indent=2))
-          if (not result.get('okay')
-              or result.get('lean_messages', {}).get('errors', [])
-              or result.get('tool_messages', {}).get('errors', [])
-              or result.get('failed_declarations', [])):
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              for item in lean_errors:
+                  print('::error title=AXLE Lean::' + json.dumps(item, sort_keys=True).replace('%','%25').replace('\n','%0A'))
+              for item in tool_errors:
+                  print('::error title=AXLE Tool::' + json.dumps(item, sort_keys=True).replace('%','%25').replace('\n','%0A'))
+              if failed:
+                  print('::error title=AXLE failed declarations::' + json.dumps(failed, sort_keys=True).replace('%','%25').replace('\n','%0A'))
               raise SystemExit(1)
           print('VERIFIED B4 AUTO15 run9 canonical source')
           PY
 
       - name: Postcompile trust gate
+        if: success()
         shell: bash
         run: |
           set -euo pipefail
@@ -74,6 +82,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: b4-auto15-run9-public-verifier-evidence
           path: verification/b4-auto15-run9
