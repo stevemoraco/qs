@@ -76,12 +76,15 @@ theorem too_many_fixed_ones_kill_exact_weight
     totalWeight ≠ w := by
   omega
 
-/-- Fixing more than `n-w` variables to zero makes total weight `w` impossible. -/
-theorem too_many_fixed_zeros_kill_exact_weight
+/--
+If fixed zeros plus the target weight exceed the ambient dimension, no feasible
+total weight can equal the target.  The additive interface avoids hidden natural
+subtraction obligations.
+-/
+theorem fixed_zeros_capacity_kills_exact_weight
     {n w fixedZeros totalWeight : ℕ}
-    (hw : w ≤ n)
-    (hfixed : n - w < fixedZeros)
-    (htotal : totalWeight ≤ n - fixedZeros) :
+    (hfixed : n < fixedZeros + w)
+    (htotal : totalWeight + fixedZeros ≤ n) :
     totalWeight ≠ w := by
   omega
 
@@ -89,18 +92,20 @@ theorem too_many_fixed_zeros_kill_exact_weight
 theorem exact_layer_resilience_upper_attacks
     {n w : ℕ} (hw : w ≤ n) :
     (∀ totalWeight, w + 1 ≤ totalWeight → totalWeight ≠ w) ∧
-    (∀ totalWeight, totalWeight ≤ n - (n - w + 1) → totalWeight ≠ w) := by
+    (∀ totalWeight,
+      totalWeight + (n - w + 1) ≤ n → totalWeight ≠ w) := by
   constructor
   · intro totalWeight htotal
     exact too_many_fixed_ones_kill_exact_weight (by omega) htotal
   · intro totalWeight htotal
-    exact too_many_fixed_zeros_kill_exact_weight hw (by omega) htotal
+    have hcancel : n - w + w = n := Nat.sub_add_cancel hw
+    exact fixed_zeros_capacity_kills_exact_weight (by omega) htotal
 
 #print axioms nat_floor_half_is_floor_half
 #print axioms central_restriction_add_half_le
 #print axioms two_color_support_lower_bound
 #print axioms too_many_fixed_ones_kill_exact_weight
-#print axioms too_many_fixed_zeros_kill_exact_weight
+#print axioms fixed_zeros_capacity_kills_exact_weight
 #print axioms exact_layer_resilience_upper_attacks
 
 end MillenniumRun204.PNPSymmetricRestrictionDensity
