@@ -23,7 +23,7 @@ theorem associatedByUnit_symm {R : Type*} [CommRing R] {x y : R}
     (h : AssociatedByUnit x y) : AssociatedByUnit y x := by
   rcases h with ⟨u, rfl⟩
   refine ⟨u⁻¹, ?_⟩
-  simp [mul_assoc]
+  simp
 
 theorem associatedByUnit_trans {R : Type*} [CommRing R] {x y z : R}
     (hxy : AssociatedByUnit x y) (hyz : AssociatedByUnit y z) :
@@ -31,8 +31,7 @@ theorem associatedByUnit_trans {R : Type*} [CommRing R] {x y z : R}
   rcases hxy with ⟨u, rfl⟩
   rcases hyz with ⟨v, rfl⟩
   refine ⟨v * u, ?_⟩
-  change (↑v : R) * ((↑u : R) * x) = (↑(v * u) : R) * x
-  simp [mul_assoc]
+  simpa [mul_assoc]
 
 theorem unit_rescaling_associated {R : Type*} [CommRing R]
     (u : Rˣ) (x : R) : AssociatedByUnit x ((u : R) * x) := by
@@ -73,12 +72,13 @@ theorem associatedGeneratorsNeedNotBeEqual :
 /-- One scalar specialization does not determine an ambient element: `1 + X`
 evaluates to one at zero but is not the constant polynomial one. -/
 theorem oneSpecializationDoesNotFixPolynomialElement :
-    Polynomial.eval (0 : ℚ) ((1 : ℚ[X]) + Polynomial.X) = 1 ∧
-      ((1 : ℚ[X]) + Polynomial.X) ≠ 1 := by
+    Polynomial.eval (0 : ℚ)
+        ((1 : Polynomial ℚ) + Polynomial.X) = 1 ∧
+      ((1 : Polynomial ℚ) + Polynomial.X) ≠ 1 := by
   constructor
   · simp
   · intro h
-    have hx := congrArg (fun p : ℚ[X] => p.coeff 1) h
+    have hx := congrArg (fun p : Polynomial ℚ => p.coeff 1) h
     norm_num at hx
 
 #print axioms AssociatedByUnit
