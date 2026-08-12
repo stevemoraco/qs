@@ -31,7 +31,7 @@ jobs:
           dir='verification/ns-three-channel-gram-rank-public'
           file="$dir/NSChannelRankFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='1a9df432bb43884701c7d2d1bdada47634f245c8'
+          expected_blob='046a091ac0005788c87a9f3fa15cf1dd08c3aab4'
           test "$actual_blob" = "$expected_blob"
           printf 'private_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
