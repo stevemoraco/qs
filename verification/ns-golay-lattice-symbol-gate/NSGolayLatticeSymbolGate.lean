@@ -77,21 +77,21 @@ theorem two_species_weighted_residual_sq
       exact mul_le_mul_of_nonneg_right hweights (by positivity)
     _ = 2 * ε ^ 2 * (r₁ ^ 2 + r₂ ^ 2) := by ring
 
-/-- Summing the two-species estimate uses only the correlation-energy budget, not the number of outputs. -/
+/-- Summing the two-species estimate over an arbitrary finite output set uses only its correlation-energy budget. -/
 theorem two_species_energy_stability
-    {ι : Type*} [Fintype ι]
+    {ι : Type*} (s : Finset ι)
     (e₁ e₂ r₁ r₂ : ι → ℝ) (ε E : ℝ)
     (he₁ : ∀ i, |e₁ i| ≤ ε) (he₂ : ∀ i, |e₂ i| ≤ ε)
-    (hE : (∑ i : ι, (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
-    (∑ i : ι, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
+    (hE : (∑ i in s, (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
+    (∑ i in s, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
   calc
-    (∑ i : ι, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
-        ≤ ∑ i : ι, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
-          exact Finset.sum_le_sum
-            (fun (i : ι) (_hi : i ∈ Finset.univ) =>
-              two_species_weighted_residual_sq
-                (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i))
-    _ = 2 * ε ^ 2 * (∑ i : ι, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
+    (∑ i in s, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
+        ≤ ∑ i in s, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
+          apply Finset.sum_le_sum
+          intro i hi
+          exact two_species_weighted_residual_sq
+            (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
+    _ = 2 * ε ^ 2 * (∑ i in s, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
       rw [Finset.mul_sum]
     _ ≤ 2 * ε ^ 2 * E := by
       exact mul_le_mul_of_nonneg_left hE (by positivity)
