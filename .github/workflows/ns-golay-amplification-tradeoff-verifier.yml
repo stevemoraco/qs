@@ -1,0 +1,111 @@
+name: Verify NS Golay amplification tradeoff
+
+on:
+  push:
+    branches:
+      - agent/ns-golay-amplification-tradeoff-verifier-20260812
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean
+          EXPECTED=e8bb0cd35cefb8f907126fab66c808384eb559c0fe509937c3c3909ead6bab3c
+          ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
+          test "$ACTUAL" = "$EXPECTED"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          if 'Lean.ofReduceBool' in text:
+              raise SystemExit('forbidden source token: Lean.ofReduceBool')
+          if text.count('#print axioms') != 4:
+              raise SystemExit('expected exactly four staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-golay-amplification-tradeoff/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path(
+              'verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+
+          out = pathlib.Path('verification/ns-golay-amplification-tradeoff/evidence/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit('Lean/AXLE verification failed')
+
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
+          PY
+
+      - name: Record replay metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-golay-amplification-tradeoff/evidence
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_sha256=$(sha256sum verification/ns-golay-amplification-tradeoff/NSGolayAmplificationTradeoff.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact compiler evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-golay-amplification-tradeoff-evidence
+          path: verification/ns-golay-amplification-tradeoff/evidence/
+          if-no-files-found: error
