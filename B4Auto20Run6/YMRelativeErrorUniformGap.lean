@@ -14,8 +14,13 @@ theorem ym_relative_error_preserves_fraction_of_uniform_gap
     (herr : |g - m| ≤ θ * c) :
     (1 - θ) * c ≤ m ∧ 0 < m := by
   have hlower : -(θ * c) ≤ g - m := (abs_le.mp herr).1
-  have hfloor : (1 - θ) * c ≤ m := by
+  have hgm : g - θ * c ≤ m := by
     linarith
+  have hfloor : (1 - θ) * c ≤ m := by
+    calc
+      (1 - θ) * c = c - θ * c := by ring
+      _ ≤ g - θ * c := sub_le_sub_right hgap (θ * c)
+      _ ≤ m := hgm
   have hposfloor : 0 < (1 - θ) * c :=
     mul_pos (sub_pos.mpr hθ1) hc
   exact ⟨hfloor, lt_of_lt_of_le hposfloor hfloor⟩
@@ -34,9 +39,7 @@ theorem ym_pointwise_relative_transfer_has_no_uniform_floor
       0 < m ∧
       m < μ := by
   refine ⟨μ, μ / 2, μ / 2, hμ, by linarith, by linarith, ?_, by linarith, by linarith⟩
-  rw [abs_of_nonneg]
-  · ring_nf
-  · linarith
+  rw [abs_of_nonneg] <;> linarith
 
 /-- CLEANER: the pointwise transfer becomes uniform exactly when the regulated
 gap itself has a uniform floor and the error budget is measured against that
