@@ -19,7 +19,7 @@ theorem bsd_divisible_defect_below_modulus_exactifies
     intro hk0
     subst k
     simp at hk
-    exact hz (Int.natAbs_eq_zero.mp hk)
+    exact hz hk
   have hk1 : 1 ≤ k := Nat.one_le_iff_ne_zero.mpr hkne
   have hmk : m ≤ m * k := by
     simpa using Nat.mul_le_mul_left m hk1
