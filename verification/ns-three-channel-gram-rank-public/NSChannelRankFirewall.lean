@@ -87,7 +87,8 @@ theorem three_channel_weighted_frame_identity
     calc
       P = ((A + B) ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := hid
       _ = (W ^ 2 - 2 * Q) / 4 + (A - B) ^ 2 / 4 + D ^ 2 := by rw [htrace]
-  simpa [P, W, Q, A, B, D] using hmain
+  dsimp [P, W, Q, A, B, D] at hmain
+  convert hmain using 1 <;> ring
 
 /-- Three unit channel directions in a real two-dimensional plane have total
 squared pair-correlation at least `3/4`. -/
