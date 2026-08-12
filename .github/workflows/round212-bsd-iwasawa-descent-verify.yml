@@ -1,0 +1,58 @@
+name: Round 212 BSD Iwasawa-Descent Finite Cores
+
+on:
+  push:
+    branches:
+      - agent/round212-bsd-iwasawa-descent-verify-20260812
+    paths:
+      - 'verification/round212-bsd-iwasawa-descent/**'
+      - '.github/workflows/round212-bsd-iwasawa-descent-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/round212-bsd-iwasawa-descent/**'
+      - '.github/workflows/round212-bsd-iwasawa-descent-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/round212-bsd-iwasawa-descent/BSDIwasawaDescentFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/round212-bsd-iwasawa-descent
+          lake update
+          lake exe cache get
+          lake env lean BSDIwasawaDescentFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Round 212 BSD Iwasawa-descent cores.'
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round212-bsd-iwasawa-descent-lean-evidence
+          path: verification/round212-bsd-iwasawa-descent/lean-output.log
+          if-no-files-found: warn
