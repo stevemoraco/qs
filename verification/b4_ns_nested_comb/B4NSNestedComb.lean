@@ -4,16 +4,16 @@ namespace B4NSNestedComb
 
 /-- The exponent of the number of active Fourier modes needed to realize
     the Palasek intermittency ratio in three dimensions. -/
-def beta (alpha : ℝ) : ℝ := 2 * (alpha - 1) / 3
+noncomputable def beta (alpha : ℝ) : ℝ := 2 * (alpha - 1) / 3
 
 /-- The per-level exponent of the comb order when `N_k = N_{k-1}^b`. -/
-def gamma (alpha b : ℝ) : ℝ := beta alpha * (1 - 1 / b)
+noncomputable def gamma (alpha b : ℝ) : ℝ := beta alpha * (1 - 1 / b)
 
 /-- An explicit midpoint choice for the comb spacing exponent. -/
-def theta (alpha b : ℝ) : ℝ := beta alpha / b + (1 - beta alpha) / 2
+noncomputable def theta (alpha b : ℝ) : ℝ := beta alpha / b + (1 - beta alpha) / 2
 
 /-- Total sideband-width exponent of the nested comb. -/
-def bandwidthExponent (alpha b : ℝ) : ℝ := theta alpha b + gamma alpha b
+noncomputable def bandwidthExponent (alpha b : ℝ) : ℝ := theta alpha b + gamma alpha b
 
 theorem concentrationExponent (alpha : ℝ) :
     (3 / 2 : ℝ) * beta alpha = alpha - 1 := by
@@ -108,8 +108,11 @@ theorem admissibleExponentWindow {alpha b : ℝ}
 
 theorem endpointWindowCollapse (b : ℝ) :
     beta (5 / 2 : ℝ) / b = 1 - gamma (5 / 2 : ℝ) b := by
-  rw [gammaNormalForm]
-  norm_num [beta]
+  have hbeta : beta (5 / 2 : ℝ) = 1 := by
+    unfold beta
+    norm_num
+  rw [gammaNormalForm, hbeta]
+  ring
 
 theorem noStrictEndpointWindow {b x : ℝ}
     (hlower : beta (5 / 2 : ℝ) / b < x)
