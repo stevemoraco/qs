@@ -1,0 +1,66 @@
+name: Hodge Thomas local-relation public replay
+
+on:
+  push:
+    branches:
+      - agent/hodge-thomas-relation-core-replay-20260812
+    paths:
+      - "lean-replay/hodge-thomas-relation-core/**"
+      - ".github/workflows/hodge-thomas-relation-core-replay.yml"
+  pull_request:
+    paths:
+      - "lean-replay/hodge-thomas-relation-core/**"
+      - ".github/workflows/hodge-thomas-relation-core-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and custom axioms
+        run: |
+          set -euo pipefail
+          if grep -RInE '\b(sorry|admit|sorryAx)\b' lean-replay/hodge-thomas-relation-core --include='*.lean'; then
+            echo "Explicit proof hole found"
+            exit 1
+          fi
+          if grep -RInE '^[[:space:]]*(axiom|opaque)[[:space:]]' lean-replay/hodge-thomas-relation-core --include='*.lean'; then
+            echo "Custom axiom or opaque declaration found"
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned dependencies and fetch cache
+        working-directory: lean-replay/hodge-thomas-relation-core
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Build and independently replay theorem source
+        working-directory: lean-replay/hodge-thomas-relation-core
+        run: |
+          set -euo pipefail
+          lake build HodgeThomasRelationCore
+          lake env lean HodgeThomasRelationCore/LocalRelation.lean
+
+      - name: Print and enforce axiom report
+        working-directory: lean-replay/hodge-thomas-relation-core
+        run: |
+          set -euo pipefail
+          lake env lean AxiomReport.lean 2>&1 | tee axiom-report.txt
+          if grep -q 'sorryAx' axiom-report.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
