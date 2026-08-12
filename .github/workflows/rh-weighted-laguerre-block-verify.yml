@@ -1,0 +1,105 @@
+name: RH Weighted Laguerre Block Finite Core
+
+on:
+  push:
+    branches:
+      - research/rh-weighted-laguerre-block-public-verifier-20260812
+    paths:
+      - 'verification/rh-weighted-laguerre-block/**'
+      - '.github/workflows/rh-weighted-laguerre-block-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-weighted-laguerre-block/**'
+      - '.github/workflows/rh-weighted-laguerre-block-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-weighted-laguerre-block
+          sha256sum "$root/RHWeightedLaguerreBlockFinite.lean" \
+                    "$root/verify_weighted_laguerre_block.py" \
+            | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              "$root/RHWeightedLaguerreBlockFinite.lean"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay deterministic finite falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-weighted-laguerre-block
+          python3 --version | tee "$root/python-version.txt"
+          python3 -m pip install --disable-pip-version-check --no-input 'numpy==2.3.2'
+          python3 "$root/verify_weighted_laguerre_block.py" \
+            --seed 260812 \
+            --tolerance 1e-9 \
+            --output "$root/finite-certificate.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/rh-weighted-laguerre-block/finite-certificate.json')
+          data = json.loads(path.read_text())
+          assert data['frame_case_count'] == 576
+          assert data['triangular_case_count'] == 32
+          assert data['all_frame_cases_verified'] is True
+          assert data['all_triangular_cases_verified'] is True
+          print('verified_frame_cases=576')
+          print('verified_triangular_cases=32')
+          print('minimum_frame_margin=', data['minimum_frame_margin'])
+          print('maximum_triangular_error=', data['maximum_triangular_error'])
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/rh-weighted-laguerre-block
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHWeightedLaguerreBlockFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite RH weighted-Laguerre scalar and type firewalls.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-weighted-laguerre-block-finite-evidence
+          path: |
+            verification/rh-weighted-laguerre-block/source-sha256.txt
+            verification/rh-weighted-laguerre-block/python-version.txt
+            verification/rh-weighted-laguerre-block/finite-certificate.json
+            verification/rh-weighted-laguerre-block/lean-version.txt
+            verification/rh-weighted-laguerre-block/lean-output.log
+          if-no-files-found: warn
