@@ -1,0 +1,141 @@
+name: PNP exact-layer completion finite-core replay
+
+on:
+  push:
+    branches:
+      - agent/pnp-exact-layer-completion-public-verify-20260811
+    paths:
+      - "verification/pnp-exact-layer-completion/**"
+      - ".github/workflows/pnp-exact-layer-completion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file='verification/pnp-exact-layer-completion/PNPExactLayerCompletionFinite.lean'
+          actual=$(git hash-object "$source_file")
+          expected='06be24c81a87099c90e326521708729a0388c05b'
+          echo "source blob: $actual"
+          test "$actual" = "$expected"
+
+      - name: Reject proof holes and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('verification/pnp-exact-layer-completion/PNPExactLayerCompletionFinite.lean')
+          text = path.read_text()
+
+          # Strip nested Lean block comments and line comments before scanning.
+          out = []
+          i = 0
+          depth = 0
+          while i < len(text):
+              if text.startswith('/-', i):
+                  depth += 1
+                  i += 2
+                  continue
+              if depth and text.startswith('-/', i):
+                  depth -= 1
+                  i += 2
+                  continue
+              if depth:
+                  i += 1
+                  continue
+              if text.startswith('--', i):
+                  j = text.find('\n', i)
+                  if j == -1:
+                      break
+                  out.append('\n')
+                  i = j + 1
+                  continue
+              out.append(text[i])
+              i += 1
+
+          code = ''.join(out)
+          forbidden = {
+              'sorry/admit': r'\b(?:sorry|admit)\b',
+              'custom axiom': r'(?m)^\s*axiom\s+',
+              'opaque': r'(?m)^\s*opaque\s+',
+              'unsafe': r'(?m)^\s*unsafe\s+',
+          }
+          for label, pattern in forbidden.items():
+              if re.search(pattern, code):
+                  raise SystemExit(f'forbidden {label} token found')
+          print('source trust-token scan: PASS')
+          PY
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        working-directory: verification/pnp-exact-layer-completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Record environment
+        working-directory: verification/pnp-exact-layer-completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean --version | tee environment.txt
+          lake --version | tee -a environment.txt
+          git -C .lake/packages/mathlib rev-parse HEAD | tee -a environment.txt
+
+      - name: Compile exact source and print axioms
+        working-directory: verification/pnp-exact-layer-completion
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean PNPExactLayerCompletionFinite.lean \
+            | tee compiler-and-axioms.txt
+
+          if grep -E 'sorryAx|declaration uses .sorry.|Lean\.ofReduceBool' compiler-and-axioms.txt; then
+            echo 'hidden proof trust found in compiler output'
+            exit 1
+          fi
+
+          for theorem_name in \
+            elementaryLayerValue_eq_zero_of_lt \
+            elementaryLayerValue_self \
+            elementaryLayerValue_succ_eq_zero_of_odd \
+            odd_elementary_four_layer_values \
+            completion_gate_count_rewrite \
+            completion_gate_count_le; do
+            grep -q "$theorem_name" compiler-and-axioms.txt
+          done
+
+          echo 'VERIFIED PNP exact-layer completion finite core: clean pinned build.' \
+            | tee -a compiler-and-axioms.txt
+
+      - name: Upload replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-exact-layer-completion-lean-evidence
+          path: |
+            verification/pnp-exact-layer-completion/environment.txt
+            verification/pnp-exact-layer-completion/compiler-and-axioms.txt
+          retention-days: 90
