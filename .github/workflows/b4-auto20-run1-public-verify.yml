@@ -33,7 +33,14 @@ jobs:
             exit 1
           fi
 
-      - name: Install pinned Lean and compile exact mirrored sources
+      - name: Initialize evidence log
+        shell: bash
+        run: |
+          mkdir -p verification/b4-auto20-run1
+          : > verification/b4-auto20-run1/lean-output.log
+          echo 'B4 AUTO20 verifier start' | tee -a verification/b4-auto20-run1/lean-output.log
+
+      - name: Install pinned Lean
         shell: bash
         run: |
           set -euo pipefail
@@ -41,12 +48,24 @@ jobs:
             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
           export PATH="$HOME/.elan/bin:$PATH"
-          lean --version
-          lake --version
+          lean --version | tee -a verification/b4-auto20-run1/lean-output.log
+          lake --version | tee -a verification/b4-auto20-run1/lean-output.log
+
+      - name: Resolve pinned Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
           cd verification/b4-auto20-run1
-          lake update
-          lake exe cache get
-          : > lean-output.log
+          lake update 2>&1 | tee -a lean-output.log
+          lake exe cache get 2>&1 | tee -a lean-output.log
+
+      - name: Compile exact mirrored sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/b4-auto20-run1
           for file in ../../B4Auto20Run1/*.lean; do
             echo "=== compiling $file ===" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
