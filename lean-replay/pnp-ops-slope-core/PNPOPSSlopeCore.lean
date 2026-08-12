@@ -1,1 +1,3 @@
 import PNPOPSSlopeCore.QuantifierFirewall
+import PNPOPSSlopeCore.FiniteFiber
+import PNPOPSSlopeCore.CriticalPathArithmetic
