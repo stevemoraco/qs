@@ -40,31 +40,30 @@ jobs:
           : > verification/b4-auto20-run1/lean-output.log
           echo 'B4 AUTO20 verifier start' | tee -a verification/b4-auto20-run1/lean-output.log
 
-      - name: Install pinned Lean
+      - name: Set up pinned Lean and Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/b4-auto20-run1
+          auto-config: 'false'
+          build: 'false'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'true'
+          use-github-cache: 'true'
+
+      - name: Record toolchain
         shell: bash
         run: |
           set -euo pipefail
-          curl --proto '=https' --tlsv1.2 -sSf \
-            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
-          export PATH="$HOME/.elan/bin:$PATH"
           lean --version | tee -a verification/b4-auto20-run1/lean-output.log
           lake --version | tee -a verification/b4-auto20-run1/lean-output.log
-
-      - name: Resolve pinned Mathlib
-        shell: bash
-        run: |
-          set -euo pipefail
-          export PATH="$HOME/.elan/bin:$PATH"
           cd verification/b4-auto20-run1
-          lake update 2>&1 | tee -a lean-output.log
-          lake exe cache get 2>&1 | tee -a lean-output.log
+          git -C .lake/packages/mathlib rev-parse HEAD | tee -a lean-output.log
 
       - name: Compile exact mirrored sources
         shell: bash
         run: |
           set -euo pipefail
-          export PATH="$HOME/.elan/bin:$PATH"
           cd verification/b4-auto20-run1
           for file in ../../B4Auto20Run1/*.lean; do
             echo "=== compiling $file ===" | tee -a lean-output.log
