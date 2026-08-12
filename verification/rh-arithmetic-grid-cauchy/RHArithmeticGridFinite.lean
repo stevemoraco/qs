@@ -28,7 +28,7 @@ the simpler `d²` majorant used in the Schur sum. -/
 theorem polynomialized_entry_error
     (E r η d : ℝ)
     (hE : 0 ≤ E)
-    (hr : 0 ≤ r)
+    (_hr : 0 ≤ r)
     (hη : 0 ≤ η)
     (hd : 1 ≤ d)
     (hexact : E * (d * (d - 2 * η)) ≤ 4 * r * η) :
@@ -50,9 +50,9 @@ theorem polynomialized_entry_error
 /-- Scalar Weyl-budget shadow: a base floor `A` and perturbation norm `δ`
 give the repaired floor `A-δ`. -/
 theorem perturbation_floor_budget
-    (A δ λ : ℝ)
-    (hλ : A - δ ≤ λ) :
-    0 < A - δ → 0 < λ := by
+    (A δ lam : ℝ)
+    (hlam : A - δ ≤ lam) :
+    0 < A - δ → 0 < lam := by
   intro hpos
   linarith
 
