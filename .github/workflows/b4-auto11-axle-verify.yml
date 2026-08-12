@@ -26,10 +26,14 @@ jobs:
           import json
           import pathlib
           import re
+          import subprocess
           import urllib.request
 
           path = pathlib.Path('verification/b4_auto11/B4Auto11Combined.lean')
           text = path.read_text()
+          blob = subprocess.check_output(['git', 'hash-object', str(path)], text=True).strip()
+          if blob != '505ea75d145389f463ceabf54faff119fb5eaeea':
+              raise SystemExit(f'canonical blob mismatch: {blob}')
           if re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|opaque|unsafe)([^A-Za-z0-9_]|$)', text):
               raise SystemExit('forbidden placeholder/trust keyword found')
           if re.search(r'^\s*axiom\b', text, flags=re.MULTILINE):
@@ -58,6 +62,12 @@ jobs:
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           failed = result.get('failed_declarations', [])
           if not result.get('okay') or lean_errors or tool_errors or failed:
+              for err in lean_errors:
+                  print(f'::error::{err}')
+              for err in tool_errors:
+                  print(f'::error::{err}')
+              for decl in failed:
+                  print(f'::error::failed declaration: {decl}')
               raise SystemExit(1)
           print('VERIFIED: AXLE Lean 4.30 compiled B4 auto11 combined finite cores.')
           PY
