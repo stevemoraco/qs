@@ -49,11 +49,13 @@ theorem single_output_defect_conservation
 /-- The doubled pair-count inequality implies that one component contributes
 at least `r-1` vertex/pair errors. Here `r=t+k`, where `t` is the number of
 vertex errors and `k` is the number of remaining vertices; `2*p >= k(k-1)` is
-the division-free form of `p >= binom(k,2)`. -/
+the division-free form of `p >= binom(k,2)`.
+
+The sign of `t` is algebraically irrelevant: it cancels after substituting
+`r=t+k`. The circuit application separately supplies `t >= 0`. -/
 theorem component_error_lower_bound
     (r t k p : ℤ)
     (hr : r = t + k)
-    (ht : 0 ≤ t)
     (hk : 0 ≤ k)
     (hp : k * (k - 1) ≤ 2 * p) :
     r - 1 ≤ t + p := by
@@ -74,13 +76,12 @@ theorem sum_component_error_lower_bound
     [Fintype J]
     (r t k p : J → ℤ)
     (hr : ∀ j, r j = t j + k j)
-    (ht : ∀ j, 0 ≤ t j)
     (hk : ∀ j, 0 ≤ k j)
     (hp : ∀ j, k j * (k j - 1) ≤ 2 * p j) :
     (∑ j, (r j - 1)) ≤ ∑ j, (t j + p j) := by
   exact Finset.sum_le_sum fun j _ =>
     component_error_lower_bound
-      (r j) (t j) (k j) (p j) (hr j) (ht j) (hk j) (hp j)
+      (r j) (t j) (k j) (p j) (hr j) (hk j) (hp j)
 
 #print axioms critical_component_vertex_identity
 #print axioms critical_component_gate_identity
