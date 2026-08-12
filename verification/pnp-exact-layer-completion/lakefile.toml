@@ -1,0 +1,9 @@
+name = "PNPExactLayerCompletionVerify"
+version = "0.1.0"
+defaultTargets = ["PNPExactLayerCompletionFinite"]
+
+[[lean_lib]]
+name = "PNPExactLayerCompletionFinite"
+
+[dependencies]
+mathlib = { git = "https://github.com/leanprover-community/mathlib4.git", tag = "v4.31.0" }
