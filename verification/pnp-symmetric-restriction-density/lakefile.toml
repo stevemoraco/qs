@@ -1,0 +1,11 @@
+name = "pnp_symmetric_restriction_density"
+version = "0.1.0"
+defaultTargets = ["PNPSymmetricRestrictionDensity"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.31.0"
+
+[[lean_lib]]
+name = "PNPSymmetricRestrictionDensity"
