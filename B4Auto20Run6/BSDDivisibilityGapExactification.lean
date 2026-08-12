@@ -2,14 +2,12 @@ import Mathlib
 
 namespace B4Auto20Run6
 
-/-- BANKER: a defect whose absolute integer magnitude is divisible by a positive
-modulus cannot lie strictly between zero and that modulus. Hence a certified
-strict bound below the modulus exactifies the defect. This is the finite
-arithmetic core of any BSD route that converts congruence/divisibility control
-plus a quantitative error estimate into an exact identity. -/
+/-- BANKER: a defect whose absolute integer magnitude is divisible by a modulus
+cannot lie strictly between zero and that modulus. Hence a certified strict
+bound below the modulus exactifies the defect. No separate positivity assumption
+on `m` is needed: `z.natAbs < m` already rules out `m = 0`. -/
 theorem bsd_divisible_defect_below_modulus_exactifies
     (z : ℤ) (m : ℕ)
-    (hm : 0 < m)
     (hdiv : m ∣ z.natAbs)
     (hsmall : z.natAbs < m) :
     z = 0 := by
@@ -27,16 +25,16 @@ theorem bsd_divisible_defect_below_modulus_exactifies
   exact (not_lt_of_ge hmk) hsmall
 
 /-- CLEANER: equivalently, every nonzero defect whose magnitude is divisible by
-`m > 0` has a quantitative gap of at least `m` from zero. -/
+`m` has a quantitative gap of at least `m` from zero. At `m = 0` the conclusion
+is tautological, so no redundant positivity premise is required. -/
 theorem bsd_nonzero_divisible_defect_has_modulus_gap
     (z : ℤ) (m : ℕ)
-    (hm : 0 < m)
     (hz : z ≠ 0)
     (hdiv : m ∣ z.natAbs) :
     m ≤ z.natAbs := by
   by_contra hgap
   have hsmall : z.natAbs < m := Nat.lt_of_not_ge hgap
-  exact hz (bsd_divisible_defect_below_modulus_exactifies z m hm hdiv hsmall)
+  exact hz (bsd_divisible_defect_below_modulus_exactifies z m hdiv hsmall)
 
 /-- CRITIC: the strict inequality is sharp. At the modulus itself a nonzero
 defect can be divisible by the modulus and satisfy the non-strict bound. -/
