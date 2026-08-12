@@ -15,10 +15,29 @@ noncomputable def theta (alpha b : ℝ) : ℝ := beta alpha / b + (1 - beta alph
 /-- Total sideband-width exponent of the nested comb. -/
 noncomputable def bandwidthExponent (alpha b : ℝ) : ℝ := theta alpha b + gamma alpha b
 
+/-- Side length of a one-dimensional symmetric comb. -/
+def sideLength (r : ℕ) : ℕ := 2 * r + 1
+
+/-- Closed polynomial later certified as the number of zero-sum triples in
+    the integer interval `[-r,r]`. -/
+def oneDimZeroSumTriplePolynomial (r : ℕ) : ℕ := 3 * r * r + 3 * r + 1
+
 theorem concentrationExponent (alpha : ℝ) :
     (3 / 2 : ℝ) * beta alpha = alpha - 1 := by
   unfold beta
   ring
+
+theorem concentrationSlackIdentity (shellAlpha packetAlpha : ℝ) :
+    (3 / 2 : ℝ) * beta packetAlpha - (shellAlpha - 1) =
+      packetAlpha - shellAlpha := by
+  rw [concentrationExponent]
+  ring
+
+theorem concentrationSlackPositive {shellAlpha packetAlpha : ℝ}
+    (hSlack : shellAlpha < packetAlpha) :
+    shellAlpha - 1 < (3 / 2 : ℝ) * beta packetAlpha := by
+  have hid := concentrationSlackIdentity shellAlpha packetAlpha
+  linarith
 
 theorem betaPositive {alpha : ℝ} (h : 2 < alpha) : 0 < beta alpha := by
   unfold beta
@@ -27,6 +46,29 @@ theorem betaPositive {alpha : ℝ} (h : 2 < alpha) : 0 < beta alpha := by
 theorem betaBelowOne {alpha : ℝ} (h : alpha < 5 / 2) : beta alpha < 1 := by
   unfold beta
   linarith
+
+theorem oneDimZeroSumTriplePolynomialIdentity (r : ℕ) :
+    4 * oneDimZeroSumTriplePolynomial r =
+      3 * (sideLength r)^2 + 1 := by
+  unfold oneDimZeroSumTriplePolynomial sideLength
+  ring
+
+theorem oneDimZeroSumTriplePolynomialFloor (r : ℕ) :
+    3 * (sideLength r)^2 ≤
+      4 * oneDimZeroSumTriplePolynomial r := by
+  rw [oneDimZeroSumTriplePolynomialIdentity]
+  omega
+
+theorem radiusOneCombConstants :
+    oneDimZeroSumTriplePolynomial 1 = 7 ∧
+    (oneDimZeroSumTriplePolynomial 1)^3 = 343 ∧
+    (sideLength 1)^3 = 27 := by
+  norm_num [oneDimZeroSumTriplePolynomial, sideLength]
+
+theorem radiusOneCubicRatioFloor :
+    27 * (sideLength 1)^6 ≤
+      64 * (oneDimZeroSumTriplePolynomial 1)^3 := by
+  norm_num [oneDimZeroSumTriplePolynomial, sideLength]
 
 theorem gammaNormalForm (alpha b : ℝ) :
     gamma alpha b = beta alpha - beta alpha / b := by
@@ -156,6 +198,37 @@ theorem compatibleScaleExponentExists {alpha : ℝ}
     (lt_div_iff₀ hden).mp hbPacket
   exact ⟨b, hbLower, hbAlpha, hprod⟩
 
+/-- Exponent slack absorbs the polylogarithmic cubic loss of a nested comb:
+    the shell-model exponent may be strictly smaller than the packet exponent. -/
+theorem compatibleScaleExponentExistsWithSlack
+    {shellAlpha packetAlpha : ℝ}
+    (hShellLower : 2 < shellAlpha)
+    (hSlack : shellAlpha < packetAlpha)
+    (hPacketUpper : packetAlpha < 5 / 2) :
+    ∃ b : ℝ,
+      1 < b ∧
+      b < shellAlpha / 2 ∧
+      b * (1 + beta packetAlpha) < 2 := by
+  have hPacketLower : 2 < packetAlpha := lt_trans hShellLower hSlack
+  have hbetaPos : 0 < beta packetAlpha := betaPositive hPacketLower
+  have hbetaOne : beta packetAlpha < 1 := betaBelowOne hPacketUpper
+  have hden : 0 < 1 + beta packetAlpha := by linarith
+  have hu1 : 1 < shellAlpha / 2 := by linarith
+  have hu2 : 1 < 2 / (1 + beta packetAlpha) := by
+    rw [lt_div_iff₀ hden]
+    linarith
+  have hmin :
+      1 < min (shellAlpha / 2) (2 / (1 + beta packetAlpha)) :=
+    lt_min hu1 hu2
+  obtain ⟨b, hbLower, hbUpper⟩ := exists_between hmin
+  have hbShell : b < shellAlpha / 2 :=
+    lt_of_lt_of_le hbUpper (min_le_left _ _)
+  have hbPacket : b < 2 / (1 + beta packetAlpha) :=
+    lt_of_lt_of_le hbUpper (min_le_right _ _)
+  have hprod : b * (1 + beta packetAlpha) < 2 :=
+    (lt_div_iff₀ hden).mp hbPacket
+  exact ⟨b, hbLower, hbShell, hprod⟩
+
 /-- Radial uncertainty of size `W` perturbs an intended eigenvalue split by at most `2W`. -/
 theorem radialSplitMargin {lambda mu lambda0 mu0 W : ℝ}
     (hlambda : |lambda - lambda0| ≤ W)
@@ -188,8 +261,14 @@ theorem obukhovPairEnergyConservation (c X Y : ℝ) :
   ring
 
 #print axioms concentrationExponent
+#print axioms concentrationSlackIdentity
+#print axioms concentrationSlackPositive
 #print axioms betaPositive
 #print axioms betaBelowOne
+#print axioms oneDimZeroSumTriplePolynomialIdentity
+#print axioms oneDimZeroSumTriplePolynomialFloor
+#print axioms radiusOneCombConstants
+#print axioms radiusOneCubicRatioFloor
 #print axioms gammaNormalForm
 #print axioms lowerGapIdentity
 #print axioms upperGapIdentity
@@ -204,6 +283,7 @@ theorem obukhovPairEnergyConservation (c X Y : ℝ) :
 #print axioms noStrictEndpointWindow
 #print axioms bandwidthBelowParentScale
 #print axioms compatibleScaleExponentExists
+#print axioms compatibleScaleExponentExistsWithSlack
 #print axioms radialSplitMargin
 #print axioms radialSplitKeepsSign
 #print axioms nonzeroMultipleHasGap
