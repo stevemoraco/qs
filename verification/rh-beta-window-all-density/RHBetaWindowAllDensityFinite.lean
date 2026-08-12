@@ -49,7 +49,7 @@ theorem relative_defect_le_quarter
 quarters of the diagonal energy. -/
 theorem quarter_defect_leaves_three_quarters
     (diagonal cross : ℝ)
-    (hdiag : 0 ≤ diagonal)
+    (_hdiag : 0 ≤ diagonal)
     (hcross : |cross| ≤ (1 / 4 : ℝ) * diagonal) :
     (3 / 4 : ℝ) * diagonal ≤ diagonal + cross := by
   have hlower : -((1 / 4 : ℝ) * diagonal) ≤ cross :=
@@ -59,16 +59,16 @@ theorem quarter_defect_leaves_three_quarters
 /-- Composition of the exponential restriction, beta coercivity, and local
 retention factors. -/
 theorem compose_nonnegative_floors
-    (Q I B D exponential beta local : ℝ)
+    (Q I B D exponential beta localFloor : ℝ)
     (hexponential : 0 ≤ exponential)
     (hbeta : 0 ≤ beta)
     (hQ : exponential * I ≤ Q)
     (hI : beta * B ≤ I)
-    (hB : local * D ≤ B) :
-    (exponential * beta * local) * D ≤ Q := by
+    (hB : localFloor * D ≤ B) :
+    (exponential * beta * localFloor) * D ≤ Q := by
   calc
-    (exponential * beta * local) * D
-        = exponential * (beta * (local * D)) := by ring
+    (exponential * beta * localFloor) * D
+        = exponential * (beta * (localFloor * D)) := by ring
     _ ≤ exponential * (beta * B) := by
       exact mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_left hB hbeta) hexponential
