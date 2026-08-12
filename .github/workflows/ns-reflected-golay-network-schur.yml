@@ -1,0 +1,126 @@
+name: AXLE verify NS reflected Golay network Schur
+
+on:
+  push:
+    branches: [agent/ns-reflected-golay-network-schur-verifier-20260812]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ns-reflected-golay-network-schur-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            verification/ns-reflected-golay-network-schur
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Exact-source trust preflight
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+
+          path = Path('verification/ns-reflected-golay-network-schur/NSReflectedGolayNetworkSchur.lean')
+          text = path.read_text()
+          forbidden = {
+              'sorry': r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
+              'admit': r'(^|[^A-Za-z0-9_])admit([^A-Za-z0-9_]|$)',
+              'sorryAx': r'(^|[^A-Za-z0-9_])sorryAx([^A-Za-z0-9_]|$)',
+              'custom axiom': r'(?m)^\s*axiom\s+',
+              'opaque': r'(?m)^\s*opaque\s+',
+              'unsafe': r'(?m)^\s*unsafe\s+',
+          }
+          for label, pattern in forbidden.items():
+              if re.search(pattern, text):
+                  raise SystemExit(f'forbidden source token: {label}')
+          count = len(re.findall(r'(?m)^theorem\s+', text))
+          if count != 10:
+              raise SystemExit(f'expected 10 theorem declarations, found {count}')
+          prints = len(re.findall(r'(?m)^#print axioms\s+', text))
+          if prints != 10:
+              raise SystemExit(f'expected 10 staged axiom prints, found {prints}')
+          print(f'source_sha256={hashlib.sha256(text.encode()).hexdigest()}')
+          print('SOURCE TRUST PREFLIGHT: PASS')
+          PY
+
+      - name: AXLE Lean 4.30 compile and axiom replay
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path('verification/ns-reflected-golay-network-schur/NSReflectedGolayNetworkSchur.lean')
+          payload = json.dumps({
+              'content': source.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          result_path = pathlib.Path('verification/ns-reflected-golay-network-schur/axle-result.json')
+          result_path.write_text(json.dumps(result, indent=2))
+          print(json.dumps(result, indent=2))
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          output = json.dumps(result)
+
+          def escaped(item):
+              msg = json.dumps(item, ensure_ascii=False) if not isinstance(item, str) else item
+              return msg.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          def annotate_error(kind, item):
+              print(f'::error title={kind}::{escaped(item)[:6000]}')
+
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              for item in lean_errors[:20]:
+                  annotate_error('Lean error', item)
+              for item in tool_errors[:20]:
+                  annotate_error('AXLE tool error', item)
+              for item in failed[:20]:
+                  annotate_error('Failed declaration', item)
+              if not (lean_errors or tool_errors or failed):
+                  annotate_error('AXLE failure', result)
+              raise SystemExit(1)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in output:
+                  annotate_error('Forbidden postcompile dependency', forbidden)
+                  raise SystemExit(1)
+          print(f'::notice title=AXLE result keys::{escaped(sorted(result.keys()))}')
+          for key in sorted(result.keys()):
+              if key != 'content':
+                  print(f'::notice title=AXLE field {key}::{escaped(result[key])[:6000]}')
+          print('VERIFIED: AXLE Lean 4.30 compiled all 10 finite cores with no failed declarations')
+          PY
+
+      - name: Upload exact verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-reflected-golay-network-schur-evidence-${{ github.run_attempt }}
+          path: |
+            verification/ns-reflected-golay-network-schur/NSReflectedGolayNetworkSchur.lean
+            verification/ns-reflected-golay-network-schur/axle-result.json
+          if-no-files-found: warn
