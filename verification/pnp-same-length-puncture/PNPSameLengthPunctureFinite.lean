@@ -40,18 +40,21 @@ theorem exists_puncture_outside_queries_and_output
       by_contra hne
       exact hnone ⟨z, hq, hne⟩
   have hsubset :
-      (Finset.univ : Finset U) ⊆ Finset.insert output queries := by
+      (Finset.univ : Finset U) ⊆ queries ∪ {output} := by
     intro z _hz
     rcases hall z with hq | rfl
-    · exact Finset.mem_insert_of_mem hq
+    · exact Finset.mem_union_left _ hq
     · simp
   have hcardCover :
-      Fintype.card U ≤ (Finset.insert output queries).card := by
+      Fintype.card U ≤ (queries ∪ {output}).card := by
     rw [← Finset.card_univ]
     exact Finset.card_le_card hsubset
-  have hinsert :
-      (Finset.insert output queries).card ≤ queries.card + 1 := by
-    exact Finset.card_insert_le
+  have hunion :
+      (queries ∪ {output}).card ≤ queries.card + 1 := by
+    calc
+      (queries ∪ {output}).card
+          ≤ queries.card + ({output} : Finset U).card := Finset.card_union_le
+      _ = queries.card + 1 := by simp
   omega
 
 /-- Exact deterministic endpoint: covering all `M` punctures with at most `q`
