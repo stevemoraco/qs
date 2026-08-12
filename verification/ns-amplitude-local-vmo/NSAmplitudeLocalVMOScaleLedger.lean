@@ -51,9 +51,15 @@ theorem admissibleAmplitudeScaleExponents
     (htheta1 : theta < 1)
     (ha0 : 0 < a)
     (ha1 : a < 1 / 2) :
+    0 < theta ∧
+    0 < a ∧
     0 < 1 - 2 * a ∧
     0 < (1 - theta) / 2 ∧
     0 < 1 / 2 - a := by
+  constructor
+  · exact htheta0
+  constructor
+  · exact ha0
   constructor
   · linarith
   constructor <;> linarith
