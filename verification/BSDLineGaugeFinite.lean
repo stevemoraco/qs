@@ -23,11 +23,7 @@ theorem associatedByUnit_symm {R : Type*} [CommRing R] {x y : R}
     (h : AssociatedByUnit x y) : AssociatedByUnit y x := by
   rcases h with ⟨u, rfl⟩
   refine ⟨u⁻¹, ?_⟩
-  change x = (↑(u⁻¹) : R) * ((↑u : R) * x)
-  calc
-    (↑(u⁻¹) : R) * ((↑u : R) * x)
-        = ((↑(u⁻¹) : R) * (↑u : R)) * x := by rw [mul_assoc]
-    _ = x := by simp
+  simp [mul_assoc]
 
 theorem associatedByUnit_trans {R : Type*} [CommRing R] {x y z : R}
     (hxy : AssociatedByUnit x y) (hyz : AssociatedByUnit y z) :
@@ -74,11 +70,11 @@ theorem associatedGeneratorsNeedNotBeEqual :
     norm_num
   · norm_num
 
-/-- One scalar specialization does not determine an ambient element: `1+X`
+/-- One scalar specialization does not determine an ambient element: `1 + X`
 evaluates to one at zero but is not the constant polynomial one. -/
 theorem oneSpecializationDoesNotFixPolynomialElement :
-    Polynomial.eval (0 : ℚ) (1 + Polynomial.X) = 1 ∧
-      (1 + Polynomial.X : ℚ[X]) ≠ 1 := by
+    Polynomial.eval (0 : ℚ) ((1 : ℚ[X]) + Polynomial.X) = 1 ∧
+      ((1 : ℚ[X]) + Polynomial.X) ≠ 1 := by
   constructor
   · simp
   · intro h
