@@ -66,6 +66,29 @@ theorem nonuniform_majorant_contrapositive
     exact hLower (hEmbed (hContainmentUpper hContainment))
   exact ⟨hNotContainment, fun hEq => hNotContainment (hEqToContainment hEq)⟩
 
+/-- An unbounded exponent schedule eventually strictly dominates every fixed
+exponent. -/
+theorem eventual_exponent_majorant
+    (h : ℕ → ℕ)
+    (hgrow : ∀ C : ℕ, ∃ n0 : ℕ, ∀ n : ℕ, n0 ≤ n → C + 1 ≤ h n)
+    (C : ℕ) :
+    ∃ n0 : ℕ, ∀ n : ℕ, n0 ≤ n → C < h n := by
+  obtain ⟨n0, hn0⟩ := hgrow C
+  exact ⟨n0, fun n hn => by omega⟩
+
+/-- One spare exponent absorbs a fixed multiplicative constant once the base
+itself dominates that constant. -/
+theorem spare_exponent_absorbs_multiplier
+    (K b C H : ℕ)
+    (hb : 1 ≤ b)
+    (hK : K ≤ b)
+    (hCH : C + 1 ≤ H) :
+    K * b ^ C ≤ b ^ H := by
+  calc
+    K * b ^ C ≤ b * b ^ C := Nat.mul_le_mul_right (b ^ C) hK
+    _ = b ^ (C + 1) := by simp [pow_succ, Nat.mul_comm]
+    _ ≤ b ^ H := Nat.pow_le_pow_right (by omega) hCH
+
 /-- YES, NO, and outside-promise inputs remain distinct. -/
 inductive PromiseStatus where
   | yes
@@ -93,6 +116,8 @@ theorem quarter_radius_integral
 #print axioms padded_suffix_has_polynomial_length
 #print axioms uniform_majorant_contrapositive
 #print axioms nonuniform_majorant_contrapositive
+#print axioms eventual_exponent_majorant
+#print axioms spare_exponent_absorbs_multiplier
 #print axioms yes_ne_no
 #print axioms yes_ne_outside
 #print axioms no_ne_outside
