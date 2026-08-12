@@ -24,6 +24,7 @@ theorem card_le_signature_card_mul
     {W Sigma : Type*}
     [Fintype W]
     [Fintype Sigma]
+    [DecidableEq Sigma]
     (signature : W → Sigma)
     (q : ℕ)
     (hfiber : ∀ y : Sigma,
@@ -38,7 +39,7 @@ theorem card_le_signature_card_mul
           Fintype.card (Σ y : Sigma, {x : W // signature x = y}) := by
         exact (Fintype.card_congr (Equiv.sigmaFiberEquiv signature)).symm
       _ = ∑ y : Sigma, Fintype.card {x : W // signature x = y} := by
-        exact Fintype.card_sigma _
+        exact Fintype.card_sigma
   rw [hcard]
   calc
     (∑ y : Sigma, Fintype.card {x : W // signature x = y})
@@ -56,6 +57,7 @@ theorem bit_signature_capacity
     (hfiber : ∀ y : Fin s → Bool,
       Fintype.card {x : W // signature x = y} ≤ q) :
     Fintype.card W ≤ q * 2 ^ s := by
+  classical
   have h := card_le_signature_card_mul signature q hfiber
   simpa [Nat.mul_comm] using h
 
@@ -71,8 +73,14 @@ theorem exists_overloaded_bit_signature
       q < Fintype.card {x : W // signature x = y} := by
   classical
   by_contra hnone
-  push_neg at hnone
-  have hcap := bit_signature_capacity s q signature hnone
+  have hfiber : ∀ y : Fin s → Bool,
+      Fintype.card {x : W // signature x = y} ≤ q := by
+    intro y
+    by_contra hnot
+    have hgt : q < Fintype.card {x : W // signature x = y} :=
+      Nat.lt_of_not_ge hnot
+    exact hnone ⟨y, hgt⟩
+  have hcap := bit_signature_capacity s q signature hfiber
   omega
 
 /-- Scalar support floor: if `q * 2^s < W`, congestion `q` is impossible. -/
