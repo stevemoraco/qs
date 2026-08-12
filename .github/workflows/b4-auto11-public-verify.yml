@@ -1,0 +1,78 @@
+name: B4 Auto11 Six-Problem Quantitative Bank
+
+on:
+  push:
+    branches:
+      - agent/b4-auto11-public-verifier-20260812
+    paths:
+      - 'verification/b4_auto11/**'
+      - '.github/workflows/b4-auto11-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and verify canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/b4_auto11/B4Auto11Combined.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/b4_auto11/lean-git-blob-sha.txt
+          test "$(cat verification/b4_auto11/lean-git-blob-sha.txt)" = 'd4730c662acaee3e87c088b65551c06fe9e7ae2d'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/b4_auto11/lean-version.txt
+          lake --version | tee verification/b4_auto11/lake-version.txt
+          cd verification/b4_auto11
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          set +e
+          lake env lean B4Auto11Combined.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              line=${line//$'\r'/'%0D'}
+              line=${line//$'\n'/'%0A'}
+              echo "::error file=verification/b4_auto11/B4Auto11Combined.lean::$line"
+            done < lean-output.log
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED B4 auto11 six-problem quantitative bank: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-auto11-sixproblem-quantitative-bank-evidence
+          path: |
+            verification/b4_auto11/lean-output.log
+            verification/b4_auto11/lean-git-blob-sha.txt
+            verification/b4_auto11/lean-version.txt
+            verification/b4_auto11/lake-version.txt
+            verification/b4_auto11/mathlib-commit.txt
+          if-no-files-found: warn
