@@ -73,7 +73,8 @@ theorem bounded_depth_sensitivity_gate
     (hd : 0 < d)
     (hFloor : delta * n ≤ d * A) :
     delta * n / d ≤ A := by
-  exact (div_le_iff₀ hd).2 hFloor
+  apply (div_le_iff₀ hd).2
+  simpa [mul_comm] using hFloor
 
 /-- Finite exponent bookkeeping behind `n / n^(1-ε) = n^ε`: when `a=b+c`,
 `n^a` factors exactly as `n^b n^c`. -/
