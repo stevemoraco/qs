@@ -18,16 +18,19 @@ def positivePart (x : ℚ) : ℚ := max x 0
 /-- The exact base-scale value `mu(1)^2`. -/
 def muSqOne : ℚ := 3570 / 991
 
-/-- The base-scale physical kernel, defined directly from the finite
-truncated-power formula. -/
+/-- One shifted truncated-power summand in the base-scale physical kernel. -/
+def hOneAtom (t shift : ℚ) : ℚ :=
+  let y := positivePart (t + shift)
+  y ^ 3 / 6 + (muSqOne - 1 / 4) * y ^ 5 / 120 -
+    muSqOne * y ^ 7 / 20160
+
+/-- The base-scale physical kernel, written as the exact expanded eighth
+finite-difference sum with binomial coefficients. -/
 def hOne (t : ℚ) : ℚ :=
-  ∑ k in Finset.range 9,
-    ((-1 : ℚ) ^ k) * (Nat.choose 8 k : ℚ) *
-      ((positivePart (t + 4 - (k : ℚ))) ^ 3 / 6
-       + (muSqOne - 1 / 4) *
-          (positivePart (t + 4 - (k : ℚ))) ^ 5 / 120
-       - muSqOne *
-          (positivePart (t + 4 - (k : ℚ))) ^ 7 / 20160)
+  hOneAtom t 4 - 8 * hOneAtom t 3 + 28 * hOneAtom t 2 -
+    56 * hOneAtom t 1 + 70 * hOneAtom t 0 -
+    56 * hOneAtom t (-1) + 28 * hOneAtom t (-2) -
+    8 * hOneAtom t (-3) + hOneAtom t (-4)
 
 /-- The normalized base-scale kernel `a^4 d(a) h_a / 16` at `a=1`. -/
 def normalizedKernelOne (t : ℚ) : ℚ := (991 / 16) * hOne t
@@ -35,12 +38,12 @@ def normalizedKernelOne (t : ℚ) : ℚ := (991 / 16) * hOne t
 /-- Exact negative lobe value. -/
 theorem normalizedKernelOne_at_one :
     normalizedKernelOne 1 = -10257 / 128 := by
-  native_decide
+  norm_num [normalizedKernelOne, hOne, hOneAtom, positivePart, muSqOne]
 
 /-- Exact positive lobe value. -/
 theorem normalizedKernelOne_at_two :
     normalizedKernelOne 2 = 201 / 5 := by
-  native_decide
+  norm_num [normalizedKernelOne, hOne, hOneAtom, positivePart, muSqOne]
 
 /-- The normalized physical kernel already changes sign at the base scale. -/
 theorem normalizedKernelOne_sign_change :
@@ -69,7 +72,7 @@ def pTwoCrudeUpperBound : ℚ :=
 /-- Exact endpoint arithmetic certificate for the positive-monomial bound. -/
 theorem pTwoCrudeUpperBound_value :
     pTwoCrudeUpperBound = -648404946671 / 134217728 := by
-  native_decide
+  norm_num [pTwoCrudeUpperBound]
 
 /-- In particular, the crude upper bound is strictly negative. -/
 theorem pTwoCrudeUpperBound_neg : pTwoCrudeUpperBound < 0 := by
