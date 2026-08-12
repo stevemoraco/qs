@@ -24,16 +24,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compile and replay exact Python certificate
+      - name: Compile, replay, and verify exact Python certificates
         shell: bash
         run: |
           set -euo pipefail
           cd verification/pnp-background-signature
+
           python3 -m py_compile pnp_background_signature_capacity_certificate.py
-          python3 pnp_background_signature_capacity_certificate.py 2>&1 | tee python-certificate.log
-          grep -F 'EXACT CERTIFICATE: PASS' python-certificate.log
-          git hash-object pnp_background_signature_capacity_certificate.py | tee python-git-blob-sha.txt
-          test "$(cat python-git-blob-sha.txt)" = '0fedb6130c4a5177c1a895868f4d38de6b096806'
+          python3 pnp_background_signature_capacity_certificate.py 2>&1 \
+            | tee background-signature-python.log
+          grep -F 'EXACT CERTIFICATE: PASS' background-signature-python.log
+          git hash-object pnp_background_signature_capacity_certificate.py \
+            | tee background-signature-python-git-blob-sha.txt
+          test "$(cat background-signature-python-git-blob-sha.txt)" \
+            = '0fedb6130c4a5177c1a895868f4d38de6b096806'
+
+          python3 -m py_compile pnp_critical_component_defect_certificate.py
+          python3 pnp_critical_component_defect_certificate.py 2>&1 \
+            | tee critical-component-python.log
+          grep -F 'EXACT CERTIFICATE: PASS' critical-component-python.log
+          git hash-object pnp_critical_component_defect_certificate.py \
+            | tee critical-component-python-git-blob-sha.txt
+          test "$(cat critical-component-python-git-blob-sha.txt)" \
+            = '12978565ddd390df525daacf2b090843ddeadde2'
 
       - name: Upload exact-certificate evidence
         if: always()
@@ -41,8 +54,10 @@ jobs:
         with:
           name: pnp-round203-python-evidence
           path: |
-            verification/pnp-background-signature/python-certificate.log
-            verification/pnp-background-signature/python-git-blob-sha.txt
+            verification/pnp-background-signature/background-signature-python.log
+            verification/pnp-background-signature/background-signature-python-git-blob-sha.txt
+            verification/pnp-background-signature/critical-component-python.log
+            verification/pnp-background-signature/critical-component-python-git-blob-sha.txt
           if-no-files-found: warn
 
   lean-firewall:
