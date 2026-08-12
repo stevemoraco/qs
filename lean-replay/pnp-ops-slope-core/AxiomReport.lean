@@ -3,3 +3,7 @@ import PNPOPSSlopeCore
 #print axioms PNPOPSSlopeCore.unbounded_slope_contradicts_upper_envelope
 #print axioms PNPOPSSlopeCore.sequence_unbounded_slope_contradicts_upper_envelope
 #print axioms PNPOPSSlopeCore.fixed_slope_not_unbounded
+#print axioms PNPOPSSlopeCore.exists_unhit_value_of_card_lt
+#print axioms PNPOPSSlopeCore.card_codomain_le_of_every_value_hit
+#print axioms PNPOPSSlopeCore.critical_path_gate_identity
+#print axioms PNPOPSSlopeCore.single_output_surplus_identity
