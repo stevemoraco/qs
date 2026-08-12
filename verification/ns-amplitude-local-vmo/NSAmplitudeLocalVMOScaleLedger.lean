@@ -29,6 +29,22 @@ theorem kineticEnergySquareScalingExponent :
     (1 : ℚ) - (3 / 2 : ℚ) = -(1 / 2 : ℚ) := by
   norm_num
 
+theorem instantaneousEnstrophyScalingExponent :
+    (2 : ℚ) - (3 / 2 : ℚ) = 1 / 2 := by
+  norm_num
+
+theorem criticalLifetimeEnstrophyChargeExponent :
+    (1 / 2 : ℚ) - 1 = -(1 / 2 : ℚ) := by
+  norm_num
+
+theorem instantaneousDirectionalPalinstrophyExponent :
+    (2 : ℚ) + 1 - (3 / 2 : ℚ) = 3 / 2 := by
+  norm_num
+
+theorem criticalLifetimeDirectionalPalinstrophyExponent :
+    (3 / 2 : ℚ) - 1 = 1 / 2 := by
+  norm_num
+
 theorem admissibleAmplitudeScaleExponents
     (theta a : ℝ)
     (htheta0 : 0 < theta)
@@ -45,8 +61,9 @@ theorem admissibleAmplitudeScaleExponents
 theorem oppositeDirectionsOscillation (c : ℝ) :
     2 ≤ |(1 : ℝ) - c| + |(-1 : ℝ) - c| := by
   have hplus : 1 - c ≤ |(1 : ℝ) - c| := le_abs_self (1 - c)
-  have hminusRaw : -((-1 : ℝ) - c) ≤ |(-1 : ℝ) - c| := neg_le_abs ((-1 : ℝ) - c)
   have hminus : 1 + c ≤ |(-1 : ℝ) - c| := by
+    have hraw : -((-1 : ℝ) - c) ≤ |(-1 : ℝ) - c| :=
+      neg_le_abs ((-1 : ℝ) - c)
     linarith
   linarith
 
@@ -74,6 +91,10 @@ theorem threeTermErrorBudget
 #print axioms criticalFarKernelExponent
 #print axioms weakVorticityScalingExponent
 #print axioms kineticEnergySquareScalingExponent
+#print axioms instantaneousEnstrophyScalingExponent
+#print axioms criticalLifetimeEnstrophyChargeExponent
+#print axioms instantaneousDirectionalPalinstrophyExponent
+#print axioms criticalLifetimeDirectionalPalinstrophyExponent
 #print axioms admissibleAmplitudeScaleExponents
 #print axioms oppositeDirectionsOscillation
 #print axioms oppositeCoreMeanLowerBound
