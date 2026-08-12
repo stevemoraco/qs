@@ -12,7 +12,10 @@ theorem ns_positive_persistence_cost_bounds_amplitude_square
     (hbudget : τ * c * A ^ 2 ≤ E) :
     A ^ 2 ≤ E / (τ * c) := by
   have htc : 0 < τ * c := mul_pos hτ hc
-  exact (le_div_iff₀ htc).2 (by simpa [mul_assoc] using hbudget)
+  apply (le_div_iff₀ htc).2
+  calc
+    A ^ 2 * (τ * c) = τ * c * A ^ 2 := by ring
+    _ ≤ E := hbudget
 
 /-- CRITIC: positive persistence at every amplitude does not give a uniform
 amplitude bound if the persistence scale is allowed to collapse. For every
