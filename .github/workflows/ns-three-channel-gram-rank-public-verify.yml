@@ -31,7 +31,7 @@ jobs:
           dir='verification/ns-three-channel-gram-rank-public'
           file="$dir/NSChannelRankFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='f1366c84c48862ef9c644f40da1aca8c282d1a37'
+          expected_blob='1a9df432bb43884701c7d2d1bdada47634f245c8'
           test "$actual_blob" = "$expected_blob"
           printf 'private_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
@@ -62,8 +62,12 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
+          set +e
           lake env lean NSChannelRankFirewall.lean > lean-output.log 2>&1
+          lean_status=$?
+          set -e
           cat lean-output.log
+          test "$lean_status" -eq 0
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
             echo 'Forbidden dependency found in compiler report.' >&2
             exit 1
