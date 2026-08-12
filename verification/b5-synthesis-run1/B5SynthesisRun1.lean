@@ -19,7 +19,6 @@ open Finset
 
 /-- If every decoder succeeds on at most `K` inputs, an input-dependent selector
 that succeeds everywhere must use enough distinct decoders to cover the whole input set. -/
-open scoped Classical in
 theorem selector_cover_capacity
     {X D : Type*} [Fintype X] [Fintype D]
     (solves : D → X → Prop)
@@ -28,6 +27,7 @@ theorem selector_cover_capacity
     (K : ℕ)
     (hcap : ∀ d, #(Finset.univ.filter (solves d)) ≤ K) :
     Fintype.card X ≤ #(Finset.univ.image sel) * K := by
+  classical
   let R : Finset D := Finset.univ.image sel
   let S : D → Finset X := fun d => Finset.univ.filter (solves d)
   have hsubset : (Finset.univ : Finset X) ⊆ R.biUnion S := by
@@ -62,17 +62,8 @@ between levels `p-1` and `p` exactly when its depth is already below `p`. -/
 theorem smith_summand_stabilizes_iff_depth_below
     (a p : ℕ) (hp : 0 < p) :
     truncLength a p = truncLength a (p - 1) ↔ a < p := by
-  by_cases h : a < p
-  · have hap : a ≤ p := Nat.le_of_lt h
-    have ha1 : a ≤ p - 1 := by omega
-    change Nat.min a p = Nat.min a (p - 1) ↔ a < p
-    rw [Nat.min_eq_left hap, Nat.min_eq_left ha1]
-    simp [h]
-  · have hpa : p ≤ a := by omega
-    have hp1a : p - 1 ≤ a := by omega
-    change Nat.min a p = Nat.min a (p - 1) ↔ a < p
-    rw [Nat.min_eq_right hpa, Nat.min_eq_right hp1a]
-    omega
+  unfold truncLength
+  omega
 
 #print axioms smith_summand_stabilizes_iff_depth_below
 
@@ -109,9 +100,7 @@ theorem critical_cost_fixed_energy_proxy_decays
       b^10 * (1 / b^15) = 1 / b^5 := by
   constructor
   · field_simp [hb]
-    ring
   · field_simp [hb]
-    ring
 
 #print axioms critical_cost_fixed_energy_proxy_decays
 
