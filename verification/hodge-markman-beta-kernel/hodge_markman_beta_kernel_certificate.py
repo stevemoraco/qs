@@ -60,6 +60,7 @@ def contract_bivector(first: int, second: int, form: Form) -> Form:
 
 
 def diagonal_11_form(weights: Iterable[sp.Expr]) -> Form:
+    # x_i has index i, y_i has index 4+i.
     return {(i, 4 + i): sp.sympify(weight) for i, weight in enumerate(weights)}
 
 
@@ -89,6 +90,7 @@ def main() -> None:
     target_02 = y_pairs
     target_24 = [tuple(sorted(xs + tuple(range(4, 8)))) for xs in x_pairs]
 
+    # Gerby/Poisson block: (xi, pi) |-> xi wedge A + c (pi contraction B^3).
     gp_columns: list[list[sp.Expr]] = []
     for pair in y_pairs:
         gp_columns.append(column(wedge({pair: sp.Integer(1)}, A), target_13))
@@ -100,6 +102,7 @@ def main() -> None:
         gp_columns.append(column(image, target_13))
     gp_matrix = sp.Matrix(gp_columns).T
 
+    # Commutative block: mu |-> (mu contraction A, c mu contraction B^3).
     ks_columns: list[list[sp.Expr]] = []
     for y_index in range(4):
         for vector_index in range(4):
@@ -110,7 +113,9 @@ def main() -> None:
                 monomial: sp.expand(c * coefficient)
                 for monomial, coefficient in second_raw.items()
             }
-            ks_columns.append(column(first, target_02) + column(second, target_24))
+            ks_columns.append(
+                column(first, target_02) + column(second, target_24)
+            )
     ks_matrix = sp.Matrix(ks_columns).T
 
     gp_rows = (0, 1, 2, 4, 5, 8, 10, 11, 14, 15)
@@ -126,6 +131,7 @@ def main() -> None:
     assert sp.simplify(gp_det - expected_gp_det) == 0
     assert sp.simplify(ks_det - expected_ks_det) == 0
 
+    # Two mixed gerby/Poisson kernel vectors.
     gp_kernel_vectors: list[sp.Matrix] = []
     vector = sp.zeros(12, 1)
     vector[0] = 6 * c * b1**2 * b2
@@ -140,6 +146,7 @@ def main() -> None:
     for vector in gp_kernel_vectors:
         assert_zero_matrix(gp_matrix * vector)
 
+    # Six block-diagonal symmetric Kodaira-Spencer kernel vectors.
     ks_kernel_vectors: list[sp.Matrix] = []
     for diagonal_column in (0, 5, 10, 15):
         vector = sp.zeros(16, 1)
@@ -147,13 +154,13 @@ def main() -> None:
         ks_kernel_vectors.append(vector)
 
     vector = sp.zeros(16, 1)
-    vector[1] = 1
-    vector[4] = 1
+    vector[1] = 1   # y_1 tensor e_2
+    vector[4] = 1   # y_2 tensor e_1
     ks_kernel_vectors.append(vector)
 
     vector = sp.zeros(16, 1)
-    vector[11] = 1
-    vector[14] = 1
+    vector[11] = 1  # y_3 tensor e_4
+    vector[14] = 1  # y_4 tensor e_3
     ks_kernel_vectors.append(vector)
 
     for vector in ks_kernel_vectors:
@@ -162,6 +169,7 @@ def main() -> None:
     assert sp.Matrix.hstack(*gp_kernel_vectors).rank() == 2
     assert sp.Matrix.hstack(*ks_kernel_vectors).rank() == 6
 
+    # Source-shaped rational specialization: embedding weights r^2=2 and r^-2=1/2.
     specialization = {
         a1: sp.Rational(2),
         a2: sp.Rational(1, 2),
@@ -171,7 +179,8 @@ def main() -> None:
     }
     gp_rank = gp_matrix.subs(specialization).rank()
     ks_rank = ks_matrix.subs(specialization).rank()
-    full_rank = sp.diag(gp_matrix, ks_matrix).subs(specialization).rank()
+    full_matrix = sp.diag(gp_matrix, ks_matrix)
+    full_rank = full_matrix.subs(specialization).rank()
 
     assert gp_rank == 10
     assert ks_rank == 10
