@@ -25,11 +25,10 @@ theorem eq_bot_of_le_disjoint
     (h₁ : L ≤ P₁)
     (h₂ : L ≤ P₂) :
     L = ⊥ := by
-  apply Submodule.eq_bot_iff.mpr
+  apply le_antisymm ?_ bot_le
   intro x hx
-  have hxinf : x ∈ P₁ ⊓ P₂ := ⟨h₁ hx, h₂ hx⟩
-  rw [hdisjoint.eq_bot] at hxinf
-  simpa using hxinf
+  rw [← hdisjoint.eq_bot]
+  exact ⟨h₁ hx, h₂ hx⟩
 
 /-- A nonzero tangent subspace cannot be contained in both complementary
 planes. -/
@@ -52,6 +51,7 @@ theorem nonzero_not_mem_both
   have hvbot : v ∈ (⊥ : Submodule K V) := by
     rw [← hdisjoint.eq_bot]
     exact ⟨h₁, h₂⟩
+  apply hv
   simpa using hvbot
 
 #print axioms eq_bot_of_le_disjoint
