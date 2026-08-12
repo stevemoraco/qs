@@ -32,7 +32,7 @@ jobs:
           path = pathlib.Path('verification/b4_auto12/B4Auto12Combined.lean')
           text = path.read_text()
           blob = subprocess.check_output(['git', 'hash-object', str(path)], text=True).strip()
-          if blob != '4016a252ac4a6df73beffcf356228cf0282e606f':
+          if blob != 'c45cf28405794024c1ab67a71f4373a3f6fba855':
               raise SystemExit(f'canonical blob mismatch: {blob}')
           if re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|opaque|unsafe)([^A-Za-z0-9_]|$)', text):
               raise SystemExit('forbidden placeholder/trust keyword found')
