@@ -1,0 +1,5 @@
+import PNPOPSSlopeCore
+
+#print axioms PNPOPSSlopeCore.unbounded_slope_contradicts_upper_envelope
+#print axioms PNPOPSSlopeCore.sequence_unbounded_slope_contradicts_upper_envelope
+#print axioms PNPOPSSlopeCore.fixed_slope_not_unbounded
