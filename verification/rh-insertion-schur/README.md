@@ -6,7 +6,7 @@
 
 - Repository/branch: `stevemoraco/RH-Lean:agent/rh-confluent-grid-block-symbol-20260812`
 - Private note: `scratch/rh_braid/RH_DELETION_HARMLESS_INSERTION_SCHUR_GATE_2026-08-12.md`
-- Exact Lean blob: `2ba12cc6c67f78d4987287a27dacb58448936933`
+- Exact Lean blob: `f2165218743d75cff18df92adb85240dab6987b5`
 
 ## Replayed declarations
 
