@@ -39,6 +39,7 @@ jobs:
               pathlib.Path('verification/b4_ns_nested_comb/B4NSNestedComb.lean'),
               pathlib.Path('verification/b4_ns_nested_comb/B4NSHelicalPair.lean'),
               pathlib.Path('verification/b4_ns_nested_comb/B4NSStaticTransportObstruction.lean'),
+              pathlib.Path('verification/b4_ns_nested_comb/B4NSAllOrderResidual.lean'),
           ]
           forbidden = [
               r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
