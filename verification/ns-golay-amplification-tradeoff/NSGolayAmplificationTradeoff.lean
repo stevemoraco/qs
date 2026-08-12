@@ -12,15 +12,16 @@ theorem residual_lag_energy_ceiling
     (hE : 0 ≤ E) (hε : 0 ≤ ε)
     (hr : ∀ i, |r i| ≤ ε * E) :
     E ^ 2 + ∑ i, r i ^ 2 ≤ E ^ 2 + (n : ℝ) * (ε * E) ^ 2 := by
-  apply add_le_add_left
-  calc
-    ∑ i, r i ^ 2 ≤ ∑ _i : Fin n, (ε * E) ^ 2 := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hnonneg : 0 ≤ ε * E := mul_nonneg hε hE
-      have hbounds := abs_le.mp (hr i)
-      nlinarith
-    _ = (n : ℝ) * (ε * E) ^ 2 := by simp
+  have hsum : ∑ i, r i ^ 2 ≤ (n : ℝ) * (ε * E) ^ 2 := by
+    calc
+      ∑ i, r i ^ 2 ≤ ∑ _i : Fin n, (ε * E) ^ 2 := by
+        apply Finset.sum_le_sum
+        intro i hi
+        have hnonneg : 0 ≤ ε * E := mul_nonneg hε hE
+        have hbounds := abs_le.mp (hr i)
+        nlinarith
+      _ = (n : ℝ) * (ε * E) ^ 2 := by simp
+  nlinarith
 
 /-- Exact complementary cancellation of every noncentral lag leaves only the
 central squared energy. In particular, exact cancellation itself creates no
@@ -43,7 +44,6 @@ theorem macroscopic_gain_forces_symbol_mismatch
     exact (le_div_iff₀ hM).2 hgain
   have hrewrite : (1 + M * ε ^ 2) / M = 1 / M + ε ^ 2 := by
     field_simp
-    ring
   rw [hrewrite] at hdiv
   linarith
 
