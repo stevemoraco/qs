@@ -1,0 +1,126 @@
+name: BSD Unit Exactification Direct-Head Lean
+
+on:
+  push:
+    branches:
+      - agent/bsd-unit-exactification-join-20260812
+  pull_request:
+    paths:
+      - research/bsd/unit_exactification_join_20260812/**
+      - .github/workflows/bsd-unit-exactification-direct-head-lean.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    env:
+      TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          persist-credentials: false
+
+      - name: Prove checkout identity
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$TARGET_SHA"
+          printf 'EVENT_SHA=%s\nTARGET_HEAD_SHA=%s\nCHECKED_OUT_SHA=%s\n' \
+            "$GITHUB_SHA" "$TARGET_SHA" "$actual" \
+            | tee research/bsd/unit_exactification_join_20260812/head-identity.log
+
+      - name: Reject placeholders and custom trust escapes
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          p = pathlib.Path(
+              'research/bsd/unit_exactification_join_20260812/'
+              'BSDUnitExactification.lean'
+          )
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in patterns:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(f'forbidden declaration: {match.group(0)!r}')
+          print('STATIC_TRUST_ESCAPE_SCAN=PASS')
+          PY
+
+      - name: Install pinned Lean action
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9 # v1.5.0
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: false
+          use-github-cache: false
+          lake-package-directory: research/bsd/unit_exactification_join_20260812
+
+      - name: Resolve, cache, compile, and audit
+        run: |
+          set -euo pipefail
+          target='research/bsd/unit_exactification_join_20260812'
+          cd "$target"
+          {
+            lean --version
+            lake --version
+            lake update
+            python3 - <<'PY'
+          import json
+          manifest = json.load(open('lake-manifest.json'))
+          mathlib = next(p for p in manifest['packages'] if p['name'] == 'mathlib')
+          print(f"MATHLIB_RESOLVED={mathlib['rev']}")
+          expected = '520045ab14e26149ee970e2e617ca04b09bde5d6'
+          if mathlib['rev'] != expected:
+              raise SystemExit(
+                  f"mathlib drift: expected {expected}, got {mathlib['rev']}"
+              )
+          PY
+            lake exe cache get
+            lake env lean BSDUnitExactification.lean
+          } 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' \
+              lean-output.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          sha256sum \
+            BSDUnitExactification.lean \
+            BSD_UNIT_COHOMOLOGY_EXACTIFICATION_FIREWALL_2026-08-12.md \
+            lakefile.toml \
+            lake-manifest.json \
+            lean-toolchain \
+            head-identity.log \
+            lean-output.log \
+            | tee sha256sums.txt
+          echo 'DIRECT_HEAD_FINITE_BSD_UNIT_EXACTIFICATION=VERIFIED'
+
+      - name: Upload exact replay evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bsd-unit-exactification-direct-head-${{ github.sha }}
+          path: |
+            research/bsd/unit_exactification_join_20260812/head-identity.log
+            research/bsd/unit_exactification_join_20260812/lean-output.log
+            research/bsd/unit_exactification_join_20260812/lake-manifest.json
+            research/bsd/unit_exactification_join_20260812/sha256sums.txt
+          if-no-files-found: warn
