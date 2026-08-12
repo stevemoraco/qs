@@ -10,9 +10,10 @@ It does **not** formalize Balaban's RG, lattice gauge theory, Green-function
 estimates, Osterwalder--Schrader reconstruction, dimensional transmutation, or
 the Clay Yang--Mills statement.
 
-Honesty status: source contains no `sorry`, `admit`, or custom axiom.  This file
-must compile in a clean pinned environment and its `#print axioms` output must be
-audited before the theorem is called Lean-verified.
+Honesty status: source contains no explicit proof holes or custom trust
+declarations.  This file must compile in a clean pinned environment and its
+`#print axioms` output must be audited before the theorem is called
+Lean-verified.
 -/
 
 namespace MillenniumBraid
