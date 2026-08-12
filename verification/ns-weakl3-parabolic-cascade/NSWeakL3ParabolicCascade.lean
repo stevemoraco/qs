@@ -18,7 +18,6 @@ theorem kinetic_price
     (lam volume : ℝ) (hlam : lam ≠ 0) :
     lam ^ 2 * (volume / lam ^ 3) = volume / lam := by
   field_simp [hlam]
-  ring
 
 /-- BANKER: instantaneous enstrophy of scale `lam`, persisted for parabolic
 time `c / lam²`, has the summable price `e*c/lam`. -/
@@ -26,7 +25,6 @@ theorem parabolic_enstrophy_price
     (lam e c : ℝ) (hlam : lam ≠ 0) :
     (e * lam) * (c / lam ^ 2) = (e * c) / lam := by
   field_simp [hlam]
-  ring
 
 /-- CRITIC: the spacetime L4 price of a parabolic episode is also proportional
 to `lam⁻¹`; it is not a scale-neutral obstruction. -/
@@ -35,7 +33,6 @@ theorem subcritical_L4_episode_price
     lam ^ 4 * (volume / lam ^ 3) * (duration / lam ^ 2)
       = (volume * duration) / lam := by
   field_simp [hlam]
-  ring
 
 /-- CLEANER: the spacetime L5 price is exactly scale-neutral under amplitude
 `lam`, volume `volume/lam³`, and time `duration/lam²`. -/
@@ -44,7 +41,6 @@ theorem critical_L5_episode_price
     lam ^ 5 * (volume / lam ^ 3) * (duration / lam ^ 2)
       = volume * duration := by
   field_simp [hlam]
-  ring
 
 /-- CLEANER: extending an enstrophy floor of order `lam` for the stronger time
 `c/lam` gives one uniform dissipation price. -/
@@ -52,7 +48,6 @@ theorem superparabolic_enstrophy_price
     (lam e c : ℝ) (hlam : lam ≠ 0) :
     (e * lam) * (c / lam) = e * c := by
   field_simp [hlam]
-  ring
 
 /-- CRITIC: the critical occupation `amplitude³ × volume` is invariant under
 three-dimensional Navier–Stokes scaling. -/
@@ -61,7 +56,6 @@ theorem critical_occupation_is_scale_invariant
     (amplitude * lam) ^ 3 * (volume / lam ^ 3)
       = amplitude ^ 3 * volume := by
   field_simp [hlam]
-  ring
 
 /-- CLEANER: once an equation-specific theorem supplies one common positive
 price per disjoint episode, a finite total budget gives an exact episode-count
