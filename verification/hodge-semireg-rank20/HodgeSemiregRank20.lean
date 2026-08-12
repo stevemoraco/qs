@@ -50,9 +50,10 @@ theorem injectiveOnObstructionImage_iff_ker_eq
     apply le_antisymm (ker_obstruction_le_ker_composite ob sigma)
     intro x hx
     rw [LinearMap.mem_ker] at hx ⊢
-    apply hinj x 0
-    change sigma (ob x) = sigma (ob 0)
-    simpa using hx
+    have hzero : sigma (ob x) = sigma (ob 0) := by
+      simpa using hx
+    have hobzero : ob x = ob 0 := hinj x 0 hzero
+    simpa using hobzero
   · intro hker x y hxy
     have hcomp : x - y ∈ (sigma.comp ob).ker := by
       rw [LinearMap.mem_ker]
