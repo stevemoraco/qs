@@ -57,7 +57,6 @@ theorem two_species_weighted_residual_sq
     (he₁ : |e₁| ≤ ε) (he₂ : |e₂| ≤ ε) :
     (e₁ * r₁ + e₂ * r₂) ^ 2 ≤
       2 * ε ^ 2 * (r₁ ^ 2 + r₂ ^ 2) := by
-  have hε : 0 ≤ ε := le_trans (abs_nonneg e₁) he₁
   rcases abs_le.mp he₁ with ⟨he₁lo, he₁hi⟩
   rcases abs_le.mp he₂ with ⟨he₂lo, he₂hi⟩
   have hp₁ : 0 ≤ (ε - e₁) * (ε + e₁) := by
@@ -83,15 +82,16 @@ theorem two_species_energy_stability
     {ι : Type*} [Fintype ι]
     (e₁ e₂ r₁ r₂ : ι → ℝ) (ε E : ℝ)
     (he₁ : ∀ i, |e₁ i| ≤ ε) (he₂ : ∀ i, |e₂ i| ≤ ε)
-    (hE : (∑ i, (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
-    (∑ i, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
+    (hE : (∑ i : ι, (r₁ i) ^ 2 + (r₂ i) ^ 2) ≤ E) :
+    (∑ i : ι, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2) ≤ 2 * ε ^ 2 * E := by
   calc
-    (∑ i, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
-        ≤ ∑ i, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
-          exact Finset.sum_le_sum fun i _ =>
-            two_species_weighted_residual_sq
-              (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
-    _ = 2 * ε ^ 2 * (∑ i, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
+    (∑ i : ι, (e₁ i * r₁ i + e₂ i * r₂ i) ^ 2)
+        ≤ ∑ i : ι, 2 * ε ^ 2 * ((r₁ i) ^ 2 + (r₂ i) ^ 2) := by
+          apply Finset.sum_le_sum
+          intro i hi
+          exact two_species_weighted_residual_sq
+            (e₁ i) (e₂ i) (r₁ i) (r₂ i) ε (he₁ i) (he₂ i)
+    _ = 2 * ε ^ 2 * (∑ i : ι, (r₁ i) ^ 2 + (r₂ i) ^ 2) := by
       rw [Finset.mul_sum]
     _ ≤ 2 * ε ^ 2 * E := by
       exact mul_le_mul_of_nonneg_left hE (by positivity)
@@ -119,8 +119,8 @@ theorem quasisteady_triad_carrier_dissipation
 theorem quasisteady_triad_carrier_nonpositive
     (x y a b γ : ℝ) (hγ : 0 < γ) :
     -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 / γ ≤ 0 := by
-  have hnum : 0 ≤ 2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 := by positivity
-  exact div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hnum) (le_of_lt hγ)
+  have hnum : -2 * (a + b) ^ 2 * x ^ 2 * y ^ 2 ≤ 0 := by positivity
+  exact div_nonpos_of_nonpos_of_nonneg hnum (le_of_lt hγ)
 
 /-- A per-channel `δ` bound alone permits an exact `J δ²` total squared leakage budget. -/
 theorem repeated_cellwise_mismatch_energy (J : ℕ) (δ : ℝ) :
