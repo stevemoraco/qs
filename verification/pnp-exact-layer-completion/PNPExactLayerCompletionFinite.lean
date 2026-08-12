@@ -30,7 +30,6 @@ theorem elementaryLayerValue_eq_zero_of_lt
     (w t : ℕ) (ht : t < w) :
     elementaryLayerValue w t = 0 := by
   rw [elementaryLayerValue, Nat.choose_eq_zero_of_lt ht]
-  rfl
 
 /-- On the target layer, the elementary-symmetric layer value is one. -/
 theorem elementaryLayerValue_self (w : ℕ) :
@@ -62,9 +61,9 @@ theorem odd_elementary_four_layer_values
 
 /-- Scalar accounting behind the source-backed completion construction:
 `n-hN` gates for the Hamming-weight bits and `hW-1` gates for their selected
-product. -/
+product. The selected target must use at least one binary weight bit. -/
 theorem completion_gate_count_rewrite
-    (n hN hW : ℕ) :
+    (n hN hW : ℕ) (hWpos : 1 ≤ hW) :
     (n - hN) + (hW - 1) = n - hN + hW - 1 := by
   omega
 
