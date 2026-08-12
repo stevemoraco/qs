@@ -30,13 +30,16 @@ jobs:
             exit 1
           fi
 
-      - name: Run exact symbolic exterior-algebra certificate
+      - name: Run exact symbolic exterior-algebra certificates
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-cache-dir 'sympy==1.14.0'
           python verification/hodge-markman-beta-kernel/hodge_markman_beta_kernel_certificate.py \
-            | tee verification/hodge-markman-beta-kernel/python-output.json
-          grep -q '"status": "PASS"' verification/hodge-markman-beta-kernel/python-output.json
+            | tee verification/hodge-markman-beta-kernel/python-mixed-output.json
+          grep -q '"status": "PASS"' verification/hodge-markman-beta-kernel/python-mixed-output.json
+          python verification/hodge-markman-beta-kernel/hodge_markman_proportional_rank_certificate.py \
+            | tee verification/hodge-markman-beta-kernel/python-proportional-output.json
+          grep -q '"status": "PASS"' verification/hodge-markman-beta-kernel/python-proportional-output.json
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         run: |
@@ -63,6 +66,7 @@ jobs:
           sha256sum \
             verification/hodge-markman-beta-kernel/HodgeMarkmanBetaKernelFinite.lean \
             verification/hodge-markman-beta-kernel/hodge_markman_beta_kernel_certificate.py \
+            verification/hodge-markman-beta-kernel/hodge_markman_proportional_rank_certificate.py \
             > verification/hodge-markman-beta-kernel/source-sha256.txt
           cat verification/hodge-markman-beta-kernel/source-sha256.txt
 
@@ -73,6 +77,7 @@ jobs:
           name: hodge-markman-beta-kernel-evidence
           path: |
             verification/hodge-markman-beta-kernel/lean-output.log
-            verification/hodge-markman-beta-kernel/python-output.json
+            verification/hodge-markman-beta-kernel/python-mixed-output.json
+            verification/hodge-markman-beta-kernel/python-proportional-output.json
             verification/hodge-markman-beta-kernel/source-sha256.txt
           if-no-files-found: warn
