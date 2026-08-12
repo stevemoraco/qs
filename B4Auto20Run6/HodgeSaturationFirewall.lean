@@ -27,14 +27,13 @@ theorem hodge_integral_denominator_clearing_can_fail :
   · rintro ⟨k, hk⟩
     omega
 
-/-- CLEANER: for one fixed nonzero multiplier, a local saturation theorem is
-already sufficient to close that denominator-clearing edge. This isolates the
-precise geometric obligation: prove preservation/saturation for the actual
-algebraic-cycle lattice, not merely rational-span membership. -/
+/-- CLEANER: for one fixed multiplier, a local saturation theorem is already
+sufficient to close the denominator-clearing edge. Nonzeroness is needed only
+when deriving such a saturation law from a genuine denominator, not in this
+pure implication once local saturation is assumed. -/
 theorem hodge_fixed_multiplier_saturation_closes_step
     (S : ℤ → Prop)
     (n x : ℤ)
-    (hn : n ≠ 0)
     (hsat : ∀ y : ℤ, S (n * y) → S y)
     (hscaled : S (n * x)) :
     S x := by
