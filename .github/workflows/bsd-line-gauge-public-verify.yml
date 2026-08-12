@@ -1,0 +1,80 @@
+name: BSD Line Gauge Public Lean Verify
+
+on:
+  push:
+    branches:
+      - agent/bsd-line-gauge-public-verifier-20260812
+  pull_request:
+    branches:
+      - main
+    paths:
+      - verification/BSDLineGaugeFinite.lean
+      - .github/workflows/bsd-line-gauge-public-verify.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Honesty lexical firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/BSDLineGaugeFinite.lean
+          if grep -nE '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)|^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$FILE"; then
+            echo 'Forbidden proof escape found' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean 4.31
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --no-modify-path
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Build exact finite source against pinned mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir verifier
+          cp verification/BSDLineGaugeFinite.lean verifier/Main.lean
+          cat > verifier/lean-toolchain <<'EOF'
+          leanprover/lean4:v4.31.0
+          EOF
+          cat > verifier/lakefile.lean <<'EOF'
+          import Lake
+          open Lake DSL
+          package «bsd-line-gauge-verifier» where
+          require mathlib from git
+            "https://github.com/leanprover-community/mathlib4.git" @ "v4.31.0"
+          EOF
+          cd verifier
+          lake update
+          lake exe cache get
+          lake env lean Main.lean 2>&1 | tee lean-build.log
+          if grep -E 'sorryAx|declaration uses.*sorry|admit' lean-build.log; then
+            echo 'Unacceptable axiom or placeholder in compiler output' >&2
+            exit 1
+          fi
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+
+      - name: Upload proof evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-line-gauge-public-lean-evidence
+          path: |
+            verifier/lean-build.log
+            verifier/lean-version.txt
+            verifier/lake-version.txt
+            verifier/mathlib-commit.txt
+          if-no-files-found: error
