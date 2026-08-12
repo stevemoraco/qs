@@ -51,8 +51,7 @@ theorem comparison_rayleigh
     (le_div_iff₀ hCM).2 hpoly'
   have hCMne : C * M ≠ 0 := ne_of_gt hCM
   have hcoeff : (C * M - 1) / (C * M) = 1 - 1 / (C * M) := by
-    field_simp [hCMne]
-    ring
+    rw [sub_div, div_self hCMne]
   calc
     R ≤ ((C * M - 1) * V) / (C * M) := hdiv
     _ = ((C * M - 1) / (C * M)) * V := by ring
