@@ -43,7 +43,9 @@ theorem frozen_comparator_subtraction
     α = comm := by
   linarith
 
-/-- Abstract value of a commutator at one point. -/
+/-- Abstract value of a commutator at one point.  The operator is deliberately
+left arbitrary: locality of the symbol replacement uses equality of the two
+operator inputs, not linearity. -/
 def commutatorAt
     {ι R : Type*} [Ring R]
     (T : (ι → R) → ι → R)
@@ -55,11 +57,11 @@ the supported input, their commutators agree exactly at that point. -/
 theorem commutatorAt_eq_of_input_eq
     {ι R : Type*} [Ring R]
     (T : (ι → R) → ι → R)
-    (b b̃ f : ι → R) (x : ι)
-    (hprod : ∀ y, b y * f y = b̃ y * f y)
-    (hx : b x = b̃ x) :
-    commutatorAt T b f x = commutatorAt T b̃ f x := by
-  have hfun : (fun y => b y * f y) = (fun y => b̃ y * f y) := by
+    (b b2 f : ι → R) (x : ι)
+    (hprod : ∀ y, b y * f y = b2 y * f y)
+    (hx : b x = b2 x) :
+    commutatorAt T b f x = commutatorAt T b2 f x := by
+  have hfun : (fun y => b y * f y) = (fun y => b2 y * f y) := by
     funext y
     exact hprod y
   simp [commutatorAt, hfun, hx]
@@ -68,12 +70,12 @@ theorem commutatorAt_eq_of_input_eq
 theorem commutatorAt_eq_of_agree_on_support
     {ι R : Type*} [Ring R]
     (T : (ι → R) → ι → R)
-    (b b̃ f : ι → R) (S : Set ι) (x : ι)
-    (hagree : ∀ y ∈ S, b y = b̃ y)
+    (b b2 f : ι → R) (S : Set ι) (x : ι)
+    (hagree : ∀ y ∈ S, b y = b2 y)
     (hfzero : ∀ y ∉ S, f y = 0)
-    (hx : b x = b̃ x) :
-    commutatorAt T b f x = commutatorAt T b̃ f x := by
-  apply commutatorAt_eq_of_input_eq T b b̃ f x
+    (hx : b x = b2 x) :
+    commutatorAt T b f x = commutatorAt T b2 f x := by
+  apply commutatorAt_eq_of_input_eq T b b2 f x
   · intro y
     by_cases hy : y ∈ S
     · rw [hagree y hy]
@@ -86,8 +88,8 @@ commutator components. -/
 theorem three_component_triangle (a b c : ℝ) :
     |a + b + c| ≤ |a| + |b| + |c| := by
   calc
-    |a + b + c| ≤ |a + b| + |c| := abs_add _ _
-    _ ≤ (|a| + |b|) + |c| := by gcongr; exact abs_add _ _
+    |a + b + c| ≤ |a + b| + |c| := abs_add_le _ _
+    _ ≤ (|a| + |b|) + |c| := add_le_add_right (abs_add_le _ _) _
     _ = |a| + |b| + |c| := by ring
 
 #print axioms frozen_cross_cancellation
