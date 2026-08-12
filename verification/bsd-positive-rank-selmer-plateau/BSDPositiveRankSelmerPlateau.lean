@@ -37,12 +37,16 @@ theorem growth_succ (depths : List ℕ) (m : ℕ) :
       simp only [growth, deepCount]
       rw [ih]
       by_cases h : m < a
-      · rw [Nat.min_eq_left (Nat.le_of_lt h), Nat.min_eq_left h]
+      · have hm : Nat.min m a = m := Nat.min_eq_left (Nat.le_of_lt h)
+        have hms : Nat.min (m + 1) a = m + 1 := Nat.min_eq_left h
+        rw [hm, hms]
         simp [h]
         omega
       · have ham : a ≤ m := Nat.le_of_not_gt h
         have hasucc : a ≤ m + 1 := Nat.le_trans ham (Nat.le_add_right m 1)
-        rw [Nat.min_eq_right ham, Nat.min_eq_right hasucc]
+        have hm : Nat.min m a = a := Nat.min_eq_right ham
+        have hms : Nat.min (m + 1) a = a := Nat.min_eq_right hasucc
+        rw [hm, hms]
         simp [h, Nat.add_assoc]
 
 /-- No factor remains deeper than `m` exactly when the deep-factor count is
