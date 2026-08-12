@@ -99,8 +99,11 @@ theorem pinned_schur_interaction_identity
   have hsum : G (E (Qs v)) + a • G (Qs v) = Qs v := by
     simpa using hInv
   have haG : a • G (Qs v) = Qs v - G (E (Qs v)) := by
-    rw [← hsum]
-    abel
+    calc
+      a • G (Qs v) =
+          (G (E (Qs v)) + a • G (Qs v)) - G (E (Qs v)) := by
+            abel
+      _ = Qs v - G (E (Qs v)) := by rw [hsum]
   have hQ :
       a • Q (G (Qs v)) = v - Q (G (E (Qs v))) := by
     have h := congrArg (fun x : V => Q x) haG
