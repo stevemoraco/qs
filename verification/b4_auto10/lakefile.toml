@@ -1,0 +1,11 @@
+name = "b4_auto10_upgrade_firewalls"
+version = "0.1.0"
+defaultTargets = ["B4Auto10Combined"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.32.1"
+
+[[lean_lib]]
+name = "B4Auto10Combined"
