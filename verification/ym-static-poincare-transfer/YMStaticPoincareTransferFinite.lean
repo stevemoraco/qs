@@ -45,13 +45,18 @@ theorem comparison_rayleigh
     (hD : D = V - R) :
     R ≤ (1 - 1 / (C * M)) * V := by
   have hpoly := comparison_polynomial V E D C M R hC hVE hED hD
+  have hpoly' : R * (C * M) ≤ (C * M - 1) * V := by
+    simpa [mul_assoc, mul_comm, mul_left_comm] using hpoly
   have hdiv : R ≤ ((C * M - 1) * V) / (C * M) :=
-    (le_div_iff₀ hCM).2 hpoly
+    (le_div_iff₀ hCM).2 hpoly'
+  have hCMne : C * M ≠ 0 := ne_of_gt hCM
+  have hcoeff : (C * M - 1) / (C * M) = 1 - 1 / (C * M) := by
+    field_simp [hCMne]
+    ring
   calc
     R ≤ ((C * M - 1) * V) / (C * M) := hdiv
-    _ = (1 - 1 / (C * M)) * V := by
-      field_simp [ne_of_gt hCM]
-      ring
+    _ = ((C * M - 1) / (C * M)) * V := by ring
+    _ = (1 - 1 / (C * M)) * V := by rw [hcoeff]
 
 /-- Correlation of the lazy-refresh transfer on a centered vector. -/
 def lazyCorrelation (ε V : ℝ) : ℝ := (1 - ε) * V
