@@ -1,0 +1,83 @@
+name: PNP Hamming Cylinder Finite Lean
+
+on:
+  push:
+    branches:
+      - agent/pnp-hamming-cylinder-public-verify-20260812
+    paths:
+      - 'verification/pnp-hamming-cylinder/**'
+      - '.github/workflows/pnp-hamming-cylinder-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/pnp-hamming-cylinder/**'
+      - '.github/workflows/pnp-hamming-cylinder-lean.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders, custom axioms, and unsafe shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/pnp-hamming-cylinder/'
+              'PNPHammingCylinderFinite.lean'
+          )
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+          ]
+          for pattern in forbidden:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration or shortcut: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/pnp-hamming-cylinder
+          lake update
+          lake exe cache get
+          lake env lean PNPHammingCylinderFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite PNP Hamming-cylinder core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-hamming-cylinder-lean-evidence
+          path: |
+            verification/pnp-hamming-cylinder/lean-output.log
+            lean-version.log
+            lake-version.log
+          if-no-files-found: warn
