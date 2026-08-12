@@ -13,9 +13,11 @@ theorem ym_relative_error_preserves_fraction_of_uniform_gap
     (hgap : c ≤ g)
     (herr : |g - m| ≤ θ * c) :
     (1 - θ) * c ≤ m ∧ 0 < m := by
-  have hlower : -(θ * c) ≤ g - m := (abs_le.mp herr).1
+  have hupper : g - m ≤ θ * c := (abs_le.mp herr).2
+  have hg : g ≤ θ * c + m := (sub_le_iff_le_add).1 hupper
   have hgm : g - θ * c ≤ m := by
-    linarith
+    apply (sub_le_iff_le_add).2
+    simpa [add_comm] using hg
   have hfloor : (1 - θ) * c ≤ m := by
     calc
       (1 - θ) * c = c - θ * c := by ring
