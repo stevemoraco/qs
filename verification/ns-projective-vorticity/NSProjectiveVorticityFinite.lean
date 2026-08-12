@@ -107,7 +107,6 @@ theorem shearEnergySquaredScale
     (m : ℝ) (hm : 0 < m) :
     (m ^ 2) ^ 2 * (1 / m ^ 3) ^ 3 = 1 / m ^ 5 := by
   field_simp [ne_of_gt hm]
-  ring
 
 /-- The slab width `m^-3` is far below the parabolic vorticity scale `m^-1`:
 its squared width times vorticity amplitude is `m^-4`. -/
@@ -115,7 +114,6 @@ theorem shearSubcriticalWidthScale
     (m : ℝ) (hm : 0 < m) :
     (1 / m ^ 3) ^ 2 * m ^ 2 = 1 / m ^ 4 := by
   field_simp [ne_of_gt hm]
-  ring
 
 #print axioms rankOneParallelCross_first
 #print axioms rankOneParallelCross_second
