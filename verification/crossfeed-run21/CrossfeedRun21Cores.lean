@@ -10,7 +10,6 @@ This is the order-theoretic core behind the Run21 RH lattice-window reduction.
 -/
 theorem shifted_window_two_grid_cover
     {H δ T n t : ℝ}
-    (hδ : 0 < δ)
     (hδH : δ ≤ H)
     (hnlo : n * δ ≤ T)
     (hnhi : T < (n + 1) * δ)
@@ -31,20 +30,20 @@ theorem shifted_window_two_grid_cover
 
 /--
 A finite global budget contradicts an unbounded sequence of cumulative lower
-prices.  No uniform positive per-event floor is required: non-summability of
-the proved lower prices is the exact abstract endpoint.
+prices. No uniform positive per-event floor is required: unbounded cumulative
+proved lower prices are the exact abstract endpoint.
 -/
 theorem unbounded_partial_prices_contradict_budget
     {cost : ℕ → ℝ} {E : ℝ}
-    (hbudget : ∀ N : ℕ, ∑ j in Finset.range N, cost j ≤ E)
-    (hunbounded : ∀ B : ℝ, ∃ N : ℕ, B < ∑ j in Finset.range N, cost j) :
+    (hbudget : ∀ N : ℕ, Finset.sum (Finset.range N) cost ≤ E)
+    (hunbounded : ∀ B : ℝ, ∃ N : ℕ, B < Finset.sum (Finset.range N) cost) :
     False := by
   rcases hunbounded E with ⟨N, hN⟩
   exact (not_lt_of_ge (hbudget N)) hN
 
 /--
 For an antitone positive-master candidate, every real-time value between two
-adjacent sample times is squeezed by those two samples.  This is the finite
+adjacent sample times is squeezed by those two samples. This is the finite
 order core used only as a downstream Yang--Mills discretization observation.
 -/
 theorem monotone_unit_window_squeeze
