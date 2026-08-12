@@ -90,11 +90,13 @@ theorem finiteCycleClass_not_surjective :
   obtain ⟨b, hb⟩ := h (2 : Fin 3)
   cases b with
   | false =>
-      have hne : (0 : Fin 3) ≠ 2 := by decide
-      exact hne (by simpa [finiteCycleClass] using hb)
+      have hbval := congrArg Fin.val hb
+      change (0 : ℕ) = 2 at hbval
+      omega
   | true =>
-      have hne : (1 : Fin 3) ≠ 2 := by decide
-      exact hne (by simpa [finiteCycleClass] using hb)
+      have hbval := congrArg Fin.val hb
+      change (1 : ℕ) = 2 at hbval
+      omega
 
 #print axioms transpose_power_cannot_change_codimension
 #print axioms raising_and_lowering_codimensions_agree_only_at_zero
