@@ -20,7 +20,7 @@ jobs:
       - name: Verify canonical private-source blob
         run: |
           file=verification/rh_run17_block/RHDyadicBlockFinite.lean
-          expected=9d42c4b8522b9a97281b852a52ffa3f3a9a2753e
+          expected=4c18d5ea1d6f3776bc261e408864a493a62f25ab
           actual=$(git hash-object "$file")
           echo "expected=$expected"
           echo "actual=$actual"
