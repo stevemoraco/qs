@@ -110,7 +110,7 @@ theorem sq_posPart_le_sq (x : ℝ) : (max x 0) ^ 2 ≤ x ^ 2 := by
   · simp [max_eq_left hx]
   · have hx' : x ≤ 0 := le_of_not_ge hx
     rw [max_eq_right hx']
-    positivity
+    simpa using sq_nonneg x
 
 /--
 A finite global budget contradicts an unbounded sequence of cumulative lower
