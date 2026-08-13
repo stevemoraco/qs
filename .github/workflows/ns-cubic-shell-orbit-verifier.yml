@@ -1,0 +1,96 @@
+name: NS cubic shell orbit verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-cubic-shell-orbit-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-cubic-shell-orbit/**'
+      - '.github/workflows/ns-cubic-shell-orbit-verifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-cubic-shell-orbit'
+          file="$dir/NSCubicShellOrbitCore.lean"
+          expected='06192b5c03b4b14336ce1c82ac54ba4c2586632f'
+          actual="$(git hash-object "$file")"
+          echo "source_blob=$actual" | tee "$dir/source-blob.txt"
+          test "$actual" = "$expected"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and replay exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-cubic-shell-orbit'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSCubicShellOrbitCore.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          test "$status" -eq 0
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency in compiler report.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('lean-output.log').read_text()
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for line in text.splitlines():
+              if 'depends on axioms:' not in line:
+                  continue
+              deps = line.split('[',1)[1].rsplit(']',1)[0]
+              found = {x.strip() for x in deps.split(',') if x.strip()}
+              bad = found - allowed
+              if bad:
+                  raise SystemExit(f'non-foundation axiom(s): {sorted(bad)}')
+          print('foundation-only axiom audit: PASS')
+          PY
+          echo 'VERIFIED finite cubic shell algebra.'
+
+      - name: Upload replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-cubic-shell-orbit-evidence
+          path: |
+            verification/ns-cubic-shell-orbit/source-blob.txt
+            verification/ns-cubic-shell-orbit/source-sha256.txt
+            verification/ns-cubic-shell-orbit/lean-version.txt
+            verification/ns-cubic-shell-orbit/lean-output.log
+          if-no-files-found: error
