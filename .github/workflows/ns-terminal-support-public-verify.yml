@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           ROOT='verification/ns-terminal-support'
           SRC="$ROOT/NSTerminalSupportCounterexample.lean"
-          EXPECTED_BLOB='b2316eaec014c038a78618eb7f78295f43627f7f'
+          EXPECTED_BLOB='270a2398642e22e3e65b6ae85f37ce39670ed7b1'
 
           CHECKOUT_STATUS="$(git status --porcelain=v1)"
           printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
