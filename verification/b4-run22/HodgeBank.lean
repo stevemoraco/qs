@@ -56,7 +56,7 @@ theorem safeBlock_BA_zero (x y : R) :
     Matrix.mulVec (safeB x y) (safeA x y) = 0 := by
   funext i
   fin_cases i <;>
-    simp [safeA, safeB, Matrix.mulVec, Fin.sum_univ_two] <;>
+    simp [safeA, safeB, Matrix.mulVec] <;>
     ring
 
 /-- The alternating first-derivative contraction is exactly
@@ -66,8 +66,7 @@ theorem safeBlock_derivative_contraction (x y : R) :
       Matrix.mulVec (dyB x y) dxA = contractionC x y := by
   funext i
   fin_cases i <;>
-    simp [dxA, dyA, dxB, dyB, contractionC,
-      Matrix.mulVec, Fin.sum_univ_two] <;>
+    simp [dxA, dyA, dxB, dyB, contractionC] <;>
     ring
 
 /-- The displayed constant matrix sends `A` to the contraction vector. -/
@@ -75,9 +74,7 @@ theorem safeBlock_VA_eq_C (x y : R) :
     Matrix.mulVec boundaryV (safeA x y) = contractionC x y := by
   funext i
   fin_cases i <;>
-    simp [boundaryV, safeA, contractionC,
-      Matrix.mulVec, Fin.sum_univ_two] <;>
-    ring
+    simp [boundaryV, safeA, contractionC, Matrix.mulVec]
 
 #print axioms safeBlock_BA_zero
 #print axioms safeBlock_derivative_contraction
