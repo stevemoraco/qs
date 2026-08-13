@@ -22,7 +22,7 @@ jobs:
         working-directory: verification/millennium-braid-everything/project
         run: |
           set -euo pipefail
-          test "$(git hash-object lean-worker/MillenniumBraidAll.lean)" = "ec3723983b6ee10f8dc6f10f11b949214e0a434b"
+          test "$(git hash-object lean-worker/MillenniumBraidAll.lean)" = "e36d28929adfde5c500d878dd11f32201b8c68a2"
           test "$(cat lean-toolchain)" = "leanprover/lean4:v4.31.0"
           python3 - <<'PY'
           import pathlib, re
@@ -87,6 +87,7 @@ jobs:
           )
           trusted = {
               'MillenniumBraidAll.lean',
+              'BSDToupinHaarInversionFirewall.lean',
               'HodgeRationalIntegralFirewall.lean',
               'NSSelectiveLerayAtom.lean',
               'PNPParityWordInjection.lean',
@@ -121,7 +122,7 @@ jobs:
           : > module-replay.tsv
           mkdir -p module-logs
           status=0
-          for src in lean-worker/{MillenniumBraidAll,HodgeRationalIntegralFirewall,NSSelectiveLerayAtom,PNPParityWordInjection,PerelmanCompletionRouteEquivalenceFirewall,RHPureSimpleZeroNoCoercivity,SeventhObjectRouteEquivalenceFirewall,YMJacobsenActivityFirewall}.lean; do
+          for src in lean-worker/{MillenniumBraidAll,BSDToupinHaarInversionFirewall,HodgeRationalIntegralFirewall,NSSelectiveLerayAtom,PNPParityWordInjection,PerelmanCompletionRouteEquivalenceFirewall,RHPureSimpleZeroNoCoercivity,SeventhObjectRouteEquivalenceFirewall,YMJacobsenActivityFirewall}.lean; do
             module=$(basename "$src" .lean)
             if lake env lean "$src" > "module-logs/$module.log" 2>&1; then
               if grep -q 'sorryAx' "module-logs/$module.log"; then
@@ -159,6 +160,7 @@ jobs:
           theorem_lines = declaration_lines = 0
           trusted = {
               'MillenniumBraidAll.lean',
+              'BSDToupinHaarInversionFirewall.lean',
               'HodgeRationalIntegralFirewall.lean',
               'NSSelectiveLerayAtom.lean',
               'PNPParityWordInjection.lean',
