@@ -78,6 +78,72 @@ theorem short_time_not_epsilon_slaved
     lt_of_lt_of_le hstrict hlower
   exact (not_lt_of_ge hslaved) this
 
+/-- Exact endpoint response to the source history
+`S(s) = SFinal * exp (-g * (T-s))` in `b' + δb = -S`, with zero initial data. -/
+def growingResponse (δ g T SFinal : ℝ) : ℝ :=
+  -(1 - Real.exp (-((g + δ) * T))) * SFinal / (g + δ)
+
+/-- Its multiplicative coefficient relative to the instantaneous quasi-steady
+state at the endpoint. -/
+def growingResponseCoefficient (δ g T : ℝ) : ℝ :=
+  δ / (g + δ) * (1 - Real.exp (-((g + δ) * T)))
+
+/-- Exact source-faithful response identity.  The growth rate enters the
+resolvent denominator as `g + δ`. -/
+theorem growing_response_fraction_identity
+    {δ g T SFinal : ℝ}
+    (hδ : δ ≠ 0) (hsum : g + δ ≠ 0) :
+    growingResponse δ g T SFinal =
+      growingResponseCoefficient δ g T * quasiSteady δ SFinal := by
+  simp [growingResponse, growingResponseCoefficient, quasiSteady]
+  field_simp [hδ, hsum]
+  ring
+
+/-- Exact residual from instantaneous quasi-steady elimination for an
+exponentially growing source. -/
+theorem growing_residual_identity
+    {δ g T SFinal : ℝ}
+    (hδ : δ ≠ 0) (hsum : g + δ ≠ 0) :
+    growingResponse δ g T SFinal - quasiSteady δ SFinal =
+      ((g + δ * Real.exp (-((g + δ) * T))) / (g + δ)) *
+        (SFinal / δ) := by
+  simp [growingResponse, quasiSteady]
+  field_simp [hδ, hsum]
+  ring
+
+/-- If the source grows at least as fast as the viscous damping and time is
+nonnegative, the exact response reaches at most half of the instantaneous
+quasi-steady coefficient. -/
+theorem growing_response_coefficient_at_most_half
+    {δ g T : ℝ}
+    (hδ : 0 ≤ δ) (hg : δ ≤ g) (hT : 0 ≤ T)
+    (hsum : 0 < g + δ) :
+    growingResponseCoefficient δ g T ≤ 1 / 2 := by
+  have hExp : 0 ≤ Real.exp (-((g + δ) * T)) :=
+    le_of_lt (Real.exp_pos _)
+  have hFactor : 1 - Real.exp (-((g + δ) * T)) ≤ 1 := by
+    linarith
+  have hCoef : 0 ≤ δ / (g + δ) :=
+    div_nonneg hδ (le_of_lt hsum)
+  have hFirst :
+      growingResponseCoefficient δ g T ≤ δ / (g + δ) := by
+    simpa [growingResponseCoefficient] using
+      mul_le_mul_of_nonneg_left hFactor hCoef
+  have hHalf : δ / (g + δ) ≤ 1 / 2 := by
+    rw [div_le_iff₀ hsum]
+    linarith
+  exact le_trans hFirst hHalf
+
+/-- Equivalent statement: at least half of the instantaneous quasi-steady
+coefficient remains unresolved whenever `g ≥ δ`. -/
+theorem growing_residual_fraction_at_least_half
+    {δ g T : ℝ}
+    (hδ : 0 ≤ δ) (hg : δ ≤ g) (hT : 0 ≤ T)
+    (hsum : 0 < g + δ) :
+    1 / 2 ≤ 1 - growingResponseCoefficient δ g T := by
+  have h := growing_response_coefficient_at_most_half hδ hg hT hsum
+  linarith
+
 /-- Palasek's viscous parameter condition gives a positive gap between the
 activation exponent and the largest same-carrier viscous exponent. -/
 theorem palasek_clock_beats_same_shell_viscosity
@@ -85,9 +151,8 @@ theorem palasek_clock_beats_same_shell_viscosity
     0 < β - 2 * b := by
   linarith
 
-/-- Equivalent negative exponent for the damping accumulated over one
-activation clock. -/
-theorem palasek_accumulated_damping_exponent_negative
+/-- Equivalent negative exponent for the damping/growth rate ratio. -/
+theorem palasek_damping_to_growth_exponent_negative
     {b β : ℝ} (hβ : 2 * b < β) :
     2 * b - β < 0 := by
   linarith
