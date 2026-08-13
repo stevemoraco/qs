@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import defaultdict
 from fractions import Fraction as F
 
 def add(x,y): return tuple(a+b for a,b in zip(x,y))
@@ -36,6 +37,46 @@ Ns=leray_num(s,raw_s); Nr=leray_num(r,raw_r)
 raw2=add(scale(dot(Ns,r),Nr),scale(dot(Nr,s),Ns))
 assert leray_num(add(s,r),raw2)==scale(
     -4050316834212265142271787008,q2)
+
+
+# Sum every ordered inviscid Picard tree contributing to the square-free
+# monomial A_a A_b A_c A_{-c}.  U[n] is the coefficient of t^n and obeys
+# U[n+1]=(1/(n+1))*sum_{p+q=n} Q(U[p],U[q]).
+def ordered_q(k,u,l,ul):
+    out=add(k,l)
+    return leray(out,scale(dot(u,l),ul))
+
+zero=(F(0),F(0),F(0))
+u0=defaultdict(lambda: zero)
+for i,(k,u) in enumerate(((a,ua),(b,ub),(c,uc),(scale(-1,c),uc))):
+    monomial=tuple(1 if i==j else 0 for j in range(4))
+    u0[(k,monomial)]=tuple(map(F,u))
+picard=[u0]
+for n in range(3):
+    nxt=defaultdict(lambda: zero)
+    for p in range(n+1):
+        q=n-p
+        for (k,mk),uk in picard[p].items():
+            for (l,ml),ul in picard[q].items():
+                monomial=tuple(x+y for x,y in zip(mk,ml))
+                key=(add(k,l),monomial)
+                nxt[key]=add(nxt[key],scale(F(1,n+1),ordered_q(k,uk,l,ul)))
+    picard.append(nxt)
+
+square_free=(1,1,1,1)
+W=picard[3][(scale(2,ell2),square_free)]
+expected_W=(
+    F(-29709287450407586552369503382070768,51741447392101),
+    F(11805421958679668258158519494433904,155224342176303),
+    F(-54125708274780163979264993456244880,155224342176303))
+assert W==expected_W
+assert dot(ell2,W)==0
+assert dot(q2,W)==F(
+    -100933284309902427915267029640646208,155224342176303)
+q2_cross_ell2=(-10,-10,-14)
+assert dot(q2_cross_ell2,W)==F(
+    510328106590784403233069938301737440,51741447392101)
 print('s',s,'normSq',dot(s,s),'B_s',Bs)
 print('r',r,'normSq',dot(r,r),'B_r',Br)
 print('return',add(s,r),'B_sr',Bsr)
+print('all ordered quartic Picard trees',W)
