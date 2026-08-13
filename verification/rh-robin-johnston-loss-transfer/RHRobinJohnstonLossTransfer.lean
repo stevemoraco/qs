@@ -3,22 +3,15 @@ import Mathlib
 /-!
 # Quantitative Robin--Johnston loss-transfer core
 
-This file formalizes the order-theoretic and algebraic closure of the following
-human analytic estimate for one prime cell.  If `R` is the Robin increment,
-`J` the Johnston increment, `B >= 0` the midpoint-convexity buffer, `p > 0`,
-and `L > 0`, then
+The strongest human one-cell estimate has the signed form
 
-`B - negPart J / (p * L^2) <= R`.
+`buffer + johnston / (p * L^2) <= robin`.
 
-The theorems below prove, without any custom axiom, that this implies
+The theorems below formalize its order-theoretic and algebraic closure.  In
+particular, they prove the sharp loss bound, the coarser negative-part transfer,
+the exact conversion under `johnston = L*z`, and finite signed block summation.
 
-`negPart R <= negPart J / (p * L^2)`
-
-and, after the exact Johnston factorization `J = L*z`,
-
-`negPart R <= negPart z / (p * L)`.
-
-The calculus establishing the displayed prime-cell premise is deliberately not
+The calculus establishing the displayed one-cell premise is deliberately not
 smuggled into this module: it remains a separately auditable human dependency.
 -/
 
@@ -31,6 +24,22 @@ def negPart (x : ℝ) : ℝ := max (-x) 0
 theorem negPart_nonneg (x : ℝ) : 0 ≤ negPart x := by
   exact le_max_right _ _
 
+/-- The negative part dominates `-x`. -/
+theorem neg_le_negPart (x : ℝ) : -x ≤ negPart x := by
+  unfold negPart
+  exact le_max_left _ _
+
+/-- Equivalently, `-x_- <= x`. -/
+theorem neg_negPart_le (x : ℝ) : -negPart x ≤ x := by
+  have h := neg_le_negPart x
+  linarith
+
+/-- Negative part reverses the ambient order. -/
+theorem negPart_antitone {x y : ℝ} (hxy : x ≤ y) :
+    negPart y ≤ negPart x := by
+  unfold negPart
+  exact max_le_max (neg_le_neg hxy) (le_refl 0)
+
 /-- Any lower bound `-q <= x`, with `q >= 0`, bounds the loss of `x` by `q`. -/
 theorem negPart_le_of_lower_bound
     {x q : ℝ} (hq : 0 ≤ q) (hx : -q ≤ x) :
@@ -38,17 +47,50 @@ theorem negPart_le_of_lower_bound
   unfold negPart
   exact max_le (by linarith) hq
 
-/-- Abstract buffered loss transfer. -/
+/-- The sharp abstract loss transfer from an arbitrary lower bound. -/
+theorem sharp_loss_transfer
+    (robin lower : ℝ) (hcell : lower ≤ robin) :
+    negPart robin ≤ negPart lower := by
+  exact negPart_antitone hcell
+
+/-- Abstract buffered loss transfer from a nonnegative charge. -/
 theorem buffered_loss_transfer
-    (robin johnstonLoss buffer weight : ℝ)
-    (hj : 0 ≤ johnstonLoss)
-    (hb : 0 ≤ buffer)
-    (hw : 0 ≤ weight)
-    (hcell : buffer - weight * johnstonLoss ≤ robin) :
-    negPart robin ≤ weight * johnstonLoss := by
+    (robin charge buffer weight : ℝ)
+    (hcharge : 0 ≤ charge)
+    (hbuffer : 0 ≤ buffer)
+    (hweight : 0 ≤ weight)
+    (hcell : buffer - weight * charge ≤ robin) :
+    negPart robin ≤ weight * charge := by
   apply negPart_le_of_lower_bound
-  · exact mul_nonneg hw hj
+  · exact mul_nonneg hweight hcharge
   · linarith
+
+/-- A signed lower bound implies the corresponding negative-part lower bound. -/
+theorem signed_lower_bound_implies_buffered_lower_bound
+    (robin johnston buffer weight : ℝ)
+    (hweight : 0 ≤ weight)
+    (hcell : buffer + weight * johnston ≤ robin) :
+    buffer - weight * negPart johnston ≤ robin := by
+  have hj : -negPart johnston ≤ johnston := neg_negPart_le johnston
+  have hmul : weight * (-negPart johnston) ≤ weight * johnston :=
+    mul_le_mul_of_nonneg_left hj hweight
+  calc
+    buffer - weight * negPart johnston =
+        buffer + weight * (-negPart johnston) := by ring
+    _ ≤ buffer + weight * johnston := add_le_add_left hmul buffer
+    _ ≤ robin := hcell
+
+/-- Coarse loss transfer inherited from the stronger signed lower bound. -/
+theorem signed_buffered_loss_transfer
+    (robin johnston buffer weight : ℝ)
+    (hbuffer : 0 ≤ buffer)
+    (hweight : 0 ≤ weight)
+    (hcell : buffer + weight * johnston ≤ robin) :
+    negPart robin ≤ weight * negPart johnston := by
+  exact buffered_loss_transfer robin (negPart johnston) buffer weight
+    (negPart_nonneg johnston) hbuffer hweight
+    (signed_lower_bound_implies_buffered_lower_bound
+      robin johnston buffer weight hweight hcell)
 
 /-- Prime-cell specialization with weight `1 / (p L^2)`. -/
 theorem robin_loss_le_johnston_loss
@@ -85,12 +127,28 @@ theorem negPart_mul_of_nonneg (a x : ℝ) (ha : 0 ≤ a) :
       max_eq_left (neg_nonneg.mpr hx')]
     ring
 
+/-- Exact conversion of the signed Johnston weight under `J = L*z`. -/
+theorem cocycle_signed_weight_identity
+    (z p L : ℝ) (hp : 0 < p) (hL : 0 < L) :
+    (L * z) / (p * L^2) = z / (p * L) := by
+  field_simp [ne_of_gt hp, ne_of_gt hL]
+
 /-- Exact conversion of the Johnston loss weight under `J = L*z`. -/
 theorem cocycle_weight_identity
     (z p L : ℝ) (hp : 0 < p) (hL : 0 < L) :
     negPart (L * z) / (p * L^2) = negPart z / (p * L) := by
   rw [negPart_mul_of_nonneg L z hL.le]
   field_simp [ne_of_gt hp, ne_of_gt hL]
+
+/-- The signed prime-cell estimate is exactly the centered-state estimate. -/
+theorem signed_prime_cell_to_centered_state
+    (robin z p L buffer : ℝ)
+    (hp : 0 < p)
+    (hL : 0 < L)
+    (hcell : buffer + (L * z) / (p * L^2) ≤ robin) :
+    buffer + z / (p * L) ≤ robin := by
+  rw [cocycle_signed_weight_identity z p L hp hL] at hcell
+  exact hcell
 
 /-- The Robin loss is controlled directly by the weighted negative centered
 prime-arrival state `z_- / (p L)`. -/
@@ -106,7 +164,7 @@ theorem robin_loss_le_centered_deficit
   rw [cocycle_weight_identity z p L hp hL] at h
   exact h
 
-/-- Finite block summation preserves the buffered lower bound exactly. -/
+/-- Finite block summation preserves a buffered lower bound exactly. -/
 theorem sum_buffered_lower_bound
     {ι : Type*} (s : Finset ι)
     (robin buffer charge : ι → ℝ)
@@ -115,7 +173,16 @@ theorem sum_buffered_lower_bound
   simpa only [Finset.sum_sub_distrib] using
     (Finset.sum_le_sum (fun i hi => hcell i hi))
 
-/-- A strict finite block budget yields a positive final cumulative statistic. -/
+/-- Finite block summation preserves the stronger signed lower bound exactly. -/
+theorem sum_signed_buffered_lower_bound
+    {ι : Type*} (s : Finset ι)
+    (robin buffer signed : ι → ℝ)
+    (hcell : ∀ i ∈ s, buffer i + signed i ≤ robin i) :
+    Finset.sum s buffer + Finset.sum s signed ≤ Finset.sum s robin := by
+  simpa only [Finset.sum_add_distrib] using
+    (Finset.sum_le_sum (fun i hi => hcell i hi))
+
+/-- A strict finite charge budget yields a positive final cumulative statistic. -/
 theorem cumulative_positive_of_block_budget
     {ι : Type*} (s : Finset ι)
     (robin buffer charge : ι → ℝ)
@@ -128,4 +195,33 @@ theorem cumulative_positive_of_block_budget
   rw [hfinal]
   linarith
 
+/-- A strict signed finite-block lower bound yields positivity. -/
+theorem cumulative_positive_of_signed_block_budget
+    {ι : Type*} (s : Finset ι)
+    (robin buffer signed : ι → ℝ)
+    (initial final : ℝ)
+    (hcell : ∀ i ∈ s, buffer i + signed i ≤ robin i)
+    (hfinal : final = initial + Finset.sum s robin)
+    (hbudget : 0 < initial + Finset.sum s buffer + Finset.sum s signed) :
+    0 < final := by
+  have hsum := sum_signed_buffered_lower_bound s robin buffer signed hcell
+  rw [hfinal]
+  linarith
+
 end RHRobinJohnstonLossTransfer
+
+#print axioms RHRobinJohnstonLossTransfer.negPart_antitone
+#print axioms RHRobinJohnstonLossTransfer.sharp_loss_transfer
+#print axioms RHRobinJohnstonLossTransfer.signed_lower_bound_implies_buffered_lower_bound
+#print axioms RHRobinJohnstonLossTransfer.signed_buffered_loss_transfer
+#print axioms RHRobinJohnstonLossTransfer.robin_loss_le_johnston_loss
+#print axioms RHRobinJohnstonLossTransfer.robin_negative_forces_budget_exhaustion
+#print axioms RHRobinJohnstonLossTransfer.negPart_mul_of_nonneg
+#print axioms RHRobinJohnstonLossTransfer.cocycle_signed_weight_identity
+#print axioms RHRobinJohnstonLossTransfer.cocycle_weight_identity
+#print axioms RHRobinJohnstonLossTransfer.signed_prime_cell_to_centered_state
+#print axioms RHRobinJohnstonLossTransfer.robin_loss_le_centered_deficit
+#print axioms RHRobinJohnstonLossTransfer.sum_buffered_lower_bound
+#print axioms RHRobinJohnstonLossTransfer.sum_signed_buffered_lower_bound
+#print axioms RHRobinJohnstonLossTransfer.cumulative_positive_of_block_budget
+#print axioms RHRobinJohnstonLossTransfer.cumulative_positive_of_signed_block_budget
