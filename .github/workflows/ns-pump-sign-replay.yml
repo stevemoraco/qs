@@ -1,0 +1,32 @@
+name: NS pump sign replay
+
+on:
+  push:
+    branches:
+      - b2/ns-pump-sign-firewall-20260813
+    paths:
+      - 'verification/ns-pump-sign/**'
+      - '.github/workflows/ns-pump-sign-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lean
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Resolve project
+        working-directory: verification/ns-pump-sign
+        run: |
+          lake update
+          lake exe cache get
+      - name: Replay
+        working-directory: verification/ns-pump-sign
+        run: lake env lean NSPumpSignFirewall.lean
