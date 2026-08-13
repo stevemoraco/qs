@@ -10,5 +10,6 @@ require mathlib from git
 lean_lib Round41Replay where
   roots := #[
     `B2Round41AdversarialCores,
-    `B2Round41FaithfulTransferCores
+    `B2Round41FaithfulTransferCores,
+    `B2Round41ORBucketCores
   ]
