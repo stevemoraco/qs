@@ -21,9 +21,7 @@ the Riemann zeta function, or RH, and it imports no analytic equivalence.
 
 namespace Millennium.RH.CriticalChebyshevFrozenPrefix
 
-noncomputable section
-
-def reserve (theta a arch : ℝ) : ℝ :=
+noncomputable def reserve (theta a arch : ℝ) : ℝ :=
   2 * Real.sqrt theta - arch - a
 
 def polynomialReserve (theta a arch : ℝ) : ℝ :=
