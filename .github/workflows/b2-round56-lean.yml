@@ -1,0 +1,43 @@
+name: B2 round56 Lean replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/b2_round56/**'
+      - '.github/workflows/b2-round56-lean.yml'
+  push:
+    branches:
+      - b2-round56-replay-20260813
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust preflight
+        run: |
+          set -euo pipefail
+          grep -R -nE 'sorry|admit|sorryAx|^axiom |^opaque |unsafe|native_decide|Lean.ofReduceBool' verification/b2_round56/*.lean && exit 1 || true
+      - name: Install Lean and replay
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/b2_round56
+          lake update
+          lake exe cache get
+          lake env lean B2Round56FactorizationOverlapEnergyFirewalls.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2-round56-lean-evidence
+          path: verification/b2_round56
+          if-no-files-found: warn
