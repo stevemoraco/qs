@@ -8,10 +8,10 @@ Hypothesis.
 
 - Canonical repository: `stevemoraco/RH-Lean`
 - Canonical branch: `agent/rh-robin-johnston-loss-transfer-20260812`
-- Canonical signed-source commit: `369196a7cca5a4f75c54caedfcaa5e8a9fd337c9`
-- Canonical source blob: `e00317d45280d47dde8db4302997819d53109ccb`
-- Public signed-source commit: `13ff9e7429aba8245f20bd292e4cbbafc0df749b`
-- Public source blob: `e00317d45280d47dde8db4302997819d53109ccb`
+- Canonical signed-source commit: `e65c10e0bac55f8f86172486dfe594849430dfe1`
+- Canonical source blob: `d2732fa64ec236660c2d584dc2a296f1a870cfc4`
+- Public signed-source commit: `049af3dbf65637d3bb87ffd29eb8a6ea6bd70236`
+- Public source blob: `d2732fa64ec236660c2d584dc2a296f1a870cfc4`
 - Lean toolchain: `leanprover/lean4:v4.33.0`
 - Mathlib revision: `v4.33.0`
 
@@ -44,10 +44,13 @@ receipt.
 3. Explicit `Finset.sum` terms then compiled cleanly byte-for-byte.
 4. The first axiom audit correctly failed because a separate report file tried
    to import a module for which direct compilation had not emitted an `.olean`.
-5. The final source embeds its reports, removing that search-path dependency.
+5. Reports were embedded in the exact source, removing that search-path dependency.
+6. The signed upgrade exposed an addition-order elaboration mismatch; replacing
+   the brittle term with kernel-checked linear arithmetic preserved the theorem
+   statement exactly.
 
 No theorem statement or mathematical hypothesis was weakened in these repairs.
 The signed theorem is stronger than the original negative-part formulation.
 
-Status at this commit: final embedded-report replay pending. No green label is
+Status at this commit: final fixed-source replay pending. No green label is
 inherited until the exact run and receipt are inspected.
