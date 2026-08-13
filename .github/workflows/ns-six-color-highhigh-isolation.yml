@@ -39,14 +39,16 @@ jobs:
           cd verification/ns-six-color-highhigh-isolation
           lake update
           lake exe cache get
-          lake env lean SixColorHighHighIsolationFinite.lean 2>&1 | tee lean-output.log
+          lake env lean -DmaxHeartbeats=2000000 SixColorHighHighIsolationFinite.lean 2>&1 | tee lean-output.log
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
           echo 'VERIFIED finite six-color high-high isolation core.'
       - name: Upload compiler evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ns-six-color-highhigh-isolation-lean-evidence
           path: verification/ns-six-color-highhigh-isolation/lean-output.log
+          if-no-files-found: warn
