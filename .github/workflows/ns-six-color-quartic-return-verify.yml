@@ -28,7 +28,10 @@ jobs:
           if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
           if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
       - name: Run exact rational replay
-        run: python3 tools/check_ns_six_color_quartic_return.py | tee quartic-python.log
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/check_ns_six_color_quartic_return.py 2>&1 | tee quartic-python.log
       - name: Install pinned Lean and compile
         shell: bash
         run: |
