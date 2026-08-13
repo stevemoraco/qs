@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verification/ns-selective-leray-atom-20260813
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
