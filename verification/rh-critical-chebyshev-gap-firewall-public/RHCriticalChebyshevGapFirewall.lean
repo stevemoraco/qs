@@ -20,23 +20,23 @@ theorem gap_increment_identity
 interior value by the exact square loss `(r-a)^2/a`. -/
 theorem left_endpoint_loss
     {a r theta A c : ℝ}
-    (ha : a ≠ 0) (hr : r ≠ 0)
+    (ha : a ≠ 0)
     (htheta : theta = r ^ 2) :
     margin a theta A c = margin r theta A c + (r - a) ^ 2 / a := by
   rw [htheta]
   unfold margin
-  field_simp [ha, hr]
+  field_simp [ha]
   ring
 
 /-- Symmetric right-endpoint loss identity. -/
 theorem right_endpoint_loss
     {b r theta A c : ℝ}
-    (hb : b ≠ 0) (hr : r ≠ 0)
+    (hb : b ≠ 0)
     (htheta : theta = r ^ 2) :
     margin b theta A c = margin r theta A c + (b - r) ^ 2 / b := by
   rw [htheta]
   unfold margin
-  field_simp [hb, hr]
+  field_simp [hb]
   ring
 
 /-- The initial prime boundary is exactly zero: the prime jump contribution
