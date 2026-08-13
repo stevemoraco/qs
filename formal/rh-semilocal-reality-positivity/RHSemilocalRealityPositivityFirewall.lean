@@ -38,7 +38,8 @@ theorem exact_cutoff_stability
 theorem stable_family_has_negative_vector :
     ∀ cutoff : Nat, stableFamily cutoff 1 0 = -1 := by
   intro cutoff
-  decide
+  change diagonalForm (-1) 1 1 0 = -1
+  exact negative_unit_value
 
 /-- Real/integral diagonal spectral data plus exact form stability do not imply positivity. -/
 theorem reality_and_stability_do_not_force_positivity :
