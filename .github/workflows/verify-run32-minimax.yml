@@ -1,0 +1,52 @@
+name: Verify finite minimax source
+
+on:
+  push:
+    branches: [agent/run32-pnp-minimax-20260813]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Decode source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d verification/pnp-restriction-minimax/PNPRestrictionMinimax.lean.b64 > /tmp/source.lean
+          test "$(sha256sum /tmp/source.lean | cut -d' ' -f1)" = 33ab97abde30dfb42a95fe740f01cc697bf717cc3f6e3f77cffd78dd711cfe70
+          test "$(grep -c '^#print axioms' /tmp/source.lean)" = 5
+          ! grep -Eq 'sorry|admit|sorryAx|^axiom |opaque|unsafe|native_decide|Lean.ofReduceBool' /tmp/source.lean
+      - name: Kernel check
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/evidence
+          python3 - <<'PY2'
+          import json, os, urllib.request
+          source = open('/tmp/source.lean').read() + '\n-- nonce ' + os.environ['GITHUB_SHA'] + '\n'
+          data = json.dumps({'content':source,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=data, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as r: result=json.load(r)
+          open('/tmp/evidence/result.json','w').write(json.dumps(result,indent=2,sort_keys=True))
+          print(json.dumps(result,indent=2,sort_keys=True))
+          assert result.get('okay') is True
+          assert result.get('failed_declarations',[]) == []
+          assert result.get('lean_messages',{}).get('errors',[]) == []
+          assert result.get('lean_messages',{}).get('warnings',[]) == []
+          assert result.get('tool_messages',{}).get('errors',[]) == []
+          assert result.get('tool_messages',{}).get('warnings',[]) == []
+          PY2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finite-minimax-evidence
+          path: /tmp/evidence/
+          if-no-files-found: error
