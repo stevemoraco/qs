@@ -30,12 +30,15 @@ jobs:
           set -euo pipefail
           SRC='verification/rh-suzuki-two-divisor-witness/RHSuzukiTwoDivisorWitnessCore.lean'
           EXPECTED_BLOB='10d8483c0da9c57dd12088f9db468df7ac9b8aa3'
+
+          CHECKOUT_STATUS="$(git status --porcelain=v1)"
+          printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
+          test -z "$CHECKOUT_STATUS"
+
           ACTUAL_BLOB="$(git hash-object "$SRC")"
           printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           sha256sum "$SRC" | tee source-sha256.txt
-          git status --porcelain=v1 | tee checkout-status.txt
-          test ! -s checkout-status.txt
 
           if grep -nE '\b(sorry|admit|sorryAx)\b' "$SRC"; then
             echo 'Forbidden proof hole detected.' >&2
@@ -126,7 +129,7 @@ jobs:
           mkdir -p replay-receipt
           cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
           cp source-sha256.txt replay-receipt/ 2>/dev/null || true
-          cp checkout-status.txt replay-receipt/ 2>/dev/null || true
+          cp "$RUNNER_TEMP/checkout-status.txt" replay-receipt/ 2>/dev/null || true
           cp lean-version.txt replay-receipt/ 2>/dev/null || true
           cp verification/rh-suzuki-two-divisor-witness/lean-output.log replay-receipt/ 2>/dev/null || true
           cp verification/rh-suzuki-two-divisor-witness/axiom-report.txt replay-receipt/ 2>/dev/null || true
