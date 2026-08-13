@@ -26,7 +26,7 @@ jobs:
           set -euo pipefail
           SRC=verification/millennium-grand-braid-everything/MillenniumGrandBraidEverythingExecutable.lean
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
-          EXPECTED=f3e705ccd78b08d7827455af4cf1861da5271577110e31832c2d56575c9971fa
+          EXPECTED=5b6f1ade0f3f3a1c3a25d9aaf58b67f9f72b6f36b7c76dff68f46133dc7e3782
           test "$ACTUAL" = "$EXPECTED"
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
             echo 'Forbidden trust carrier found'
@@ -82,7 +82,7 @@ jobs:
             echo "repository=${GITHUB_REPOSITORY}"
             echo "commit=${GITHUB_SHA}"
             echo "runner=${RUNNER_NAME}"
-            echo "canonical_sha256=f3e705ccd78b08d7827455af4cf1861da5271577110e31832c2d56575c9971fa"
+            echo "canonical_sha256=5b6f1ade0f3f3a1c3a25d9aaf58b67f9f72b6f36b7c76dff68f46133dc7e3782"
             echo "environment=lean-4.30.0"
             echo "print_axioms_count=52"
           } > "$OUT/replay-metadata.txt"

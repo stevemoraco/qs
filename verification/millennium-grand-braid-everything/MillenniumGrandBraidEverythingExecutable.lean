@@ -161,6 +161,7 @@ theorem gapMargin_critical_minimum
     (ne_of_gt hu) htheta
   have hnonneg : 0 ≤ (u - s) ^ 2 / u :=
     div_nonneg (sq_nonneg (u - s)) (le_of_lt hu)
+  rw [hcrit]
   linarith
 
 /-- Exact two-sector Schur identity. -/
@@ -285,14 +286,14 @@ range transfers nonalgebraicity from target to source. -/
 theorem hodge_range_transfer
     {CycleX CycleY HX HY : Type*}
     (clX : CycleX → HX) (clY : CycleY → HY)
-    (include : HY → HX) (project : HX → HY)
-    (hretract : ∀ alpha, project (include alpha) = alpha)
+    (embed : HY → HX) (project : HX → HY)
+    (hretract : ∀ alpha, project (embed alpha) = alpha)
     (hpreserve : Set.MapsTo project (Set.range clX) (Set.range clY))
     {alpha : HY} (hnonalg : alpha ∉ Set.range clY) :
-    include alpha ∉ Set.range clX := by
+    embed alpha ∉ Set.range clX := by
   intro hsource
   apply hnonalg
-  have htarget : project (include alpha) ∈ Set.range clY :=
+  have htarget : project (embed alpha) ∈ Set.range clY :=
     hpreserve hsource
   simpa [hretract alpha] using htarget
 
@@ -365,7 +366,7 @@ theorem ns_helical_high_child_fraction_lt
 /-- One exact same-helicity high-child relay strictly decreases energy × frequency. -/
 theorem ns_helical_weighted_energy_descent
     (ell m h Rold Rnew : ℝ)
-    (helm : ell < m) (hmh : m < h)
+    (hell : 0 < ell) (helm : ell < m) (hmh : m < h)
     (hR : 0 < Rold)
     (htransfer :
       Rnew ^ 2 = ((m - ell) / (h - ell)) * Rold ^ 2) :
@@ -376,6 +377,8 @@ theorem ns_helical_weighted_energy_descent
       ((m - ell) / (h - ell)) * h = ((m - ell) * h) / (h - ell) := by ring
       _ < m := by
         apply (div_lt_iff₀ hhe).2
+        have hstrict : 0 < ell * (h - m) :=
+          mul_pos hell (sub_pos.mpr hmh)
         nlinarith
   have hR2 : 0 < Rold ^ 2 := sq_pos_of_pos hR
   calc
@@ -975,4 +978,3 @@ theorem millennium_grand_braid_everything_executable
 #print axioms millennium_grand_braid_everything_executable
 
 end MillenniumGrandBraidComposite
-
