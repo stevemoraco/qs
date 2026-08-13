@@ -49,7 +49,7 @@ that image, and an explicit reciprocity law identifies the value with a
 nonzero-unit multiple of the target p-adic L-value. -/
 theorem cleaner_typed_nonvanishing_requires_all_gates
     {Higher Ordinary Lambda : Type*}
-    [Zero Ordinary] [CancelMonoidWithZero Lambda]
+    [Zero Ordinary] [MonoidWithZero Lambda] [IsCancelMulZero Lambda]
     (sp : Higher → Ordinary)
     (col : Ordinary → Lambda)
     (κ : Higher)
