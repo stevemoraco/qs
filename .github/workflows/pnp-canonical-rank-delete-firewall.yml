@@ -1,0 +1,64 @@
+name: PNP Canonical Rank-Deletion Firewall
+
+on:
+  push:
+    branches:
+      - agent/pnp-canonical-rank-delete-firewall-20260813
+  pull_request:
+    paths:
+      - 'verification/pnp-canonical-rank-delete-firewall/**'
+      - 'research/pnp-canonical-rank-delete-firewall-20260813.md'
+      - '.github/workflows/pnp-canonical-rank-delete-firewall.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-canonical-rank-delete-firewall'
+          file="$dir/PNPCanonicalRankDeleteFinite.lean"
+          git hash-object "$file" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-canonical-rank-delete-firewall'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean PNPCanonicalRankDeleteFinite.lean > lean-output.log 2>&1
+          lean_status=$?
+          set -e
+          cat lean-output.log
+          if [ "$lean_status" -ne 0 ]; then exit "$lean_status"; fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED PNP canonical rank-deletion firewall.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-canonical-rank-deletion-firewall-evidence
+          path: |
+            verification/pnp-canonical-rank-delete-firewall/source-blob.txt
+            verification/pnp-canonical-rank-delete-firewall/source-sha256.txt
+            verification/pnp-canonical-rank-delete-firewall/lean-version.txt
+            verification/pnp-canonical-rank-delete-firewall/lean-output.log
