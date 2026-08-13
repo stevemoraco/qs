@@ -24,7 +24,7 @@ jobs:
           dir='verification/rh-prime-prefix-cocycle-threshold'
           file="$dir/RHPrimePrefixCocycleThreshold.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='414461c8c99dac9c950657b839af8b7411ba3ce0'
+          expected_blob='e14ca67e34288d6ada4be49e95416b026a7e2849'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
