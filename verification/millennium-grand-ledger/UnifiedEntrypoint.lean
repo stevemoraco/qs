@@ -1,19 +1,11 @@
-import MillenniumGrandLedger
-import SeventhObjectAndInversion
+import LedgerAggregate
 
 namespace MillenniumGrandExecutable
 
-open MillenniumGrand
-open MillenniumGrandExactObject
+open MillenniumGrandAggregate
 
-structure UnifiedResearchStatement : Prop where
-  ledger : GrandBraidStatement
-  objectFirewall : ExactObjectFirewall
+theorem unified : CompiledLedger := compiled_ledger
 
-theorem unified_executable : UnifiedResearchStatement where
-  ledger := millennium_grand_unified_executable
-  objectFirewall := exact_object_firewall
-
-#print axioms unified_executable
+#print axioms unified
 
 end MillenniumGrandExecutable
