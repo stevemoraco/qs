@@ -1,0 +1,108 @@
+name: Zeta23 pinned external kernel audit
+
+on:
+  push:
+    branches:
+      - agent/zeta23-independent-kernel-audit-20260813
+    paths:
+      - '.github/workflows/zeta23-independent-kernel-audit.yml'
+      - 'verification/zeta23-independent-audit/**'
+      - 'research/zeta23-independent-audit-20260813.md'
+  pull_request:
+    paths:
+      - '.github/workflows/zeta23-independent-kernel-audit.yml'
+      - 'verification/zeta23-independent-audit/**'
+      - 'research/zeta23-independent-audit-20260813.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      ZETA23_COMMIT: 3635e74826a4c1fcece7d1cd2b6fa75e43a00510
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone exact external source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/anthropics/zeta-23-lean.git external-zeta23
+          git -C external-zeta23 checkout --detach "$ZETA23_COMMIT"
+          test "$(git -C external-zeta23 rev-parse HEAD)" = "$ZETA23_COMMIT"
+          test -z "$(git -C external-zeta23 status --porcelain)"
+          {
+            echo "repository=https://github.com/anthropics/zeta-23-lean"
+            echo "commit=$(git -C external-zeta23 rev-parse HEAD)"
+            echo "tree=$(git -C external-zeta23 rev-parse HEAD^{tree})"
+            echo "toolchain=$(cat external-zeta23/lean-toolchain)"
+            echo "mathlib=$(jq -r '.packages[] | select(.name == "mathlib") | .rev' external-zeta23/lake-manifest.json)"
+            sha256sum external-zeta23/comparator/ChallengeDeps.lean
+            sha256sum external-zeta23/comparator/Challenge.lean
+            sha256sum external-zeta23/comparator/Solution.lean
+          } | tee audit-metadata.txt
+
+      - name: Source trust scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 verification/zeta23-independent-audit/scan_lean_trust.py external-zeta23             | tee trust-scan.log
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned Mathlib cache
+        shell: bash
+        working-directory: external-zeta23
+        run: |
+          set -euo pipefail
+          lake exe cache get 2>&1 | tee ../cache.log
+
+      - name: Build headline proof cone
+        shell: bash
+        working-directory: external-zeta23
+        run: |
+          set -euo pipefail
+          lake build Zeta23 Solution Solution.Multiplicity Solution.XiPrime 2>&1             | tee ../build.log
+
+      - name: Replay trusted-shape canaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp verification/zeta23-independent-audit/ExternalAudit.lean             external-zeta23/ExternalAudit.lean
+          cd external-zeta23
+          lake env lean ExternalAudit.lean 2>&1 | tee ../canary.log
+
+      - name: Replay upstream axiom reports
+        shell: bash
+        working-directory: external-zeta23
+        run: |
+          set -euo pipefail
+          : > ../axioms.log
+          for file in             comparator/PrintAxioms.lean             comparator/PrintAxioms/Multiplicity.lean             comparator/PrintAxioms/XiPrime.lean; do
+            lake env lean "$file" 2>&1 | tee -a ../axioms.log
+          done
+          python3 ../verification/zeta23-independent-audit/check_axiom_report.py             ../axioms.log | tee ../axiom-check.log
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeta23-independent-kernel-audit
+          if-no-files-found: error
+          path: |
+            audit-metadata.txt
+            trust-scan.log
+            cache.log
+            build.log
+            canary.log
+            axioms.log
+            axiom-check.log
