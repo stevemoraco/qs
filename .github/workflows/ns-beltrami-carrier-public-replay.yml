@@ -7,6 +7,7 @@ on:
       - 'formal/millennium_audit/SixLaneAudit.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
+      - 'formal/millennium_audit/SixLaneAudit/NSShell17BeltramiMasterFrame.lean'
       - 'formal/millennium_audit/lakefile.lean'
       - 'formal/millennium_audit/lean-toolchain'
       - '.github/workflows/ns-beltrami-carrier-public-replay.yml'
@@ -16,6 +17,7 @@ on:
       - 'formal/millennium_audit/SixLaneAudit.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
+      - 'formal/millennium_audit/SixLaneAudit/NSShell17BeltramiMasterFrame.lean'
       - 'formal/millennium_audit/lakefile.lean'
       - 'formal/millennium_audit/lean-toolchain'
       - '.github/workflows/ns-beltrami-carrier-public-replay.yml'
@@ -42,11 +44,13 @@ jobs:
             SixLaneAudit.lean \
             SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
             SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
+            SixLaneAudit/NSShell17BeltramiMasterFrame.lean \
             lean-toolchain lakefile.lean
           if grep -nE '\b(sorry|admit|sorryAx)\b' \
             SixLaneAudit.lean \
             SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
-            SixLaneAudit/NSBeltramiSixCarrierFrame.lean; then
+            SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
+            SixLaneAudit/NSShell17BeltramiMasterFrame.lean; then
             echo 'Explicit proof hole found'
             exit 1
           fi
@@ -84,8 +88,12 @@ jobs:
             | tee ns_beltrami_cone_axioms.txt
           lake env lean SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
             | tee ns_beltrami_frame_axioms.txt
+          lake env lean SixLaneAudit/NSShell17BeltramiMasterFrame.lean \
+            | tee ns_shell17_frame_axioms.txt
           if grep -nE '(sorryAx|declaration uses.*sorry|error:)' \
-            ns_beltrami_cone_axioms.txt ns_beltrami_frame_axioms.txt; then
+            ns_beltrami_cone_axioms.txt \
+            ns_beltrami_frame_axioms.txt \
+            ns_shell17_frame_axioms.txt; then
             echo 'Forbidden axiom or Lean error found in replay output'
             exit 1
           fi
