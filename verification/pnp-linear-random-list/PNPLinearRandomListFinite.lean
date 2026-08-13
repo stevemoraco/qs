@@ -71,12 +71,47 @@ theorem selectedToFalsePositiveLedger
     M < accepted - selected := by
   omega
 
+/-- Restricting an `r`-bit selector prefix does not increase gates, so a
+`2(m+r)+S` gate upper bound becomes surplus `S+2r` against baseline `2m`.
+The graph-theoretic restriction step itself is outside this scalar lemma. -/
+theorem sliceRestrictionBudget
+    (m r S g : ℕ)
+    (h : g ≤ 2 * (m + r) + S) :
+    g ≤ 2 * m + (S + 2 * r) := by
+  omega
+
+/-- If a fixed core has size `M` and an error edge contains `e` core points
+with `M ≤ 4e`, uniform fractional core weight gives that edge mass at least 1. -/
+theorem quarterCoreEdgeMass
+    (M e : ℚ)
+    (hM : 0 < M)
+    (he : M ≤ 4 * e) :
+    1 ≤ (4 * e) / M := by
+  exact (le_div_iff₀ hM).2 (by simpa using he)
+
+/-- Uniform weight `4/M` over `M` core points has total mass exactly four. -/
+theorem quarterCoreTotalMass
+    (M : ℚ)
+    (hM : 0 < M) :
+    (4 * M) / M = 4 := by
+  field_simp [ne_of_gt hM]
+
+/-- The chosen sample size `256*n*L` has an exact integral quarter. -/
+theorem sampleQuarterScaled
+    (n L : ℕ) :
+    256 * n * L = 4 * (64 * n * L) := by
+  ring
+
 #print axioms acceptedFractionAtMostInvSquare
 #print axioms falsePositiveFloor
 #print axioms unionBoundExponentHeadroom
 #print axioms linearListExceedsSquareRootBudget
 #print axioms clyExponentFactorTwo
 #print axioms selectedToFalsePositiveLedger
+#print axioms sliceRestrictionBudget
+#print axioms quarterCoreEdgeMass
+#print axioms quarterCoreTotalMass
+#print axioms sampleQuarterScaled
 
 end PNPLinearRandomListFinite
 end MillenniumBraid
