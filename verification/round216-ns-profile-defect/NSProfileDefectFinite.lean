@@ -7,7 +7,6 @@ theorem critical_velocity_energy_scaling
     (r : ℝ) (hr : r ≠ 0) :
     r ^ 3 * (r⁻¹) ^ 2 = r := by
   field_simp [hr]
-  ring
 
 theorem critical_velocity_l3_scaling
     (r : ℝ) (hr : r ≠ 0) :
@@ -18,7 +17,6 @@ theorem critical_enstrophy_spacetime_scaling
     (r : ℝ) (hr : r ≠ 0) :
     r ^ 5 * ((r ^ 2)⁻¹) ^ 2 = r := by
   field_simp [hr]
-  ring
 
 def criticalEnstrophyMass (r gradientMass : ℝ) : ℝ :=
   2 * r * gradientMass
@@ -26,7 +24,8 @@ def criticalEnstrophyMass (r gradientMass : ℝ) : ℝ :=
 theorem critical_enstrophy_normalized
     (r gradientMass : ℝ) (hr : r ≠ 0) :
     criticalEnstrophyMass r gradientMass / r = 2 * gradientMass := by
-  field_simp [criticalEnstrophyMass, hr]
+  rw [criticalEnstrophyMass]
+  field_simp [hr]
 
 def criticalEnergyMass (r profileL2Sq : ℝ) : ℝ :=
   r * profileL2Sq
