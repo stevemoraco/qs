@@ -1,0 +1,77 @@
+name: NS Ri frequency multiplicity Lean firewall
+
+on:
+  push:
+    branches:
+      - agent/ns-threshold-kill-bp-spike-cost-20260813-gpt56pro
+    paths:
+      - 'verification/ns-ri-frequency-multiplicity/**'
+      - '.github/workflows/ns-ri-frequency-multiplicity-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-ri-frequency-multiplicity/**'
+      - '.github/workflows/ns-ri-frequency-multiplicity-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pin source and reject explicit proof holes or custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-ri-frequency-multiplicity'
+          file="$dir/NSRiFrequencyMultiplicity.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='e7ce618bec53aed736e266888847d9ef4c02f181'
+          test "$actual_blob" = "$expected_blob"
+          printf 'source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Rejected: explicit proof hole or custom axiom declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile against pinned Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          dir='verification/ns-ri-frequency-multiplicity'
+          lean --version | tee "$dir/toolchain.txt"
+          lake --version | tee -a "$dir/toolchain.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          lake env lean -DwarningAsError=true NSRiFrequencyMultiplicity.lean \
+            2>&1 | tee lean-kernel-output.txt
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-kernel-output.txt; then
+            echo 'Rejected: placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+
+      - name: Preserve replay and axiom evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-ri-frequency-multiplicity-${{ github.sha }}
+          path: |
+            verification/ns-ri-frequency-multiplicity/NSRiFrequencyMultiplicity.lean
+            verification/ns-ri-frequency-multiplicity/lakefile.toml
+            verification/ns-ri-frequency-multiplicity/lean-toolchain
+            verification/ns-ri-frequency-multiplicity/source-blob.txt
+            verification/ns-ri-frequency-multiplicity/source-sha256.txt
+            verification/ns-ri-frequency-multiplicity/toolchain.txt
+            verification/ns-ri-frequency-multiplicity/lean-kernel-output.txt
+          if-no-files-found: warn
