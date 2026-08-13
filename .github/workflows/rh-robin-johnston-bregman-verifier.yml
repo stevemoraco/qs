@@ -1,0 +1,114 @@
+name: RH Robin-Johnston public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-robin-johnston-bregman-verifier-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rh-robin-johnston-public-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact verifier source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean
+          EXPECTED_BLOB=cdd966235b153be9eb3f21767849c216e3f4ed5c
+          ACTUAL_BLOB=$(git hash-object "$SRC")
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'forbidden source token: {token}')
+          if text.count('#print axioms') != 5:
+              raise SystemExit('expected exactly five staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/rh_robin_johnston_bregman
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path(
+              'verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+
+          out = pathlib.Path('evidence/rh_robin_johnston_bregman/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit('Lean/AXLE verification failed')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
+          PY
+
+      - name: Record replay metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean)"
+            echo "source_sha256=$(sha256sum verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > evidence/rh_robin_johnston_bregman/replay-metadata.txt
+
+      - name: Upload exact compiler evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-robin-johnston-bregman-public-evidence
+          path: evidence/rh_robin_johnston_bregman/
+          if-no-files-found: error
