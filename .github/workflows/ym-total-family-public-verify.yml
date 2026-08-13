@@ -1,0 +1,68 @@
+name: YM total-family finite detected-spectrum Lean firewall
+
+on:
+  push:
+    branches:
+      - agent/ym-total-family-public-verifier-20260813
+    paths:
+      - 'verification/ym-total-family/**'
+      - '.github/workflows/ym-total-family-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-total-family/**'
+      - '.github/workflows/ym-total-family-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit Lean placeholders and result carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-total-family/YMTotalFamilyFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or result carrier found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ym-total-family/toolchain.log
+          lake --version | tee -a verification/ym-total-family/toolchain.log
+          cd verification/ym-total-family
+          lake update
+          lake exe cache get
+          sha256sum YMTotalFamilyFinite.lean | tee source-sha256.log
+          lake env lean YMTotalFamilyFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder axiom or reduction carrier found in compiler output.' >&2
+            exit 1
+          fi
+          grep -F 'explicitCertificateTime : ' lean-output.log
+          grep -F 'detectedModeLowerBound : ' lean-output.log
+          grep -F 'finiteDetectedSpectrumLowerBound : ' lean-output.log
+          test -s source-sha256.log
+          echo 'VERIFIED finite YM total-family detected-spectrum theorem.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-total-family-public-verification-evidence
+          path: |
+            verification/ym-total-family/lean-output.log
+            verification/ym-total-family/source-sha256.log
+            verification/ym-total-family/toolchain.log
+          if-no-files-found: warn
