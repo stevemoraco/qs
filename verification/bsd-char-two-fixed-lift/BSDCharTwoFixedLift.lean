@@ -81,10 +81,10 @@ theorem t3_is_lift : reduce32 t3 = t2 := by
   rfl
 
 theorem iota3_on_t : iota3 t3 = t3PlusSq := by
-  ext <;> simp [iota3, t3, t3PlusSq]
+  decide
 
 theorem iota3_on_t_sq : iota3 t3Sq = t3Sq := by
-  ext <;> simp [iota3, t3Sq]
+  decide
 
 /-- The misleading fixed class at the lower truncation. -/
 theorem t_fixed_mod_t_sq : iota2 t2 = t2 := by
