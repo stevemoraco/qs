@@ -1,0 +1,35 @@
+name: RH deficit kernel mirror
+
+on:
+  pull_request:
+    paths:
+      - "millennium/rh-deficit-kernel/**"
+      - ".github/workflows/rh-deficit-kernel-mirror.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-mathlib-cache: true
+          lake-package-directory: millennium/rh-deficit-kernel
+      - name: Build exact critical-point theorem
+        working-directory: millennium/rh-deficit-kernel
+        run: |
+          set -euo pipefail
+          lake update
+          lake build
+          lake env lean RHDeficitExactCriticalPoint.lean 2>&1 | tee lean-output.txt
+          if grep -Eq 'declaration uses .sorry.|declaration has metavariables|declaration uses sorry|unsolved goals' lean-output.txt; then
+            echo 'forbidden proof hole detected'
+            exit 1
+          fi
+          grep -F 'axioms' lean-output.txt
