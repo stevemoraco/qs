@@ -62,8 +62,6 @@ already the certified derivative values. -/
 theorem coefficient_derivative_algebraic_bound
     {h ht gamma dgamma qt Lh Lq G D : ℝ}
     (hLh : 0 ≤ Lh)
-    (hLq : 0 ≤ Lq)
-    (hG : 0 ≤ G)
     (hD : 0 ≤ D)
     (hht : |ht| ≤ Lh)
     (hgamma : |gamma| ≤ G)
