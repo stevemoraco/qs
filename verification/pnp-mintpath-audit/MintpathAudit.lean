@@ -53,6 +53,7 @@ theorem constant_two_has_no_exponent_two :
 
 /-- The source's general interface allows the graph-to-input map to contain
 the answer bit itself. -/
+open Classical in
 noncomputable def answerBitInput {n : ℕ}
     (G : Finset (PNeNp.Edge n)) : Fin 1 → Bool :=
   fun _ => if PNeNp.IsHamCycle n G then true else false
