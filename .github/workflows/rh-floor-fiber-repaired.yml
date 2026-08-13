@@ -1,0 +1,60 @@
+name: RH floor fiber repaired replay
+
+on:
+  push:
+    branches:
+      - agent/rh-fiber-check-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify exact repaired source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh_floor_fiber/FloorFiber.lean
+          test "$(git hash-object "$SRC")" = fbc351411128790620c031a82c7d2bb541b26b41
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = 981f27e744137aa369418fa8bbbf0ae6224e530b6d7f800c7ee3980399e18cb3
+          test "$(grep -c '#print axioms' "$SRC")" = 5
+          mkdir -p evidence/rh_floor_fiber_repaired
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/rh_floor_fiber/FloorFiber.lean').read_text()
+          payload = json.dumps({'content': source, 'environment': 'lean-4.30.0',
+                                'ignore_imports': True, 'mathlib_options': False,
+                                'timeout_seconds': 900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check',
+              data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('evidence/rh_floor_fiber_repaired/response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          if not result.get('okay'):
+              raise SystemExit('compiler rejected source')
+          if result.get('failed_declarations'):
+              raise SystemExit('failed declaration')
+          if result.get('lean_messages', {}).get('errors'):
+              raise SystemExit('compiler error')
+          if result.get('lean_messages', {}).get('warnings'):
+              raise SystemExit('compiler warning')
+          if result.get('tool_messages', {}).get('errors'):
+              raise SystemExit('tool error')
+          if result.get('tool_messages', {}).get('warnings'):
+              raise SystemExit('tool warning')
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-floor-fiber-repaired-evidence
+          path: evidence/rh_floor_fiber_repaired/
+          if-no-files-found: error
