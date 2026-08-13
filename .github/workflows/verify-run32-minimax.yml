@@ -16,12 +16,47 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Decode source
+      - name: Decode and repair source
         shell: bash
         run: |
           set -euo pipefail
           base64 -d verification/pnp-restriction-minimax/PNPRestrictionMinimax.lean.b64 > /tmp/source.lean
-          test "$(sha256sum /tmp/source.lean | cut -d' ' -f1)" = 33ab97abde30dfb42a95fe740f01cc697bf717cc3f6e3f77cffd78dd711cfe70
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p = Path('/tmp/source.lean')
+          raw = p.read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == '33ab97abde30dfb42a95fe740f01cc697bf717cc3f6e3f77cffd78dd711cfe70'
+          s = raw.decode()
+          replacements = [
+            ('namespace PNP.RestrictionMinimax\n', 'namespace PNP.RestrictionMinimax\n\nnoncomputable section\n'),
+            ('def columnError {n : ℕ} (λ : Fin n → ℝ) (j : Fin n) : ℝ :=\n  ∑ i, λ i * diagonalError i j',
+             'def columnError {n : ℕ} (mix : Fin n → ℝ) (j : Fin n) : ℝ :=\n  ∑ i, mix i * diagonalError i j'),
+            ('lemma uniform_sum_one (n : ℕ) (hn : 0 < n) :\n    ∑ i : Fin n, uniform n i = 1 := by\n  have hn0 : (n : ℝ) ≠ 0 := by\n    exact_mod_cast Nat.ne_of_gt hn\n  simp [uniform, hn0, nsmul_eq_mul]\n',
+             'lemma constant_uniform_sum_one (n : ℕ) (hn : 0 < n) :\n    ∑ _i : Fin n, (1 / (n : ℝ)) = 1 := by\n  have hn0 : (n : ℝ) ≠ 0 := by\n    exact_mod_cast Nat.ne_of_gt hn\n  simp [hn0, nsmul_eq_mul]\n\nlemma uniform_sum_one (n : ℕ) (hn : 0 < n) :\n    ∑ i : Fin n, uniform n i = 1 := by\n  simpa [uniform] using constant_uniform_sum_one n hn\n'),
+            ('lemma pointMass_probability {n : ℕ} (i : Fin n) :\n    IsProbability (pointMass i) := by\n  constructor\n  · intro j\n    simp [pointMass]\n  · classical\n    simp [pointMass]\n',
+             'lemma pointMass_probability {n : ℕ} (i : Fin n) :\n    IsProbability (pointMass i) := by\n  classical\n  constructor\n  · intro j\n    by_cases hji : j = i <;> simp [pointMass, hji]\n  · simp [pointMass]\n'),
+            ('rw [uniform_sum_one n hn, hsum] at hlt', 'rw [constant_uniform_sum_one n hn, hsum] at hlt'),
+            ('rw [hsum, uniform_sum_one n hn] at hlt', 'rw [hsum, constant_uniform_sum_one n hn] at hlt'),
+            ('(λ : Fin n → ℝ) (hλ : IsProbability λ)', '(mix : Fin n → ℝ) (hmix : IsProbability mix)'),
+            ('exists_uniform_le_weight n hn λ hλ.2', 'exists_uniform_le_weight n hn mix hmix.2'),
+            ('columnError λ j', 'columnError mix j'),
+            ('exact ⟨i, by simpa [diagonal_row_expectation_eq_weight] using hi⟩',
+             'refine ⟨i, ?_⟩\n  rw [diagonal_row_expectation_eq_weight]\n  exact hi'),
+            ('exact ⟨j, by simpa [diagonal_column_expectation_eq_weight] using hj⟩',
+             'refine ⟨j, ?_⟩\n  rw [diagonal_column_expectation_eq_weight]\n  exact hj'),
+            ('  · intro i\n    simp [diagonal_row_expectation_eq_weight, uniform]\n',
+             '  · intro i\n    rw [diagonal_row_expectation_eq_weight]\n    rfl\n'),
+            ('  · intro j\n    simp [diagonal_column_expectation_eq_weight, uniform]\n',
+             '  · intro j\n    rw [diagonal_column_expectation_eq_weight]\n    rfl\n'),
+          ]
+          for old, new in replacements:
+              assert s.count(old) == 1, old[:80]
+              s = s.replace(old, new)
+          p.write_text(s)
+          got = hashlib.sha256(p.read_bytes()).hexdigest()
+          assert got == 'ce9fbb49f7f119be1036afc6d4a2460e0f507c5b01a33c05d0ddcad1de05631f', got
+          PY
           test "$(grep -c '^#print axioms' /tmp/source.lean)" = 5
           ! grep -Eq 'sorry|admit|sorryAx|^axiom |opaque|unsafe|native_decide|Lean.ofReduceBool' /tmp/source.lean
       - name: Kernel check
@@ -29,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/evidence
-          python3 - <<'PY2'
+          python3 - <<'PY'
           import json, os, urllib.request
           source = open('/tmp/source.lean').read() + '\n-- nonce ' + os.environ['GITHUB_SHA'] + '\n'
           data = json.dumps({'content':source,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
@@ -43,7 +78,7 @@ jobs:
           assert result.get('lean_messages',{}).get('warnings',[]) == []
           assert result.get('tool_messages',{}).get('errors',[]) == []
           assert result.get('tool_messages',{}).get('warnings',[]) == []
-          PY2
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
