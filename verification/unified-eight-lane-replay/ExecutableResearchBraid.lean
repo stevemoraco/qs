@@ -32,8 +32,8 @@ theorem route_iff_goal (Goal : Prop) : Nonempty (Route Goal) ↔ Goal := by
   · rintro ⟨R⟩
     exact R.solve
   · intro h
-    exact ⟨{ cert := trivialCert, frontier := Goal,
-      toFrontier := fun _ => h, toGoal := id }⟩
+    let R : Route Goal := ⟨trivialCert, Goal, fun _ => h, fun x => x⟩
+    exact ⟨R⟩
 
 structure Targets where
   RH : Prop
