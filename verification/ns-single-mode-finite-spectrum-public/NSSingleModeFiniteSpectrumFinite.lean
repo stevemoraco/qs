@@ -37,7 +37,7 @@ theorem determinant_zero_forces_equal_shell
 to at most two shift steps. -/
 theorem endpoint_gap_at_most_two
     {m ellSq : ℝ}
-    (hm : 0 ≤ m)
+    (_hm : 0 ≤ m)
     (hellSq : 0 < ellSq)
     (hbound : m * ellSq / 2 ≤ ellSq) :
     m ≤ 2 := by
@@ -69,15 +69,15 @@ theorem viscous_diagonal_nonpositive
 /-- Rational-coordinate lower boundary kernel components for
 `ell=(1,1,0)`, `q=(-1,0,1)`.  The barred variables are algebraically
 independent here; in the Fourier application they are complex conjugates. -/
-def lowerKernelOne (abar ebar : ℂ) : ℂ := (abar + 2 * ebar) / 3
-def lowerKernelTwo (abar ebar : ℂ) : ℂ := (ebar - 4 * abar) / 3
-def lowerKernelThree (abar ebar : ℂ) : ℂ := (2 * ebar + abar) / 3
+noncomputable def lowerKernelOne (abar ebar : ℂ) : ℂ := (abar + 2 * ebar) / 3
+noncomputable def lowerKernelTwo (abar ebar : ℂ) : ℂ := (ebar - 4 * abar) / 3
+noncomputable def lowerKernelThree (abar ebar : ℂ) : ℂ := (2 * ebar + abar) / 3
 
 /-- Rational-coordinate upper boundary kernel components for
 `r=(0,1,1)`. -/
-def upperKernelOne (a e : ℂ) : ℂ := (4 * a - e) / 3
-def upperKernelTwo (a e : ℂ) : ℂ := (-a - 2 * e) / 3
-def upperKernelThree (a e : ℂ) : ℂ := (a + 2 * e) / 3
+noncomputable def upperKernelOne (a e : ℂ) : ℂ := (4 * a - e) / 3
+noncomputable def upperKernelTwo (a e : ℂ) : ℂ := (-a - 2 * e) / 3
+noncomputable def upperKernelThree (a e : ℂ) : ℂ := (a + 2 * e) / 3
 
 /-- Scalar numerator of the projected internal output in the rational
 representative. -/
