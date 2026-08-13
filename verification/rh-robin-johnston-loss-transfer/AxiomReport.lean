@@ -1,0 +1,13 @@
+import RHRobinJohnstonLossTransfer
+
+open RHRobinJohnstonLossTransfer
+
+#print axioms negPart_le_of_lower_bound
+#print axioms buffered_loss_transfer
+#print axioms robin_loss_le_johnston_loss
+#print axioms robin_negative_forces_budget_exhaustion
+#print axioms negPart_mul_of_nonneg
+#print axioms cocycle_weight_identity
+#print axioms robin_loss_le_centered_deficit
+#print axioms sum_buffered_lower_bound
+#print axioms cumulative_positive_of_block_budget
