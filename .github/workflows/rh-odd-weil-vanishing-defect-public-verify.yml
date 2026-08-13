@@ -1,0 +1,61 @@
+name: RH odd-Weil vanishing-defect public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-odd-weil-vanishing-defect-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-odd-weil-vanishing-defect-public/**'
+      - '.github/workflows/rh-odd-weil-vanishing-defect-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-odd-weil-vanishing-defect-public'
+          file="$dir/RHOddWeilVanishingDefectCore.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='27c58e8507d68616a0da0bc41bca5ecc46b5949d'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_rh_lean_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-odd-weil-vanishing-defect-public'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          lake env lean RHOddWeilVanishingDefectCore.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED RH odd-Weil vanishing-defect finite logical core.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-odd-weil-vanishing-defect-public-evidence
+          path: |
+            verification/rh-odd-weil-vanishing-defect-public/source-blob.txt
+            verification/rh-odd-weil-vanishing-defect-public/source-sha256.txt
+            verification/rh-odd-weil-vanishing-defect-public/lean-version.txt
+            verification/rh-odd-weil-vanishing-defect-public/lean-output.log
