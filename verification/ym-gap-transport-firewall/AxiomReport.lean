@@ -1,0 +1,13 @@
+import YMGapTransportFirewall
+
+#print axioms YMGapTransportFirewall.fineForm_le_coarseForm
+#print axioms YMGapTransportFirewall.coarseForm_gap
+#print axioms YMGapTransportFirewall.lower_order_allows_arbitrarily_small_gap
+#print axioms YMGapTransportFirewall.lower_order_does_not_imply_upper_order
+#print axioms YMGapTransportFirewall.upper_order_gap_salvage
+#print axioms YMGapTransportFirewall.one_step_defect_can_exhaust_gap
+#print axioms YMGapTransportFirewall.finite_sum_can_exhaust_initial_gap
+#print axioms YMGapTransportFirewall.finite_defect_telescoping
+#print axioms YMGapTransportFirewall.positive_gap_of_strict_finite_budget
+#print axioms YMGapTransportFirewall.positive_subtraction_norm_countermodel
+#print axioms YMGapTransportFirewall.positive_gram_offDiagonal_indefinite
