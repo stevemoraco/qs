@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-b52c-prime-entry-weak-tail/PrimeEntryWeakTailFinite.lean
-          EXPECTED_BLOB=33860661952a59458bd3506818faa422c69f553f
+          EXPECTED_BLOB=f771789f687a4136c5cfbc1448a3e22046915977
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'

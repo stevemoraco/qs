@@ -23,11 +23,11 @@ variable {ι : Type*}
 
 /-- Weighted mass of the finite set on which `x` exceeds `threshold`. -/
 def tailWeight (s : Finset ι) (w x : ι → ℝ) (threshold : ℝ) : ℝ :=
-  ∑ i in s.filter (fun i => threshold < x i), w i
+  ∑ i ∈ s.filter (fun i => threshold < x i), w i
 
 /-- Weighted first moment of a finite nonnegative family. -/
 def firstMoment (s : Finset ι) (w x : ι → ℝ) : ℝ :=
-  ∑ i in s, w i * x i
+  ∑ i ∈ s, w i * x i
 
 /--
 Finite weighted Markov inequality in the exact strict-tail convention used by
@@ -41,10 +41,10 @@ theorem threshold_mul_tailWeight_le_firstMoment
   classical
   unfold tailWeight firstMoment
   calc
-    threshold * (∑ i in s.filter (fun i => threshold < x i), w i) =
-        ∑ i in s.filter (fun i => threshold < x i), threshold * w i := by
+    threshold * (∑ i ∈ s.filter (fun i => threshold < x i), w i) =
+        ∑ i ∈ s.filter (fun i => threshold < x i), threshold * w i := by
           rw [Finset.mul_sum]
-    _ ≤ ∑ i in s.filter (fun i => threshold < x i), w i * x i := by
+    _ ≤ ∑ i ∈ s.filter (fun i => threshold < x i), w i * x i := by
       apply Finset.sum_le_sum
       intro i hi
       have hi' := Finset.mem_filter.mp hi
@@ -53,7 +53,7 @@ theorem threshold_mul_tailWeight_le_firstMoment
       have hmul : threshold * w i ≤ x i * w i :=
         mul_le_mul_of_nonneg_right htx hwi
       simpa [mul_comm] using hmul
-    _ ≤ ∑ i in s, w i * x i := by
+    _ ≤ ∑ i ∈ s, w i * x i := by
       exact Finset.sum_le_sum_of_subset_of_nonneg
         (Finset.filter_subset (fun i => threshold < x i) s)
         (by
