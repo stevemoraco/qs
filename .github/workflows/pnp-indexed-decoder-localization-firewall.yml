@@ -1,14 +1,15 @@
-name: PNP Indexed-Decoder Localization Firewall
+name: PNP Normalized Indexed-Router Firewall
 
 on:
   push:
     branches:
-      - agent/pnp-indexed-decoder-localization-firewall-20260813
+      - agent/pnp-indexed-decoder-localization-firewall-v2-20260813
   pull_request:
     paths:
       - 'verification/pnp-indexed-decoder-localization-firewall/**'
       - 'research/pnp-indexed-decoder-localization-firewall-20260813.md'
       - '.github/workflows/pnp-indexed-decoder-localization-firewall.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -50,12 +51,12 @@ jobs:
           cat lean-output.log
           if [ "$lean_status" -ne 0 ]; then exit "$lean_status"; fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
-          echo 'VERIFIED PNP indexed-decoder localization firewall.'
+          echo 'VERIFIED PNP normalized indexed-router firewall.'
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnp-indexed-decoder-localization-firewall-evidence
+          name: pnp-normalized-indexed-router-firewall-evidence
           path: |
             verification/pnp-indexed-decoder-localization-firewall/source-blob.txt
             verification/pnp-indexed-decoder-localization-firewall/source-sha256.txt
