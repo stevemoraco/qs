@@ -30,6 +30,7 @@ jobs:
           set -euo pipefail
           files=(
             verification/b2-round42/PNPOptimalLinearSketchFirewall.lean
+            verification/b2-round42/PNPExactTripleSketchFirewall.lean
             verification/b2-round42/NSCompactGapExponentFirewall.lean
             verification/b2-round42/NSCriticalScoreScalingFirewall.lean
             verification/b2-round42/NSAxisSourceScalingFirewall.lean
@@ -63,6 +64,7 @@ jobs:
           : > lean-output.log
           files=(
             PNPOptimalLinearSketchFirewall.lean
+            PNPExactTripleSketchFirewall.lean
             NSCompactGapExponentFirewall.lean
             NSCriticalScoreScalingFirewall.lean
             NSAxisSourceScalingFirewall.lean
