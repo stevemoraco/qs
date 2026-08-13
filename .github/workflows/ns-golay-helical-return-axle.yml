@@ -49,9 +49,9 @@ jobs:
                   raise SystemExit(f'forbidden source construct matches {pat}')
           theorems = len(re.findall(r'(?m)^theorem\s+', text))
           prints = len(re.findall(r'(?m)^#print axioms\s+', text))
-          if theorems != 6 or prints != 6:
+          if theorems != 7 or prints != 7:
               raise SystemExit(
-                  f'expected 6 theorem declarations and 6 axiom reports, '
+                  f'expected 7 theorem declarations and 7 axiom reports, '
                   f'got {theorems}/{prints}'
               )
           print(f'PRECHECK OK: {theorems} theorems and {prints} axiom reports')
@@ -114,7 +114,7 @@ jobs:
           compact = {key: value for key, value in result.items() if key != 'content'}
           print('::notice title=AXLE compact exact result::' + esc(compact))
           print('::notice title=Canonical source SHA-256::' + esc(sha256))
-          print('VERIFIED: AXLE Lean 4.30 compiled all 6 finite cores')
+          print('VERIFIED: AXLE Lean 4.30 compiled all 7 finite cores')
           PY
 
       - name: Upload exact verifier evidence
