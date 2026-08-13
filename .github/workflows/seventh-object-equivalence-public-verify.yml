@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - agent/seventh-object-native-bridge-equivalence-firewall-20260813
+      - agent/seventh-object-native-bridge-equivalence-replay-20260813
   pull_request:
     paths:
       - 'verification/seventh-object-equivalence-firewall/**'
@@ -51,8 +52,14 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
+          set +e
           lake env lean SeventhObjectEquivalenceFirewall.lean > lean-output.log 2>&1
+          lean_status=$?
+          set -e
           cat lean-output.log
+          if [ "$lean_status" -ne 0 ]; then
+            exit "$lean_status"
+          fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             echo 'Forbidden dependency found in compiler report.' >&2
             exit 1
