@@ -1,9 +1,9 @@
-name: PNP Mintpath end-to-end theorem audit
+name: PNP Mintpath end-to-end theorem audit macOS
 
 on:
   push:
     branches:
-      - verify/pnp-mintpath-end-to-end-audit-20260813
+      - verify/pnp-mintpath-end-to-end-audit-macos-20260813
   pull_request:
     paths:
       - 'verification/pnp-mintpath-audit/**'
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   audit:
-    runs-on: ubuntu-24.04
+    runs-on: macos-14
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -70,14 +70,9 @@ jobs:
 
           grep -q 'general_circuit_lower_bound_unconditional' "$log"
           grep -q 'formulaLowerBound_exponential' "$log"
-
-          # The general theorem must expose the public custom circuit-to-width axiom.
           grep -q 'lambda_le_sum_leafWidth_of_circuit' "$log"
-
-          # The formula theorem must expose the private AUY gate-value axiom.
           grep -q 'auyDirectRectangles_gateValue_ax' "$log"
 
-          # The independent finite quantifier firewalls must not inherit either custom axiom.
           python3 - <<'PY'
           import pathlib
           import re
@@ -85,7 +80,6 @@ jobs:
           text = pathlib.Path(
               'verification/pnp-mintpath-audit/lean-output.log'
           ).read_text()
-
           expected = {
               'MintpathAudit.exported_exponent_shape_iff_two_le',
               'MintpathAudit.constant_two_satisfies_exported_family_shape',
@@ -99,7 +93,6 @@ jobs:
               reports[name] = {x.strip() for x in payload.split(',') if x.strip()}
           for name in re.findall(r"'([^']+)' does not depend on any axioms", text):
               reports[name] = set()
-
           missing = expected - reports.keys()
           if missing:
               raise SystemExit(f'missing finite axiom reports: {sorted(missing)}')
@@ -107,7 +100,6 @@ jobs:
               extra = reports[name] - allowed
               if extra:
                   raise SystemExit(f'{name} has unexpected axioms: {sorted(extra)}')
-
           general = next(
               (deps for name, deps in reports.items()
                if name.endswith('general_circuit_lower_bound_unconditional')),
@@ -126,7 +118,6 @@ jobs:
               'auyDirectRectangles_gateValue_ax' in dep for dep in formula
           ):
               raise SystemExit('formula theorem private AUY axiom was not exposed')
-
           rows = []
           for name in sorted(reports):
               if (name in expected or
@@ -148,7 +139,7 @@ jobs:
         run: |
           set -euo pipefail
           dir='verification/pnp-mintpath-audit'
-          sha256sum "$dir/MintpathAudit.lean" > "$dir/source-sha256.txt"
+          shasum -a 256 "$dir/MintpathAudit.lean" > "$dir/source-sha256.txt"
           if [ -d "$dir/.lake/packages/p_ne_np" ]; then
             git -C "$dir/.lake/packages/p_ne_np" rev-parse HEAD > "$dir/external-head.txt"
           fi
@@ -157,7 +148,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnp-mintpath-end-to-end-audit-evidence
+          name: pnp-mintpath-end-to-end-audit-macos-evidence
           path: |
             verification/pnp-mintpath-audit/dependency-commit.txt
             verification/pnp-mintpath-audit/external-head.txt
