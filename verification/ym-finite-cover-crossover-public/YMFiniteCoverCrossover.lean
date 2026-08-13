@@ -126,11 +126,39 @@ theorem ball_enclosure
   calc
     ‖F x - c'‖ ≤ ‖F x - F c‖ + ‖F c - c'‖ := htriangle
     _ ≤ L * ‖x - c‖ + e := add_le_add (hlocal x hx) hresidual
-    _ ≤ L * r + e := add_le_add_right hscale e
+    _ ≤ L * r + e := add_le_add hscale (le_refl e)
     _ = e + L * r := by ring
     _ ≤ r' := hbudget
 
 end NormBall
+
+
+section CenteredCore
+
+variable {A H : Type*} [NormedAddCommGroup H]
+
+/-- A nonexpansive projection transports dense approximation to its fixed-point
+subspace. In the Osterwalder--Schrader application, `j` is the reconstruction
+map, `Q` is the orthogonal projection off the vacuum line, and `Q y = y`
+expresses `y ∈ Ω⊥`.
+
+The hypothesis is the epsilon formulation of density, so this finite theorem
+does not depend on a separate topological totality API. -/
+theorem contraction_transports_dense_approximation
+    (j : A → H) (Q : H → H)
+    (hdense : ∀ y : H, ∀ ε : ℝ, 0 < ε →
+      ∃ a : A, ‖j a - y‖ < ε)
+    (hnonexpansive : ∀ x y : H, ‖Q x - Q y‖ ≤ ‖x - y‖)
+    {y : H} (hy : Q y = y) {ε : ℝ} (hε : 0 < ε) :
+    ∃ a : A, ‖Q (j a) - y‖ < ε := by
+  rcases hdense y ε hε with ⟨a, ha⟩
+  refine ⟨a, ?_⟩
+  calc
+    ‖Q (j a) - y‖ = ‖Q (j a) - Q y‖ := by rw [hy]
+    _ ≤ ‖j a - y‖ := hnonexpansive (j a) y
+    _ < ε := ha
+
+end CenteredCore
 
 section ProjectionFirewall
 
@@ -181,6 +209,7 @@ end ProjectionFirewall
 #print axioms finite_chain_to_basin
 #print axioms finite_cover_chain_to_basin
 #print axioms ball_enclosure
+#print axioms contraction_transports_dense_approximation
 #print axioms projected_flow_is_zero
 #print axioms tailWitness_starts_in_basin
 #print axioms tailWitness_exits_basin
