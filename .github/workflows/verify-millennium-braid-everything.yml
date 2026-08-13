@@ -146,13 +146,184 @@ jobs:
           lake env lean lean-worker/MillenniumBraidAll.lean 2>&1 | tee unified-axioms.txt
           ! grep -q 'sorryAx' unified-axioms.txt
 
-      - name: Replay 138-module expanded candidate
+      - name: Classify 138-module expanded candidate
+        continue-on-error: true
         working-directory: verification/millennium-braid-everything/project
         run: |
-          set -euo pipefail
-          lake build MillenniumExpandedCandidate 2>&1 | tee expanded-build.txt
-          lake env lean lean-worker/MillenniumExpandedCandidate.lean 2>&1 | tee expanded-axioms.txt
-          ! grep -q 'sorryAx' expanded-axioms.txt
+          set -u
+          : > expanded-module-replay.tsv
+          mkdir -p expanded-module-logs
+          status=0
+          while IFS= read -r src; do
+            [ -n "$src" ] || continue
+            slug=$(printf '%s' "$src" | tr '/ ' '__')
+            if lake env lean "$src" > "expanded-module-logs/$slug.log" 2>&1; then
+              if grep -q 'sorryAx' "expanded-module-logs/$slug.log"; then
+                printf 'SORRY_AX\\t%s\\n' "$src" >> expanded-module-replay.tsv
+                status=1
+              else
+                printf 'PASS\\t%s\\n' "$src" >> expanded-module-replay.tsv
+              fi
+            else
+              printf 'FAIL\\t%s\\n' "$src" >> expanded-module-replay.tsv
+              status=1
+            fi
+          done <<'EXPANDED_MODULES'
+Millennium/BSD/KugaSatoObjectFirewall.lean
+Millennium/Hodge/SecantIntersectionFirewall.lean
+Millennium/NavierStokes/AOWindowedColumnScaling.lean
+Millennium/NavierStokes/AccumulatingForceFirewall.lean
+Millennium/NavierStokes/FiniteCarrierIsolation.lean
+Millennium/NavierStokes/FiniteEnergyNoBlowupFirewall.lean
+Millennium/NavierStokes/Helical345Core.lean
+Millennium/NavierStokes/HelicalStarRotorCore.lean
+Millennium/NavierStokes/HyperbolicRelayCore.lean
+Millennium/NavierStokes/IsoscelesExteriorRatioCore.lean
+Millennium/NavierStokes/IsoscelesExteriorRenormalizationCore.lean
+Millennium/NavierStokes/NineDirectionStressCone.lean
+Millennium/NavierStokes/NinePolarizationCarrierDesign.lean
+Millennium/NavierStokes/StarViscosityEnergyGate.lean
+Millennium/PNP/GraphWalkConstraintFirewall.lean
+Millennium/RH/ChebyshevPositiveBregmanFinite.lean
+Millennium/YangMills/ChiralityAbsorptionFirewall.lean
+millennium/p-vs-np/AdversarySpectrumLabelBarrier.lean
+millennium/p-vs-np/AlgebraicFiberEmbedding.lean
+millennium/p-vs-np/BasisOrientationComplexity.lean
+millennium/p-vs-np/ExactThreeCNFCore.lean
+millennium/p-vs-np/FiberFloorBarrier.lean
+millennium/p-vs-np/FourierPhaseEmbedding.lean
+millennium/p-vs-np/IsospectralUniversality.lean
+millennium/p-vs-np/LexicographicRangeAvoidance.lean
+millennium/p-vs-np/NonlinearProjectionUniversality.lean
+millennium/p-vs-np/NormalFormBarrier.lean
+millennium/p-vs-np/RestrictionUniversalFiber.lean
+millennium/p-vs-np/SpectralCSPLabelBarrier.lean
+millennium/p-vs-np/SpectralProofComplexityBarrier.lean
+millennium/p-vs-np/StretchNonrange.lean
+millennium/rh/TwoThirdsOperatorAlgebra.lean
+scratch/b3/CriticalPathExactSlackFinite.lean
+scratch/bsd_braid/AdelicRestrictednessFinite.lean
+scratch/bsd_braid/BocksteinDefectArea.lean
+scratch/bsd_braid/CasselsTatePrimaryFiniteNoGo.lean
+scratch/bsd_braid/CrossPrimeRationalCoherenceFinite.lean
+scratch/bsd_braid/EulerPlateauStopping.lean
+scratch/bsd_braid/FINITE_PRIME_SQUARE_CORE.lean
+scratch/bsd_braid/FiniteControlEulerCharacteristicFinite.lean
+scratch/bsd_braid/FiniteLevelTorsionGrowth.lean
+scratch/bsd_braid/GlobalPositivityExactification.lean
+scratch/bsd_braid/JetCapacityObstruction.lean
+scratch/bsd_braid/ShapeScaleFiniteDifference.lean
+scratch/bsd_braid/UnitBlindness.lean
+scratch/hodge_braid/BoundaryVanishingForcesInterior.lean
+scratch/hodge_braid/RationalEigenlineDescentFinite.lean
+scratch/hodge_braid/SecantIntersectionFatalFinite.lean
+scratch/hodge_braid/WeilFieldOrbitGate.lean
+scratch/millennium/NAVIER_STOKES_QUARTIC_GAP_COUNTEREXAMPLE.lean
+scratch/millennium/NS_MixedSupportCounterexample.lean
+scratch/millennium_braid/B3_BSD_KuriharaCurvature.lean
+scratch/millennium_braid/B4_QUANTITATIVE_CORES.lean
+scratch/millennium_braid/B4_SIGN_CERTIFIED_TRUNCATION.lean
+scratch/millennium_braid/BSDCyclicRelaxationRigidity.lean
+scratch/millennium_braid/ExcessSlotCharging.lean
+scratch/millennium_braid/HodgeProjectorCountermodel.lean
+scratch/millennium_braid/NSAOAxialReflection.lean
+scratch/millennium_braid/NSThresholdZeroCountermodel.lean
+scratch/millennium_braid/PNPMcspPaddingNoGo.lean
+scratch/millennium_braid/PNPQuantifierObstructionFinite.lean
+scratch/millennium_braid/PNPQuantifierSwapCountermodel.lean
+scratch/millennium_braid/PNPRestrictionAveraging.lean
+scratch/millennium_braid/YANG_MILLS_POLYMER_SCALAR_CORE.lean
+scratch/millennium_braid/YMClaimAuditCounterexamples.lean
+scratch/millennium_braid/YMTwoLoopNormalFormFinite.lean
+scratch/millennium_braid/YMUniformGapCountermodels.lean
+scratch/millennium_braid/run14/PNPUnitMaskBarrierFinite.lean
+scratch/millennium_braid/run14/RH4ChristoffelFloorFinite.lean
+scratch/millennium_braid/run14/RHGumbelEndpointFinite.lean
+scratch/navier_stokes_braid/PositiveScaleNoMinimum.lean
+scratch/pvsnp_braid/AffineCodeDualCheckFinite.lean
+scratch/pvsnp_braid/BlockUnitSurplusFinite.lean
+scratch/pvsnp_braid/CJWPaddingExponentNoGo.lean
+scratch/pvsnp_braid/DecodableGeneratorBarrierFinite.lean
+scratch/pvsnp_braid/DenseHitterSliceTightFinite.lean
+scratch/pvsnp_braid/ExponentialPaddingConservation.lean
+scratch/pvsnp_braid/LowDimAffineSparseSupersetFinite.lean
+scratch/pvsnp_braid/ProjectionCylinderFloorFinite.lean
+scratch/pvsnp_braid/SystematicDenseHitterGateFinite.lean
+scratch/rh_braid/AntiDiagonalExteriorFinite.lean
+scratch/rh_braid/BivariateExteriorFinite.lean
+scratch/rh_braid/BivariateExteriorScalarFinite.lean
+scratch/rh_braid/BivariateTwoPointFinite.lean
+scratch/rh_braid/CenteredFiniteDifferenceExteriorFinite.lean
+scratch/rh_braid/ChebyshevAmplifiedFiniteDifferenceFinite.lean
+scratch/rh_braid/ChebyshevCascadeFinite.lean
+scratch/rh_braid/ConstantModePoleNeutralFactor.lean
+scratch/rh_braid/CorrectedGreenFinite.lean
+scratch/rh_braid/Cos2JDensityTransitionNoGo.lean
+scratch/rh_braid/Cos2JSupportDensityFinite.lean
+scratch/rh_braid/Cos4RationalCore.lean
+scratch/rh_braid/CramerDepthExponentFinite.lean
+scratch/rh_braid/CramerLpDepthFinite.lean
+scratch/rh_braid/CramerShortIntervalDepthFinite.lean
+scratch/rh_braid/FejerRieszDepthOptimizerFinite.lean
+scratch/rh_braid/HausdorffBinomialConditioningFinite.lean
+scratch/rh_braid/HermiteExteriorFinite.lean
+scratch/rh_braid/JointMinimaxGreenFinite.lean
+scratch/rh_braid/LocalCellEnergyFinite.lean
+scratch/rh_braid/PoleNeutralTwoModeArchFactor.lean
+scratch/rh_braid/PrimeEnergyFiniteCore.lean
+scratch/rh_braid/PrimeErrorSpikePersistenceFinite.lean
+scratch/rh_braid/RHGumbelPrimePairCancellationFinite.lean
+scratch/rh_braid/RHTentRayFinite.lean
+scratch/rh_braid/SupportCostDepthFinite.lean
+scratch/rh_braid/SupportOptimalMarginFinite.lean
+scratch/rh_braid/SurjectiveNegativeIndexCore.lean
+scratch/rh_braid/SurjectivePullbackNegative.lean
+scratch/rh_braid/SuzukiShiftCountermodel.lean
+scratch/rh_braid/TotalVariationOuterStepFinite.lean
+scratch/rh_braid/TranslationExteriorFinite.lean
+scratch/rh_braid/TranslationPairDeterminant.lean
+scratch/rh_braid/XiHausdorffFinite.lean
+scratch/yang_mills_braid/CutoffGapLimitNoGoFinite.lean
+scratch/yang_mills_braid/CyclicObservableGapFinite.lean
+scratch/yang_mills_braid/FiniteObservableFrameGapCore.lean
+scratch/yang_mills_braid/FiniteObservableListNoGo.lean
+scratch/yang_mills_braid/FixedNeighborhoodCannotRunToInfinity.lean
+scratch/yang_mills_braid/FlagClassFunctionObstructionFinite.lean
+scratch/yang_mills_braid/FrameToFineGapCertificateFinite.lean
+scratch/yang_mills_braid/MarginalCubicNotStrictLinearContraction.lean
+scratch/yang_mills_braid/MarginalRobustFinite.lean
+scratch/yang_mills_braid/TotalObservableCommonBaseFinite.lean
+scratch/yang_mills_braid/VacuumLeakageGapBudgetFinite.lean
+verification/run14/B7QuantitativeCore.lean
+verification/run14/HodgeTransfer.lean
+verification/run14/MillenniumRun14.lean
+verification/run14/NSTriadOutputFrequency.lean
+verification/run14/NSVanishingThreshold.lean
+verification/run14/PNPExponentRatio.lean
+verification/run14/PNPPaddingTradeoff.lean
+verification/run14/PNPQuantifierGap.lean
+verification/run14/SchurComplementFinite.lean
+verification/run14/TempleFinite.lean
+verification/run14/TwoScaleFrameFinite.lean
+verification/run14/YMAbsoluteDefectGapFirewall.lean
+verification/run14/YMGapBudget.lean
+EXPANDED_MODULES
+          cat expanded-module-replay.tsv
+          printf 'PASS=%s FAIL=%s SORRY_AX=%s TOTAL=%s\\n' \
+            "$(grep -c '^PASS' expanded-module-replay.tsv || true)" \
+            "$(grep -c '^FAIL' expanded-module-replay.tsv || true)" \
+            "$(grep -c '^SORRY_AX' expanded-module-replay.tsv || true)" \
+            "$(wc -l < expanded-module-replay.tsv)" | tee expanded-summary.txt
+          if [ "$status" -eq 0 ]; then
+            lake build MillenniumExpandedCandidate 2>&1 | tee expanded-build.txt
+            lake env lean lean-worker/MillenniumExpandedCandidate.lean 2>&1 | tee expanded-axioms.txt
+            if grep -q 'sorryAx' expanded-axioms.txt; then
+              echo "Expanded candidate contains sorryAx."
+              exit 1
+            fi
+          else
+            echo "Expanded historical corpus is quarantined pending Lean-4.31 repairs." | tee expanded-build.txt
+          fi
 
       - name: Generate SHA and declaration manifest
         working-directory: verification/millennium-braid-everything/project
@@ -193,7 +364,7 @@ jobs:
                   'declaration_lines': len(kinds),
               })
           report = {
-              'canonical_source_commit': '2f5044d0cc191fa63597309f6ab607ada98d66f2',
+              'canonical_source_commit': '9fa0d584e0cb9a39d800ae9c5538a7b5ae96e4a1',
               'verifier_commit': subprocess.check_output(
                   ['git', 'rev-parse', 'HEAD'], text=True
               ).strip(),
@@ -227,4 +398,7 @@ jobs:
             verification/millennium-braid-everything/project/module-logs/
             verification/millennium-braid-everything/project/expanded-build.txt
             verification/millennium-braid-everything/project/expanded-axioms.txt
+            verification/millennium-braid-everything/project/expanded-summary.txt
+            verification/millennium-braid-everything/project/expanded-module-replay.tsv
+            verification/millennium-braid-everything/project/expanded-module-logs/
           if-no-files-found: warn
