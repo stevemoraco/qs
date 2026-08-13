@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=formal/millennium_audit/SixLaneAudit/RHPositiveSquareEnergy.lean
-          EXPECTED=47bdabb6cfda6d4fb9f131f3feb92d2de71f6c81807ca41e5bf473b7bf8b9f6b
+          EXPECTED=33cbc911ed25dd3266f09b30b9fca51e00299aa1e2026d6d6e2ad9086a4fdd56
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
