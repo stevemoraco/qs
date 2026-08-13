@@ -23,8 +23,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_floor_fiber/FloorFiber.lean
-          test "$(git hash-object "$SRC")" = 43effc7192b885dfbefea455eb571e85527c602e
-          test "$(sha256sum "$SRC" | awk '{print $1}')" = 0af15c984831f8383fccd413ad35b33e8234182b8178627e2acfc1842212977a
+          test "$(git hash-object "$SRC")" = 3b6eb5c05ed7efa18be089877b3345fa4af15d73
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = dfce6d2a92f32894bc15df1aa1429f8c8f67fc303c91dd097febed731aa6dbd0
           python3 - <<'PY'
           import pathlib, re
           text = pathlib.Path('verification/rh_floor_fiber/FloorFiber.lean').read_text()
