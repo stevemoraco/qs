@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-brownian-min-kernel/RHBrownianMinKernelDiagonal.lean
-          EXPECTED_BLOB=2d897ac00cb901124d8862c47d729711e317d3e0
+          EXPECTED_BLOB=1b0adc8ea8616e473a0ba5c87257def2fb0f51f7
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
@@ -36,8 +36,8 @@ jobs:
               raise SystemExit(f'forbidden source token: {match.group(2)}')
           if 'Lean.ofReduceBool' in text or 'native_decide' in text:
               raise SystemExit('forbidden source oracle')
-          if text.count('#print axioms') != 8:
-              raise SystemExit('expected exactly eight staged #print axioms commands')
+          if text.count('#print axioms') != 10:
+              raise SystemExit('expected exactly ten staged #print axioms commands')
           print('source trust preflight: clean')
           PY
 
