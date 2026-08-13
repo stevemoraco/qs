@@ -34,9 +34,6 @@ jobs:
               shutil.copyfile(root / name, out / name)
           for name in ['HodgeLocalAtiyahFerrand.lean', 'NSSourceAmplitudeNoUniformBound.lean', 'RHWuFloorFiberFalsifier.lean', 'YMLiuHarmonicTail.lean']:
               encoded = (root / f'{name}.b64').read_text().strip()
-              if name == 'YMLiuHarmonicTail.lean':
-                  assert encoded.count('4oS6') == 1
-                  encoded = encoded.replace('4oS6', '4oSa')
               (out / name).write_bytes(base64.b64decode(encoded))
           (out / 'RHWuSubsequenceFalsifier.lean').write_bytes(bytes.fromhex((root / 'source6.hex').read_text().strip()))
           expected = {
