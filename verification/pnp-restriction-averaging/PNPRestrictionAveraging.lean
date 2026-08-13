@@ -84,10 +84,11 @@ theorem local_to_global_error_floor
       (∑ r with good r, μ r) * η ≤ ∑ r, μ r * localError r := by
     calc
       (∑ r with good r, μ r) * η
-          = ∑ r, if good r then μ r * η else 0 := by
-              classical
-              rw [Finset.filter_sum]
+          = ∑ r with good r, μ r * η := by
               rw [Finset.sum_mul]
+      _ = ∑ r, if good r then μ r * η else 0 := by
+              classical
+              simp
       _ ≤ ∑ r, μ r * localError r :=
           Finset.sum_le_sum (fun r _ => hterm r)
   calc
