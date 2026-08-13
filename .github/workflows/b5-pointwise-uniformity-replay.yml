@@ -8,6 +8,7 @@ on:
     paths:
       - 'formal/millennium_audit/SixLaneAudit/PointwiseUniformityObstruction.lean'
       - 'formal/millennium_audit/SixLaneAudit/BoundedCutoffCriterion.lean'
+      - 'formal/millennium_audit/SixLaneAudit/NSPolarizationBundleClosure.lean'
       - 'formal/millennium_audit/lean-toolchain'
       - 'formal/millennium_audit/lakefile.lean'
   workflow_dispatch:
@@ -21,9 +22,10 @@ jobs:
         run: |
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
-      - name: Replay B5 pointwise uniformity sources
+      - name: Replay B5 synthesis sources
         run: |
           cd formal/millennium_audit
           lake update
           lake env lean SixLaneAudit/PointwiseUniformityObstruction.lean
           lake env lean SixLaneAudit/BoundedCutoffCriterion.lean
+          lake env lean SixLaneAudit/NSPolarizationBundleClosure.lean
