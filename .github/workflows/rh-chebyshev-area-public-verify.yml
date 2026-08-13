@@ -30,18 +30,22 @@ jobs:
           set -euo pipefail
           dir='verification/rh-chebyshev-area-public'
           finite="$dir/ChebyshevAreaFinite.lean"
+          prime="$dir/ChebyshevAreaPrimeFinite.lean"
           landau="$dir/ChebyshevAreaLandauSkeleton.lean"
 
           finite_blob="$(git hash-object "$finite")"
+          prime_blob="$(git hash-object "$prime")"
           landau_blob="$(git hash-object "$landau")"
           test "$finite_blob" = 'f92f1a7c9749173070b405870f4a2903211efeee'
+          test "$prime_blob" = '884f61b5f5a6d6d71764a6941800cfa8b94f3e04'
           test "$landau_blob" = 'e0c50376a91c9074b17338318fa1348d2d929b4c'
 
-          printf 'finite_blob=%s\nlandau_blob=%s\n' \
-            "$finite_blob" "$landau_blob" | tee "$dir/source-blobs.txt"
-          sha256sum "$finite" "$landau" | tee "$dir/source-sha256.txt"
+          printf 'finite_blob=%s\nprime_blob=%s\nlandau_blob=%s\n' \
+            "$finite_blob" "$prime_blob" "$landau_blob" \
+            | tee "$dir/source-blobs.txt"
+          sha256sum "$finite" "$prime" "$landau" | tee "$dir/source-sha256.txt"
 
-          files=("$finite" "$landau")
+          files=("$finite" "$prime" "$landau")
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then
             echo 'Forbidden proof placeholder found.' >&2
             exit 1
@@ -71,7 +75,11 @@ jobs:
           lake exe cache get
 
           : > lean-output.log
-          for file in ChebyshevAreaFinite.lean ChebyshevAreaLandauSkeleton.lean; do
+          for file in \
+            ChebyshevAreaFinite.lean \
+            ChebyshevAreaPrimeFinite.lean \
+            ChebyshevAreaLandauSkeleton.lean
+          do
             echo "=== $file ===" | tee -a lean-output.log
             set +e
             lake env lean "$file" >> lean-output.log 2>&1
@@ -110,7 +118,7 @@ jobs:
               r"'([^']+)' does not depend on any axioms",
               text,
           )
-          expected = 24
+          expected = 33
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
               raise SystemExit(
@@ -141,7 +149,7 @@ jobs:
           out.write_text(report)
           print(report, end='')
           PY
-          echo 'VERIFIED RH Chebyshev area finite and strengthened logical skeleton cores.'
+          echo 'VERIFIED RH Chebyshev area generic, genuine-prime, and logical cores.'
 
       - name: Upload verification evidence
         if: always()
