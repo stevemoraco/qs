@@ -67,8 +67,7 @@ def qStress : Fin 6 → Sym6Z := ![
 
 theorem qStress_eq_projectorStress (i : Fin 6) :
     qStress i = projectorStress (carrier i) := by
-  fin_cases i <;> ext j <;> fin_cases j <;>
-    norm_num [qStress, projectorStress, carrier]
+  fin_cases i <;> native_decide
 
 /-- Coordinates of the synthesized symmetric stress. -/
 def coneCoordinates (a : Fin 6 → ℝ) : Sym6R := ![
@@ -146,13 +145,25 @@ theorem weight_pos_of_master_box
     ⟨h0lo, h0hi, h1lo, h1hi, h2lo, h2hi,
       h3lo, h3hi, h4lo, h4hi, h5lo, h5hi⟩
   intro i
-  fin_cases i <;> simp [weight]
-  · linarith
-  · linarith
-  · linarith
-  · linarith
-  · linarith
-  · linarith
+  fin_cases i
+  · change 0 < (155*m 0 - 491*m 1 + 495*m 2) / 10336
+      + 3*m 3/304 - m 4/152 - m 5/152
+    linarith
+  · change 0 < (-523*m 0 + 123*m 1 + 497*m 2) / 10336
+      + 9*m 3/304 - 3*m 4/152 - 3*m 5/152
+    linarith
+  · change 0 < (907*m 0 + 261*m 1 - 521*m 2) / 31008
+      + 11*m 3/304 - 11*m 4/456 + 9*m 5/152
+    linarith
+  · change 0 < (13*m 0 + 13*m 1 - 21*m 2) / 646
+      - 5*m 3/76 - 3*m 4/76 - 3*m 5/76
+    linarith
+  · change 0 < (16*m 0 + 16*m 1 - m 2) / 1615
+      - 6*m 3/95 + 4*m 4/95 + 4*m 5/95
+    linarith
+  · change 0 < (889*m 0 + 4119*m 1 - 2579*m 2) / 155040
+      + 81*m 3/1520 + 109*m 4/2280 - 27*m 5/760
+    linarith
 
 /-- Exact local positive geometric lemma on the original shell and at the
 active master radius. -/
