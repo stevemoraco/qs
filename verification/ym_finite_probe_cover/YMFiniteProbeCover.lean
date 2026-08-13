@@ -71,7 +71,7 @@ theorem positive_sum_has_positive_component
     (hsum : 0 < ∑ i, corr i) :
     ∃ i, 0 < corr i := by
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   have hnonpos : (∑ i, corr i) ≤ 0 := by
     exact Finset.sum_nonpos (fun i _ => hnone i)
   exact (not_lt_of_ge hnonpos) hsum
