@@ -22,11 +22,9 @@ theorem exists_diagonal_ge_of_trace
     ∃ i, a ≤ q i := by
   have hnonempty : (Finset.univ : Finset (Fin M)).Nonempty := by
     exact ⟨⟨0, hM⟩, Finset.mem_univ _⟩
-  have hle :
-      (∑ i in (Finset.univ : Finset (Fin M)), a) ≤
-        ∑ i in (Finset.univ : Finset (Fin M)), q i := by
+  have hle : (∑ _i : Fin M, a) ≤ ∑ i : Fin M, q i := by
     simpa using htrace
-  obtain ⟨i, hi, hia⟩ := Finset.exists_le_of_sum_le hnonempty hle
+  obtain ⟨i, _hi, hia⟩ := Finset.exists_le_of_sum_le hnonempty hle
   exact ⟨i, hia⟩
 
 theorem finite_trace_certificate
