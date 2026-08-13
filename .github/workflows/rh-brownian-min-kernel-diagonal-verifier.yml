@@ -121,11 +121,13 @@ jobs:
           import json
           import pathlib
 
-          def annotate(kind, item):
+          def message_of(item):
               if isinstance(item, dict):
-                  message = item.get('message') or item.get('text') or json.dumps(item, sort_keys=True)
-              else:
-                  message = str(item)
+                  return item.get('message') or item.get('text') or json.dumps(item, sort_keys=True)
+              return str(item)
+
+          def annotate(kind, item):
+              message = message_of(item)
               message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
               print(f'::{kind} title=AXLE Lean diagnostic::{message}')
 
@@ -136,12 +138,29 @@ jobs:
               print('::error title=AXLE evidence::missing AXLE response evidence')
               raise SystemExit(1)
           result = json.loads(p.read_text())
-          annotate('notice', json.dumps(result, sort_keys=True, separators=(',', ':')))
-          lean_errors = result.get('lean_messages', {}).get('errors', [])
-          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
+          lean_messages = result.get('lean_messages', {})
+          lean_errors = lean_messages.get('errors', [])
+          lean_warnings = lean_messages.get('warnings', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           tool_warnings = result.get('tool_messages', {}).get('warnings', [])
           failed = result.get('failed_declarations', [])
+          infos = []
+          for key in ('infos', 'info'):
+              value = lean_messages.get(key, [])
+              if isinstance(value, list):
+                  infos.extend(value)
+          axiom_infos = []
+          for item in infos:
+              message = message_of(item)
+              lowered = message.lower()
+              if 'axiom' in lowered or 'depends on' in lowered:
+                  axiom_infos.append(message)
+          compact = {
+              'okay': result.get('okay'),
+              'failed_declarations': failed,
+              'axiom_infos': axiom_infos,
+          }
+          annotate('notice', json.dumps(compact, sort_keys=True, separators=(',', ':')))
           if result.get('request_exception'):
               annotate('error', result['request_exception'])
           for item in lean_errors:
