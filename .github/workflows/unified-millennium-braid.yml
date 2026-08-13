@@ -1,0 +1,79 @@
+name: Unified Millennium braid semantic Lean replay
+
+on:
+  push:
+    branches: [agent/unified-braid-semantic-replay-20260813, main]
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid.yml'
+  pull_request:
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Lock source and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/unified-millennium-braid/UnifiedSevenFireCorpus.lean
+          test "$(sha256sum "$SRC" | awk '{print $1}')" =             eea483fc1abfaa22ca7cbc9e5e3fe4b53448de1b61321063ed6cade79f5ddedc
+          if grep -nE '^[[:space:]]*(sorry|admit|axiom|constant|opaque|unsafe|native_decide)\b|\b(sorryAx|Lean\.ofReduceBool|implemented_by|extern)\b' "$SRC"; then
+            echo 'Forbidden trust carrier'
+            exit 1
+          fi
+          mkdir -p verification/unified-millennium-braid/evidence
+          sha256sum "$SRC" >             verification/unified-millennium-braid/evidence/source.sha256
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom audit
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lake env lean UnifiedSevenFireCorpus.lean 2>&1 | tee evidence/lean-replay.log
+          lake env lean --version | tee evidence/lean-version.txt
+          git -C .lake/packages/mathlib rev-parse HEAD | tee evidence/mathlib-commit.txt
+          test "$(grep -c 'depends on axioms:' evidence/lean-replay.log)" = 9
+          if grep -nE 'sorryAx|Lean\.ofReduceBool|declaration uses.*sorry'               evidence/lean-replay.log; then
+            echo 'Forbidden postcompile dependency'
+            exit 1
+          fi
+
+      - name: Preserve exact replay
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-evidence
+          path: |
+            verification/unified-millennium-braid/evidence/
+            verification/unified-millennium-braid/lake-manifest.json
+            verification/unified-millennium-braid/lakefile.toml
+            verification/unified-millennium-braid/lean-toolchain
+          if-no-files-found: error
