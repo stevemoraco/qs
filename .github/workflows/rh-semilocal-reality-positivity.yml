@@ -1,0 +1,82 @@
+name: RH semilocal reality positivity firewall
+
+on:
+  push:
+    branches:
+      - agent/rh-semilocal-reality-positivity-public-20260813
+    paths:
+      - 'formal/rh-semilocal-reality-positivity/**'
+      - '.github/workflows/rh-semilocal-reality-positivity.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/rh-semilocal-reality-positivity/**'
+      - '.github/workflows/rh-semilocal-reality-positivity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-semilocal-reality-positivity/RHSemilocalRealityPositivityFirewall.lean'
+          expected='5a6b58cac60d03abe6ac136af9c38023d86eef11'
+          actual="$(git hash-object "$file")"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-semilocal-reality-positivity/RHSemilocalRealityPositivityFirewall.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/rh-semilocal-reality-positivity/toolchain.txt
+
+      - name: Fresh foundation-only kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-semilocal-reality-positivity/RHSemilocalRealityPositivityFirewall.lean'
+          output='formal/rh-semilocal-reality-positivity/lean-kernel-output.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+          count="$(grep -c 'does not depend on any axioms' "$output")"
+          echo "foundation-only axiom reports: $count"
+          test "$count" -eq 6
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-semilocal-reality-positivity-${{ github.sha }}
+          path: |
+            formal/rh-semilocal-reality-positivity/RHSemilocalRealityPositivityFirewall.lean
+            formal/rh-semilocal-reality-positivity/lean-toolchain
+            formal/rh-semilocal-reality-positivity/toolchain.txt
+            formal/rh-semilocal-reality-positivity/lean-kernel-output.txt
+          if-no-files-found: warn
