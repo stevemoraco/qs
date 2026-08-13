@@ -30,10 +30,10 @@ namespace RHB53
 
 /-- Uniform additive entropy gap obtained from the largest sporadic coefficient
 `30`: `1 / ((30 + 1) * (30 + 2)) = 1 / 992`. -/
-def heightOneGap : ℝ := 1 / 992
+noncomputable def heightOneGap : ℝ := 1 / 992
 
 /-- The forbidden height-one near-extremal threshold. -/
-def heightOneThreshold : ℝ := 1 / 2 + heightOneGap
+noncomputable def heightOneThreshold : ℝ := 1 / 2 + heightOneGap
 
 /-- Mathlib's certified lower bound for `log 2` is well above the uniform
 height-one threshold. -/
@@ -45,19 +45,32 @@ theorem heightOneThreshold_lt_log_two :
     _ < (0.6931471803 : ℝ) := by norm_num
     _ < Real.log 2 := Real.log_two_gt_d9
 
-/-- Mathlib's certified lower bound for `log 3` is also strong enough after
-halving. -/
+/-- The elementary lower bound `1 - x⁻¹ ≤ log x`, together with Mathlib's
+certified lower bound for `log 2`, is strong enough to control `log 3 / 2`. -/
 theorem heightOneThreshold_lt_half_log_three :
     heightOneThreshold < Real.log 3 / 2 := by
-  have hthree : (0.54930614425 : ℝ) < Real.log 3 / 2 := by
-    have h := Real.log_three_gt_d9
+  have hlog32 : (1 : ℝ) / 3 ≤ Real.log ((3 : ℝ) / 2) := by
+    have h := Real.one_sub_inv_le_log_of_pos
+      (show 0 < (3 : ℝ) / 2 by norm_num)
     norm_num at h ⊢
-    linarith
+    exact h
+  have hdecomp : Real.log (3 : ℝ) =
+      Real.log 2 + Real.log ((3 : ℝ) / 2) := by
+    calc
+      Real.log (3 : ℝ) = Real.log ((2 : ℝ) * ((3 : ℝ) / 2)) := by norm_num
+      _ = Real.log 2 + Real.log ((3 : ℝ) / 2) :=
+        Real.log_mul (by norm_num) (by norm_num)
+  have hlog3 : (0.6931471803 : ℝ) + 1 / 3 < Real.log 3 := by
+    calc
+      (0.6931471803 : ℝ) + 1 / 3 <
+          Real.log 2 + Real.log ((3 : ℝ) / 2) := by
+        linarith [Real.log_two_gt_d9]
+      _ = Real.log 3 := hdecomp.symm
   calc
     heightOneThreshold = (497 : ℝ) / 992 := by
       norm_num [heightOneThreshold, heightOneGap]
-    _ < (0.54930614425 : ℝ) := by norm_num
-    _ < Real.log 3 / 2 := hthree
+    _ < ((0.6931471803 : ℝ) + 1 / 3) / 2 := by norm_num
+    _ < Real.log 3 / 2 := by linarith
 
 /-- If a nonnegative real period parameter is at most `30`, its first-repeat
 entropy tax is at least `1 / 992`.  This is purely rational algebra. -/
@@ -122,6 +135,7 @@ theorem eventually_height_at_least_two
   filter_upwards [hbelow] with n hn
   have hne : height n ≠ 1 :=
     not_heightOne_of_below_threshold (height n) (C n) (hheightOne n) hn
+  have hpos : 1 ≤ height n := hpositive n
   omega
 
 /-- A target value at `1 / q` cannot occur before the first possible jump at
@@ -134,9 +148,8 @@ theorem targetScale_le_maxCoefficient
     q ≤ M := by
   by_contra hqM
   have hMq : M < q := lt_of_not_ge hqM
-  have hlt : (1 : ℝ) / q < 1 / M := by
-    rw [div_lt_div_iff₀ hq hM]
-    linarith
+  have hlt : (1 : ℝ) / q < 1 / M :=
+    one_div_lt_one_div_of_lt hM hMq
   have hz := hzero (1 / q) (by positivity) hlt
   rw [htarget] at hz
   norm_num at hz
