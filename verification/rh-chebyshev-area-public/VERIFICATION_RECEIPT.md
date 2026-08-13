@@ -1,27 +1,33 @@
-# Verification receipt — RH Chebyshev area finite and logical cores
+# Verification receipt — Johnston Chebyshev-area review core
 
 Date: 2026-08-13 UTC
 
-Status: ✅ exact finite and conditional-logical Lean cores verified. **Not an RH proof.**
+Status: ✅ **33 exact finite, genuine-prime, zeta-reflection, and conditional-logical Lean declarations verified. Not an RH proof.**
 
-## Canonical public replay
+## Canonical public hostile replay
 
 Repository: `stevemoraco/qs`
 
 Branch: `agent/rh-chebyshev-area-public-verifier-20260813-gpt56`
 
-Verified head:
+Verified source head:
 
 ```text
-39b85d326a04441ae783056a73be6b7d360cb223
+5ae97439789d8fe0840bc44986269868e7d8c5f4
+```
+
+Pull-request merge commit checked by the runner:
+
+```text
+0ebb026ff27894d02d126756a3fcbe1fb12d6224
 ```
 
 Workflow:
 
 ```text
 name: RH Chebyshev area public verifier
-run: 31698670268
-job: 94442227491
+run: 31702490830
+job: 94454785825
 conclusion: SUCCESS
 ```
 
@@ -32,12 +38,16 @@ ChebyshevAreaFinite.lean
 Git blob: f92f1a7c9749173070b405870f4a2903211efeee
 SHA-256: 574fd5b9d7705f4ff7ff217ab2adf8598dd5e215ba1ab8a0833608351102c22c
 
+ChebyshevAreaPrimeFinite.lean
+Git blob: 884f61b5f5a6d6d71764a6941800cfa8b94f3e04
+SHA-256: 39d2e9216b134ff17933e4b8bdc8cefd30a2a68243c53061e94e9e2fad9c04d3
+
 ChebyshevAreaLandauSkeleton.lean
-Git blob: 4c178f672979d947b3313bb28497f309c1e3f238
-SHA-256: 67c5ed975c34916e570dd64cadb44c5a12815b440ccbe582f5de1648a12903fb
+Git blob: e0c50376a91c9074b17338318fa1348d2d929b4c
+SHA-256: a88a4d4e0a43d65ee096d024587e6f8bc08346e0d4d35d686d177e0ab9077f3c
 ```
 
-The workflow checked these Git blobs before compilation.
+The workflow checked all three Git blobs before compilation.
 
 ## Pinned toolchain
 
@@ -65,7 +75,7 @@ native_decide
 Lean.ofReduceBool
 ```
 
-All 14 staged `#print axioms` reports were present. Every report was exactly a subset of
+All 33 staged `#print axioms` reports were present. Every report was exactly a subset of
 
 ```text
 {propext, Classical.choice, Quot.sound}
@@ -73,9 +83,9 @@ All 14 staged `#print axioms` reports were present. Every report was exactly a s
 
 No `sorryAx` or custom conclusion-carrying axiom appeared in the compiler output.
 
-## Verified declarations
+## Verified declaration groups
 
-Finite geometry:
+### Generic finite area geometry — 9 declarations
 
 ```text
 area_eq_center_add_square
@@ -89,50 +99,91 @@ interval_minimizer_trichotomy
 area_nonneg_of_centerValue_nonneg
 ```
 
-Conditional logical skeleton:
+### Genuine finite-prime arithmetic — 9 declarations
+
+The definitions use Mathlib's actual `Nat.Prime` predicate and `Real.log` weights.
 
 ```text
+thetaNat_succ
+primeMoment_succ
+primeArea_succ
+primeArea_endpoint_compatible
+primeArea_eq_center_add_square
+primeCenter_le_primeArea
+unitIntervalMinimum_le_primeArea
+positive_on_unitInterval_iff
+discreteJohnstonCriterion_iff
+```
+
+### Zeta reflection and Johnston logical endpoint — 15 declarations
+
+```text
+nontrivialZero_ne_zero
+GammaR_ne_zero_of_nontrivialZero
+completedRiemannZeta_eq_zero_of_nontrivialZero
+reflected_riemannZeta_zero
+reflected_not_trivial
+reflected_ne_one
+reflectsNontrivialZeros
 riemannHypothesis_of_bounds
 leftHalfBound_of_reflection
 rightHalfBound_of_eventualNonnegative
 riemannHypothesis_of_eventualNonnegative
+eventuallyNonnegative_of_positiveAfterTwo
+riemannHypothesis_of_positiveAfterTwo
 riemannHypothesis_iff_eventuallyNonnegative
+riemannHypothesis_iff_positiveAfterTwo
 ```
 
-The final skeleton theorem targets Mathlib's actual `RiemannHypothesis` definition. Its analytic hypotheses are explicit fields of `LandauBridge`; they are not hidden axioms and they are not proved by this replay.
+Zero reflection is proved internally from Mathlib's completed-zeta functional equation, the Gamma-factor zero classification, and zeta nonvanishing for real part at least one. It is not a packaged assumption in the final source.
+
+The endpoint targets Mathlib's actual `RiemannHypothesis` definition. The remaining analytic hypotheses are explicit fields of `LandauBridge`; they are theorem parameters, not hidden or custom axioms, and they are not proved by this replay.
 
 ## Evidence artifact
 
 ```text
-artifact ID: 9180387125
+artifact ID: 9181872824
 artifact name: rh-chebyshev-area-public-evidence
 artifact ZIP SHA-256:
-37c435d43f96d9ed67cb50908f4e70491d112f4fb120665b1495b6bbc3ebcdec
-expires: 2026-11-11T12:08:39Z
+903ff70ea24e3ee5d5cb901136a60d9a4248d7f9de800f058b4b204e71239f71
 ```
 
-The artifact contains source hashes, toolchain versions, complete Lean output, and the generated axiom report.
+The artifact contains source hashes, toolchain versions, complete Lean output, and the generated 33-declaration axiom report.
 
-## Exact unverified interfaces
+## Published theorem and exact unverified interfaces
 
-This receipt does not verify:
+Johnston's 2023 theorem states that, for
 
-1. the genuine prime-indexed Chebyshev function;
-2. the integral identity defining the infinite area;
-3. Johnston's published analytic RH equivalence;
-4. the first Riesz explicit formula;
-5. prime-zeta Möbius inversion and normal convergence;
-6. Landau's theorem for nonnegative Mellin tails;
-7. zeta-zero reflection as an instantiated theorem in this file;
-8. the unconditional sign inequality.
+```text
+A(x) = integral from 2 to x of (t - theta(t)) dt,
+```
 
-The solution-bearing missing statement remains
+RH is equivalent to `A(x) > 0` for every `x > 2`.
+
+This replay does not verify:
+
+1. the real-variable Chebyshev function and its integral;
+2. the finite-sum/integral identification;
+3. Johnston's analytic RH equivalence;
+4. the Mellin/prime-zeta continuation fields of `LandauBridge`;
+5. Landau's theorem for nonnegative Mellin tails;
+6. the RH-to-sign analytic direction;
+7. the unconditional strict sign.
+
+The solution-bearing missing statement is exactly
 
 ```text
 for every x > 2,
 integral from 2 to x of (t - theta(t)) dt > 0.
 ```
 
-By Johnston's theorem, proving that statement is already proving RH.
+Equivalently at the verified finite-prime layer:
+
+```text
+for every natural n >= 2,
+unitIntervalMinimum n > 0.
+```
+
+By Johnston's theorem, proving either universal statement is already proving RH.
 
 **SIX-ALARM OFF.**
