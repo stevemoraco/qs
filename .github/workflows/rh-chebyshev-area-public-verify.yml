@@ -1,9 +1,9 @@
-name: RH Chebyshev area public verifier
+name: RH Chebyshev area endpoint correction verifier
 
 on:
   push:
     branches:
-      - agent/rh-chebyshev-area-public-verifier-20260813-gpt56
+      - agent/rh-chebyshev-area-endpoint-public-20260813-gpt56
     paths:
       - 'verification/rh-chebyshev-area-public/**'
       - '.github/workflows/rh-chebyshev-area-public-verify.yml'
@@ -32,20 +32,23 @@ jobs:
           finite="$dir/ChebyshevAreaFinite.lean"
           prime="$dir/ChebyshevAreaPrimeFinite.lean"
           landau="$dir/ChebyshevAreaLandauSkeleton.lean"
+          endpoint="$dir/ChebyshevAreaEndpointCorrection.lean"
 
           finite_blob="$(git hash-object "$finite")"
           prime_blob="$(git hash-object "$prime")"
           landau_blob="$(git hash-object "$landau")"
+          endpoint_blob="$(git hash-object "$endpoint")"
           test "$finite_blob" = 'f92f1a7c9749173070b405870f4a2903211efeee'
           test "$prime_blob" = '884f61b5f5a6d6d71764a6941800cfa8b94f3e04'
           test "$landau_blob" = 'e0c50376a91c9074b17338318fa1348d2d929b4c'
+          test "$endpoint_blob" = '088ab4f450f49080b6c0dcb383ca971feac559dc'
 
-          printf 'finite_blob=%s\nprime_blob=%s\nlandau_blob=%s\n' \
-            "$finite_blob" "$prime_blob" "$landau_blob" \
+          printf 'finite_blob=%s\nprime_blob=%s\nlandau_blob=%s\nendpoint_blob=%s\n' \
+            "$finite_blob" "$prime_blob" "$landau_blob" "$endpoint_blob" \
             | tee "$dir/source-blobs.txt"
-          sha256sum "$finite" "$prime" "$landau" | tee "$dir/source-sha256.txt"
+          sha256sum "$finite" "$prime" "$landau" "$endpoint" | tee "$dir/source-sha256.txt"
 
-          files=("$finite" "$prime" "$landau")
+          files=("$finite" "$prime" "$landau" "$endpoint")
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then
             echo 'Forbidden proof placeholder found.' >&2
             exit 1
@@ -74,11 +77,15 @@ jobs:
           lake update
           lake exe cache get
 
+          mkdir -p Millennium/RH
+          cp ChebyshevAreaPrimeFinite.lean Millennium/RH/ChebyshevAreaPrimeFinite.lean
+
           : > lean-output.log
           for file in \
             ChebyshevAreaFinite.lean \
             ChebyshevAreaPrimeFinite.lean \
-            ChebyshevAreaLandauSkeleton.lean
+            ChebyshevAreaLandauSkeleton.lean \
+            ChebyshevAreaEndpointCorrection.lean
           do
             echo "=== $file ===" | tee -a lean-output.log
             set +e
@@ -118,7 +125,7 @@ jobs:
               r"'([^']+)' does not depend on any axioms",
               text,
           )
-          expected = 33
+          expected = 43
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
               raise SystemExit(
@@ -149,13 +156,13 @@ jobs:
           out.write_text(report)
           print(report, end='')
           PY
-          echo 'VERIFIED RH Chebyshev area generic, genuine-prime, and logical cores.'
+          echo 'VERIFIED RH Chebyshev area endpoint correction and prior finite cores.'
 
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rh-chebyshev-area-public-evidence
+          name: rh-chebyshev-area-endpoint-evidence
           path: |
             verification/rh-chebyshev-area-public/source-blobs.txt
             verification/rh-chebyshev-area-public/source-sha256.txt
