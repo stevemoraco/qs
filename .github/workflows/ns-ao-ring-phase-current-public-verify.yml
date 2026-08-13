@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           ROOT='verification/ns-ao-ring-phase-current'
           SRC="$ROOT/NSAORingPhaseCurrent.lean"
-          EXPECTED_BLOB='2e1930e8f20ba3d246468d435ccd94b1fbbd0302'
+          EXPECTED_BLOB='783ecf02798e23dc2bf7d5e6de7d59bf48567014'
           ACTUAL_BLOB="$(git hash-object "$SRC")"
           printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
@@ -97,6 +97,9 @@ jobs:
               'NSAORingPhaseCurrent.phaseCurrent_of_growth_twist',
               'NSAORingPhaseCurrent.stressMismatch_of_growth_twist',
               'NSAORingPhaseCurrent.constant_phase_stressMismatch_zero',
+              'NSAORingPhaseCurrent.chirpedWeber_phaseCurrent',
+              'NSAORingPhaseCurrent.chirpedCurrent_derivative_algebra',
+              'NSAORingPhaseCurrent.chirpedDoppler_is_negative_half_densitySecond',
               'NSAORingPhaseCurrent.dopplerForce_mismatch_decomposition',
               'NSAORingPhaseCurrent.dopplerForce_phaseCurrent_decomposition',
               'NSAORingPhaseCurrent.zero_phaseCurrent_dopplerForce',
