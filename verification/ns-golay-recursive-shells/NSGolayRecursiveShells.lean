@@ -68,10 +68,10 @@ theorem radial_gap_numerator_bounds
   constructor <;> nlinarith [mul_nonneg hr0 (sub_nonneg.mpr hrK)]
 
 /-- CLEANER: the exact recursive scale budget `r M⁸≤K` implies the corrected
-quadratic return margin `r M²/K≤M⁻⁶`. -/
+quadratic return margin `r M²/K≤M⁻⁶`. No sign hypothesis on `r` is needed. -/
 theorem scale_budget_gives_sixth_power_return_margin
     (K r M : ℝ)
-    (hK : 0 < K) (hM : 0 < M) (hr : 0 ≤ r)
+    (hK : 0 < K) (hM : 0 < M)
     (hscale : r * M ^ 8 ≤ K) :
     r * M ^ 2 / K ≤ 1 / M ^ 6 := by
   have hM0 : M ≠ 0 := ne_of_gt hM
