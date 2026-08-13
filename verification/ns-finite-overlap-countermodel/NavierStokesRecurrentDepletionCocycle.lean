@@ -12,11 +12,11 @@ theorem finiteReturnDepletion
     (hstep : ∀ k : ℕ,
       budget (k + 1) + c * δ ≤ budget k + error k)
     (hterminal : 0 ≤ budget n) :
-    (∑ _k in Finset.range n, c * δ) ≤
-      budget 0 + ∑ k in Finset.range n, error k := by
+    Finset.sum (Finset.range n) (fun _ => c * δ) ≤
+      budget 0 + Finset.sum (Finset.range n) error := by
   have htel :
-      budget n + (∑ _k in Finset.range n, c * δ) ≤
-        budget 0 + ∑ k in Finset.range n, error k := by
+      budget n + Finset.sum (Finset.range n) (fun _ => c * δ) ≤
+        budget 0 + Finset.sum (Finset.range n) error := by
     induction n with
     | zero => simp
     | succ n ih =>
@@ -38,7 +38,7 @@ theorem recurrentFixedChargeDepletionImpossible
     (hstep : ∀ k : ℕ,
       budget (k + 1) + c * δ ≤ budget k + error k)
     (herror : ∀ n : ℕ,
-      (∑ k in Finset.range n, error k) ≤ E) :
+      Finset.sum (Finset.range n) error ≤ E) :
     False := by
   have hcharge : 0 < c * δ := mul_pos hc hδ
   obtain ⟨N, hN⟩ := exists_nat_gt ((budget 0 + E) / (c * δ))
@@ -46,7 +46,8 @@ theorem recurrentFixedChargeDepletionImpossible
     finiteReturnDepletion N budget error c δ hstep (hbudget N)
   have herr := herror N
   have hsum :
-      (∑ _k in Finset.range N, c * δ) = (N : ℝ) * (c * δ) := by
+      Finset.sum (Finset.range N) (fun _ => c * δ) =
+        (N : ℝ) * (c * δ) := by
     simp
   have hover : budget 0 + E < (N : ℝ) * (c * δ) :=
     (div_lt_iff₀ hcharge).mp hN
@@ -66,7 +67,7 @@ theorem recurrentObservableDepletionImpossible
     (hstep : ∀ k : ℕ,
       budget (k + 1) + c * activity k ≤ budget k + error k)
     (herror : ∀ n : ℕ,
-      (∑ k in Finset.range n, error k) ≤ E) :
+      Finset.sum (Finset.range n) error ≤ E) :
     False := by
   have hstepFixed : ∀ k : ℕ,
       budget (k + 1) + c * δ ≤ budget k + error k := by
