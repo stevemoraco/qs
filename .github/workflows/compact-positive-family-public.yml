@@ -1,0 +1,40 @@
+name: Compact positive family verifier
+on:
+  push:
+    branches: [agent/compact-positive-family-public-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/compact_positive_family/CompactPositiveFamily.lean
+          test "$(git hash-object "$SRC")" = 86d20658def1efa2f2b6759a0fdac2b6c2be99f9
+          python3 - <<'PY2'
+          import json,pathlib,re,urllib.request
+          s=pathlib.Path('verification/compact_positive_family/CompactPositiveFamily.lean').read_text()
+          bad=re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m=bad.search(s)
+          assert not m, m.group(2) if m else ''
+          assert 'native_decide' not in s and 'Lean.ofReduceBool' not in s
+          assert s.count('#print axioms')==1
+          data=json.dumps({'content':s,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          q=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=data,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(q,timeout=960) as r: out=json.load(r)
+          print(json.dumps(out,indent=2))
+          lm=out.get('lean_messages',{}); tm=out.get('tool_messages',{})
+          assert out.get('okay')
+          assert not out.get('failed_declarations',[])
+          assert not lm.get('errors',[]) and not lm.get('warnings',[])
+          assert not tm.get('errors',[]) and not tm.get('warnings',[])
+          assert 'sorryAx' not in json.dumps(out)
+          print('VERIFIED: exact warning-free source compiled under AXLE Lean 4.30')
+          PY2
