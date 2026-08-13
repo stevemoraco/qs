@@ -38,7 +38,7 @@ theorem shallow_pairing_numerator_divisible
     (p : ℕ) {N n : ℕ} (hn : n ≤ N) :
     p ^ (2 * N) ∣ p ^ (2 * (2 * N - n)) := by
   refine ⟨p ^ (2 * (N - n)), ?_⟩
-  exact (shallow_pairing_power_factorization p hn).symm
+  exact shallow_pairing_power_factorization p hn
 
 /-- A layer inspected no deeper than `N` lies below the ambient exponent
 `2*N`, so truncating the finite model at `2*N` does not alter that layer. -/
