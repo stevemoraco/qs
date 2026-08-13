@@ -70,12 +70,20 @@ theorem cube_root_reserve_increment
     simp only [d]
     ring
   have hcore : 2 * (y₁ - y₀) * d = 3 * r * a := by
-    rw [← hfactor]
-    exact hcubic
-  rw [hG₁, hG₀, hAstep]
-  simp only [d] at hd hcore ⊢
-  field_simp [hr, hd]
-  nlinarith
+    calc
+      2 * (y₁ - y₀) * d = 2 * ((y₁ - y₀) * d) := by ring
+      _ = 2 * (y₁ ^ 3 - y₀ ^ 3) := by rw [← hfactor]
+      _ = 3 * r * a := hcubic
+  have hdiff : 2 * (y₁ - y₀) = 3 * r * a / d := by
+    apply (eq_div_iff hd).2
+    simpa [mul_assoc] using hcore
+  change G₁ - G₀ = a * (3 * r / d - 1 / r)
+  calc
+    G₁ - G₀ = 2 * (y₁ - y₀) - a / r := by
+      rw [hG₁, hG₀, hAstep]
+      ring
+    _ = 3 * r * a / d - a / r := by rw [hdiff]
+    _ = a * (3 * r / d - 1 / r) := by ring
 
 /-- The sign comparison behind a refill: if the denominator is positive and
 smaller than `3 r^2`, then the cube-root increment coefficient is positive. -/
