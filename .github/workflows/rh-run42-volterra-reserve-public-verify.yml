@@ -28,7 +28,7 @@ jobs:
           blob1="$(git hash-object "$file1")"
           blob2="$(git hash-object "$file2")"
           test "$blob1" = '7f8fe89aa227de4c869d556fe25fcdd9146059f9'
-          test "$blob2" = 'd6d94432be263822f3ee22c899deab566d64e605'
+          test "$blob2" = '064766dc83c9f86813d4fedbe0e996df94471d88'
           {
             printf 'RHVolterraReserveFinite=%s\n' "$blob1"
             printf 'RHCausalGapReserveFinite=%s\n' "$blob2"
