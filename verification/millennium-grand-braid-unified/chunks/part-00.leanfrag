@@ -1,0 +1,90 @@
+import Mathlib
+
+/-!
+# Millennium Grand Braid — unified executable quantitative bank
+
+This is a single standalone Lean file collecting representative finite, logical,
+algebraic, order-theoretic, and scale-transfer cores surviving hostile audit in
+`stevemoraco/RH` and `stevemoraco/RH-Lean`.
+
+The final theorem has two deliberately separate outputs:
+
+1. `unifiedQuantitativeBank`, an unconditional proof object containing the
+   executable finite bank below;
+2. `grandBraid_from_seventhObject`, a conditional dependency-DAG assembly in
+   which every solution-sized bridge remains an explicit argument.
+
+The file does not hide any official Millennium conclusion in a custom trust declaration,
+definition, oracle, or imported project theorem.
+-/
+
+noncomputable section
+
+namespace MillenniumGrandBraid
+
+/-! ## Common inversion and compatibility firewalls -/
+
+/-- A fixed, input-independent encoder/decoder pair with an exact left inverse.
+This is the common logical core behind a genuine retract, a fixed decoder, or a
+fixed analytic inverse. -/
+structure FixedInversion (X Y : Type*) where
+  encode : X → Y
+  decode : Y → X
+  leftInverse : Function.LeftInverse decode encode
+
+@[simp] theorem FixedInversion.recovers
+    {X Y : Type*} (I : FixedInversion X Y) (x : X) :
+    I.decode (I.encode x) = x :=
+  I.leftInverse x
+
+/-- If the decoder preserves a target property, failure of that property on the
+source forbids the encoded object from satisfying the target-side property. -/
+theorem fixedInversion_transfers_failure
+    {X Y : Type*} (I : FixedInversion X Y)
+    {P : X → Prop} {Q : Y → Prop}
+    (hpres : ∀ y, Q y → P (I.decode y))
+    {x : X} (hx : ¬ P x) :
+    ¬ Q (I.encode x) := by
+  intro hq
+  have hp : P (I.decode (I.encode x)) := hpres (I.encode x) hq
+  rw [I.recovers x] at hp
+  exact hx hp
+
+/-- A scale-compatible certificate tower on one common witness type. -/
+structure CompatibleTower (ι W : Type*) [Preorder ι] where
+  cert : ι → W → Prop
+  downward : ∀ {i j : ι} {w : W}, i ≤ j → cert j w → cert i w
+
+/-- Minimal countermodel to `∀ lane, ∃ witness` implying one common witness. -/
+def LocalWitness (lane witness : Bool) : Prop := lane = witness
+
+theorem everyLaneHasLocalWitness :
+    ∀ lane : Bool, ∃ witness : Bool, LocalWitness lane witness := by
+  intro lane
+  exact ⟨lane, rfl⟩
+
+theorem noCommonLocalWitness :
+    ¬ ∃ witness : Bool, ∀ lane : Bool, LocalWitness lane witness := by
+  rintro ⟨witness, hw⟩
+  cases witness with
+  | false =>
+      have h := hw true
+      simp [LocalWitness] at h
+  | true =>
+      have h := hw false
+      simp [LocalWitness] at h
+
+/-- Finite-prefix certificates exist at every finite depth. -/
+def PrefixCert (depth witness : ℕ) : Prop := depth ≤ witness
+
+theorem everyFinitePrefixHasWitness :
+    ∀ n : ℕ, ∃ w : ℕ, ∀ i : ℕ, i ≤ n → PrefixCert i w := by
+  intro n
+  refine ⟨n, ?_⟩
+  intro i hi
+  exact hi
+
+/-- The finite-prefix witnesses above do not assemble into one infinite witness. -/
+theorem noGlobalPrefixWitness :
+    ¬ ∃ w : ℕ, ∀ i : ℕ, PrefixCert i w := by
+  rintro ⟨w, hw⟩
