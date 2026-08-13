@@ -8,7 +8,7 @@ SIX-ALARM OFF.**
 ## 1. Outcome
 
 The current bank does not contain a proof or disproof of RH, P versus NP,
-BSD, Hodge, Navier--Stokes, or Yang--Mills.  It does contain four finite Lean
+BSD, Hodge, Navier--Stokes, or Yang--Mills.  It does contain five finite Lean
 cores with a common clean hosted replay and several exact human theorems and
 counterexamples that sharply reduce the live search space.
 
@@ -35,17 +35,19 @@ it identifies the first load-bearing arrow and makes that arrow falsifiable.
 
 ## 2. Clean finite kernel receipts
 
-The exact four-source verifier is `stevemoraco/qs` PR #310.  Canonical replay
-commit `bd56a51ba9df8effc45f41d1af3cc2c9e65dfd7f`, run/job
-`31706185967/94467220976`, succeeded under Lean 4.32.1 and Mathlib
-`520045ab14e26149ee970e2e617ca04b09bde5d6`.  All 36 requested axiom reports
+The exact five-source verifier is `stevemoraco/qs` PR #310.  Canonical replay
+commit `2b4d9ae47588b54c09c9a72c8572339f771c0e59`, push run/job
+`31720503044/94515997035` and independent PR run/job
+`31720507111/94516010357`, succeeded under Lean 4.32.1 and Mathlib
+`520045ab14e26149ee970e2e617ca04b09bde5d6`.  All 39 requested axiom reports
 use only `propext`, `Quot.sound`, and `Classical.choice`; no `sorryAx` occurs.
-The durable receipt head `56ecb991664d0367240557cc81c3841d862de786`
-received a second clean replay in run/job `31707539664/94471787302`.
+The durable receipt is qs commit
+`a15c7a664d707797779faf880b721d7c22ef1518`.
 
 | lane | exact finite core | kernel-output SHA-256 | formal boundary |
 |---|---|---|---|
 | RH | RH-Lean #992 head `5293b4f170a84db5aa7ff3a41167c3308842743e` | `0f28361ce6a36a1b0aad5af5f0c2618ca9da524ce79eda6bdbc7506f853bb2ab` | real-scalar Schur identity and residual bookkeeping only |
+| RH operator | RH-Lean #1086 head `aaf246a1732cd961e527f09ca25f2643cd2f6c82` | `782e2a9970680ac022efc849c294ec838ce0cbb72b1cd0e4614cedb626bd9efa` | symmetric real-inner-product-space residual identity only |
 | Hodge | RH-Lean #928 head `31f5af6962198314c8d3afe5112ffdc4491d7495` | `668beec66131039858fb1919eb164a08edbcc720326d19d5da869b593c7eb31c` | finite coefficient recurrence only |
 | Navier--Stokes | RH-Lean #976 head `9a0b837a6455df07e22a6a89b011a9bc1cb0150e` | `45fd1bfe133030ce199541b446e44b0fbad8f9573e30c2e0d87a1eb28c6befb6` | finite scalar octagon ledger/tangent obstruction only |
 | Yang--Mills | RH-Lean #983 head `46455556507ee0878388c51ad6f048c3f6966674` | `e693c3d4999093cbb8f342619a743f36b49d730f1f81c87ff355b096c057fca8` | scalar consequences of assumed spectral budgets only |
@@ -271,7 +273,7 @@ invalidates one of its premises.
 ## 5. Bell status
 
 No official theorem has a complete human proof and end-to-end Lean
-formalization.  The four clean kernel receipts are deliberately narrower
+formalization.  The five clean kernel receipts are deliberately narrower
 finite firewalls.  Every remaining finite-to-infinite, local-to-global,
 cohomological-to-algebraic, fixed-regulator-to-continuum, and one-sector-to-
 full-target arrow named above remains a theorem obligation.
