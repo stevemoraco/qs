@@ -21,7 +21,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/poincare-uniformity/YMPoincareUniformityWall.lean
-          test "$(git hash-object "$SRC")" = b91d61d5e5dde6c8de92379cde611f91e2107d28
+          test "$(git hash-object "$SRC")" = 9cfe3dedf82281c94faaa5fe2931e83e691d93de
           python3 - <<'PY'
           import json, pathlib, urllib.request
           source = pathlib.Path('verification/poincare-uniformity/YMPoincareUniformityWall.lean').read_text()
