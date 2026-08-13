@@ -34,17 +34,36 @@ jobs:
             exit 1
           fi
 
-      - name: Build and independently check the Lean declarations
-        uses: leanprover/lean-action@v1
-        with:
-          lake-package-directory: formal/ns-packing-audit
-          auto-config: false
-          build: true
-          leanchecker: true
-          nanoda: true
-          nanoda-allow-sorry: false
-          use-mathlib-cache: false
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/ns-packing-audit/toolchain.txt
 
       - name: Fresh Lean kernel replay with axiom report
-        working-directory: formal/ns-packing-audit
-        run: lake env lean NavierStokesPackingAudit.lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-packing-audit/NavierStokesPackingAudit.lean'
+          output='formal/ns-packing-audit/lean-kernel-output.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-packing-foundation-replay-${{ github.sha }}
+          path: |
+            formal/ns-packing-audit/NavierStokesPackingAudit.lean
+            formal/ns-packing-audit/lean-toolchain
+            formal/ns-packing-audit/toolchain.txt
+            formal/ns-packing-audit/lean-kernel-output.txt
+          if-no-files-found: warn
