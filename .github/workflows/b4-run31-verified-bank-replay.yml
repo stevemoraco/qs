@@ -64,18 +64,21 @@ jobs:
           assert print_total == 26
           (evidence / 'source-manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True))
           PY
-      - name: Fresh AXLE Lean kernel replay
+      - name: Fresh uncached AXLE Lean kernel replay
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import json, urllib.request
+          import hashlib, json, urllib.request
           root = Path('verification/b4-run31-hostile-audit-replay')
           evidence = root / 'evidence'
           summary = []
+          nonce = 'run31-20260813-1605-4d6d8e3c'
           for source in sorted((root / 'materialized').glob('*.lean')):
-              payload = json.dumps({'content': source.read_text(), 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+              submitted = source.read_text() + f"\n-- fresh-replay nonce: {nonce}:{source.name}\n"
+              submitted_sha256 = hashlib.sha256(submitted.encode()).hexdigest()
+              payload = json.dumps({'content': submitted, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
               req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type': 'application/json'}, method='POST')
               with urllib.request.urlopen(req, timeout=960) as response:
                   result = json.load(response)
@@ -86,8 +89,9 @@ jobs:
               assert result.get('lean_messages', {}).get('warnings', []) == []
               assert result.get('tool_messages', {}).get('errors', []) == []
               assert result.get('tool_messages', {}).get('warnings', []) == []
-              summary.append({'source': source.name, 'okay': True})
-              print(f'VERIFIED {source.name}')
+              assert result.get('info', {}).get('cached_response') is False
+              summary.append({'source': source.name, 'okay': True, 'cached_response': False, 'submitted_sha256': submitted_sha256})
+              print(f'FRESH VERIFIED {source.name}')
           assert len(summary) == 7
           (evidence / 'replay-summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
           PY
