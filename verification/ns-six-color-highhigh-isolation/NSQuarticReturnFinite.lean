@@ -72,6 +72,20 @@ theorem quartic_return_targets_q2 :
   rw [quartic_return_nonzero]
   norm_num [scale,q2]
 
+/-- Equal-shell geometry forces the exact quartic rectangle heat detuning. -/
+theorem equal_shell_detuning_identity
+    (ell h c : Vec3)
+    (hc : normSq c = normSq ell + normSq h) :
+    normSq (scale 2 ell) -
+        normSq (add (add ell h) c) -
+        normSq (add (add ell (neg h)) (neg c)) =
+      -4 * dot h (add h c) := by
+  rcases ell with ⟨e1, e2, e3⟩
+  rcases h with ⟨h1, h2, h3⟩
+  rcases c with ⟨c1, c2, c3⟩
+  simp only [normSq, dot, scale, add, neg] at hc ⊢
+  linear_combination -2 * hc
+
 theorem conjugate_pair_rectangle (a b c : Vec3) :
     add (add a c) (add b (neg c)) = add a b := by
   rcases a with ⟨a1,a2,a3⟩
@@ -89,5 +103,6 @@ theorem conjugate_pair_rectangle (a b c : Vec3) :
 #print axioms quartic_return_nonzero
 #print axioms quartic_return_targets_q2
 #print axioms conjugate_pair_rectangle
+#print axioms equal_shell_detuning_identity
 
 end NSQuarticReturnFinite
