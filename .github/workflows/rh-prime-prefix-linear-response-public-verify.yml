@@ -27,9 +27,13 @@ jobs:
           declare -A expected
           expected[RHPrimePrefixLinearResponse.lean]='0b03be5ce2be5e79a1e2246086174b4005e92d7c'
           expected[RHPrimePrefixBregmanReserve.lean]='a640ce97dfa5a6dfa0fa2adde24f1618e91d2be0'
+          expected[RHPrimePrefixSlackDissipationBridge.lean]='8796a0d6ec57685c8290b67dd5206444c43f0052'
           : > "$dir/source-blobs.txt"
           : > "$dir/source-sha256.txt"
-          for name in RHPrimePrefixLinearResponse.lean RHPrimePrefixBregmanReserve.lean; do
+          for name in \
+            RHPrimePrefixLinearResponse.lean \
+            RHPrimePrefixBregmanReserve.lean \
+            RHPrimePrefixSlackDissipationBridge.lean; do
             file="$dir/$name"
             actual_blob="$(git hash-object "$file")"
             test "$actual_blob" = "${expected[$name]}"
@@ -65,7 +69,10 @@ jobs:
           lake exe cache get
           : > lean-output.log
           status=0
-          for src in RHPrimePrefixLinearResponse.lean RHPrimePrefixBregmanReserve.lean; do
+          for src in \
+            RHPrimePrefixLinearResponse.lean \
+            RHPrimePrefixBregmanReserve.lean \
+            RHPrimePrefixSlackDissipationBridge.lean; do
             printf '\n===== %s =====\n' "$src" | tee -a lean-output.log
             set +e
             lake env lean "$src" >> lean-output.log 2>&1
@@ -105,7 +112,7 @@ jobs:
               r"'([^']+)' does not depend on any axioms",
               text,
           )
-          expected = 10
+          expected = 14
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
               raise SystemExit(f'expected {expected} staged axiom reports, found {found}')
@@ -124,7 +131,7 @@ jobs:
           out.write_text(report)
           print(report, end='')
           PY
-          echo 'VERIFIED RH prime-prefix linear-response and Bregman finite cores.'
+          echo 'VERIFIED RH prime-prefix linear-response, split reserve, and slack-dissipation bridge.'
 
       - name: Upload verification evidence
         if: always()
