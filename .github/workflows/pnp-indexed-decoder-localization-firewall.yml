@@ -1,0 +1,64 @@
+name: PNP Normalized Indexed-Router Firewall
+
+on:
+  push:
+    branches:
+      - agent/pnp-indexed-decoder-localization-firewall-v2-20260813
+  pull_request:
+    paths:
+      - 'verification/pnp-indexed-decoder-localization-firewall/**'
+      - 'research/pnp-indexed-decoder-localization-firewall-20260813.md'
+      - '.github/workflows/pnp-indexed-decoder-localization-firewall.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-indexed-decoder-localization-firewall'
+          file="$dir/PNPIndexedDecoderFinite.lean"
+          git hash-object "$file" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-indexed-decoder-localization-firewall'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean PNPIndexedDecoderFinite.lean > lean-output.log 2>&1
+          lean_status=$?
+          set -e
+          cat lean-output.log
+          if [ "$lean_status" -ne 0 ]; then exit "$lean_status"; fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED PNP normalized indexed-router firewall.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-normalized-indexed-router-firewall-evidence
+          path: |
+            verification/pnp-indexed-decoder-localization-firewall/source-blob.txt
+            verification/pnp-indexed-decoder-localization-firewall/source-sha256.txt
+            verification/pnp-indexed-decoder-localization-firewall/lean-version.txt
+            verification/pnp-indexed-decoder-localization-firewall/lean-output.log
