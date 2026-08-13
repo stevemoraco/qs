@@ -219,6 +219,72 @@ theorem passive_low_leray_exact (a H c : ℝ) :
     field_simp <;>
     ring
 
+/-! A hostile integer witness for the isosceles one-polarization relay.
+The desired sum and pump-conjugate cancellation are exact, but a reciprocal
+interaction is not contained in the selected pump polarization.  It creates
+a nonzero orthogonal polarization at the same carrier. -/
+
+def isoP : V3 := ⟨1, 0, 0⟩
+def isoQ : V3 := ⟨0, 1, 0⟩
+def isoK : V3 := ⟨-1, -1, 0⟩
+def isoA : V3 := ⟨0, 1, -1⟩
+def isoB : V3 := ⟨-1, 0, 1⟩
+def isoN : V3 := ⟨0, 0, 1⟩
+def isoR : V3 := ⟨0, 1, 1⟩
+
+theorem isosceles_carrier_relation :
+    add (add isoP isoQ) isoK = zero := by
+  apply V3.ext <;>
+    norm_num [add, isoP, isoQ, isoK, zero]
+
+theorem isosceles_carrier_transverse :
+    dot isoP isoA = 0 ∧ dot isoQ isoB = 0 ∧ dot isoK isoN = 0 := by
+  norm_num [dot, isoP, isoQ, isoK, isoA, isoB, isoN]
+
+theorem isosceles_active_sum :
+    leray (add isoP isoQ) (symSymbol (add isoP isoQ) isoA isoB) =
+      ⟨0, 0, 2⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoQ, isoA, isoB]
+
+theorem isosceles_conjugate_difference_killed :
+    leray (sub isoP isoQ) (symSymbol (sub isoP isoQ) isoA isoB) =
+      zero := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoQ, isoA, isoB, zero]
+
+theorem isosceles_reciprocal_full_output :
+    leray (add isoQ isoK) (symSymbol (add isoQ isoK) isoB isoN) =
+      isoN := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoQ, isoK, isoB, isoN]
+
+theorem isosceles_reciprocal_decomposition :
+    isoN = add (smul (-(1 : ℝ) / 2) isoA) (smul ((1 : ℝ) / 2) isoR) := by
+  apply V3.ext <;>
+    norm_num [add, smul, isoN, isoA, isoR]
+
+theorem isosceles_orthogonal_leakage :
+    dot isoA isoR = 0 ∧ dot (add isoQ isoK) isoR = 0 ∧ isoR ≠ zero := by
+  constructor
+  · norm_num [dot, isoA, isoR]
+  constructor
+  · norm_num [dot, add, isoQ, isoK, isoR]
+  · intro h
+    have hy := congrArg V3.y h
+    norm_num [isoR, zero] at hy
+
+theorem isosceles_reciprocal_not_in_selected_polarization :
+    ∀ t : ℝ, isoN ≠ smul t isoA := by
+  intro t h
+  have hy := congrArg V3.y h
+  have hz := congrArg V3.z h
+  norm_num [isoN, smul, isoA] at hy hz
+  linarith
+
 #print axioms carrier_transverse
 #print axioms equal_shell_and_norm
 #print axioms high_symbol_parallel
@@ -238,5 +304,13 @@ theorem passive_low_leray_exact (a H c : ℝ) :
 #print axioms passive_high_symbol_parallel
 #print axioms passive_high_leray_zero
 #print axioms passive_low_leray_exact
+#print axioms isosceles_carrier_relation
+#print axioms isosceles_carrier_transverse
+#print axioms isosceles_active_sum
+#print axioms isosceles_conjugate_difference_killed
+#print axioms isosceles_reciprocal_full_output
+#print axioms isosceles_reciprocal_decomposition
+#print axioms isosceles_orthogonal_leakage
+#print axioms isosceles_reciprocal_not_in_selected_polarization
 
 end NSSelectiveLerayAtom
