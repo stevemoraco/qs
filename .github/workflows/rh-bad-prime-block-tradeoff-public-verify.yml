@@ -37,7 +37,8 @@ jobs:
           done <<'EOF'
           RHBadPrimeBlockTradeoff.lean f49f3ad9e02a8390ab10d2e765471d45b04506fe
           RHBadPrimeMomentTradeoff.lean 301c90b3b52dd2a7840205c70acf01bb2a58f3b9
-          RHRootPrefixBlockTransfer.lean 30826f6d39c9221962daaf7a884d29fbe9f3ff00
+          RHRootPrefixBlockTransfer.lean 9f8b2f0c075505b788165e46d84ba71a8006983e
+          RHRootPrefixHilbertEnergyFinite.lean 00494a772aa37c2bba5054da3a03a62192d3338f
           EOF
 
       - name: Reject placeholders and custom trust escapes
@@ -51,6 +52,7 @@ jobs:
               root / 'RHBadPrimeBlockTradeoff.lean',
               root / 'RHBadPrimeMomentTradeoff.lean',
               root / 'RHRootPrefixBlockTransfer.lean',
+              root / 'RHRootPrefixHilbertEnergyFinite.lean',
           ]
           patterns = [
               r'^\s*(sorry|admit)\b',
@@ -91,12 +93,14 @@ jobs:
             RHBadPrimeBlockTradeoff.lean \
             RHBadPrimeMomentTradeoff.lean \
             RHRootPrefixBlockTransfer.lean \
+            RHRootPrefixHilbertEnergyFinite.lean \
             | tee source-sha256.log
           : > lean-output.log
           for file in \
             RHBadPrimeBlockTradeoff.lean \
             RHBadPrimeMomentTradeoff.lean \
-            RHRootPrefixBlockTransfer.lean
+            RHRootPrefixBlockTransfer.lean \
+            RHRootPrefixHilbertEnergyFinite.lean
           do
             echo "=== $file ===" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
@@ -149,6 +153,17 @@ jobs:
                   'one_third_loss_retains_depth',
                   'square_root_factor_exponent',
               ],
+              'RHRootPrefixHilbertEnergyFinite': [
+                  'hilbert_block_exponent_identity',
+                  'hilbert_block_exponent_positive',
+                  'hilbert_upper_margin_positive',
+                  'factor_square_lower',
+                  'factor_square_upper',
+                  'factorized_denominator_exponent',
+                  'quadratic_frontier_scale',
+                  'hilbert_line_gap_positive',
+                  'rh_all_positive_lines',
+              ],
           }
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           for namespace, names in namespaces.items():
@@ -179,7 +194,7 @@ jobs:
           PY
           test -s source-sha256.log
           test -s mathlib-commit.log
-          echo 'VERIFIED RH bad-prime block, moment, and root finite cores.'
+          echo 'VERIFIED RH bad-prime block, moment, root, and Hilbert finite cores.'
 
       - name: Upload replay evidence
         if: always()
