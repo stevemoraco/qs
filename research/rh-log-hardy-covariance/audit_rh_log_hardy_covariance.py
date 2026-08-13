@@ -15,7 +15,8 @@ from scipy.integrate import quad
 
 
 def load_module(path: Path):
-    spec = importlib.util.spec_from_file_location("covariance_checker", path)
+    sys.path.insert(0, str(path.parent))
+    spec = importlib.util.spec_from_file_location("covariance_core_audit", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(str(path))
     module = importlib.util.module_from_spec(spec)
@@ -49,10 +50,10 @@ def main() -> None:
         for key in ("energy", "diagonal", "cross", "half_log_log", "diagonal_error", "renormalized_cross"):
             assert math.isclose(new_row[key], old_row[key], rel_tol=0.0, abs_tol=5e-12)
 
-    module = load_module(args.checker)
+    core = load_module(args.checker.parent / "covariance_core.py")
     for left, right in ((2.0, 3.0), (11.0, 22.0), (101.0, 160.0)):
         direct, _ = quad(lambda x: 1.0 / (x * x * math.log(x) ** 2), left, right)
-        antiderivative = module.primitive(right) - module.primitive(left)
+        antiderivative = core.primitive(right) - core.primitive(left)
         assert math.isclose(direct, antiderivative, rel_tol=2e-12, abs_tol=2e-15)
 
     print("finite covariance regression passed")
