@@ -1,4 +1,4 @@
-name: B2 Round 42 RepSAT Padding Projection
+name: B2 Round 42 Padding and Sideband Firewalls
 
 on:
   push:
@@ -28,11 +28,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/b2-round42/PNPRepSATPaddingProjection.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
-            echo 'Forbidden proof placeholder or custom proof carrier found.' >&2
-            exit 1
-          fi
+          files=(
+            verification/b2-round42/PNPRepSATPaddingProjection.lean
+            verification/b2-round42/NSFastActivationSidebandFirewall.lean
+          )
+          for file in "${files[@]}"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
+              echo "Forbidden proof placeholder or custom proof carrier found in $file" >&2
+              exit 1
+            fi
+          done
 
       - name: Install pinned Lean and fetch pinned Mathlib cache
         shell: bash
@@ -52,17 +57,25 @@ jobs:
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           cd verification/b2-round42
-          lake env lean PNPRepSATPaddingProjection.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          files=(
+            PNPRepSATPaddingProjection.lean
+            NSFastActivationSidebandFirewall.lean
+          )
+          for file in "${files[@]}"; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED round-42 RepSAT finite padding-projection arithmetic.'
+          echo 'VERIFIED round-42 finite padding and sideband firewalls.'
 
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: b2-round42-repsat-lean-evidence
+          name: b2-round42-lean-evidence
           path: verification/b2-round42/lean-output.log
           if-no-files-found: warn
