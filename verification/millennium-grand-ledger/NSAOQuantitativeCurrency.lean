@@ -47,33 +47,36 @@ theorem cramer_retuning
     let y := (c * u - a * v) / (a * d - b * c)
     a * x + b * y + u = 0 ∧ c * x + d * y + v = 0 := by
   dsimp
+  have hunit :
+      (a * d - b * c) * (a * d - b * c)⁻¹ = (1 : ℝ) :=
+    mul_inv_cancel₀ hdet
   constructor
-  · calc
-      a * ((b * v - d * u) / (a * d - b * c)) +
-          b * ((c * u - a * v) / (a * d - b * c)) + u =
-          (a * (b * v - d * u) + b * (c * u - a * v) +
-            u * (a * d - b * c)) / (a * d - b * c) := by
-              field_simp [hdet]
-              ring
-      _ = 0 := by
-        have hnum :
-            a * (b * v - d * u) + b * (c * u - a * v) +
-              u * (a * d - b * c) = 0 := by ring
-        rw [hnum]
-        simp
-  · calc
-      c * ((b * v - d * u) / (a * d - b * c)) +
-          d * ((c * u - a * v) / (a * d - b * c)) + v =
-          (c * (b * v - d * u) + d * (c * u - a * v) +
-            v * (a * d - b * c)) / (a * d - b * c) := by
-              field_simp [hdet]
-              ring
-      _ = 0 := by
-        have hnum :
-            c * (b * v - d * u) + d * (c * u - a * v) +
-              v * (a * d - b * c) = 0 := by ring
-        rw [hnum]
-        simp
+  · simp only [div_eq_mul_inv]
+    calc
+      a * ((b * v - d * u) * (a * d - b * c)⁻¹) +
+          b * ((c * u - a * v) * (a * d - b * c)⁻¹) + u =
+          (a * (b * v - d * u) + b * (c * u - a * v)) *
+            (a * d - b * c)⁻¹ + u := by ring
+      _ = -u * (a * d - b * c) * (a * d - b * c)⁻¹ + u := by
+        rw [show
+          a * (b * v - d * u) + b * (c * u - a * v) =
+            -u * (a * d - b * c) by ring]
+      _ =
+          -u * ((a * d - b * c) * (a * d - b * c)⁻¹) + u := by ring
+      _ = 0 := by rw [hunit]; ring
+  · simp only [div_eq_mul_inv]
+    calc
+      c * ((b * v - d * u) * (a * d - b * c)⁻¹) +
+          d * ((c * u - a * v) * (a * d - b * c)⁻¹) + v =
+          (c * (b * v - d * u) + d * (c * u - a * v)) *
+            (a * d - b * c)⁻¹ + v := by ring
+      _ = -v * (a * d - b * c) * (a * d - b * c)⁻¹ + v := by
+        rw [show
+          c * (b * v - d * u) + d * (c * u - a * v) =
+            -v * (a * d - b * c) by ring]
+      _ =
+          -v * ((a * d - b * c) * (a * d - b * c)⁻¹) + v := by ring
+      _ = 0 := by rw [hunit]; ring
 
 /-- A strict reference margin survives an additive perturbation bounded by half
 the recorded reference value. -/
