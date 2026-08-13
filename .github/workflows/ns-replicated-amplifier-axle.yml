@@ -1,0 +1,125 @@
+name: NS replicated-amplifier hostile AXLE replay
+
+on:
+  push:
+    branches: [agent/ns-replicated-amplifier-verifier-20260813]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ns-replicated-amplifier-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            verification/ns-replicated-amplifier/NSReplicatedAmplifierFirewall.lean
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Source trust gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          path = pathlib.Path(
+              'verification/ns-replicated-amplifier/NSReplicatedAmplifierFirewall.lean'
+          )
+          text = path.read_text()
+          for pat in [
+              r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])admit([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])sorryAx([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])axiom([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])opaque([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])unsafe([^A-Za-z0-9_]|$)',
+              r'(^|[^A-Za-z0-9_])native_decide([^A-Za-z0-9_]|$)',
+              r'Lean\.ofReduceBool',
+          ]:
+              if re.search(pat, text):
+                  raise SystemExit(f'forbidden source construct matches {pat}')
+          theorems = len(re.findall(r'(?m)^theorem\s+', text))
+          prints = len(re.findall(r'(?m)^#print axioms\s+', text))
+          if theorems != 12 or prints != 12:
+              raise SystemExit(f'expected 12 theorems/prints, got {theorems}/{prints}')
+          print(f'PRECHECK OK: {theorems} theorems and {prints} axiom reports')
+          PY
+
+      - name: Verify exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-replicated-amplifier/evidence
+          python3 - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+
+          def esc(value):
+              text = value if isinstance(value, str) else json.dumps(value, sort_keys=True)
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          path = pathlib.Path(
+              'verification/ns-replicated-amplifier/NSReplicatedAmplifierFirewall.lean'
+          )
+          content = path.read_text()
+          sha256 = hashlib.sha256(content.encode()).hexdigest()
+          payload = json.dumps({
+              'content': content,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          out = pathlib.Path(
+              'verification/ns-replicated-amplifier/evidence/axle-result.json'
+          )
+          out.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2))
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              for item in lean_errors:
+                  print('::error title=AXLE Lean error::' + esc(item))
+              for item in tool_errors:
+                  print('::error title=AXLE tool error::' + esc(item))
+              for item in failed:
+                  print('::error title=AXLE failed declaration::' + esc(item))
+              if not lean_errors and not tool_errors and not failed:
+                  print('::error title=AXLE non-okay result::' + esc(result))
+              raise SystemExit(1)
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              print('::error title=Postcompile trust failure::forbidden escape')
+              raise SystemExit(1)
+          compact = {key: value for key, value in result.items() if key != 'content'}
+          print('::notice title=AXLE compact exact result::' + esc(compact))
+          print('::notice title=Canonical source SHA-256::' + esc(sha256))
+          print('VERIFIED: AXLE Lean 4.30 compiled all 12 finite cores')
+          PY
+
+      - name: Upload exact verifier evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-replicated-amplifier-axle-evidence
+          path: |
+            verification/ns-replicated-amplifier/NSReplicatedAmplifierFirewall.lean
+            verification/ns-replicated-amplifier/evidence/axle-result.json
+          if-no-files-found: warn
