@@ -1,0 +1,61 @@
+name: RH prime-prefix cocycle threshold verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-prime-prefix-cocycle-threshold-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-prime-prefix-cocycle-threshold/**'
+      - '.github/workflows/rh-prime-prefix-cocycle-threshold-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-prime-prefix-cocycle-threshold'
+          file="$dir/RHPrimePrefixCocycleThreshold.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='d5e32e4be0050602b2a94037144d0709729ec36f'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-prime-prefix-cocycle-threshold'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHPrimePrefixCocycleThreshold.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          test "$status" -eq 0
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-prime-prefix-cocycle-threshold-evidence
+          path: |
+            verification/rh-prime-prefix-cocycle-threshold/source-blob.txt
+            verification/rh-prime-prefix-cocycle-threshold/source-sha256.txt
+            verification/rh-prime-prefix-cocycle-threshold/lean-version.txt
+            verification/rh-prime-prefix-cocycle-threshold/lean-output.log
