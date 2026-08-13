@@ -120,22 +120,45 @@ jobs:
           python3 - <<'PY'
           import json
           import pathlib
+
+          def annotate(kind, item):
+              if isinstance(item, dict):
+                  message = item.get('message') or item.get('text') or json.dumps(item, sort_keys=True)
+              else:
+                  message = str(item)
+              message = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::{kind} title=AXLE Lean diagnostic::{message}')
+
           p = pathlib.Path(
               'verification/rh-brownian-min-kernel/evidence/axle-response.json'
           )
           if not p.exists():
-              raise SystemExit('missing AXLE response evidence')
+              print('::error title=AXLE evidence::missing AXLE response evidence')
+              raise SystemExit(1)
           result = json.loads(p.read_text())
           lean_errors = result.get('lean_messages', {}).get('errors', [])
           lean_warnings = result.get('lean_messages', {}).get('warnings', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           tool_warnings = result.get('tool_messages', {}).get('warnings', [])
           failed = result.get('failed_declarations', [])
+          if result.get('request_exception'):
+              annotate('error', result['request_exception'])
+          for item in lean_errors:
+              annotate('error', item)
+          for item in lean_warnings:
+              annotate('warning', item)
+          for item in tool_errors:
+              annotate('error', item)
+          for item in tool_warnings:
+              annotate('warning', item)
+          for item in failed:
+              annotate('error', f'failed declaration: {item}')
           if not result.get('okay') or lean_errors or lean_warnings or tool_errors or tool_warnings or failed:
-              raise SystemExit('Lean/AXLE verification failed or warned; inspect uploaded response artifact')
+              raise SystemExit('Lean/AXLE verification failed or warned; diagnostics emitted above')
           rendered = json.dumps(result)
           for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
               if forbidden in rendered:
-                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+                  annotate('error', f'postcompile forbidden dependency: {forbidden}')
+                  raise SystemExit(1)
           print('VERIFIED WARNING-FREE: exact Brownian min-kernel source compiled under AXLE Lean 4.30')
           PY
