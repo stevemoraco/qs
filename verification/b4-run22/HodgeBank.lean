@@ -1,26 +1,87 @@
 import Mathlib
 
-namespace B4.Run22.Hodge
+/-!
+# Hodge lane: positive local safe-block arithmetic
 
-theorem banker_two_sector_ext {A B : Type*} {x y : A × B}
-    (h₁ : x.1 = y.1) (h₂ : x.2 = y.2) :
-    x = y := by
-  exact Prod.ext h₁ h₂
+Over a commutative ring, this file records the exact polynomial identities
+for the two-generator block
+`A = (-y,x)ᵀ` and
+`B = [[x²,xy],[xy,y²]]`.
 
-theorem critic_one_sector_projection_not_total :
-    ∃ x y : Bool × Bool, x.1 = y.1 ∧ x ≠ y := by
-  exact ⟨(false, false), (false, true), rfl, by decide⟩
+The two first-derivative matrices give the alternating contraction
+`(∂ₓB)(∂ᵧA) - (∂ᵧB)(∂ₓA) = (-3x,-3y)ᵀ`.
+The constant matrix `V = [[0,-3],[3,0]]` sends `A` to the same vector.
 
-theorem cleaner_pair_eq_iff_both_sector_eq {A B : Type*} {x y : A × B} :
-    x = y ↔ x.1 = y.1 ∧ x.2 = y.2 := by
-  constructor
-  · intro h
-    exact ⟨congrArg Prod.fst h, congrArg Prod.snd h⟩
-  · rintro ⟨h₁, h₂⟩
-    exact banker_two_sector_ext h₁ h₂
+These are matrix and polynomial identities only. This file does not identify
+an Atiyah class, a derived boundary, a local geometric model, or a Hodge
+class.
+-/
 
-#print axioms banker_two_sector_ext
-#print axioms critic_one_sector_projection_not_total
-#print axioms cleaner_pair_eq_iff_both_sector_eq
+namespace Millennium.Hodge.SafeBlockArithmetic
 
-end B4.Run22.Hodge
+noncomputable section
+
+variable {R : Type*} [CommRing R]
+
+def safeA (x y : R) : Fin 2 → R :=
+  ![-y, x]
+
+def safeB (x y : R) : Matrix (Fin 2) (Fin 2) R :=
+  !![x ^ 2, x * y;
+     x * y, y ^ 2]
+
+def dxA : Fin 2 → R :=
+  ![0, 1]
+
+def dyA : Fin 2 → R :=
+  ![-1, 0]
+
+def dxB (x y : R) : Matrix (Fin 2) (Fin 2) R :=
+  !![2 * x, y;
+     y,     0]
+
+def dyB (x y : R) : Matrix (Fin 2) (Fin 2) R :=
+  !![0, x;
+     x, 2 * y]
+
+def contractionC (x y : R) : Fin 2 → R :=
+  ![-3 * x, -3 * y]
+
+def boundaryV : Matrix (Fin 2) (Fin 2) R :=
+  !![0, -3;
+     3,  0]
+
+/-- The quadratic row block composes with the Koszul column to zero. -/
+theorem safeBlock_BA_zero (x y : R) :
+    safeB x y *ᵥ safeA x y = 0 := by
+  funext i
+  fin_cases i <;>
+    simp [safeA, safeB, Matrix.mulVec, Fin.sum_univ_two] <;>
+    ring
+
+/-- The alternating first-derivative contraction is exactly
+`(-3x,-3y)ᵀ`. -/
+theorem safeBlock_derivative_contraction (x y : R) :
+    dxB x y *ᵥ dyA - dyB x y *ᵥ dxA = contractionC x y := by
+  funext i
+  fin_cases i <;>
+    simp [dxA, dyA, dxB, dyB, contractionC,
+      Matrix.mulVec, Fin.sum_univ_two] <;>
+    ring
+
+/-- The displayed constant matrix sends `A` to the contraction vector. -/
+theorem safeBlock_VA_eq_C (x y : R) :
+    boundaryV *ᵥ safeA x y = contractionC x y := by
+  funext i
+  fin_cases i <;>
+    simp [boundaryV, safeA, contractionC,
+      Matrix.mulVec, Fin.sum_univ_two] <;>
+    ring
+
+#print axioms safeBlock_BA_zero
+#print axioms safeBlock_derivative_contraction
+#print axioms safeBlock_VA_eq_C
+
+end
+
+end Millennium.Hodge.SafeBlockArithmetic
