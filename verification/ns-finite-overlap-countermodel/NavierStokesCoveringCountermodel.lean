@@ -127,8 +127,9 @@ def packetAtScale (N : ℕ) (k : Fin N) : Set (Fin (N + 1)) :=
   {x | k.val ≤ x.val}
 
 /-- Unit point mass at `atomPoint N`. -/
-def atomMass (N : ℕ) (A : Set (Fin (N + 1))) : ℕ :=
-  if atomPoint N ∈ A then 1 else 0
+def atomMass (N : ℕ) (A : Set (Fin (N + 1))) : ℕ := by
+  classical
+  exact if atomPoint N ∈ A then 1 else 0
 
 lemma packetAtScaleContainsAtom (N : ℕ) (k : Fin N) :
     atomPoint N ∈ packetAtScale N k := by
@@ -143,6 +144,7 @@ lemma packetAtScaleAntitone (N : ℕ) {i j : Fin N} (hij : i ≤ j) :
 
 lemma everyPacketHasFullAtomMass (N : ℕ) (k : Fin N) :
     atomMass N (packetAtScale N k) = 1 := by
+  classical
   simp [atomMass, packetAtScaleContainsAtom]
 
 /-- For every finite number `N` of distinct scale labels, one unit of
