@@ -1,4 +1,4 @@
-name: NS helicity truncation and sideband finite cores
+name: NS truncation and mirror-sideband finite cores
 
 on:
   push:
@@ -38,9 +38,9 @@ jobs:
 
           expected = {
               pathlib.Path('formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean'):
-                  ('1a15d089d71631be674ad36fb97fcd6bcde6d9f6', 14),
+                  ('a8c095ddbb102dcb1af8b22fcd4fd3672153a57d', 22),
               pathlib.Path('formal/millennium_audit/SixLaneAudit/NSOnePumpSidebandFirewall.lean'):
-                  ('b5ac743d8c3c4fbd4a4c7d5d5ad0760584e60721', 7),
+                  ('b41946a0485c0e25d9a0dc74174f44c54441dd43', 7),
           }
           forbidden = re.compile(
               r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)([^A-Za-z0-9_]|$)'
@@ -81,7 +81,6 @@ jobs:
           out = root / 'ns-helicity-evidence'
           out.mkdir(exist_ok=True)
           summary = {}
-
           for path in files:
               payload = json.dumps({
                   'content': path.read_text(),
@@ -120,7 +119,6 @@ jobs:
                   'request_exception': result.get('request_exception'),
               }
               print(path.name, json.dumps(summary[path.name], indent=2))
-
           (out / 'summary.json').write_text(
               json.dumps(summary, indent=2, sort_keys=True) + '\n'
           )
@@ -149,7 +147,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ns-helicity-truncation-sideband-evidence-${{ github.sha }}
+          name: ns-truncation-sideband-evidence-${{ github.sha }}
           path: formal/millennium_audit/SixLaneAudit/ns-helicity-evidence/
           if-no-files-found: error
 
