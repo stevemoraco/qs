@@ -3,7 +3,7 @@ name: RH Chebyshev area endpoint correction verifier
 on:
   push:
     branches:
-      - agent/rh-chebyshev-area-endpoint-public-20260813-gpt56
+      - agent/rh-chebyshev-area-public-verifier-20260813-gpt56
     paths:
       - 'verification/rh-chebyshev-area-public/**'
       - '.github/workflows/rh-chebyshev-area-public-verify.yml'
@@ -79,6 +79,7 @@ jobs:
 
           mkdir -p Millennium/RH
           cp ChebyshevAreaPrimeFinite.lean Millennium/RH/ChebyshevAreaPrimeFinite.lean
+          lake build Millennium.RH.ChebyshevAreaPrimeFinite 2>&1 | tee module-build.log
 
           : > lean-output.log
           for file in \
@@ -92,14 +93,15 @@ jobs:
             lake env lean "$file" >> lean-output.log 2>&1
             status=$?
             set -e
-            cat lean-output.log
             if [ "$status" -ne 0 ]; then
+              cat lean-output.log
               echo "$file compilation failed with status $status" >&2
               exit "$status"
             fi
           done
+          cat lean-output.log
 
-          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log module-build.log; then
             echo 'Forbidden dependency found in compiler report.' >&2
             exit 1
           fi
@@ -112,42 +114,39 @@ jobs:
           import pathlib
           import re
 
-          path = pathlib.Path(
+          text = pathlib.Path(
               'verification/rh-chebyshev-area-public/lean-output.log'
-          )
-          text = path.read_text()
-          with_axioms = re.findall(
+          ).read_text()
+          reports = {}
+          for theorem, payload in re.findall(
               r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
               text,
               flags=re.S,
-          )
-          without_axioms = re.findall(
+          ):
+              reports[theorem] = {
+                  part.strip() for part in payload.split(',') if part.strip()
+              }
+          for theorem in re.findall(
               r"'([^']+)' does not depend on any axioms",
               text,
-          )
+          ):
+              reports[theorem] = set()
+
           expected = 43
-          found = len(with_axioms) + len(without_axioms)
-          if found != expected:
+          if len(reports) != expected:
               raise SystemExit(
-                  f'expected {expected} staged axiom reports, found {found}'
+                  f'expected {expected} distinct staged axiom reports, found {len(reports)}'
               )
 
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           rows = []
-          for theorem, payload in with_axioms:
-              deps = {
-                  part.strip()
-                  for part in payload.split(',')
-                  if part.strip()
-              }
+          for theorem, deps in reports.items():
               extra = deps - allowed
               if extra:
                   raise SystemExit(
                       f'{theorem} has non-foundation axioms: {sorted(extra)}'
                   )
               rows.append(f'{theorem}: {sorted(deps)}')
-          for theorem in without_axioms:
-              rows.append(f'{theorem}: []')
 
           report = '\n'.join(sorted(rows)) + '\n'
           out = pathlib.Path(
@@ -167,6 +166,7 @@ jobs:
             verification/rh-chebyshev-area-public/source-blobs.txt
             verification/rh-chebyshev-area-public/source-sha256.txt
             verification/rh-chebyshev-area-public/lean-version.txt
+            verification/rh-chebyshev-area-public/module-build.log
             verification/rh-chebyshev-area-public/lean-output.log
             verification/rh-chebyshev-area-public/axiom-report.txt
           if-no-files-found: warn
