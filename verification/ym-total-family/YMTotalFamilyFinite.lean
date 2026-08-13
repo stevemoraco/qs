@@ -42,23 +42,20 @@ theorem explicitCertificateTime
     have hexpLower :
         1 + (m - E) * ((C / A + 1) / (m - E)) ≤
           Real.exp ((m - E) * ((C / A + 1) / (m - E))) := by
-      exact Real.add_one_le_exp _
+      simpa [add_comm] using
+        Real.add_one_le_exp ((m - E) * ((C / A + 1) / (m - E)))
     have hscaled :
         C < A * Real.exp ((m - E) * ((C / A + 1) / (m - E))) :=
       lt_of_lt_of_le hlinear
         (mul_le_mul_of_nonneg_left hexpLower (le_of_lt hA))
-    have hexpm :
-        0 < Real.exp (m * ((C / A + 1) / (m - E))) := Real.exp_pos _
-    apply (mul_lt_mul_right hexpm).mp
+    have hmul :=
+      (mul_lt_mul_right
+        (Real.exp_pos (-m * ((C / A + 1) / (m - E))))).mpr hscaled
     calc
-      (C * Real.exp (-m * ((C / A + 1) / (m - E)))) *
-          Real.exp (m * ((C / A + 1) / (m - E))) = C := by
-            rw [mul_assoc, ← Real.exp_add]
-            ring_nf
-            simp
-      _ < A * Real.exp ((m - E) * ((C / A + 1) / (m - E))) := hscaled
-      _ = (A * Real.exp (-E * ((C / A + 1) / (m - E)))) *
-          Real.exp (m * ((C / A + 1) / (m - E))) := by
+      C * Real.exp (-m * ((C / A + 1) / (m - E))) <
+          (A * Real.exp ((m - E) * ((C / A + 1) / (m - E)))) *
+            Real.exp (-m * ((C / A + 1) / (m - E))) := hmul
+      _ = A * Real.exp (-E * ((C / A + 1) / (m - E))) := by
             rw [mul_assoc, ← Real.exp_add]
             congr 1
             ring
