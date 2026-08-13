@@ -1,0 +1,3 @@
+import SixLaneAudit.HodgeQsqrt13FiniteCore
+
+#print axioms SixLaneAudit.hodge_real_sqrt13_not_in_rational_span
