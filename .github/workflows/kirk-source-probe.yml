@@ -1,0 +1,41 @@
+name: Kirk Yang-Mills source provenance probe
+
+on:
+  push:
+    branches:
+      - agent/ym-kirk-latest-source-probe-20260813
+  pull_request:
+    paths:
+      - tools/probe_kirk_latest_source.py
+      - .github/workflows/kirk-source-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  source-provenance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify probe syntax
+        run: python3 -m py_compile tools/probe_kirk_latest_source.py
+      - name: Ensure PDF text extractor is available
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Resolve, hash, and inventory frozen plus latest public sources
+        run: python3 tools/probe_kirk_latest_source.py
+      - name: Preserve metadata certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirk-yang-mills-source-provenance
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_frozen_record.json
+            kirk_versions.json
+            kirk_latest_record.json
+            kirk_source_probe_report.json
