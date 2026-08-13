@@ -29,7 +29,7 @@ def phi2 (K : Type*) [CommRing K] :
     ![0, coeff 3, -coeff 2, -coeff 1, coeff 0, 0]
   map_add' left right := by
     funext i
-    fin_cases i <;> simp
+    fin_cases i <;> simp [add_comm]
   map_smul' scalar coeff := by
     funext i
     fin_cases i <;> simp
