@@ -127,61 +127,24 @@ This is substantially stronger than the normal-CM generic-vanishing
 obstruction: nonnormal and reducible Du Bois surfaces are also
 excluded.
 
-## 4. Quantitative curve-defect theorem
+## 4. Exact frontier without an unproved cokernel sign
 
-The same argument says more without assuming that \(Z\) is Du Bois.
-
-### Theorem 4.1
-
-Let \(Z\subset A\) be reduced, pure, and Cohen--Macaulay of dimension
-two. Define
+For a general reduced CM surface the natural Du Bois morphism
+\(\mathcal O_Z\to\underline\Omega_Z^0\) dualizes to a morphism
 \[
- F_Z:=\mathbb D_Z(\underline\Omega_Z^0)[-2].
+ \mathbb D_Z(\underline\Omega_Z^0)[-2]\longrightarrow\omega_Z.
 \]
-Then:
+The source is a GV sheaf when \(\operatorname{lcdef}(Z)=0\). However,
+the cited results do **not** by themselves prove that this degree-zero
+map is injective, nor that its cokernel is a sheaf with a controlled
+Euler sign. Consequently this note makes no quantitative claim about
+the dimension of the non-Du-Bois locus or an Euler debt carried by a
+cokernel.
 
-1. \(F_Z\) is a coherent sheaf and \(i_*F_Z\) is GV;
-2. there is a canonical injection
-   \[
-     F_Z\hookrightarrow\omega_Z; \tag{4.1}
-   \]
-3. for \(Q_{\rm DB}:=\omega_Z/F_Z\),
-   \[
-     \chi(Q_{\rm DB})
-     =\chi(\omega_Z)-\chi(F_Z)
-     \le\chi(\mathcal O_Z). \tag{4.2}
-   \]
-
-If \(Z\) has target character (1.1), then
-\[
- \chi(Q_{\rm DB})\le -96k(6k-1). \tag{4.3}
-\]
-In particular, for \(k=1\),
-\[
- \chi(Q_{\rm DB})\le-480. \tag{4.4}
-\]
-The non-Du-Bois locus must contain a curve; it cannot consist only of
-isolated points.
-
-### Proof
-
-The sheaf and GV assertions repeat the first half of Theorem 3.1 and
-do not use the Du Bois hypothesis. The natural morphism
-\(\mathcal O_Z\to\underline\Omega_Z^0\) dualizes to (4.1); injectivity
-in the Cohen--Macaulay, zero-local-defect setting is the
-Kovacs--Schwede injectivity used in the proof of Vo Proposition 9.1.
-A GV sheaf has nonnegative Euler characteristic, so
-\(\chi(F_Z)\ge0\). Surface Serre duality and (1.1) yield (4.2)--(4.4).
-
-The quotient is supported on the failure locus of the Du Bois map. If
-that support were zero-dimensional, its Euler characteristic would
-equal its nonnegative length, contradicting (4.3). Therefore its
-support, and hence the non-Du-Bois locus, has dimension at least one.
-\(\square\)
-
-The theorem asserts containment of the quotient support in the
-non-Du-Bois locus. It does not silently identify the two scheme
-structures.
+The exact surviving conclusion is only that a reduced CM target cannot
+be Du Bois everywhere. Whether isolated non-Du-Bois points already
+suffice, or a curve of non-Du-Bois singularities is forced, remains an
+open bridge here.
 
 ## 5. Claimant / critic / rebuilder
 
@@ -191,14 +154,12 @@ lci obstructions.
 
 **Critic.** If its singularities are Du Bois, mixed-Hodge-module
 generic vanishing forces \(\chi(\mathcal O_Z)\ge0\), opposite to the
-required value. Even without Du Bois, the dual Du Bois defect quotient
-must carry Euler characteristic at most \(-96k(6k-1)\), so isolated
-bad points cannot pay the debt.
+required value. The cited generic-vanishing argument gives no sign for the cone or
+cokernel of the dual Du Bois morphism away from the Du Bois case; that
+stronger inference was removed under hostile audit.
 
-**Rebuilder.** The reduced frontier is now precise: construct a pure
-CM surface whose non-Du-Bois locus contains a curve and whose dual
-Du Bois defect carries the large negative Euler debt (4.3), while also
-closing the characteristic-action/semiregularity gate. The other
+**Rebuilder.** The reduced frontier is now precise: construct a pure CM surface with genuinely non-Du-Bois singularities
+while also closing the characteristic-action/semiregularity gate. The other
 remaining frontier is generically nonreduced CM structure, to which
 the reduced Du Bois complex does not directly apply.
 
