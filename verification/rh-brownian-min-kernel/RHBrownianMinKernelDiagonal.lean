@@ -27,8 +27,7 @@ theorem finite_diagonal_completion {n : ℕ}
             exact one_cell_completion (ds i) (dv i) (B i) (hds i)
     _ = (1 / 2 : ℝ) * ∑ i, (dv i) ^ 2 / ds i -
         (1 / 2 : ℝ) * ∑ i, ds i * (B i - dv i / ds i) ^ 2 := by
-          rw [Finset.sum_sub_distrib]
-          simp only [Finset.mul_sum]
+          simp only [Finset.sum_sub_distrib, Finset.mul_sum, mul_assoc]
 
 /-- The diagonal capacity is an upper bound when every increment is positive. -/
 theorem finite_capacity_upper_bound {n : ℕ}
@@ -55,8 +54,11 @@ theorem finite_capacity_strict_of_mismatch {n : ℕ}
   have hjpos : 0 < ds j * (B j - dv j / ds j) ^ 2 := by
     apply mul_pos (hds j)
     exact sq_pos_of_ne_zero (sub_ne_zero.mpr hm)
-  have hsum : 0 < ∑ i, ds i * (B i - dv i / ds i) ^ 2 := by
-    exact Finset.sum_pos hnonneg (Finset.mem_univ j) hjpos
+  have hle : ds j * (B j - dv j / ds j) ^ 2 ≤
+      ∑ i, ds i * (B i - dv i / ds i) ^ 2 := by
+    exact Finset.single_le_sum hnonneg (Finset.mem_univ j)
+  have hsum : 0 < ∑ i, ds i * (B i - dv i / ds i) ^ 2 :=
+    lt_of_lt_of_le hjpos hle
   linarith
 
 /-- Cross-multiplied adjacent-prime secant identity, written in square-root variables. -/
