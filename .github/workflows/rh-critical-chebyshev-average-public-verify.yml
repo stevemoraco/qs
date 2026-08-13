@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-critical-chebyshev-average-public'
           file="$dir/RHCriticalChebyshevAverageFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='a0af918aeb30e0fa91178d16f312158c3ef74514'
+          expected_blob='5322a9a90b8292309b519982a46f9a735fe19bb0'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
