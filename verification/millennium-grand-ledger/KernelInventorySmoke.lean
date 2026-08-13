@@ -13,10 +13,12 @@ namespace MillenniumKernelInventorySmoke
 
 theorem foundation_only : True := True.intro
 
-private def auditedTheorems : Array Name :=
+open Lean
+
+private def auditedTheorems : Array Lean.Name :=
   #[``MillenniumKernelInventorySmoke.foundation_only]
 
-private def foundationAllowed (name : Name) : Bool :=
+private def foundationAllowed (name : Lean.Name) : Bool :=
   name == ``propext ||
   name == ``Classical.choice ||
   name == ``Quot.sound
@@ -25,7 +27,7 @@ open Lean Elab Command
 
 elab "#auditSmokeTheorems" : command => do
   let env ← getEnv
-  let mut seen := 0
+  let mut seen : Nat := 0
   for name in auditedTheorems do
     match env.find? name with
     | some (.thmInfo _) =>
