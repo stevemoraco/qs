@@ -17,11 +17,10 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_finite_probe_cover/YMFiniteProbeCover.lean
-          test "$(git hash-object "$SRC")" = d12a6b191deb6d81a28d401777ee172dd3579479
+          test "$(git hash-object "$SRC")" = cadf539a55817683120512cda98d4e3e2c58f744
           python3 - <<'PY'
           import json,pathlib,re,urllib.request
-          p=pathlib.Path('verification/ym_finite_probe_cover/YMFiniteProbeCover.lean')
-          s=p.read_text()
+          s=pathlib.Path('verification/ym_finite_probe_cover/YMFiniteProbeCover.lean').read_text()
           bad=re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
           m=bad.search(s)
           assert not m, m.group(2) if m else ''
