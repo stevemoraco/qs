@@ -1,0 +1,57 @@
+name: PNP critical-path slack finite Lean replay
+
+on:
+  push:
+    branches:
+      - agent/gpt56-pnp-indexed-router-firewall-20260813-run2
+    paths:
+      - 'verification/pnp-critical-path-slack/**'
+      - '.github/workflows/pnp-critical-path-slack-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-critical-path-slack/PNPCriticalPathSlackFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)' "$file"; then
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/pnp-critical-path-slack
+          lake update
+          lake exe cache get
+          sha256sum PNPCriticalPathSlackFinite.lean | tee source-sha256.log
+          lake env lean PNPCriticalPathSlackFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            exit 1
+          fi
+          test -s lean-output.log
+          test -s source-sha256.log
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-critical-path-slack-replay-evidence
+          path: |
+            verification/pnp-critical-path-slack/lean-output.log
+            verification/pnp-critical-path-slack/source-sha256.log
+          if-no-files-found: error
