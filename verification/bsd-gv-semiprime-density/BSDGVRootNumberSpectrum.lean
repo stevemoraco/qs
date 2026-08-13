@@ -95,9 +95,10 @@ theorem accepted_implies_root_positive
 theorem acceptedStates_subset_rootPositiveStates :
     acceptedStates ⊆ rootPositiveStates := by
   intro x hx
-  simp only [acceptedStates, Finset.mem_filter, Finset.mem_univ, true_and] at hx
-  simp only [rootPositiveStates, Finset.mem_filter, Finset.mem_univ, true_and]
-  exact accepted_implies_root_positive x.1 x.2.1 x.2.2 hx
+  have hx' : x ∈ allStates ∧ accepts x.1 x.2.1 x.2.2 = true :=
+    Finset.mem_filter.mp hx
+  apply Finset.mem_filter.mpr
+  exact ⟨hx'.1, accepted_implies_root_positive x.1 x.2.1 x.2.2 hx'.2⟩
 
 /-- In product residue `1`, exactly one quarter of the states are certified. -/
 theorem residue_one_certified_quarter :
