@@ -53,7 +53,7 @@ theorem strict_on_dense_does_not_force_strict_everywhere :
       ext x
       simp
     rw [hset]
-    exact dense_compl_singleton
+    exact dense_compl_singleton (x := (0 : ℝ))
   constructor
   · intro x hx
     exact sq_pos_of_ne_zero hx
