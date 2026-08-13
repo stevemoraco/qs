@@ -51,6 +51,11 @@ jobs:
               'shearCriticalWeakScale',
               'shearEnergySquaredScale',
               'shearSubcriticalWidthScale',
+              'doubleCommutator_offDiagonal',
+              'projector_mul_complement',
+              'complement_mul_projector',
+              'doubleCommutator_projectorSandwich',
+              'doubleCommutator_complementSandwich',
           ]
           for name in expected:
               if f'#print axioms {name}' not in source:
