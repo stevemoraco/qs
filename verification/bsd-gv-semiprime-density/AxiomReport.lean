@@ -1,4 +1,5 @@
 import BSDGVRootNumberSpectrum
+import BSDGVInformationFrontier
 
 #print axioms BSDGVSemiprimeDensity.totalStateCount_eq
 #print axioms BSDGVSemiprimeDensity.residuePairCount_eq
@@ -55,3 +56,12 @@ import BSDGVRootNumberSpectrum
 #print axioms BSDGVSemiprimeDensity.safe_residue_only_recall_certificate
 #print axioms BSDGVSemiprimeDensity.positive_root_discriminant_family_coefficient
 #print axioms BSDGVSemiprimeDensity.positive_root_discriminant_relative_density
+#print axioms BSDGVSemiprimeDensity.selector_state_partition
+#print axioms BSDGVSemiprimeDensity.selector_true_positive_frontier
+#print axioms BSDGVSemiprimeDensity.selector_false_positive_floor_middle
+#print axioms BSDGVSemiprimeDensity.selector_false_positive_floor_high
+#print axioms BSDGVSemiprimeDensity.zero_false_positive_recall_ceiling
+#print axioms BSDGVSemiprimeDensity.perfect_recall_precision_ceiling
+#print axioms BSDGVSemiprimeDensity.selector_frontier_attained_low
+#print axioms BSDGVSemiprimeDensity.selector_frontier_attained_middle
+#print axioms BSDGVSemiprimeDensity.selector_frontier_attained_high
