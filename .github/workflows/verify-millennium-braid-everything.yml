@@ -226,7 +226,7 @@ jobs:
                   'declaration_lines': len(kinds),
               })
           report = {
-              'canonical_source_commit': 'ebc83198173429cf11a963dd19115339d036a906',
+              'canonical_source_commit': '4c19221f5a161cecde91167ad35239d0f83bf40d',
               'verifier_commit': subprocess.check_output(
                   ['git', 'rev-parse', 'HEAD'], text=True
               ).strip(),
