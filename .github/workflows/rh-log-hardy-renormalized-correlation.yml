@@ -1,0 +1,82 @@
+name: RH log-Hardy renormalized correlation core
+
+on:
+  push:
+    branches:
+      - agent/rh-log-hardy-renormalized-correlation-20260813-gpt56
+    paths:
+      - 'formal/rh-log-hardy-renormalized-correlation/**'
+      - '.github/workflows/rh-log-hardy-renormalized-correlation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/rh-log-hardy-renormalized-correlation/**'
+      - '.github/workflows/rh-log-hardy-renormalized-correlation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical Lean source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean'
+          expected='a9c8848d492fc2c10b631c12a834d7321be1cab6'
+          actual="$(git hash-object "$file")"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/rh-log-hardy-renormalized-correlation/toolchain.txt
+
+      - name: Fresh foundation-only kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean'
+          output='formal/rh-log-hardy-renormalized-correlation/lean-kernel-output.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+          count="$(grep -c 'does not depend on any axioms' "$output")"
+          echo "foundation-only axiom reports: $count"
+          test "$count" -eq 5
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-log-hardy-renormalized-correlation-${{ github.sha }}
+          path: |
+            formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean
+            formal/rh-log-hardy-renormalized-correlation/lean-toolchain
+            formal/rh-log-hardy-renormalized-correlation/toolchain.txt
+            formal/rh-log-hardy-renormalized-correlation/lean-kernel-output.txt
+          if-no-files-found: warn
