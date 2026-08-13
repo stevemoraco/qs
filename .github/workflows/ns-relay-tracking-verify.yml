@@ -1,0 +1,75 @@
+name: NS Relay Tracking Finite Core
+
+on:
+  push:
+    branches:
+      - research/ns-relay-tracking-public-verifier-20260813
+    paths:
+      - 'verification/ns-relay-tracking/**'
+      - '.github/workflows/ns-relay-tracking-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-relay-tracking/**'
+      - '.github/workflows/ns-relay-tracking-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hash and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/ns-relay-tracking
+          file="$root/NSRelayTrackingFinite.lean"
+          sha256sum "$file" | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/ns-relay-tracking
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSRelayTrackingFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite NS relay-tracking scalar firewall.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-relay-tracking-finite-evidence
+          path: |
+            verification/ns-relay-tracking/source-sha256.txt
+            verification/ns-relay-tracking/lean-version.txt
+            verification/ns-relay-tracking/lean-output.log
+          if-no-files-found: warn
