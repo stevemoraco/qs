@@ -8,6 +8,12 @@ data. -/
 def gapDeficit (x theta energy : ℝ) : ℝ :=
   energy + (x - theta)^2 / 2
 
+/-- Squared-distance penalty from `theta` to the closed interval `[l,u]`. -/
+def clippedPenalty (l u theta : ℝ) : ℝ :=
+  if theta ≤ l then (l - theta)^2 / 2
+  else if u ≤ theta then (u - theta)^2 / 2
+  else 0
+
 /-- If the frozen Chebyshev prefix lies inside the gap, its value is the exact
 gap minimum. -/
 theorem interior_prefix_min
@@ -85,8 +91,7 @@ theorem clipped_minimum
 
 /-- Exact one-gap certificate: positivity at every point is equivalent to one
 of three finite clipped tests.  In the interior case the test collapses to the
-single frozen energy scalar.  This is the finite logical reduction needed to
-turn Johnston's continuous Chebyshev-average criterion into prime-prefix data. -/
+single frozen energy scalar. -/
 theorem gap_positive_iff_clipped_certificate
     {l u theta energy : ℝ}
     (hlu : l ≤ u) :
@@ -113,11 +118,45 @@ theorem gap_positive_iff_clipped_certificate
       · rcases hright with ⟨ht, hpos⟩
         exact lt_of_lt_of_le hpos (right_clipped_min hxl hxu ht)
 
+/-- Scalar seventh-object form of the one-gap criterion: the entire continuum
+of points in `[l,u]` is positive iff one clipped scalar `energy + penalty` is
+positive. -/
+theorem gap_positive_iff_energy_plus_clipped_penalty
+    {l u theta energy : ℝ}
+    (hlu : l ≤ u) :
+    (∀ x, l ≤ x → x ≤ u → 0 < gapDeficit x theta energy) ↔
+      0 < energy + clippedPenalty l u theta := by
+  by_cases hleft : theta ≤ l
+  · simp [clippedPenalty, hleft]
+    constructor
+    · intro hall
+      simpa [gapDeficit] using hall l le_rfl hlu
+    · intro hpos x hxl hxu
+      have hmin := left_clipped_min (energy := energy) hxl hxu hleft
+      have hleftpos : 0 < gapDeficit l theta energy := by
+        simpa [gapDeficit] using hpos
+      exact lt_of_lt_of_le hleftpos hmin
+  · have hlt : l < theta := lt_of_not_ge hleft
+    by_cases hright : u ≤ theta
+    · simp [clippedPenalty, hleft, hright]
+      constructor
+      · intro hall
+        simpa [gapDeficit] using hall u hlu le_rfl
+      · intro hpos x hxl hxu
+        have hmin := right_clipped_min (energy := energy) hxl hxu hright
+        have hrightpos : 0 < gapDeficit u theta energy := by
+          simpa [gapDeficit] using hpos
+        exact lt_of_lt_of_le hrightpos hmin
+    · have htu : theta < u := lt_of_not_ge hright
+      simp [clippedPenalty, hleft, hright]
+      exact interior_gap_positive_iff_energy_positive (le_of_lt hlt) (le_of_lt htu)
+
 #print axioms interior_prefix_min
 #print axioms left_clipped_min
 #print axioms right_clipped_min
 #print axioms interior_gap_positive_iff_energy_positive
 #print axioms clipped_minimum
 #print axioms gap_positive_iff_clipped_certificate
+#print axioms gap_positive_iff_energy_plus_clipped_penalty
 
 end RHJohnstonClippedPrimePrefix
