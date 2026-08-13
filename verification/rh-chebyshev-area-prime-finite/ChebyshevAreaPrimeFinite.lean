@@ -63,6 +63,7 @@ theorem primeMoment_succ (n : ℕ) :
       primeMoment n + (n + 1 : ℝ) * primeWeight (n + 1) := by
   unfold primeMoment
   rw [Finset.sum_range_succ]
+  push_cast
 
 /-- Exact update of the finite area after adding the next possible prime. -/
 theorem primeArea_succ (n : ℕ) (x : ℝ) :
@@ -70,6 +71,7 @@ theorem primeArea_succ (n : ℕ) (x : ℝ) :
       primeArea n x - (x - (n + 1 : ℝ)) * primeWeight (n + 1) := by
   unfold primeArea
   rw [Finset.sum_range_succ]
+  push_cast
   ring
 
 /-- At the new integer endpoint, the newly added prime term has zero lever arm. -/
