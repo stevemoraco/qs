@@ -107,6 +107,18 @@ theorem quartic_picard_all_tree_nonzero :
   rw [quartic_picard_all_tree_coefficient]
   norm_num
 
+theorem quartic_picard_all_tree_transverse :
+    qdot (-14,-14,20)
+      (quarticCoeff modeA modeB modeC modeNegC).u = 0 := by
+  rw [quartic_picard_all_tree_coefficient]
+  norm_num [qdot]
+
+theorem quartic_picard_all_tree_off_target_line :
+    qdot (0,0,1)
+      (quarticCoeff modeA modeB modeC modeNegC).u ≠ 0 := by
+  rw [quartic_picard_all_tree_coefficient]
+  norm_num [qdot]
+
 def q2 : Vec3 := (1,-1,0)
 def ell2 : Vec3 := (-7,-7,10)
 def a : Vec3 := (-27,-27,-18)
@@ -181,6 +193,8 @@ theorem conjugate_pair_rectangle (a b c : Vec3) :
 #print axioms quartic_picard_frequency
 #print axioms quartic_picard_all_tree_coefficient
 #print axioms quartic_picard_all_tree_nonzero
+#print axioms quartic_picard_all_tree_transverse
+#print axioms quartic_picard_all_tree_off_target_line
 #print axioms carrier_geometry
 #print axioms carrier_transversality
 #print axioms heat_detuning
