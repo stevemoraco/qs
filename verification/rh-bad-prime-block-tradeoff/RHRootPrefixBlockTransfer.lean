@@ -21,7 +21,15 @@ theorem positive_factor_sign
     (hdefect : defect = factor * root) :
     defect < 0 ↔ root < 0 := by
   rw [hdefect]
-  exact mul_neg_iff_of_pos_left hfactor
+  constructor
+  · intro hproduct
+    by_contra hroot
+    have hroot_nonneg : 0 ≤ root := le_of_not_gt hroot
+    have hproduct_nonneg : 0 ≤ factor * root :=
+      mul_nonneg hfactor.le hroot_nonneg
+    exact (not_lt_of_ge hproduct_nonneg) hproduct
+  · intro hroot
+    exact mul_neg_of_pos_of_neg hfactor hroot
 
 /-- A polynomially negative root response transfers quantitatively through a
 positive factor. -/
