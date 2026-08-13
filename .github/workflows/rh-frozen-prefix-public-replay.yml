@@ -1,0 +1,54 @@
+name: RH frozen-prefix public replay
+
+on:
+  push:
+    branches:
+      - agent/rh-frozen-prefix-duality-public-replay-day0-20260813
+    paths:
+      - "verification/rh-frozen-prefix-day0/**"
+      - ".github/workflows/rh-frozen-prefix-public-replay.yml"
+  pull_request:
+    paths:
+      - "verification/rh-frozen-prefix-day0/**"
+      - ".github/workflows/rh-frozen-prefix-public-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover-community/setup-lean@v1
+        with:
+          toolchain: leanprover/lean4:v4.32.1
+
+      - name: Restore pinned Mathlib cache
+        working-directory: verification/rh-frozen-prefix-day0
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Reject proof holes and custom axioms
+        working-directory: verification/rh-frozen-prefix-day0
+        run: |
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)|^[[:space:]]*axiom[[:space:]]' RHCriticalChebyshevFrozenPrefixFinite.lean; then
+            echo "forbidden trust escape found"
+            exit 1
+          fi
+
+      - name: Compile exact finite source and audit axioms
+        working-directory: verification/rh-frozen-prefix-day0
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean RHCriticalChebyshevFrozenPrefixFinite.lean 2>&1 | tee lean-output.log
+          if grep -E 'sorryAx|declaration uses .sorry.' lean-output.log; then
+            echo "unexpected sorry dependency"
+            exit 1
+          fi
+          sha256sum RHCriticalChebyshevFrozenPrefixFinite.lean
