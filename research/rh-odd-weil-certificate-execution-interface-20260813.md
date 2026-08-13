@@ -16,7 +16,10 @@ rigorously computable integrals after the basis and normalization are fixed.
 Suzuki's coercivity proof does not print a numerical cutoff, but its constants
 are effectivizable in principle.  The bank currently implements neither that
 constant extraction nor the required typed primitive-coordinate comparison.
-The genuinely absent analytic object is the full infinite residual tail.
+The full fixed-parameter infinite residual tail is now bounded by a separate
+independently audited human theorem.  The remaining tail bridge is cofinal:
+its explicit majorant need not vanish without weighted decay of the computed
+Schur rows.
 
 ## 2. Exact finite matrix
 
@@ -24,11 +27,13 @@ For `a>0`, use the real odd localized basis
 
 ```text
 s_j(t) = a^(-1/2) sin(pi j t/a) 1_{|t|<=a},   j>=1,
-H_jk(a) = W(s_j * ~s_k).
+H_jk(a) = Q_W^a(s_j,s_k).
 ```
 
-Here `~g(x)=conj(g(-x))`; hence `~s_j=-s_j`.  With Suzuki's continuous screw
-function `Psi` and `d_j=D s_j=(pi j/a^(3/2))cos(pi j t/a)` on `(-a,a)`, the
+Here `Q_W^a` is the closed localized Weil form; the traditional
+`W(s_j*~s_k)` notation is interpreted through that extension.  With Suzuki's
+continuous screw function `Psi` and the ordinary derivative
+`d_j=s_j'=(pi j/a^(3/2))cos(pi j t/a)` on `(-a,a)`, the
 one-variable terms in the screw kernel vanish because `integral d_j=0`, and
 
 ```text
@@ -90,8 +95,16 @@ D >= mu_L I,       Fhat >= -eta I,
 ||R|| <= rho,      Delta = eta + rho^2/mu_L.
 ```
 
-The residual norm includes **all** rows `j>M`.  Given interval matrices and an
-analytic omitted-row bound `tau`, one may certify coarsely
+The residual norm includes **all** rows `j>M`.  The fixed-parameter all-row
+theorem supplies the explicit analytic bound
+
+```text
+tau <= [sum_{k=1}^N k K_k(a)
+          +sum_{l=N+1}^M l K_l(a)||Y_l||_2]/(a sqrt(M)),
+```
+
+where every `K_l(a)` is an outward-computable finite-prime/special-function
+constant.  Given interval matrices and this `tau`, one may certify coarsely
 
 ```text
 Delta <= max(0,-lambda_min(mid(Fhat))+||rad(Fhat)||_op)
@@ -99,7 +112,8 @@ Delta <= max(0,-lambda_min(mid(Fhat))+||rad(Fhat)||_op)
 ```
 
 Interval LDL*/Sturm or a rational PSD witness can discharge the finite matrix
-inequalities.  They cannot supply `mu_L` or `tau` by themselves.
+inequalities.  They cannot supply `mu_L`, and the displayed `tau` need not
+decay along a cofinal schedule without additional weighted control of `Y`.
 
 ## 4. Claimant, critic, rebuilder
 
@@ -110,30 +124,40 @@ low-frequency leakage estimate yields, with a fixed Fourier normalization,
 
 ```text
 integral_{|z|<=t0}|hat(psi)(z)|^2 / integral_R|hat(psi)(z)|^2
-  <= 4 a0 t0 (1+a0 t0)^2 / (pi^3 N).
+  <= 4 a0 t0 [1+a0 t0+(a0 t0)^2/3] / (pi^3 N).
 ```
 
 The remaining constants can be bounded using the absolutely convergent
 Dirichlet series for `zeta'/zeta`, the explicit shifted-kernel bound, and a
 certified search for the monotone digamma threshold `t0`.  This can produce an
 effective `N=N(a0,mu)` uniformly for every `0<a<=a0`, although the resulting
-bound may be enormous.  Extracting those constants, typing the primitive
-coordinates, and adding an explicit infinite-row residual tail would make the
-first honest `Delta` experiment certificate-executable.  A cofinal family with
-`Delta_n->0`, plus the separately stated odd-Weil/RH equivalence and all
-operator-domain bridges, is the live target.
+bound may be enormous.  Together with the fixed-parameter all-row theorem,
+extracting those constants and typing the primitive coordinates would make
+the first bounded `Delta` experiment certificate-executable.  A cofinal family
+still requires weighted row decay strong enough to force `tau_n->0`, plus the
+separately stated odd-Weil/RH equivalence and all operator-domain bridges.
 
 ### Critic
 
 No numerical `N(a0,mu)` is stated or implemented, and the effectivized bound
 may grow too quickly to support a useful cofinal computation.  Moreover,
-Suzuki controls a primitive norm involving `I_0^(a) phi`, not automatically
-the ordinary `L2` norm of the displayed coefficient vector.  One must prove
-that the odd high sector equals the relevant `K_{N,0}(a)` restriction and
-preserve the zero-mean projection, derivative scaling, full-to-half factor,
-and Fourier convention.  A positive finite `D_M` eigenvalue does not
+Suzuki controls a primitive norm involving `I_0^(a) phi`.  The exact odd
+restriction is obtained only after ordinary-derivative conjugation: with
+`d_j=s_j'=(pi j/a)c_j`, one has `I_0^(a)d_j=s_j`, so `d_j` lies in
+`K_{N,0}(a)` for `j>N`, and Proposition 3.1 gives
+`q_G(sum x_j d_j)=W((sum x_j s_j)*~(sum x_j s_j))=x*H x`.  Thus the primitive
+coefficient norm is `sum |x_j|^2`.  Substituting `s_j` itself as Suzuki's
+`phi` is false: `I_0 s_j` has a nonzero zero Fourier mode.  The numerical
+constant audit must also repair the `2 pi` Plancherel mismatch in the printed
+proof around (4.11)--(4.13) and check the digamma threshold factor.  A positive finite `D_M` eigenvalue does not
 lower-bound the infinite high block.  Likewise, checking only rows through
 `M` does not bound `R`.
+
+The new all-row theorem repairs that last finite-parameter defect, but not its
+cofinal version.  Its constants satisfy `K_l(a)=2 pi a l+O_a(1)`, so
+`M^(-1/2) sum l K_l(a)||Y_l||` can grow rather than vanish.  Treating the
+front factor `M^(-1/2)` as sufficient decay is another invalid
+approximate-to-exact crossing.
 
 The smallest omitted-row counterexample is exact.  Take high space `l2`,
 `D=I`, a one-dimensional low space, `A=1`, and
@@ -157,9 +181,9 @@ The smallest durable next package is:
    integral, with exact prime-power enumeration and explicit series tails;
 2. proof-grade constant extraction from Suzuki Theorem 4.3, together with the
    exact primitive-coordinate and odd-sector identification;
-3. an explicit bound for
-   `||(I-P_M)B||+||(I-P_M)D P_M Y_M||`, or an equivalent all-row residual
-   estimate;
+3. instantiate the fixed-parameter all-row theorem and prove weighted decay
+   of `Y_l` strong enough to make its explicit bound tend to zero on the
+   chosen cofinal schedule;
 4. only then, a small `a,N,M` interval solve reporting `eta,rho,mu_L,Delta`.
 
 Without items 2 and 3, a pilot table is correctly labeled heuristic and is
@@ -174,8 +198,8 @@ not a durable RH certificate.
   `A/B/D` interface.
 - Existing Lean cores formalize finite algebra, not the Weil distribution,
   Suzuki's screw function, effectivized coercivity, primitive-coordinate
-  comparison, operator closure,
-  or the infinite Schur bridge.
+  comparison, operator closure, or the cofinal infinite Schur bridge.  The
+  fixed-parameter all-row estimate is a human theorem, not a Lean theorem.
 - Broughan's older matrix-element treatment and `a=log(sqrt 2)` example
   confirm that finite formulas are classical; the public GRHpack page exposes
   no localized Yoshida interval schedule.
@@ -194,8 +218,9 @@ Primary sources:
 
 ## 6. Bell status
 
-No finite-to-infinite or cofinal arrow is closed here.  This note specifies
-exactly what must be computed and exactly which two infinite estimates must be
+The fixed-parameter finite-to-all-rows arrow is closed analytically, but no
+cofinal arrow is closed here.  This note specifies exactly what must be
+computed and which coercivity and weighted-decay estimates must still be
 proved before the computation has RH semantics.
 
 **SIX-ALARM: OFF.  EXECUTION INTERFACE BANKED.**
