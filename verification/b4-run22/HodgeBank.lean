@@ -29,6 +29,8 @@ or the Hodge conjecture.
 
 namespace Millennium.Hodge.SeparatedNodeLocalCore
 
+noncomputable section
+
 abbrev Var := Fin 4
 abbrev Poly := MvPolynomial Var ℤ
 
@@ -100,12 +102,12 @@ abbrev boundaryRow (hminus : HMinus) (hzero : HZero) : Poly × Poly :=
 /-- The first entry of every boundary row vanishes at the origin. -/
 theorem evalZero_boundaryRow_first (hminus : HMinus) (hzero : HZero) :
     evalZero (boundaryRow hminus hzero).1 = 0 := by
-  simp [boundaryRow, evalZero, u, v, w, z]
+  simp [evalZero, u, v, w, z]
 
 /-- The second entry of every boundary row vanishes at the origin. -/
 theorem evalZero_boundaryRow_second (hminus : HMinus) (hzero : HZero) :
     evalZero (boundaryRow hminus hzero).2 = 0 := by
-  simp [boundaryRow, evalZero, u, v, w, z]
+  simp [evalZero, u, v, w, z]
 
 /-- Evaluation at the origin sends every boundary row to `(0,0)`. -/
 theorem evalZero_boundaryRow (hminus : HMinus) (hzero : HZero) :
