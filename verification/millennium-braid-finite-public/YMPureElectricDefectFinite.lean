@@ -36,7 +36,7 @@ theorem defectFloorViolatesOrderA
 
 /-- Scalar expression for the exact character-loop defect.  The human theorem
 proves that this expression is realized by a simple Wilson character. -/
-def wilsonDefect (gSq loopLength casimir : ℝ) : ℝ :=
+noncomputable def wilsonDefect (gSq loopLength casimir : ℝ) : ℝ :=
   1 - Real.exp (-(gSq * loopLength * casimir / 2))
 
 @[simp] theorem wilsonDefectFormula
@@ -87,7 +87,7 @@ theorem physicalLoopExponentAbove
       _ ≤ (gSq * (a * loopLength)) * casimir := hsecond
       _ = (gSq * loopLength * casimir) * a := by ring
   have hcancel : 2 * M < gSq * loopLength * casimir :=
-    (mul_lt_mul_right ha).mp hproduct
+    (mul_lt_mul_iff_left₀ ha).mp hproduct
   linarith
 
 /-- The interacting ground-state identity plus a reverse-Poincare budget gives
@@ -100,7 +100,7 @@ theorem reversePoincareClosesRayleigh
     (henergy : 2 * a * energy = gSq * dirichlet) :
     energy ≤ K * variance := by
   have hpositive : 0 < 2 * a := by positivity
-  apply (mul_le_mul_left hpositive).mp
+  apply (mul_le_mul_iff_right₀ hpositive).mp
   calc
     (2 * a) * energy = gSq * dirichlet := henergy
     _ ≤ 2 * a * K * variance := hreverse

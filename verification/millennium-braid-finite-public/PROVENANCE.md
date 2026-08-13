@@ -2,8 +2,8 @@
 
 Date: 2026-08-13 UTC
 
-Status: **FIRST HOSTED REPLAY PARTIAL: HODGE FINITE CORE VERIFIED; NS SOURCE
-WARNING-CLEANUP AND FULL THREE-SOURCE REPLAY REQUESTED; NO MILLENNIUM CLAIM;
+Status: **TWO HOSTED REPLAYS: HODGE AND NS FINITE CORES VERIFIED; YM SOURCE
+API REPAIR AND FULL THREE-SOURCE REPLAY REQUESTED; NO MILLENNIUM CLAIM;
 SIX-ALARM OFF.**
 
 This isolated `stevemoraco/qs` verifier contains byte-identical copies of
@@ -17,7 +17,7 @@ one pinned Lean/Mathlib project.
 |---|---|---|---|---:|
 | Hodge | #928, `31f5af6962198314c8d3afe5112ffdc4491d7495` | `331438dc006a3088749dfc9e52ad38681ead5b8a` | `035bc5f18659c53d3cc3822b92b12b5fecd1097400a8272e86bb7e6d2b5eeced` | 10 |
 | Navier--Stokes | #976, `9a0b837a6455df07e22a6a89b011a9bc1cb0150e` | `039323b80f1cb8fe89dece3a7380bf81d1b6bf1b` | `86e0497e7ab2747a35908a047209f8f60985415b1808f82af2abe5d2ae838f74` | 15 |
-| Yang--Mills | #983, `3d1c775385fff7f7bd3c3a2b3f1f699fad9fce14` | `0992240d7a6985d61cb02d0429656cd71462d1e5` | `ae96052ed09a33dc62bbad4951532a5a0f8844a93b798eaac97b0d8ca15cb216` | 7 |
+| Yang--Mills | #983, `46455556507ee0878388c51ad6f048c3f6966674` | `030b4c18fc859434c220caaa3ed01519d229a9fe` | `94ef451cd7ad8fc406892285593feb97943ad619c92b91d23f3d7eb5f2f6b818` | 7 |
 
 The replay branch starts from qs `main` at
 `e832133f25f4432ffba007f99359989d1bb16734`.
@@ -55,6 +55,17 @@ every source always runs and every log is preserved.  First-run artifact
 `9179378606` has archive digest
 `4f270b4d2b635e61f3110b73d0a185df48bbabc3c8ef435789d1b582892b71ba`.
 
+qs PR #310 run `31698671976`, job `94442233779`, replayed the warning-clean
+NS source.  It compiled with warnings as errors, emitted all 15 requested
+reports with only `propext`, `Quot.sound`, and `Classical.choice`, and had
+kernel-output SHA-256
+`45fd1bfe133030ce199541b446e44b0fbad8f9573e30c2e0d87a1eb28c6befb6`.
+The Hodge receipt reproduced byte-for-byte.  YM then exposed three ordinary
+Lean 4.32 source failures: a missing `noncomputable` marker for `Real.exp` and
+two obsolete order-lemma applications.  The canonical YM source above repairs
+only those three lines.  Second-run artifact `9180396662` has archive digest
+`bd7660970bc57827fa91e38735b522ed5de1889222d96f6a396b2300912b9665`.
+
 ## Exact formal scope
 
 - `HodgePrimitiveSuspensionFinite.lean` proves only a finite commutative-ring
@@ -76,6 +87,6 @@ only `propext`, `Quot.sound`, and `Classical.choice`; and preserves the exact
 sources, toolchain, manifest, logs, hashes, and audit summaries even on
 failure.
 
-Only the exact Hodge finite source is called Lean-verified from the first
-receipt.  The NS and YM finite sources remain unverified until a clean hosted
-job succeeds and its preserved evidence is inspected.
+Only the exact Hodge and NS finite sources are called Lean-verified from these
+receipts.  The YM finite source remains unverified until a clean hosted job
+succeeds and its preserved evidence is inspected.
