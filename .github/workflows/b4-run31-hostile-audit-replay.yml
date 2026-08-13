@@ -25,7 +25,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Materialize and audit the exact seven sources
+      - name: Materialize and audit the seven sources
         shell: bash
         run: |
           set -euo pipefail
@@ -59,7 +59,7 @@ jobs:
           expected = {
               'BSDAgyemangCoefficientSpecialization.lean': 'e90b69d17de9b16f447c89bf469997d6e3182c5f098e2af4141104de9fde412e',
               'HodgeLocalAtiyahFerrand.lean': '6a16f25593ae8eab9421d3b99cf9e45406e1f647afee079fa48f31798d7dc594',
-              'NSSourceAmplitudeNoUniformBound.lean': '531bd5503048549da7e7f93451251a1d9884f1367433bd8e00fd67ca196bf275',
+              'NSSourceAmplitudeNoUniformBound.lean': '84a2f9d6040f2da9af6b02fadbde74cb426ea9ca3bc06d5cc448b8a5675a9f84',
               'PNPVegaForcedCutFalsifier.lean': '4109421bf3b3e4fa81b60c4fd06a964e4cbbc80ed9250fd414d119776259fdae',
               'RHWuFloorFiberFalsifier.lean': 'a71ca3db5d5121207a84a947fc11a0b5c17d012a9626c2f971550f6086d39131',
               'RHWuSubsequenceFalsifier.lean': 'f12621b3532ba257430cae713bca6c1817c08edf3c4adba659bcd6ba58b98704',
