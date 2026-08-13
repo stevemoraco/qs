@@ -138,17 +138,8 @@ theorem no_homotopy_for_constantRow :
   rintro ⟨hminus, hzero, hboundary⟩
   exact constantRow_not_boundary hminus hzero hboundary
 
-#print axioms evalZero_u
-#print axioms evalZero_v
-#print axioms evalZero_w
-#print axioms evalZero_z
-#print axioms d_one_mul_d_zero_first
-#print axioms d_one_mul_d_zero_second
 #print axioms d_one_mul_d_zero
-#print axioms evalZero_boundaryRow_first
-#print axioms evalZero_boundaryRow_second
 #print axioms evalZero_boundaryRow
-#print axioms constantRow_not_boundary
 #print axioms no_homotopy_for_constantRow
 
 end Millennium.Hodge.SeparatedNodeLocalCore
