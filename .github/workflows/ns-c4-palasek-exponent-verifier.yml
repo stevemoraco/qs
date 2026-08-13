@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean
-          EXPECTED_BLOB=4dce50553f5262a391a3901927039f5a9cac7ca8
+          EXPECTED_BLOB=4698ea2641ed5e2fb8a82eb47a2baf19ff0ff949
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
