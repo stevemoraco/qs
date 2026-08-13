@@ -77,7 +77,7 @@ theorem signed_lower_bound_implies_buffered_lower_bound
   calc
     buffer - weight * negPart johnston =
         buffer + weight * (-negPart johnston) := by ring
-    _ ≤ buffer + weight * johnston := add_le_add_left hmul buffer
+    _ ≤ buffer + weight * johnston := by nlinarith [hmul]
     _ ≤ robin := hcell
 
 /-- Coarse loss transfer inherited from the stronger signed lower bound. -/
