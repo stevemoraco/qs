@@ -25,7 +25,7 @@ namespace Millennium.NavierStokes
 
 section AbstractTightFrame
 
-variable {ρ κ : Type*} [Fintype ρ] [Fintype κ]
+variable {ρ κ : Type*} [Fintype ρ] [Fintype κ] [DecidableEq κ]
 
 /-- One analysis coefficient of a finite real filter matrix. -/
 def analysisCoeff (K : ρ → κ → ℝ) (f : κ → ℝ) (r : ρ) : ℝ :=
@@ -135,17 +135,17 @@ def golayEightSpeciesCorr (hx hy hz : ℤ) : ℤ :=
   let ax := corr4 golayA hx
   let bx := corr4 golayB hx
   let ay := corr4 golayA hy
-  let by := corr4 golayB hy
+  let bY := corr4 golayB hy
   let az := corr4 golayA hz
   let bz := corr4 golayB hz
   ax * ay * az
     + ax * ay * bz
-    + ax * by * az
-    + ax * by * bz
+    + ax * bY * az
+    + ax * bY * bz
     + bx * ay * az
     + bx * ay * bz
-    + bx * by * az
-    + bx * by * bz
+    + bx * bY * az
+    + bx * bY * bz
 
 /-- Tensoring three complementary pairs factors the eight-species sum into
 three one-dimensional pair correlations. -/
