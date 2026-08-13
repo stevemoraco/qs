@@ -41,6 +41,7 @@ jobs:
           RHRootPrefixHilbertEnergyFinite.lean 00494a772aa37c2bba5054da3a03a62192d3338f
           RHDyadicRootHilbertTransferFinite.lean 33d099731a6c0cfd6b30b1df26eada0a3596213b
           RHSingleDampedCriterionFinite.lean a9a9e112bc93c30b4e19f6c53bf5d507e061b497
+          RHConcavePhaseCriterionFinite.lean cb26e2c2963b8d9eadcbcd4152901e958291337a
           EOF
 
       - name: Reject placeholders and custom trust escapes
@@ -57,6 +58,7 @@ jobs:
               root / 'RHRootPrefixHilbertEnergyFinite.lean',
               root / 'RHDyadicRootHilbertTransferFinite.lean',
               root / 'RHSingleDampedCriterionFinite.lean',
+              root / 'RHConcavePhaseCriterionFinite.lean',
           ]
           patterns = [
               r'^\s*(sorry|admit)\b',
@@ -100,6 +102,7 @@ jobs:
             RHRootPrefixHilbertEnergyFinite.lean \
             RHDyadicRootHilbertTransferFinite.lean \
             RHSingleDampedCriterionFinite.lean \
+            RHConcavePhaseCriterionFinite.lean \
             | tee source-sha256.log
           : > lean-output.log
           for file in \
@@ -108,7 +111,8 @@ jobs:
             RHRootPrefixBlockTransfer.lean \
             RHRootPrefixHilbertEnergyFinite.lean \
             RHDyadicRootHilbertTransferFinite.lean \
-            RHSingleDampedCriterionFinite.lean
+            RHSingleDampedCriterionFinite.lean \
+            RHConcavePhaseCriterionFinite.lean
           do
             echo "=== $file ===" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
@@ -195,6 +199,18 @@ jobs:
                   'logarithmic_hardy_denominator_shift',
                   'choose_fixed_damped_loss',
               ],
+              'RHConcavePhaseCriterionFinite': [
+                  'phase_hardy_product_le_one',
+                  'power_phase_compensation_exponent',
+                  'square_root_phase_compensation',
+                  'near_linear_power_compensation',
+                  'near_power_derivative_algebra',
+                  'phase_block_margin',
+                  'power_phase_denominator_identity',
+                  'phase_derivative_square_positive',
+                  'bounded_transfer_forward',
+                  'transferred_single_series_criterion',
+              ],
           }
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           for namespace, names in namespaces.items():
@@ -225,7 +241,7 @@ jobs:
           PY
           test -s source-sha256.log
           test -s mathlib-commit.log
-          echo 'VERIFIED RH block, moment, root, Hilbert, transfer, and fixed-damping finite cores.'
+          echo 'VERIFIED RH block, moment, root, Hilbert, transfer, fixed-damping, and concave-phase finite cores.'
 
       - name: Upload replay evidence
         if: always()
