@@ -48,13 +48,17 @@ jobs:
         working-directory: verification/bsd-gv-semiprime-density
         run: lake exe cache get
 
-      - name: Build theorem module
+      - name: Build theorem modules
         working-directory: verification/bsd-gv-semiprime-density
         run: lake build BSDGVSemiprimeDensity
 
-      - name: Replay exact source
+      - name: Replay finite source
         working-directory: verification/bsd-gv-semiprime-density
         run: lake env lean BSDGVSemiprimeDensity.lean
+
+      - name: Replay asymptotic aggregation source
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake env lean BSDGVAsymptoticAggregation.lean
 
       - name: Print axiom report
         working-directory: verification/bsd-gv-semiprime-density
