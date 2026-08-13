@@ -1,9 +1,12 @@
 name = "pnp-critical-path-slack"
 version = "0.1.0"
-defaultTargets = ["PNPCriticalPathSlackFinite"]
+defaultTargets = ["PNPCriticalPathSlackFinite", "PNPEqualityRankFirewallFinite"]
 
 [[lean_lib]]
 name = "PNPCriticalPathSlackFinite"
+
+[[lean_lib]]
+name = "PNPEqualityRankFirewallFinite"
 
 [[require]]
 name = "mathlib"
