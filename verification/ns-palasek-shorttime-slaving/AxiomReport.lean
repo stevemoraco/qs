@@ -1,4 +1,5 @@
 import NSPalasekShortTimeSlaving
+import NSDynamicSchurEnergy
 
 #print axioms NSPalasekShortTimeSlaving.response_fraction_identity
 #print axioms NSPalasekShortTimeSlaving.residual_identity
@@ -13,3 +14,8 @@ import NSPalasekShortTimeSlaving
 #print axioms NSPalasekShortTimeSlaving.palasek_clock_beats_same_shell_viscosity
 #print axioms NSPalasekShortTimeSlaving.palasek_damping_to_growth_exponent_negative
 #print axioms NSPalasekShortTimeSlaving.palasek_parameter_witness
+#print axioms NSDynamicSchurEnergy.feedback_bounded_by_initial_exterior_energy
+#print axioms NSDynamicSchurEnergy.zero_initial_feedback_nonpositive
+#print axioms NSDynamicSchurEnergy.zero_initial_feedback_strictly_negative
+#print axioms NSDynamicSchurEnergy.coupled_total_energy_nonincrease
+#print axioms NSDynamicSchurEnergy.coupled_total_energy_strict_decrease
