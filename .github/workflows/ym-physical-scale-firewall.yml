@@ -1,7 +1,35 @@
 name: YM physical scale public replay
-on: workflow_dispatch
+
+on:
+  push:
+    branches:
+      - verification/ym-physical-scale-firewall-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-22.04
     steps:
-      - run: echo staged
+      - uses: actions/checkout@v4
+      - name: Compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-physical-scale-firewall/PhysicalScaleFirewall.lean
+          test "$(git hash-object "$SRC")" = 15112e75338c02e09848a3be9937c1f33d8c475c
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/ym-physical-scale-firewall/PhysicalScaleFirewall.lean').read_text()
+          payload = json.dumps({'content': source, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          assert not result.get('lean_messages', {}).get('errors', [])
+          assert not result.get('lean_messages', {}).get('warnings', [])
+          PY
