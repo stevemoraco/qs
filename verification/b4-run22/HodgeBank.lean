@@ -48,7 +48,9 @@ theorem secant_two_branch_annihilator
   constructor
   · exact secant_scalar_annihilator ht
   · have hneg : (-t) ^ 2 = -d := by
-      rw [sq_neg, ht]
+      calc
+        (-t) ^ 2 = t ^ 2 := by ring
+        _ = -d := ht
     exact secant_scalar_annihilator hneg
 
 #print axioms selected_count_positive
