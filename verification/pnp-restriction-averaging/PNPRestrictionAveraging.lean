@@ -86,8 +86,8 @@ theorem local_to_global_error_floor
       (∑ r with good r, μ r) * η
           = ∑ r, if good r then μ r * η else 0 := by
               classical
-              rw [Finset.filter_sum]
               rw [Finset.sum_mul]
+              rw [Finset.sum_filter]
       _ ≤ ∑ r, μ r * localError r :=
           Finset.sum_le_sum (fun r _ => hterm r)
   calc
