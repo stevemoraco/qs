@@ -26,7 +26,7 @@ theorem drawdown_budget_iff
     0 < hardyMargin boundary endpoint history ↔
       drawdown < base * endpoint := by
   rw [drawdown_decomposition hhistory]
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- A constant history profile leaves only the boundary cushion. -/
 theorem constant_profile_margin
@@ -39,7 +39,7 @@ theorem constant_profile_margin
 
 /-- Scaled finite shell of the critical half-order formula
 `M = base*endpoint/2 - signedDrawdown/4`. -/
-def halfOrderMargin (base endpoint signedDrawdown : ℝ) : ℝ :=
+noncomputable def halfOrderMargin (base endpoint signedDrawdown : ℝ) : ℝ :=
   base * endpoint / 2 - signedDrawdown / 4
 
 /-- Exact critical half-order budget. -/
@@ -102,7 +102,7 @@ theorem mode_growth_iff
     {beta c : ℝ} :
     0 < modeExponent beta c ↔ c < 1 + beta := by
   unfold modeExponent
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- At the critical weight `c=3/2`, every mode strictly to the right of the
 critical line has positive growth exponent. -/
