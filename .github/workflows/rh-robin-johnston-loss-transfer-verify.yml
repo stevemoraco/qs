@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           ROOT='verification/rh-robin-johnston-loss-transfer'
           SRC="$ROOT/RHRobinJohnstonLossTransfer.lean"
-          EXPECTED_BLOB='60ed502600dc44c8cafc91788fe6bfcd223d089a'
+          EXPECTED_BLOB='e00317d45280d47dde8db4302997819d53109ccb'
 
           CHECKOUT_STATUS="$(git status --porcelain=v1)"
           printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
@@ -76,67 +76,71 @@ jobs:
           lake update
           lake exe cache get
 
-      - name: Compile exact source directly
+      - name: Compile exact source and emit axiom reports
         shell: bash
         working-directory: verification/rh-robin-johnston-loss-transfer
         run: |
           set -euo pipefail
           lake env lean RHRobinJohnstonLossTransfer.lean 2>&1 | tee lean-source-output.log
-          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables' lean-source-output.log; then
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-source-output.log; then
             echo 'Lean compiler or trust-boundary failure detected.' >&2
             exit 1
           fi
 
-      - name: Emit and audit exact axiom reports
+      - name: Audit every printed axiom dependency
         shell: bash
         working-directory: verification/rh-robin-johnston-loss-transfer
         run: |
           set -euo pipefail
-          lake env lean AxiomReport.lean 2>&1 | tee lean-axiom-output.log
-          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-axiom-output.log; then
-            echo 'Axiom-report compilation or trust-boundary failure detected.' >&2
-            exit 1
-          fi
           python3 - <<'PY'
           from pathlib import Path
           import re
 
-          text = Path('lean-axiom-output.log').read_text()
+          text = Path('lean-source-output.log').read_text()
           names = [
-              'RHRobinJohnstonLossTransfer.negPart_le_of_lower_bound',
-              'RHRobinJohnstonLossTransfer.buffered_loss_transfer',
+              'RHRobinJohnstonLossTransfer.negPart_antitone',
+              'RHRobinJohnstonLossTransfer.sharp_loss_transfer',
+              'RHRobinJohnstonLossTransfer.signed_lower_bound_implies_buffered_lower_bound',
+              'RHRobinJohnstonLossTransfer.signed_buffered_loss_transfer',
               'RHRobinJohnstonLossTransfer.robin_loss_le_johnston_loss',
               'RHRobinJohnstonLossTransfer.robin_negative_forces_budget_exhaustion',
               'RHRobinJohnstonLossTransfer.negPart_mul_of_nonneg',
+              'RHRobinJohnstonLossTransfer.cocycle_signed_weight_identity',
               'RHRobinJohnstonLossTransfer.cocycle_weight_identity',
+              'RHRobinJohnstonLossTransfer.signed_prime_cell_to_centered_state',
               'RHRobinJohnstonLossTransfer.robin_loss_le_centered_deficit',
               'RHRobinJohnstonLossTransfer.sum_buffered_lower_bound',
+              'RHRobinJohnstonLossTransfer.sum_signed_buffered_lower_bound',
               'RHRobinJohnstonLossTransfer.cumulative_positive_of_block_budget',
+              'RHRobinJohnstonLossTransfer.cumulative_positive_of_signed_block_budget',
           ]
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           report = []
+
+          starts = {}
           for name in names:
-              marker = f"'{name}' depends on axioms:"
-              no_axiom_marker = f"'{name}' does not depend on any axioms"
-              start = text.find(marker)
-              if start < 0:
-                  if no_axiom_marker in text:
-                      report.append(f'{name}: []')
-                      continue
+              quoted = f"'{name}'"
+              pos = text.find(quoted)
+              if pos < 0:
                   raise SystemExit(f'missing #print axioms report for {name}')
-              tail = text[start + len(marker):]
-              next_candidates = [
-                  pos for pos in (
-                      tail.find("'RHRobinJohnstonLossTransfer."),
-                      tail.find('does not depend on any axioms'),
-                  ) if pos >= 0
-              ]
-              block = tail if not next_candidates else tail[:min(next_candidates)]
-              deps = set(re.findall(r'\b(?:propext|Classical\.choice|Quot\.sound|[A-Za-z_][A-Za-z0-9_.]*Ax[A-Za-z0-9_.]*)\b', block))
+              starts[name] = pos
+
+          ordered = sorted((pos, name) for name, pos in starts.items())
+          for index, (start, name) in enumerate(ordered):
+              end = ordered[index + 1][0] if index + 1 < len(ordered) else len(text)
+              block = text[start:end]
+              if 'does not depend on any axioms' in block:
+                  deps = set()
+              else:
+                  match = re.search(r'depends on axioms:\s*\[(.*?)\]', block, re.S)
+                  if not match:
+                      raise SystemExit(f'unparseable #print axioms report for {name}: {block!r}')
+                  deps = set(re.findall(r'[A-Za-z_][A-Za-z0-9_.]*', match.group(1)))
               forbidden = deps - allowed
               if forbidden:
                   raise SystemExit(f'forbidden axiom(s) for {name}: {sorted(forbidden)}')
               report.append(f'{name}: {sorted(deps)}')
+
           Path('axiom-report.txt').write_text('\n'.join(report) + '\n')
           print('\n'.join(report))
           PY
@@ -153,7 +157,6 @@ jobs:
           cp lean-version.txt replay-receipt/ 2>/dev/null || true
           cp verification/rh-robin-johnston-loss-transfer/lake-manifest.json replay-receipt/ 2>/dev/null || true
           cp verification/rh-robin-johnston-loss-transfer/lean-source-output.log replay-receipt/ 2>/dev/null || true
-          cp verification/rh-robin-johnston-loss-transfer/lean-axiom-output.log replay-receipt/ 2>/dev/null || true
           cp verification/rh-robin-johnston-loss-transfer/axiom-report.txt replay-receipt/ 2>/dev/null || true
           git rev-parse HEAD | tee replay-receipt/commit.txt
           git status --porcelain=v1 | tee replay-receipt/post-run-git-status.txt
