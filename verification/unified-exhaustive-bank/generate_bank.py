@@ -173,6 +173,18 @@ def inventory(origin: str, root: pathlib.Path, outroot: pathlib.Path):
             continue
         if source.name.startswith(".") or any(part.startswith("._") for part in relative_parts):
             continue
+        if source.name == "lakefile.lean":
+            relative = source.relative_to(root).as_posix()
+            rejected.append(
+                Rejection(
+                    origin,
+                    relative,
+                    "",
+                    "package_descriptor_not_theorem_module",
+                    "lakefile.lean is package configuration, not a theorem module",
+                )
+            )
+            continue
         text = source.read_text(encoding="utf-8", errors="replace")
         digest = hashlib.sha256(text.encode()).hexdigest()
         if digest in seen:
@@ -237,7 +249,7 @@ def stage(candidates, outroot):
             )
         candidate.staged.parent.mkdir(parents=True, exist_ok=True)
         candidate.staged.write_text(
-            f"/-! Canonical copy: {candidate.origin}:{candidate.path}; "
+            f"/- Canonical copy: {candidate.origin}:{candidate.path}; "
             f"SHA-256 {candidate.sha}. -/\n"
             + IMPORT.sub(replace_import, candidate.text)
         )
@@ -269,6 +281,8 @@ def compile_individual(candidates, outroot, base, per_file):
     accepted = []
     rejected = []
     logs = {}
+    log_root = outroot / "generated" / "individual-logs"
+    log_root.mkdir(parents=True, exist_ok=True)
     pass_number = 0
     while pending:
         pass_number += 1
@@ -285,6 +299,7 @@ def compile_individual(candidates, outroot, base, per_file):
                 timeout=per_file,
             )
             logs[candidate.sha] = log[-12000:]
+            (log_root / f"{candidate.sha}.log").write_text(log)
             if code == 0:
                 accepted.append(candidate)
                 progress = True
@@ -314,6 +329,15 @@ def compile_individual(candidates, outroot, base, per_file):
             )
             break
         pending = deferred
+    (outroot / "generated" / "individual-summary.json").write_text(
+        json.dumps(
+            {
+                "accepted": [serializable_candidate(candidate) for candidate in accepted],
+                "rejected": [dataclasses.asdict(item) for item in rejected],
+            },
+            indent=2,
+        ) + "\n"
+    )
     return accepted, rejected
 
 
@@ -477,6 +501,16 @@ def main():
         individual, outroot, base, args.timeout_aggregate
     )
     rejected += joint_rejected
+    generated = outroot / "generated"
+    (generated / "accepted-modules.json").write_text(
+        json.dumps([serializable_candidate(candidate) for candidate in joint], indent=2) + "\n"
+    )
+    (generated / "rejected-sources.json").write_text(
+        json.dumps([dataclasses.asdict(item) for item in rejected], indent=2) + "\n"
+    )
+    if not joint:
+        print("no jointly importable theorem modules", flush=True)
+        return 5
     baseline = dump_theorems([], "Baseline", outroot, base, args.timeout_aggregate)
     aggregate = dump_theorems(
         [candidate.module for candidate in joint],
