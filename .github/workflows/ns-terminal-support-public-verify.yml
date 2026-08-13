@@ -3,7 +3,7 @@ name: NS terminal-support public verification
 on:
   push:
     branches:
-      - automation/ns-terminal-support-public-replay-20260813
+      - automation/ns-terminal-support-public-replay-repair-20260813
     paths:
       - 'verification/ns-terminal-support/**'
       - '.github/workflows/ns-terminal-support-public-verify.yml'
@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           ROOT='verification/ns-terminal-support'
           SRC="$ROOT/NSTerminalSupportCounterexample.lean"
-          EXPECTED_BLOB='270a2398642e22e3e65b6ae85f37ce39670ed7b1'
+          EXPECTED_BLOB='d8f14ecaffd3c7d3d3784b18305a8d5655281575'
 
           CHECKOUT_STATUS="$(git status --porcelain=v1)"
           printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
@@ -98,13 +98,13 @@ jobs:
 
           text = Path('lean-source-output.log').read_text()
           names = [
-              'residual_future_supported',
-              'residual_tail_zero',
-              'residual_partial_sum_eq_one',
-              'constant_one_not_leftLimitZero',
-              'future_support_zero_tail_not_terminal_zero',
-              'terminallyAbsent_leftLimitZero',
-              'leftLimitZero_of_finitePart_remainder',
+              'NSTerminalSupportCounterexample.residual_future_supported',
+              'NSTerminalSupportCounterexample.residual_tail_zero',
+              'NSTerminalSupportCounterexample.residual_partial_sum_eq_one',
+              'NSTerminalSupportCounterexample.constant_one_not_leftLimitZero',
+              'NSTerminalSupportCounterexample.future_support_zero_tail_not_terminal_zero',
+              'NSTerminalSupportCounterexample.terminallyAbsent_leftLimitZero',
+              'NSTerminalSupportCounterexample.leftLimitZero_of_finitePart_remainder',
           ]
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           report = []
