@@ -60,6 +60,10 @@ jobs:
         working-directory: verification/bsd-gv-semiprime-density
         run: lake env lean BSDGVAsymptoticAggregation.lean
 
+      - name: Replay discriminant-height source
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake env lean BSDGVDiscriminantHeight.lean
+
       - name: Print axiom report
         working-directory: verification/bsd-gv-semiprime-density
         run: lake env lean AxiomReport.lean | tee axiom-report.txt
