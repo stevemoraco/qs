@@ -45,9 +45,10 @@ jobs:
       - name: Build and replay exact sources
         working-directory: verification/pnp-fullcube-dual-day0
         run: |
-          lake build PNPWeightedDual PNPFullCubeRandomWalk
+          lake build PNPWeightedDual PNPFullCubeRandomWalk PNPHammingBallFlux
           lake env lean PNPWeightedDual.lean
           lake env lean PNPFullCubeRandomWalk.lean
+          lake env lean PNPHammingBallFlux.lean
           lake env lean AxiomReport.lean | tee axiom-report.txt
       - name: Enforce foundation-only axiom allowlist
         working-directory: verification/pnp-fullcube-dual-day0
