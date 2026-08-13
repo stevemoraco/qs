@@ -1,0 +1,81 @@
+name: NS logistic dormant activation public verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-logistic-dormant-activation-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-logistic-dormant-activation-public/**'
+      - '.github/workflows/ns-logistic-dormant-activation-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-logistic-dormant-activation-public'
+          file="$dir/NSLogisticDormantActivation.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='63683026bab907ac3924e329df87045b180947b1'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_research_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-logistic-dormant-activation-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSLogisticDormantActivation.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            exit 1
+          fi
+          if grep -Eq 'warning:' lean-output.log; then
+            exit 1
+          fi
+          echo 'VERIFIED NS logistic dormant activation finite gate.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-logistic-dormant-activation-public-evidence
+          path: |
+            verification/ns-logistic-dormant-activation-public/source-blob.txt
+            verification/ns-logistic-dormant-activation-public/source-sha256.txt
+            verification/ns-logistic-dormant-activation-public/lean-version.txt
+            verification/ns-logistic-dormant-activation-public/lean-output.log
