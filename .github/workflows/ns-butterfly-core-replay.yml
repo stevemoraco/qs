@@ -1,0 +1,34 @@
+name: NS Butterfly Core Replay
+on:
+  push:
+    branches: [verification/ns-butterfly-core-20260813]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile sources
+        run: |
+          set -euo pipefail
+          dir="$GITHUB_WORKSPACE/verification/ns-butterfly-core"
+          for file in "$dir/NSButterflyCore.lean" "$dir/NSDoubleHelicityMismatch.lean"; do
+            git hash-object "$file"
+            sha256sum "$file"
+            ! grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"
+          done
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.30.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd formal/millennium_audit
+          lake update
+          lake exe cache get
+          lake env lean ../../verification/ns-butterfly-core/NSButterflyCore.lean | tee ../../verification/ns-butterfly-core/lean-output.log
+          lake env lean ../../verification/ns-butterfly-core/NSDoubleHelicityMismatch.lean | tee ../../verification/ns-butterfly-core/mismatch-output.log
+          ! grep -Eq 'sorryAx|admit|Lean.ofReduceBool' ../../verification/ns-butterfly-core/lean-output.log ../../verification/ns-butterfly-core/mismatch-output.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ns-butterfly-core-evidence
+          path: verification/ns-butterfly-core/
