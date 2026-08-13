@@ -65,7 +65,7 @@ def qStress : Fin 9 → Sym6Z := ![
 /-- The table above is exactly the projector formula for every carrier. -/
 theorem qStress_eq_projectorStress (i : Fin 9) :
     qStress i = projectorStress (carrier i) := by
-  fin_cases i <;> native_decide
+  fin_cases i <;> ext j <;> fin_cases j <;> decide
 
 /-- The separating linear functional
 `L(M) = -6 Mzz - 183 Mxy - 154 Mxz - 24 Myz`. -/
@@ -79,18 +79,17 @@ def separatorValue : Fin 9 → ℤ :=
 /-- The separator is nonnegative on every current projector generator. -/
 theorem separator_exact (i : Fin 9) :
     separator (qStress i) = separatorValue i := by
-  fin_cases i <;> native_decide
+  fin_cases i <;> decide
 
 theorem separator_nonneg (i : Fin 9) :
     0 ≤ separator (qStress i) := by
-  rw [separator_exact]
-  fin_cases i <;> native_decide
+  fin_cases i <;> decide
 
 /-- The target isotropic stress is strictly separated from the cone. -/
 def target17I : Sym6Z := ![17, 17, 17, 0, 0, 0]
 
 theorem separator_target17I : separator target17I = -102 := by
-  native_decide
+  decide
 
 /-- Explicit coordinates of a nonnegative linear combination of the nine
 projector stresses. -/
@@ -139,14 +138,19 @@ theorem no_nonnegative_identity_decomposition :
       (∀ j, coneCoordinates a j = (target17I j : ℝ)) := by
   rintro ⟨a, ha, hcoord⟩
   have hnonneg := cone_separator_nonneg a ha
+  have ht2 : target17I (2 : Fin 6) = 17 := by decide
+  have ht3 : target17I (3 : Fin 6) = 0 := by decide
+  have ht4 : target17I (4 : Fin 6) = 0 := by decide
+  have ht5 : target17I (5 : Fin 6) = 0 := by decide
   have h2 := hcoord (2 : Fin 6)
   have h3 := hcoord (3 : Fin 6)
   have h4 := hcoord (4 : Fin 6)
   have h5 := hcoord (5 : Fin 6)
-  change coneCoordinates a 2 = (17 : ℝ) at h2
-  change coneCoordinates a 3 = (0 : ℝ) at h3
-  change coneCoordinates a 4 = (0 : ℝ) at h4
-  change coneCoordinates a 5 = (0 : ℝ) at h5
+  rw [ht2] at h2
+  rw [ht3] at h3
+  rw [ht4] at h4
+  rw [ht5] at h5
+  norm_num at h2 h3 h4 h5
   linarith
 
 #print axioms qStress_eq_projectorStress
