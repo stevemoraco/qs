@@ -24,8 +24,8 @@ def normalTrace (σ μ : ℝ) : ℝ := σ - μ
 def normalDet (σ μ κ : ℝ) : ℝ := κ ^ 2 - σ * μ
 
 /-- Characteristic polynomial of the two-mode normal block. -/
-def charPoly (σ μ κ λ : ℝ) : ℝ :=
-  λ ^ 2 + (μ - σ) * λ + (κ ^ 2 - σ * μ)
+def charPoly (σ μ κ x : ℝ) : ℝ :=
+  x ^ 2 + (μ - σ) * x + (κ ^ 2 - σ * μ)
 
 /-- BANKER: the skew coupling cancels exactly from the quadratic energy
 balance; growth and viscosity are the only direct energy terms. -/
@@ -38,18 +38,28 @@ theorem skew_coupling_energy_identity (σ μ κ d z : ℝ) :
 /-- The trace is negative exactly when sink damping exceeds defect growth. -/
 theorem trace_negative_iff (σ μ : ℝ) :
     normalTrace σ μ < 0 ↔ σ < μ := by
-  unfold normalTrace
-  linarith
+  constructor
+  · intro h
+    unfold normalTrace at h
+    linarith
+  · intro h
+    unfold normalTrace
+    linarith
 
 /-- The determinant is positive exactly past the product coupling threshold. -/
 theorem determinant_positive_iff (σ μ κ : ℝ) :
     0 < normalDet σ μ κ ↔ σ * μ < κ ^ 2 := by
-  unfold normalDet
-  linarith
+  constructor
+  · intro h
+    unfold normalDet at h
+    linarith
+  · intro h
+    unfold normalDet
+    linarith
 
 /-- Exact characteristic-polynomial expansion of the normal matrix. -/
-theorem characteristic_polynomial_identity (σ μ κ λ : ℝ) :
-    (λ - σ) * (λ + μ) + κ ^ 2 = charPoly σ μ κ λ := by
+theorem characteristic_polynomial_identity (σ μ κ x : ℝ) :
+    (x - σ) * (x + μ) + κ ^ 2 = charPoly σ μ κ x := by
   unfold charPoly
   ring
 
