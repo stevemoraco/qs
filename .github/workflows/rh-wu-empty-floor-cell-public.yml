@@ -1,0 +1,46 @@
+name: RH Wu empty-floor-cell public verifier
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-wu-empty-floor-cell-public'
+          file="$dir/RHWuEmptyFloorCellCounterexample.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='2c27b7bd0c77e050f892e94680ea2bca6703d943'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob"
+          sha256sum "$file"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-wu-empty-floor-cell-public'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd "$dir"
+          lake update
+          lake exe cache get
+          lake env lean RHWuEmptyFloorCellCounterexample.lean > lean-output.log 2>&1
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED RH Wu empty-floor-cell counterexample.'
