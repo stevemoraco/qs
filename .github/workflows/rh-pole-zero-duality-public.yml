@@ -1,0 +1,83 @@
+name: Verify RH pole-zero duality finite shadow
+
+on:
+  push:
+    branches: [verification/rh-pole-zero-duality-20260813]
+  pull_request:
+    paths:
+      - 'verification/rh-pole-zero-duality/**'
+      - '.github/workflows/rh-pole-zero-duality-public.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install prerequisites
+        run: sudo apt-get update && sudo apt-get install -y curl zstd git jq
+
+      - name: Install elan
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Pin exact sources and reject trust escapes
+        working-directory: verification/rh-pole-zero-duality
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            d6929f8573eba30ec3297d0792751c1076c8c698da7f0ec8729aa5b9f468e91d \
+            RHPoleZeroDualityFinite.lean \
+            56b42af241d9361b044abec354928b5d318064947ec3e479776300a3f5a4541c \
+            RHCompanionNumericPair.lean > expected.sha256
+          sha256sum -c expected.sha256
+          for f in RHPoleZeroDualityFinite.lean RHCompanionNumericPair.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$f"; then
+              echo "Forbidden trust escape found in $f"
+              exit 1
+            fi
+            grep -q '#print axioms' "$f"
+          done
+
+      - name: Fetch pinned Mathlib cache
+        working-directory: verification/rh-pole-zero-duality
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Compile exact sources and audit output
+        working-directory: verification/rh-pole-zero-duality
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean RHPoleZeroDualityFinite.lean 2>&1 | tee first.log
+          lake env lean RHCompanionNumericPair.lean 2>&1 | tee second.log
+          cat first.log second.log > build.log
+          if grep -nE 'error:|warning:|declaration uses .sorryAx|unknown constant' build.log; then
+            echo 'Compiler, warning, or axiom failure detected'
+            exit 1
+          fi
+          grep -q 'firstIdentity' build.log
+          grep -q 'exactPair' build.log
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+
+      - name: Preserve exact replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-pole-zero-duality-public-evidence
+          path: |
+            verification/rh-pole-zero-duality/expected.sha256
+            verification/rh-pole-zero-duality/build.log
+            verification/rh-pole-zero-duality/lean-version.txt
+            verification/rh-pole-zero-duality/lake-version.txt
+            verification/rh-pole-zero-duality/mathlib-commit.txt
+          if-no-files-found: error
