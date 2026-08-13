@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-prime-endpoint-l2-cauchy/RHPrimeEndpointL2Cauchy.lean
-          EXPECTED=caf4f38866bb651005ea95263d03dad8ec46b4de6da26f32921f769a9702226d
+          EXPECTED=ef6820a92ab79d5c50c6e4c8c9279ad2b0a93eca195e1623c9df508550804c69
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
