@@ -29,7 +29,10 @@ theorem hodge_rational_span_of_isometric_loops
   · simp [hpos]
   · have hneg : u i = -1 :=
       (hodge_isometric_loop_eq_one_or_neg_one (u i) (hu i hi)).resolve_left hpos
-    simp [hpos, hneg]
+    have hnegOne : ¬ ((-1 : K) = 1) := by
+      intro h
+      exact hpos (hneg.trans h)
+    simp [hneg, hnegOne]
 
 theorem hodge_irrational_generator_not_in_rational_span
     {K : Type*} [Field K] [Algebra ℚ K]
