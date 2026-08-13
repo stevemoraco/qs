@@ -57,10 +57,17 @@ theorem squared_defect_pos_iff
   · intro hprod
     rcases (mul_pos_iff.mp hprod) with hgood | hbad
     · have hsum : 0 < h + L ^ 3 / (16 * q) := hgood.2
-      linarith
+      have hsub : 0 < h - (-(L ^ 3 / (16 * q))) := by
+        simpa [sub_neg_eq_add] using hsum
+      have hlt : -(L ^ 3 / (16 * q)) < h := sub_pos.mp hsub
+      simpa [neg_div] using hlt
     · exact (not_lt_of_ge (le_of_lt hc) hbad.1).elim
   · intro hh
-    have hsum : 0 < h + L ^ 3 / (16 * q) := by linarith
+    have hlt : -(L ^ 3 / (16 * q)) < h := by
+      simpa [neg_div] using hh
+    have hsub : 0 < h - (-(L ^ 3 / (16 * q))) := sub_pos.mpr hlt
+    have hsum : 0 < h + L ^ 3 / (16 * q) := by
+      simpa [sub_neg_eq_add] using hsub
     exact mul_pos hc hsum
 
 /-- The corresponding negative-sign statement. -/
@@ -78,10 +85,17 @@ theorem squared_defect_neg_iff
   · intro hprod
     rcases (mul_neg_iff.mp hprod) with hgood | hbad
     · have hsum : h + L ^ 3 / (16 * q) < 0 := hgood.2
-      linarith
+      have hsub : h - (-(L ^ 3 / (16 * q))) < 0 := by
+        simpa [sub_neg_eq_add] using hsum
+      have hlt : h < -(L ^ 3 / (16 * q)) := sub_neg.mp hsub
+      simpa [neg_div] using hlt
     · exact (not_lt_of_ge (le_of_lt hc) hbad.1).elim
   · intro hh
-    have hsum : h + L ^ 3 / (16 * q) < 0 := by linarith
+    have hlt : h < -(L ^ 3 / (16 * q)) := by
+      simpa [neg_div] using hh
+    have hsub : h - (-(L ^ 3 / (16 * q))) < 0 := sub_neg.mpr hlt
+    have hsum : h + L ^ 3 / (16 * q) < 0 := by
+      simpa [sub_neg_eq_add] using hsub
     exact mul_neg_of_pos_of_neg hc hsum
 
 #print axioms squared_defect_factorization
