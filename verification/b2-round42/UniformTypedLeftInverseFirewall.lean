@@ -37,7 +37,8 @@ theorem bounded_left_inverse_gives_coercivity
     (x : X) :
     ‖x‖ / C ≤ ‖T x‖ := by
   apply (div_le_iff₀ hC).2
-  exact bounded_left_inverse_gives_no_loss T R C hleft hbound x
+  simpa [mul_comm] using
+    bounded_left_inverse_gives_no_loss T R C hleft hbound x
 
 /-- In normed spaces, a map with a bounded exact left inverse is injective. -/
 theorem bounded_left_inverse_injective
