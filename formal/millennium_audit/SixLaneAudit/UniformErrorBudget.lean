@@ -44,8 +44,19 @@ theorem finite_prefix_error_budget_uniform_margin
         tail_half_gap_of_error_budget hbudget herr n hn'
       exact le_trans (min_le_right _ _) (le_of_lt htail)
 
+/-- Sharpness obstruction: weakening the strict budget to `eps ≤ M/2` allows
+the boundary case `q = M/2`, so the strict half-gap conclusion can fail. -/
+theorem nonstrict_budget_allows_boundary :
+    ∃ (M eps q : ℝ),
+      0 < M ∧
+      eps ≤ M / 2 ∧
+      |q - M| ≤ eps ∧
+      ¬ (M / 2 < q) := by
+  refine ⟨2, 1, 1, ?_, ?_, ?_, ?_⟩ <;> norm_num
+
 #print axioms tail_lower_of_abs_error
 #print axioms tail_half_gap_of_error_budget
 #print axioms finite_prefix_error_budget_uniform_margin
+#print axioms nonstrict_budget_allows_boundary
 
 end SixLaneAudit.UniformErrorBudget
