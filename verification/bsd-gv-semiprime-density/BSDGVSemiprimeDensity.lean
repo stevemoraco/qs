@@ -87,6 +87,7 @@ def accepts (p q : OddResidue) (s : LegendreSign) : Bool :=
   gvCaseIV p q s
 
 abbrev State := OddResidue × (OddResidue × LegendreSign)
+abbrev ResiduePair := OddResidue × OddResidue
 
 def allStates : Finset State := Finset.univ
 
@@ -98,6 +99,16 @@ def totalStateCount : Nat := Fintype.card State
 def rowStateCount (p : OddResidue) : Nat :=
   ((Finset.univ : Finset (OddResidue × LegendreSign)).filter
     fun x => accepts p x.1 x.2 = true).card
+
+def acceptedSignCount (s : LegendreSign) : Nat :=
+  ((Finset.univ : Finset ResiduePair).filter
+    fun x => accepts x.1 x.2 s = true).card
+
+def bothSignPairCount : Nat :=
+  ((Finset.univ : Finset ResiduePair).filter
+    fun x =>
+      accepts x.1 x.2 .pos = true &&
+      accepts x.1 x.2 .neg = true).card
 
 def expectedRowStateCount : OddResidue → Nat
   | .r3 => 5
@@ -132,6 +143,25 @@ theorem rowStateCount_eq (p : OddResidue) :
     rowStateCount p = expectedRowStateCount p := by
   cases p <;> decide
 
+/-- Exactly four accepted states have positive Legendre sign. -/
+theorem acceptedPosCount_eq : acceptedSignCount .pos = 4 := by
+  decide
+
+/-- Exactly twenty-four accepted states have negative Legendre sign. -/
+theorem acceptedNegCount_eq : acceptedSignCount .neg = 24 := by
+  decide
+
+/-- Exactly two ordered residue pairs accept both Legendre signs. -/
+theorem bothSignPairCount_eq : bothSignPairCount = 2 := by
+  decide
+
+/-- The ordered residue pairs accepting both signs are exactly `(3,11)` and
+`(11,3)`. -/
+theorem both_sign_pairs_classification (p q : OddResidue) :
+    (accepts p q .pos = true ∧ accepts p q .neg = true) ↔
+      ((p = .r3 ∧ q = .r11) ∨ (p = .r11 ∧ q = .r3)) := by
+  cases p <;> cases q <;> decide
+
 /-- The residue pair `(3,11)` works for either Legendre sign. -/
 theorem three_eleven_all_signs (s : LegendreSign) :
     accepts .r3 .r11 s = true := by
@@ -161,13 +191,31 @@ theorem unordered_coefficient_fraction_certificate :
     acceptedStateCount * 64 = 7 * (2 * totalStateCount) := by
   decide
 
+/-- Cross-multiplication certificate for the positive-sign coefficient
+`4/128 = 1/32`. -/
+theorem positive_sign_fraction_certificate :
+    acceptedSignCount .pos * 32 = totalStateCount := by
+  decide
+
+/-- Cross-multiplication certificate for the negative-sign coefficient
+`24/128 = 3/16`. -/
+theorem negative_sign_fraction_certificate :
+    acceptedSignCount .neg * 16 = 3 * totalStateCount := by
+  decide
+
 #print axioms totalStateCount_eq
 #print axioms acceptedStateCount_eq
 #print axioms rowStateCount_eq
+#print axioms acceptedPosCount_eq
+#print axioms acceptedNegCount_eq
+#print axioms bothSignPairCount_eq
+#print axioms both_sign_pairs_classification
 #print axioms three_eleven_all_signs
 #print axioms eleven_three_all_signs
 #print axioms accepts_swap_with_reciprocity
 #print axioms ordered_density_fraction_certificate
 #print axioms unordered_coefficient_fraction_certificate
+#print axioms positive_sign_fraction_certificate
+#print axioms negative_sign_fraction_certificate
 
 end BSDGVSemiprimeDensity
