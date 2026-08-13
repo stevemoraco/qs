@@ -1,0 +1,101 @@
+name: Audit claimed Lean P=NP theorem axioms
+
+on:
+  push:
+    branches: [agent/pnp-pedigree-upstream-axiom-replay-20260813]
+    paths:
+      - 'formal/pnp-pedigree-axiom-audit/**'
+      - '.github/workflows/pnp-pedigree-upstream-axiom-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/pnp-pedigree-axiom-audit/**'
+      - '.github/workflows/pnp-pedigree-upstream-axiom-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Clone exact claimed-proof repository commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://github.com/TiruArt/Pedigree-Polytopes-Lean4.git upstream
+          git -C upstream checkout --detach 3c9c90ed2e38dd3a679891029c8e7622b5801988
+          test "$(git -C upstream rev-parse HEAD)" = "3c9c90ed2e38dd3a679891029c8e7622b5801988"
+          cp formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean upstream/PedigreeAxiomReport.lean
+
+      - name: Record custom axioms and placeholders in the claimed theorem file
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/pnp-pedigree-axiom-audit/evidence
+          target='upstream/MembershipProject/Core/N_PEqualsNP.lean'
+          grep -nE '^axiom |:= Unit|: True|, True' "$target" \
+            | tee verification/pnp-pedigree-axiom-audit/evidence/source-carriers.txt
+          test "$(grep -c '^axiom ' "$target")" -gt 0
+          grep -q 'axiom P_equals_NP : Prop' "$target"
+          grep -q 'def An (n : ℕ) : Type := Unit' "$target"
+
+      - name: Install the upstream pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          cd upstream
+          "$HOME/.elan/bin/lean" --version \
+            | tee ../verification/pnp-pedigree-axiom-audit/evidence/toolchain.txt
+
+      - name: Resolve pinned dependencies and fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd upstream
+          "$HOME/.elan/bin/lake" update
+          "$HOME/.elan/bin/lake" exe cache get
+
+      - name: Build the exact upstream project
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd upstream
+          "$HOME/.elan/bin/lake" build MembershipProject
+
+      - name: Ask the Lean kernel for the exact theorem and axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd upstream
+          "$HOME/.elan/bin/lake" env lean PedigreeAxiomReport.lean 2>&1 \
+            | tee ../verification/pnp-pedigree-axiom-audit/evidence/kernel-axiom-report.txt
+          report='../verification/pnp-pedigree-axiom-audit/evidence/kernel-axiom-report.txt'
+          grep -q 'MembershipProject.Core.p_equals_np' "$report"
+          grep -q 'MembershipProject.Core.cook_np_completeness' "$report"
+          grep -q 'MembershipProject.Core.karp_stsp_np_complete' "$report"
+          grep -q 'MembershipProject.Core.tardos_strongly_polynomial' "$report"
+          grep -q 'MembershipProject.Core.membership_An_of_Pn' "$report"
+          grep -q 'MembershipProject.Core.mi_objective_solves_stsp_ax' "$report"
+
+      - name: Preserve exact audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-pedigree-upstream-axiom-audit-${{ github.sha }}
+          path: |
+            formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean
+            verification/pnp-pedigree-axiom-audit/evidence/
+            upstream/MembershipProject/Core/N_PEqualsNP.lean
+            upstream/lean-toolchain
+            upstream/lake-manifest.json
+          if-no-files-found: warn
