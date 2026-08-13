@@ -10,8 +10,6 @@ positive contribution.
 theorem block_mass_weight_floor
     (h δ U mass wFloor weight : ℝ)
     (hh : 0 ≤ h)
-    (hδ : 0 ≤ δ)
-    (hU : 0 ≤ U)
     (hmass : 0 ≤ mass)
     (hwFloor : 0 ≤ wFloor)
     (hm : δ * U ≤ mass)
@@ -31,7 +29,6 @@ theorem critical_weight_cancels
     (hU : U ≠ 0) :
     (h * δ * U) / (2 * U) = h * δ / 2 := by
   field_simp [hU]
-  <;> ring
 
 /-- A uniform positive floor on finitely many disjoint blocks accumulates linearly. -/
 theorem repeated_floor_accumulates
