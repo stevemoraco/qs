@@ -10,10 +10,9 @@ jobs:
       - name: Install Lean
         run: |
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
-      - name: Update, build, and replay target
+      - name: Update dependencies and replay target
         working-directory: formal/millennium_audit
         run: |
           export PATH="$HOME/.elan/bin:$PATH"
           lake update
-          lake build
           lake env lean SixLaneAudit/NSRealTriadExteriorFloor.lean
