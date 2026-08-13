@@ -1,6 +1,6 @@
 name = "ns_six_color_highhigh_isolation_verify"
 version = "0.1.0"
-defaultTargets = ["SixColorHighHighIsolationFinite", "OuterSidebandNoSlavingFinite", "TwoCellOuterCancellerFinite"]
+defaultTargets = ["SixColorHighHighIsolationFinite", "OuterSidebandNoSlavingFinite", "TwoCellOuterCancellerFinite", "EqualHighOuterMatchCongruenceFinite"]
 
 [[require]]
 name = "mathlib"
@@ -15,3 +15,6 @@ name = "OuterSidebandNoSlavingFinite"
 
 [[lean_lib]]
 name = "TwoCellOuterCancellerFinite"
+
+[[lean_lib]]
+name = "EqualHighOuterMatchCongruenceFinite"
