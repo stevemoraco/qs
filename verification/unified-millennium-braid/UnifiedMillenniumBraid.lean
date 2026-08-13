@@ -1,106 +1,21 @@
 import Mathlib
 
 /-!
-# Unified Millennium--Perelman braid: honest executable core
+# Unified Millennium--Perelman braid
 
-This file packages six open Clay proposition interfaces, a Perelman control
-slot, and a finite-defect inversion for every lane.  It proves only logical and
-finite algebraic composition.  Every problem-sized native bridge remains an
-explicit field; no Clay conclusion is declared as an axiom or definition.
+This is a conditional executable conductor.  It packages the six open Clay
+proposition interfaces, a Perelman/Poincare completion slot, and one exact
+finite-defect inversion per lane.  Every problem-sized native bridge remains
+an explicit field; no Clay conclusion is assumed by an axiom or definition.
 -/
 
 namespace UnifiedMillenniumBraid
 
-namespace BorderedRay
-
-def q2 (a b c x y : ℝ) : ℝ := a * x^2 + 2 * c * x * y + b * y^2
-def marked (a b c : ℝ) : ℝ := a + b + 2 * c
-def q3 (a b c τ x y z : ℝ) : ℝ :=
-  q2 a b c x y + 2 * z * ((a + c) * x + (b + c) * y) + τ * z^2
-
-def PSD2 (a b c : ℝ) : Prop := ∀ x y : ℝ, 0 ≤ q2 a b c x y
-def PSD3 (a b c τ : ℝ) : Prop := ∀ x y z : ℝ, 0 ≤ q3 a b c τ x y z
-
-theorem border_completion (a b c τ x y z : ℝ) :
-    q3 a b c τ x y z =
-      q2 a b c (x + z) (y + z) + (τ - marked a b c) * z^2 := by
-  simp only [q2, q3, marked]
-  ring
-
-theorem fixed_negative_witness (a b c τ : ℝ) :
-    q3 a b c τ (-1) (-1) 1 = τ - marked a b c := by
-  rw [border_completion]
-  simp [q2]
-
-theorem border_psd_iff
-    {a b c τ : ℝ} (hG : PSD2 a b c) :
-    PSD3 a b c τ ↔ marked a b c ≤ τ := by
-  constructor
-  · intro h
-    have hw := h (-1) (-1) 1
-    rw [fixed_negative_witness] at hw
-    linarith
-  · intro h x y z
-    rw [border_completion]
-    exact add_nonneg (hG (x + z) (y + z))
-      (mul_nonneg (sub_nonneg.mpr h) (sq_nonneg z))
-
-def borderDet (a b c τ : ℝ) : ℝ :=
-  a * (b * τ - (b + c)^2)
-    - c * (c * τ - (b + c) * (a + c))
-    + (a + c) * (c * (b + c) - b * (a + c))
-
-theorem border_det_factor (a b c τ : ℝ) :
-    borderDet a b c τ =
-      (a * b - c^2) * (τ - marked a b c) := by
-  simp only [borderDet, marked]
-  ring
-
-theorem singular_determinant_blindness :
-    PSD2 1 1 1 ∧
-    borderDet 1 1 1 1 = 0 ∧
-    marked 1 1 1 = 4 ∧
-    q3 1 1 1 1 (-1) (-1) 1 = -3 := by
-  constructor
-  · intro x y
-    simp [PSD2, q2]
-    nlinarith [sq_nonneg (x + y)]
-  constructor <;> norm_num [borderDet, marked, q3, q2]
-
-theorem uniform_nat_border_iff
-    (a b c : ℕ → ℝ)
-    (hG : ∀ n, PSD2 (a n) (b n) (c n)) :
-    (∃ k : ℕ, ∀ n, PSD3 (a n) (b n) (c n) k) ↔
-      (∃ k : ℕ, ∀ n, marked (a n) (b n) (c n) ≤ k) := by
-  constructor
-  · rintro ⟨k, hk⟩
-    exact ⟨k, fun n => (border_psd_iff (hG n)).mp (hk n)⟩
-  · rintro ⟨k, hk⟩
-    exact ⟨k, fun n => (border_psd_iff (hG n)).mpr (hk n)⟩
-
-theorem real_bound_iff_nat_bound (f : ℕ → ℝ) :
-    (∃ B : ℝ, ∀ n, f n ≤ B) ↔
-      (∃ k : ℕ, ∀ n, f n ≤ k) := by
-  constructor
-  · rintro ⟨B, hB⟩
-    obtain ⟨k : ℕ, hk⟩ := exists_nat_gt B
-    exact ⟨k, fun n => le_trans (hB n) (le_of_lt hk)⟩
-  · rintro ⟨k, hk⟩
-    exact ⟨k, hk⟩
-
-theorem uniform_real_marked_iff_nat_border
-    (a b c : ℕ → ℝ)
-    (hG : ∀ n, PSD2 (a n) (b n) (c n)) :
-    (∃ B : ℝ, ∀ n, marked (a n) (b n) (c n) ≤ B) ↔
-      (∃ k : ℕ, ∀ n, PSD3 (a n) (b n) (c n) k) := by
-  rw [real_bound_iff_nat_bound (fun n => marked (a n) (b n) (c n))]
-  exact (uniform_nat_border_iff a b c hG).symm
-end BorderedRay
-
 namespace SeventhObject
 
+/-- Seed and one uniform transition theorem for a scale-indexed certificate. -/
 structure Certificate where
-  good : ℕ → Prop
+  good : Nat → Prop
   seed : good 0
   step : ∀ n, good n → good (n + 1)
 
@@ -110,6 +25,7 @@ theorem Certificate.all_scales (C : Certificate) : ∀ n, C.good n := by
   | zero => exact C.seed
   | succ n ih => exact C.step n ih
 
+/-- A native bridge is explicit data, not a conclusion-carrying axiom. -/
 structure NativeBridge (Goal : Prop) where
   certificate : Certificate
   conclude : (∀ n, certificate.good n) → Goal
@@ -117,8 +33,9 @@ structure NativeBridge (Goal : Prop) where
 theorem NativeBridge.solve {Goal : Prop} (R : NativeBridge Goal) : Goal :=
   R.conclude R.certificate.all_scales
 
+/-- Exact finite-obstruction inversion for one target. -/
 structure Inversion (Goal : Prop) where
-  defect : ℕ → Prop
+  defect : Nat → Prop
   sound : (∃ n, defect n) → ¬ Goal
   complete : ¬ Goal → ∃ n, defect n
 
@@ -132,30 +49,37 @@ theorem Inversion.goal_iff_no_defect {Goal : Prop} (I : Inversion Goal) :
     obtain ⟨n, hn⟩ := I.complete hGoal
     exact h n hn
 
+/-- Reusable scale-uniform invariant tube. -/
 theorem invariant_margin_tube
-    (E : ℕ → ℝ)
-    {margin ρ ε : ℝ}
+    (E : Nat → Real)
+    {margin rho eps : Real}
     (hmargin : 0 ≤ margin)
-    (hρ : 0 ≤ ρ)
-    (hbudget : ρ + ε ≤ 1)
+    (hrho : 0 ≤ rho)
+    (hbudget : rho + eps ≤ 1)
     (h0 : E 0 ≤ margin)
-    (hstep : ∀ n, E (n + 1) ≤ ρ * E n + ε * margin) :
+    (hstep : ∀ n, E (n + 1) ≤ rho * E n + eps * margin) :
     ∀ n, E n ≤ margin := by
   intro n
   induction n with
   | zero => exact h0
   | succ n ih =>
       calc
-        E (n + 1) ≤ ρ * E n + ε * margin := hstep n
-        _ ≤ ρ * margin + ε * margin := by
-          exact add_le_add_right (mul_le_mul_of_nonneg_left ih hρ) _
-        _ = (ρ + ε) * margin := by ring
+        E (n + 1) ≤ rho * E n + eps * margin := hstep n
+        _ ≤ rho * margin + eps * margin := by
+          exact add_le_add
+            (mul_le_mul_of_nonneg_left ih hrho)
+            (le_refl (eps * margin))
+        _ = (rho + eps) * margin := by ring
         _ ≤ 1 * margin := mul_le_mul_of_nonneg_right hbudget hmargin
         _ = margin := by ring
+
 end SeventhObject
 
 namespace PerelmanControl
 
+/-- Every analytic/geometric arrow of a Perelman-style completion remains a
+separate field.  The all-scale flow proof is explicitly consumed by entropy
+control. -/
 structure CompletionRoute (Goal : Prop) where
   flow : SeventhObject.Certificate
   entropyControlled : Prop
@@ -181,8 +105,10 @@ theorem CompletionRoute.solve {Goal : Prop} (R : CompletionRoute Goal) : Goal :=
   have hProgress : R.progresses := R.progress hRepair
   have hTerminal : R.terminalClassified := R.terminal hProgress
   exact R.conclude hTerminal
+
 end PerelmanControl
 
+/-- Interfaces for exact official statements.  They are not asserted here. -/
 structure OfficialStatements where
   rh : Prop
   pNeNP : Prop
@@ -192,6 +118,7 @@ structure OfficialStatements where
   yangMills : Prop
   poincare : Prop
 
+/-- Smallest named native gate currently assigned to each lane. -/
 structure NativeGates where
   rhPrimeWindow : Prop
   pnpUniformHardness : Prop
@@ -201,6 +128,7 @@ structure NativeGates where
   ymConstructiveGap : Prop
   poincareCompletion : Prop
 
+/-- Every reduction to an official target is an explicit theorem field. -/
 structure ExactReductions (S : OfficialStatements) (G : NativeGates) where
   rh : S.rh ↔ G.rhPrimeWindow
   pNeNP : S.pNeNP ↔ G.pnpUniformHardness
@@ -222,7 +150,8 @@ def OpenSixGates (G : NativeGates) : Prop :=
   G.rhPrimeWindow ∧ G.pnpUniformHardness ∧ G.bsdGlobalComparison ∧
     G.hodgeAlgebraicCycle ∧ G.nsGlobalTrajectory ∧ G.ymConstructiveGap
 
-def AllSevenGates (G : NativeGates) : Prop := OpenSixGates G ∧ G.poincareCompletion
+def AllSevenGates (G : NativeGates) : Prop :=
+  OpenSixGates G ∧ G.poincareCompletion
 
 def AnyOpenSixGate (G : NativeGates) : Prop :=
   G.rhPrimeWindow ∨ G.pnpUniformHardness ∨ G.bsdGlobalComparison ∨
@@ -240,6 +169,7 @@ theorem anyOpenSix_iff_anyOpenSixGate
   unfold AnyOpenSix AnyOpenSixGate
   rw [R.rh, R.pNeNP, R.bsd, R.hodge, R.navierStokes, R.yangMills]
 
+/-- Seven fully typed forward routes. -/
 structure SevenRoutes (S : OfficialStatements) where
   rh : SeventhObject.NativeBridge S.rh
   pNeNP : SeventhObject.NativeBridge S.pNeNP
@@ -249,6 +179,7 @@ structure SevenRoutes (S : OfficialStatements) where
   yangMills : SeventhObject.NativeBridge S.yangMills
   poincare : PerelmanControl.CompletionRoute S.poincare
 
+/-- The unified seven-lane composition theorem. -/
 theorem millennium_braid_executable
     (S : OfficialStatements) (routes : SevenRoutes S) :
     AllSeven S := by
@@ -267,6 +198,7 @@ theorem millennium_braid_executable_with_gates
   have hS : AllSeven S := millennium_braid_executable S routes
   exact ⟨hS, (allSeven_iff_allSevenGates R).mp hS⟩
 
+/-- One exact inversion for every lane. -/
 structure SevenInversions (S : OfficialStatements) where
   rh : SeventhObject.Inversion S.rh
   pNeNP : SeventhObject.Inversion S.pNeNP
@@ -288,24 +220,54 @@ def NoDefects {S : OfficialStatements} (I : SevenInversions S) : Prop :=
 theorem allSeven_iff_noDefects
     {S : OfficialStatements} (I : SevenInversions S) :
     AllSeven S ↔ NoDefects I := by
-  unfold AllSeven OpenSix NoDefects
-  rw [SeventhObject.Inversion.goal_iff_no_defect I.rh,
-      SeventhObject.Inversion.goal_iff_no_defect I.pNeNP,
-      SeventhObject.Inversion.goal_iff_no_defect I.bsd,
-      SeventhObject.Inversion.goal_iff_no_defect I.hodge,
-      SeventhObject.Inversion.goal_iff_no_defect I.navierStokes,
-      SeventhObject.Inversion.goal_iff_no_defect I.yangMills,
-      SeventhObject.Inversion.goal_iff_no_defect I.poincare]
+  constructor
+  · intro h
+    rcases h with ⟨⟨hrh, hpnp, hbsd, hhodge, hns, hym⟩, hpoincare⟩
+    change (∀ n, ¬ I.rh.defect n) ∧
+      (∀ n, ¬ I.pNeNP.defect n) ∧
+      (∀ n, ¬ I.bsd.defect n) ∧
+      (∀ n, ¬ I.hodge.defect n) ∧
+      (∀ n, ¬ I.navierStokes.defect n) ∧
+      (∀ n, ¬ I.yangMills.defect n) ∧
+      (∀ n, ¬ I.poincare.defect n)
+    exact ⟨
+      (SeventhObject.Inversion.goal_iff_no_defect I.rh).mp hrh,
+      (SeventhObject.Inversion.goal_iff_no_defect I.pNeNP).mp hpnp,
+      (SeventhObject.Inversion.goal_iff_no_defect I.bsd).mp hbsd,
+      (SeventhObject.Inversion.goal_iff_no_defect I.hodge).mp hhodge,
+      (SeventhObject.Inversion.goal_iff_no_defect I.navierStokes).mp hns,
+      (SeventhObject.Inversion.goal_iff_no_defect I.yangMills).mp hym,
+      (SeventhObject.Inversion.goal_iff_no_defect I.poincare).mp hpoincare⟩
+  · intro h
+    change (∀ n, ¬ I.rh.defect n) ∧
+      (∀ n, ¬ I.pNeNP.defect n) ∧
+      (∀ n, ¬ I.bsd.defect n) ∧
+      (∀ n, ¬ I.hodge.defect n) ∧
+      (∀ n, ¬ I.navierStokes.defect n) ∧
+      (∀ n, ¬ I.yangMills.defect n) ∧
+      (∀ n, ¬ I.poincare.defect n) at h
+    rcases h with ⟨hrh, hpnp, hbsd, hhodge, hns, hym, hpoincare⟩
+    exact ⟨⟨
+      (SeventhObject.Inversion.goal_iff_no_defect I.rh).mpr hrh,
+      (SeventhObject.Inversion.goal_iff_no_defect I.pNeNP).mpr hpnp,
+      (SeventhObject.Inversion.goal_iff_no_defect I.bsd).mpr hbsd,
+      (SeventhObject.Inversion.goal_iff_no_defect I.hodge).mpr hhodge,
+      (SeventhObject.Inversion.goal_iff_no_defect I.navierStokes).mpr hns,
+      (SeventhObject.Inversion.goal_iff_no_defect I.yangMills).mpr hym⟩,
+      (SeventhObject.Inversion.goal_iff_no_defect I.poincare).mpr hpoincare⟩
 
 structure CompleteBraid (S : OfficialStatements) extends SevenRoutes S where
   inversions : SevenInversions S
 
+/-- The requested giant executable statement: six open Clay interfaces,
+Perelman's slot, and the seventh-object inversion ledger. -/
 theorem millennium_perelman_inversion_executable
     (S : OfficialStatements) (B : CompleteBraid S) :
     AllSeven S ∧ NoDefects B.inversions := by
   have hAll : AllSeven S := millennium_braid_executable S B.toSevenRoutes
   exact ⟨hAll, (allSeven_iff_noDefects B.inversions).mp hAll⟩
 
+/-- Packaging alone cannot create a contradiction or choose truth values. -/
 theorem equivalence_shape_has_true_and_false_models :
     (∃ P Q : Prop, (P ↔ Q) ∧ P ∧ Q) ∧
       (∃ P Q : Prop, (P ↔ Q) ∧ ¬ P ∧ ¬ Q) := by
@@ -318,11 +280,8 @@ theorem no_mutual_exclusivity_from_packaging :
   refine ⟨⟨True, True, True, True, True, True, True⟩, ?_⟩
   simp [AllSeven, OpenSix]
 
-#print axioms BorderedRay.border_completion
-#print axioms BorderedRay.border_psd_iff
-#print axioms BorderedRay.border_det_factor
-#print axioms BorderedRay.uniform_real_marked_iff_nat_border
 #print axioms SeventhObject.Certificate.all_scales
+#print axioms SeventhObject.NativeBridge.solve
 #print axioms SeventhObject.Inversion.goal_iff_no_defect
 #print axioms SeventhObject.invariant_margin_tube
 #print axioms PerelmanControl.CompletionRoute.solve
