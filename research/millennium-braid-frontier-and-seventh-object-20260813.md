@@ -102,16 +102,16 @@ This is the current highest-EV falsifiable RH ticket.  A fixed-support or
 finite-cutoff table has no cofinal force.
 
 **Execution firewall.**  Suzuki's explicit formula defines every finite
-localized odd matrix entry, including finite prime-power terms and an
-archimedean digamma integral, but the current repository does not implement
-that map to the numerical blocks `A_n,B_n,D_n`.  More importantly, the quoted
-Yoshida coercivity statement is existential: it supplies no constructive
-cutoff `N(a,mu)` or computable lower bound for the infinite high block.  It
-also supplies no explicit infinite-row residual-tail constant.  Therefore the
-first honest interval experiment must implement and validate the complete
-finite Weil matrix; the first genuinely load-bearing theorem is a quantitative
-Yoshida coercivity and omitted-row bound.  A finite high-block eigenvalue
-cannot substitute for either one.
+localized odd matrix entry as a rigorously computable integral after
+normalization, but the current repository does not implement the map to
+`A_n,B_n,D_n`.  A hostile reconstruction shows that Suzuki Theorem 4.3 is
+effectivizable in principle: its low-frequency leakage is explicitly
+`O(1/N)`, and the remaining zeta, kernel and digamma constants can be bounded.
+No numerical extraction or typed identification with the odd primitive
+coordinates is implemented, and the bound may be impractically large.  The
+genuinely absent estimate is the infinite omitted-row residual tail.  A finite
+high-block eigenvalue and finitely many residual rows cannot substitute: an
+unseen row can reverse the Schur sign even when `D=I`.
 The Connes/prolate lane has stronger numerical motivation but the same missing
 proof-grade continuum/complement certificate, together with strip-amplified
 approximation error.  It does not presently outrank this ticket.
