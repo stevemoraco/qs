@@ -1,0 +1,46 @@
+name: Verify BSD squeeze
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_descent_kurihara_heegner_squeeze/**"
+      - ".github/workflows/verify-bsd-descent-kurihara-heegner-squeeze.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_descent_kurihara_heegner_squeeze
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+      - name: Kernel-check
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean DescentKuriharaHeegnerSqueeze.lean 2>&1 | tee bsd-squeeze-output.txt
+      - name: Upload replay
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-descent-kurihara-heegner-squeeze-replay
+          path: |
+            verification/bsd_descent_kurihara_heegner_squeeze/DescentKuriharaHeegnerSqueeze.lean
+            verification/bsd_descent_kurihara_heegner_squeeze/bsd-squeeze-output.txt
