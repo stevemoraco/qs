@@ -26,7 +26,6 @@ theorem volume_tax_preserves_coefficient_sq
     tiledCoeff ^ 2 = c ^ 2 * R ^ 2 / lowerVolume := by
   rw [htiled, hcell, hcells]
   field_simp [hupper, hlower]
-  ring
 
 /-- Tiling by exactly the lower/upper volume ratio fills the lower interaction
 volume. -/
