@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-chebyshev-event-transport-public'
           file="$dir/RHChebyshevEventTransportFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='105260165f35fe99b33c64625922c7f4d2a17492'
+          expected_blob='089346b13e33fe4cbbbe4b08ec2a84f1a3f13ee0'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
