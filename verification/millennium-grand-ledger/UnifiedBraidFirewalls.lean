@@ -1,4 +1,5 @@
 import UnifiedEntrypoint
+import NSAOQuantitativeCurrency
 
 /-!
 # Public replay for the newest unified-braid firewalls
@@ -110,6 +111,7 @@ structure PublicReplayStatement : Prop where
     (r * c) ^ 2 - (s * d) ^ 2 = a - b * d ^ 2
   sourceCancellationBudget : ∀ {P N e delta : ℝ},
     N + |e| ≤ (1 - delta) * P → delta * P ≤ |(P - N) + e|
+  aoQuantitativeCore : NSAOQuantitativeCurrency.AOQuantitativeCore
   inversionFirewall : ¬ (∀ A B : Prop, (A ↔ B) → A)
   exclusivityFirewall : ¬ (∀ A B : Prop, ¬ (A ∧ B) → A ∨ B)
 
@@ -118,6 +120,7 @@ theorem public_replay_statement : PublicReplayStatement where
   statusFirewall := no_lane_silently_promoted
   spectralIdentity := fun hr hs hc => scaled_margin_difference_identity hr hs hc
   sourceCancellationBudget := fun h => return_lobe_budget h
+  aoQuantitativeCore := NSAOQuantitativeCurrency.ao_quantitative_core
   inversionFirewall := equivalence_needs_a_seed
   exclusivityFirewall := exclusivity_needs_exhaustivity
 
