@@ -1,65 +1,103 @@
 import Mathlib
 
-namespace Millennium.Hodge.LocalAtiyahResidue
+namespace Millennium.Hodge.LocalAtiyahSquare
 
-/-- Degree-one homotopy data for the concrete three-term local complex
-`R^2 → R^4 → R`. The first field is the `R^2 → R^4` component and the
-second is the `R^4 → R` component. -/
-structure DegreeOneHomotopy (R : Type*) where
-  hMinus : Fin 4 → Fin 2 → R
-  hZero : Fin 4 → R
+/-- Coefficients of a one-form in the ordered basis `du,dv,dw,dz`. -/
+structure OneForm4 where
+  u : ℤ
+  v : ℤ
+  w : ℤ
+  z : ℤ
+  deriving DecidableEq
 
-variable {R K : Type*} [Ring R] [Ring K]
+/-- Coefficients of a two-form in the ordered basis
+`du∧dv, du∧dw, du∧dz, dv∧dw, dv∧dz, dw∧dz`. -/
+structure TwoForm4 where
+  uv : ℤ
+  uw : ℤ
+  uz : ℤ
+  vw : ℤ
+  vz : ℤ
+  wz : ℤ
+  deriving DecidableEq
 
-/-- The degree-two row `D₁ h⁻¹ + h⁰ D₀` for
+/-- Exterior product of two symbolic one-forms. -/
+def wedge (a b : OneForm4) : TwoForm4 where
+  uv := a.u * b.v - a.v * b.u
+  uw := a.u * b.w - a.w * b.u
+  uz := a.u * b.z - a.z * b.u
+  vw := a.v * b.w - a.w * b.v
+  vz := a.v * b.z - a.z * b.v
+  wz := a.w * b.z - a.z * b.w
 
-`D₀ = [[-v,0],[u,0],[0,-z],[0,w]]` and
-`D₁ = [-u,-v,w,z]`.
--/
-def degreeTwoBoundary (u v w z : R) (h : DegreeOneHomotopy R) : R × R :=
-  (((-u) * h.hMinus 0 0 + (-v) * h.hMinus 1 0
-      + w * h.hMinus 2 0 + z * h.hMinus 3 0
-      + h.hZero 0 * (-v) + h.hZero 1 * u),
-   ((-u) * h.hMinus 0 1 + (-v) * h.hMinus 1 1
-      + w * h.hMinus 2 1 + z * h.hMinus 3 1
-      + h.hZero 2 * (-z) + h.hZero 3 * w))
+def addTwo (a b : TwoForm4) : TwoForm4 where
+  uv := a.uv + b.uv
+  uw := a.uw + b.uw
+  uz := a.uz + b.uz
+  vw := a.vw + b.vw
+  vz := a.vz + b.vz
+  wz := a.wz + b.wz
 
-/-- BANKER: if all entries of the two differentials vanish in a residue ring,
-then every degree-two homotopy boundary vanishes there as well. -/
-theorem banker_residue_annihilates_degreeTwo_boundary
-    (ε : R →+* K) (u v w z : R)
-    (hu : ε u = 0) (hv : ε v = 0) (hw : ε w = 0) (hz : ε z = 0)
-    (h : DegreeOneHomotopy R) :
-    ε (degreeTwoBoundary u v w z h).1 = 0 ∧
-      ε (degreeTwoBoundary u v w z h).2 = 0 := by
-  constructor <;> simp [degreeTwoBoundary, hu, hv, hw, hz]
+def negOne (a : OneForm4) : OneForm4 where
+  u := -a.u
+  v := -a.v
+  w := -a.w
+  z := -a.z
 
-/-- A witness showing why residue-vanishing of the differentials is essential. -/
-def criticHomotopy : DegreeOneHomotopy ℤ where
-  hMinus := fun i j => if i = 0 ∧ j = 0 then -1 else 0
-  hZero := fun _ => 0
+def negTwo (a : TwoForm4) : TwoForm4 where
+  uv := -a.uv
+  uw := -a.uw
+  uz := -a.uz
+  vw := -a.vw
+  vz := -a.vz
+  wz := -a.wz
 
-/-- CRITIC: once a differential has a unit residue, the constant row `(1,0)`
-can itself be a degree-two boundary. -/
-theorem critic_nonminimal_differential_can_hit_unit_row :
-    degreeTwoBoundary (R := ℤ) 1 0 0 0 criticHomotopy = (1, 0) := by
-  norm_num [degreeTwoBoundary, criticHomotopy]
+def scaleTwo (n : ℤ) (a : TwoForm4) : TwoForm4 where
+  uv := n * a.uv
+  uw := n * a.uw
+  uz := n * a.uz
+  vw := n * a.vw
+  vz := n * a.vz
+  wz := n * a.wz
 
-/-- CLEANER: under the minimality/residue hypothesis, any row with a nonzero
-residue component is excluded from the degree-two boundary image. The local
-Atiyah-square row `(1,0)` is the principal geometric specialization. -/
-theorem cleaner_nonzero_residue_cocycle_not_boundary
-    (ε : R →+* K) (u v w z : R)
-    (hu : ε u = 0) (hv : ε v = 0) (hw : ε w = 0) (hz : ε z = 0)
-    (c : R × R)
-    (hc : ε c.1 ≠ 0 ∨ ε c.2 ≠ 0) :
-    ¬ ∃ h : DegreeOneHomotopy R, degreeTwoBoundary u v w z h = c := by
-  rintro ⟨h, rfl⟩
-  have hb := banker_residue_annihilates_degreeTwo_boundary ε u v w z hu hv hw hz h
-  exact hc.elim (fun hne => hne hb.1) (fun hne => hne hb.2)
+def du : OneForm4 := ⟨1, 0, 0, 0⟩
+def dv : OneForm4 := ⟨0, 1, 0, 0⟩
+def dw : OneForm4 := ⟨0, 0, 1, 0⟩
+def dz : OneForm4 := ⟨0, 0, 0, 1⟩
 
-#print axioms banker_residue_annihilates_degreeTwo_boundary
-#print axioms critic_nonminimal_differential_can_hit_unit_row
-#print axioms cleaner_nonzero_residue_cocycle_not_boundary
+/-- The two columns of `dD₁ ∧ dD₀` for
+`D₀ = [[-v,0],[u,0],[0,-z],[0,w]]` and `D₁ = [-u,-v,w,z]`. -/
+def rawAtiyahSquareRow : TwoForm4 × TwoForm4 :=
+  (addTwo (wedge (negOne du) (negOne dv)) (wedge (negOne dv) du),
+   addTwo (wedge dw (negOne dz)) (wedge dz dw))
 
-end Millennium.Hodge.LocalAtiyahResidue
+/-- The row after the conventional factor `1/2`. -/
+def normalizedAtiyahSquareRow : TwoForm4 × TwoForm4 :=
+  (wedge du dv, negTwo (wedge dw dz))
+
+/-- BANKER: the raw matrix product is exactly twice the normalized row. -/
+theorem banker_raw_square_is_twice_normalized :
+    rawAtiyahSquareRow =
+      (scaleTwo 2 normalizedAtiyahSquareRow.1,
+       scaleTwo 2 normalizedAtiyahSquareRow.2) := by
+  decide
+
+/-- CRITIC: omitting the factor `1/2` changes the integral coefficient row. -/
+theorem critic_raw_square_is_not_normalized :
+    rawAtiyahSquareRow ≠ normalizedAtiyahSquareRow := by
+  decide
+
+/-- Contraction by the symbolic bivector `∂u∧∂v`. -/
+def contractUV (row : TwoForm4 × TwoForm4) : ℤ × ℤ :=
+  (row.1.uv, row.2.uv)
+
+/-- CLEANER: after the exact normalization, the `uv` contraction is `(1,0)`. -/
+theorem cleaner_normalized_uv_contraction :
+    contractUV normalizedAtiyahSquareRow = (1, 0) := by
+  decide
+
+#print axioms banker_raw_square_is_twice_normalized
+#print axioms critic_raw_square_is_not_normalized
+#print axioms cleaner_normalized_uv_contraction
+
+end Millennium.Hodge.LocalAtiyahSquare
