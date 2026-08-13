@@ -5,7 +5,7 @@ import Mathlib
 
 The six integer carriers
 
-`(1, +/-1, 0)`, `(1, 0, +/-1)`, `(0, 1, +/-1)`
+`(1, ±1, 0)`, `(1, 0, ±1)`, `(0, 1, ±1)`
 
 all lie on the same shell `|k|^2 = 2`.  Their same-helicity Beltrami
 phase-averaged stress generators are, up to a positive scalar,
@@ -79,8 +79,7 @@ def qStress : Fin 6 → Sym6Z := ![
 
 theorem qStress_eq_projectorStress (i : Fin 6) :
     qStress i = projectorStress (carrier i) := by
-  fin_cases i <;> ext j <;> fin_cases j <;>
-    norm_num [qStress, projectorStress, carrier]
+  fin_cases i <;> native_decide
 
 /-- Equal positive amplitudes give an isotropic stress: the six generators sum
 to `8 I`. -/
@@ -89,7 +88,7 @@ def target8I : Sym6Z := ![8, 8, 8, 0, 0, 0]
 theorem isotropic_sum (j : Fin 6) :
     qStress 0 j + qStress 1 j + qStress 2 j + qStress 3 j
       + qStress 4 j + qStress 5 j = target8I j := by
-  fin_cases j <;> norm_num [qStress, target8I]
+  fin_cases j <;> native_decide
 
 /-- Coordinates of a linear combination of the six projector generators. -/
 def coneCoordinates (a : Fin 6 → ℝ) : Sym6R := ![
@@ -155,18 +154,24 @@ theorem weight_pos_of_identity_box
     ⟨h0lo, h0hi, h1lo, h1hi, h2lo, h2hi,
       h3lo, h3hi, h4lo, h4hi, h5lo, h5hi⟩
   intro i
-  fin_cases i <;> simp [weight]
-  · have hnum : 0 < -m 0 - m 1 + 3*m 2 - 4*m 3 := by linarith
+  fin_cases i
+  · simp only [weight, Matrix.cons_val_zero]
+    have hnum : 0 < -m 0 - m 1 + 3*m 2 - 4*m 3 := by linarith
     positivity
-  · have hnum : 0 < -m 0 - m 1 + 3*m 2 + 4*m 3 := by linarith
+  · simp only [weight, Matrix.cons_val_one, Matrix.cons_val_zero]
+    have hnum : 0 < -m 0 - m 1 + 3*m 2 + 4*m 3 := by linarith
     positivity
-  · have hnum : 0 < -m 0 + 3*m 1 - m 2 - 4*m 4 := by linarith
+  · change 0 < (-m 0 + 3*m 1 - m 2 - 4*m 4) / 8
+    have hnum : 0 < -m 0 + 3*m 1 - m 2 - 4*m 4 := by linarith
     positivity
-  · have hnum : 0 < -m 0 + 3*m 1 - m 2 + 4*m 4 := by linarith
+  · change 0 < (-m 0 + 3*m 1 - m 2 + 4*m 4) / 8
+    have hnum : 0 < -m 0 + 3*m 1 - m 2 + 4*m 4 := by linarith
     positivity
-  · have hnum : 0 < 3*m 0 - m 1 - m 2 - 4*m 5 := by linarith
+  · change 0 < (3*m 0 - m 1 - m 2 - 4*m 5) / 8
+    have hnum : 0 < 3*m 0 - m 1 - m 2 - 4*m 5 := by linarith
     positivity
-  · have hnum : 0 < 3*m 0 - m 1 - m 2 + 4*m 5 := by linarith
+  · change 0 < (3*m 0 - m 1 - m 2 + 4*m 5) / 8
+    have hnum : 0 < 3*m 0 - m 1 - m 2 + 4*m 5 := by linarith
     positivity
 
 /-- Exact local positive geometric lemma for the repaired carrier frame. -/
