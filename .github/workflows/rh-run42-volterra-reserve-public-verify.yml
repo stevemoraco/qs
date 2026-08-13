@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-run42-volterra-reserve-public'
           file="$dir/RHVolterraReserveFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='25a91a3e4ba0a88f959e8a4a1e471a96b9c053cf'
+          expected_blob='7f8fe89aa227de4c869d556fe25fcdd9146059f9'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
