@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-golay-tight-frame/GolayTightFrame.lean
-          EXPECTED_BLOB=52406980389b6e4769bc1651baa9d172be25361c
+          EXPECTED_BLOB=1fe563085660bed2bc4d505bb7baffec4a40a3a7
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
