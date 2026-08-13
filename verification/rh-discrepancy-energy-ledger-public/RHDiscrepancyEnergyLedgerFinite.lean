@@ -25,12 +25,14 @@ theorem energy_jump_eq_negative_kick
       = -(L * Dminus - L^2 / 2) := by
   ring
 
-/-- Clearing the threshold defect used in the prime-prefix sign test. -/
+/-- Clearing the threshold defect used in the prime-prefix sign test.  The
+nonzero hypotheses are explicit because the displayed rational identity is
+false at the totalized division values `q=0` or `L=0`. -/
 theorem threshold_defect_factorization
-    (q L h : ℝ) :
+    (q L h : ℝ) (hq : q ≠ 0) (hL : L ≠ 0) :
     4 * q * (h / L) + L^2 / 4
       = (4 * q / L) * (h + L^3 / (16 * q)) := by
-  field_simp
+  field_simp [hq, hL]
   ring
 
 /-- If a weighted energy has continuous contribution `cont`, dissipation
