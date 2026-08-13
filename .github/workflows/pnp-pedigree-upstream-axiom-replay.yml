@@ -33,6 +33,8 @@ jobs:
           git -C upstream checkout --detach 3c9c90ed2e38dd3a679891029c8e7622b5801988
           test "$(git -C upstream rev-parse HEAD)" = "3c9c90ed2e38dd3a679891029c8e7622b5801988"
           cp formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean upstream/PedigreeAxiomReport.lean
+          cp upstream/lean-toolchain verification/pnp-pedigree-axiom-audit/evidence-upstream-lean-toolchain
+          cp upstream/lake-manifest.json verification/pnp-pedigree-axiom-audit/evidence-upstream-lake-manifest.json
 
       - name: Record custom axioms and placeholders in the claimed theorem file
         shell: bash
@@ -46,31 +48,39 @@ jobs:
           grep -q 'axiom P_equals_NP : Prop' "$target"
           grep -q 'def An (n : ℕ) : Type := Unit' "$target"
 
-      - name: Install the upstream pinned Lean toolchain
+      - name: Install the exact upstream pinned Lean toolchain
         shell: bash
         run: |
           set -euo pipefail
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.30.0
           cd upstream
+          test "$(cat lean-toolchain)" = 'leanprover/lean4:v4.30.0'
           "$HOME/.elan/bin/lean" --version \
             | tee ../verification/pnp-pedigree-axiom-audit/evidence/toolchain.txt
+          grep -q 'version 4.30.0' ../verification/pnp-pedigree-axiom-audit/evidence/toolchain.txt
 
-      - name: Resolve pinned dependencies and fetch Mathlib cache
+      - name: Fetch the committed Mathlib cache without updating dependencies
         shell: bash
         run: |
           set -euo pipefail
           cd upstream
-          "$HOME/.elan/bin/lake" update
+          before="$(sha256sum lake-manifest.json)"
           "$HOME/.elan/bin/lake" exe cache get
+          after="$(sha256sum lake-manifest.json)"
+          printf 'before=%s\nafter=%s\n' "$before" "$after" \
+            | tee ../verification/pnp-pedigree-axiom-audit/evidence/manifest-hash.txt
+          test "$before" = "$after"
 
-      - name: Build the exact upstream project
+      - name: Build only the exact claimed endpoint dependency module
         shell: bash
         run: |
           set -euo pipefail
           cd upstream
-          "$HOME/.elan/bin/lake" build MembershipProject
+          "$HOME/.elan/bin/lake" build MembershipProject.Core.N_PEqualsNP 2>&1 \
+            | tee ../verification/pnp-pedigree-axiom-audit/evidence/endpoint-build.txt
 
       - name: Ask the Lean kernel for the exact theorem and axiom report
         shell: bash
@@ -95,6 +105,8 @@ jobs:
           path: |
             formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean
             verification/pnp-pedigree-axiom-audit/evidence/
+            verification/pnp-pedigree-axiom-audit/evidence-upstream-lean-toolchain
+            verification/pnp-pedigree-axiom-audit/evidence-upstream-lake-manifest.json
             upstream/MembershipProject/Core/N_PEqualsNP.lean
             upstream/lean-toolchain
             upstream/lake-manifest.json
