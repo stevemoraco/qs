@@ -1,17 +1,41 @@
 name: YM finite probe cover public verifier
-
 on:
   push:
-    branches:
-      - agent/ym-finite-probe-public-20260813-r2
+    branches: [agent/ym-finite-probe-public-20260813-r2]
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   verify:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - run: echo replay-pending
+        with:
+          persist-credentials: false
+      - name: Verify exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym_finite_probe_cover/YMFiniteProbeCover.lean
+          test "$(git hash-object "$SRC")" = d12a6b191deb6d81a28d401777ee172dd3579479
+          python3 - <<'PY'
+          import json,pathlib,re,urllib.request
+          p=pathlib.Path('verification/ym_finite_probe_cover/YMFiniteProbeCover.lean')
+          s=p.read_text()
+          bad=re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m=bad.search(s)
+          assert not m, m.group(2) if m else ''
+          assert 'native_decide' not in s and 'Lean.ofReduceBool' not in s
+          assert s.count('#print axioms')==7
+          data=json.dumps({'content':s,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          q=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=data,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(q,timeout=960) as r: out=json.load(r)
+          print(json.dumps(out,indent=2))
+          lm=out.get('lean_messages',{}); tm=out.get('tool_messages',{})
+          assert out.get('okay')
+          assert not out.get('failed_declarations',[])
+          assert not lm.get('errors',[]) and not lm.get('warnings',[])
+          assert not tm.get('errors',[]) and not tm.get('warnings',[])
+          assert 'sorryAx' not in json.dumps(out)
+          print('VERIFIED: exact warning-free source compiled under AXLE Lean 4.30')
+          PY
