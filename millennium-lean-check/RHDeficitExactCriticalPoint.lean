@@ -2,12 +2,17 @@ import Mathlib
 
 namespace RHDeficitExactCriticalPoint
 
+/-- Positive root of the smooth-piece slope numerator
+`4 y^2 - 2 y - K`, where `y = sqrt x`. -/
 noncomputable def criticalRoot (K : ℝ) : ℝ :=
   (1 + Real.sqrt (1 + 4 * K)) / 4
 
+/-- Numerator of `x * Delta'(x)` after the substitution `y = sqrt x` on a
+prime-power-knot-free interval with constant staircase coefficient `K`. -/
 def slopeNumerator (K y : ℝ) : ℝ :=
   4 * y ^ 2 - 2 * y - K
 
+/-- The explicit root satisfies the quadratic equation. -/
 theorem criticalRoot_spec
     {K : ℝ}
     (hK : 0 ≤ K) :
@@ -17,6 +22,8 @@ theorem criticalRoot_spec
   unfold slopeNumerator criticalRoot
   nlinarith
 
+/-- For the deficit application `K > 0`, so the positive critical root lies
+strictly above `1/2`. -/
 theorem criticalRoot_gt_half
     {K : ℝ}
     (hK : 0 < K) :
@@ -27,6 +34,7 @@ theorem criticalRoot_gt_half
   unfold criticalRoot
   nlinarith
 
+/-- Exact factorization around the positive root. -/
 theorem slopeNumerator_factor
     {K y : ℝ}
     (hK : 0 ≤ K) :
@@ -36,6 +44,7 @@ theorem slopeNumerator_factor
   unfold slopeNumerator at hroot ⊢
   nlinarith
 
+/-- Before the critical root, the smooth-piece slope numerator is negative. -/
 theorem slopeNumerator_neg_before
     {K y : ℝ}
     (hK : 0 < K)
@@ -47,6 +56,7 @@ theorem slopeNumerator_neg_before
   rw [slopeNumerator_factor (le_of_lt hK)]
   exact mul_neg_of_neg_of_pos (sub_neg.mpr hyr) hsecond
 
+/-- After the critical root, the smooth-piece slope numerator is positive. -/
 theorem slopeNumerator_pos_after
     {K y : ℝ}
     (hK : 0 < K)
@@ -57,6 +67,7 @@ theorem slopeNumerator_pos_after
   rw [slopeNumerator_factor (le_of_lt hK)]
   exact mul_pos (sub_pos.mpr hyr) hsecond
 
+/-- The explicit critical root is the unique positive zero of the numerator. -/
 theorem positive_zero_unique
     {K y : ℝ}
     (hK : 0 < K)
@@ -70,23 +81,30 @@ theorem positive_zero_unique
   · have hpos := slopeNumerator_pos_after hK hry
     linarith
 
+/-- The smooth primitive on a knot-free interval. Its derivative is the
+weighted-Chebyshev deficit slope once the endpoint staircases are fixed. -/
 noncomputable def smoothPrimitive (K x : ℝ) : ℝ :=
   4 * x - 4 * Real.sqrt x - K * Real.log x
 
+/-- Exact propagation of the deficit between two positive points in one smooth
+piece. The positivity hypotheses are the application domain and discharge the
+nonzero conditions in `Real.log_div`. -/
 theorem smoothPrimitive_sub
-    (K u v : ℝ) :
+    (K u v : ℝ)
+    (hu : 0 < u)
+    (hv : 0 < v) :
     smoothPrimitive K v - smoothPrimitive K u =
       4 * (v - u) - 4 * (Real.sqrt v - Real.sqrt u)
         - K * Real.log (v / u) := by
   unfold smoothPrimitive
-  rw [Real.log_div]
+  rw [Real.log_div hv.ne' hu.ne']
   ring
 
+/-- Order-theoretic firewall for the continuum-to-event reduction: a function
+that decreases to `r` and increases after `r` has its minimum at `r`. -/
 theorem valley_minimum
     (f : ℝ → ℝ)
     {u r v x : ℝ}
-    (hur : u ≤ r)
-    (hrv : r ≤ v)
     (hux : u ≤ x)
     (hxv : x ≤ v)
     (hleft : ∀ t, u ≤ t → t ≤ r → f r ≤ f t)
