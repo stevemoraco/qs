@@ -1,0 +1,17 @@
+name: YM finite probe cover public verifier
+
+on:
+  push:
+    branches:
+      - agent/ym-finite-probe-public-20260813-r2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo replay-pending
