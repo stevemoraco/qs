@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that every printed headline theorem uses only the accepted Lean foundation axioms."""
+"""Check that every printed headline and PairCeiling theorem uses only accepted Lean axioms."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 EXPECTED = {"propext", "Classical.choice", "Quot.sound"}
+EXPECTED_REPORTS = 44
 
 
 def main() -> int:
@@ -22,8 +23,10 @@ def main() -> int:
         for line in text.splitlines()
         if "depends on axioms:" in line or "does not depend on any axioms" in line
     ]
-    if len(dependency_lines) != 33:
-        raise SystemExit(f"expected 33 theorem reports, found {len(dependency_lines)}")
+    if len(dependency_lines) != EXPECTED_REPORTS:
+        raise SystemExit(
+            f"expected {EXPECTED_REPORTS} theorem reports, found {len(dependency_lines)}"
+        )
 
     bad: list[str] = []
     for line in dependency_lines:
@@ -41,6 +44,7 @@ def main() -> int:
         raise SystemExit("unexpected axiom reports:\n" + "\n".join(bad))
 
     print(f"axiom reports checked: {len(dependency_lines)}")
+    print("scope: 33 comparator headlines + 11 PairCeiling reports")
     print("permitted axioms: propext, Classical.choice, Quot.sound")
     print("axiom report: PASS")
     return 0
