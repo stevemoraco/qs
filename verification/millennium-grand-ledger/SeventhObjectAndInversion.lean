@@ -3,14 +3,10 @@ import Mathlib
 /-!
 # Seventh-object and inversion firewalls
 
-This file reproduces and integrates two exact repository findings:
-
-1. the current `PrizeRoute Goal` wrapper is propositionally equivalent to
-   `Goal`; it supplies no shortcut to a Millennium conclusion;
-2. the inverse-point density cancels half of the four-coordinate inversion
-   Jacobian in the scalar `GL₂` Haar-density model.
-
-Neither theorem proves an official Millennium statement.
+The current `PrizeRoute Goal` wrapper is propositionally equivalent to `Goal`.
+The scalar GL2 Haar-density audit verifies that inverse-point density times the
+inversion Jacobian returns the original density. Neither theorem proves an
+unsolved official Millennium statement.
 -/
 
 namespace MillenniumGrandExactObject
@@ -42,7 +38,6 @@ private def trivialCertificate : SeventhObject where
   seed := True.intro
   propagate := fun _ _ => True.intro
 
-/-- Exact logical-strength firewall for the current seventh-object route. -/
 theorem nonempty_prizeRoute_iff (Goal : Prop) :
     Nonempty (PrizeRoute Goal) ↔ Goal := by
   constructor
@@ -56,7 +51,6 @@ theorem nonempty_prizeRoute_iff (Goal : Prop) :
       frontierToGoal := fun h => h
     }⟩
 
-/-- Six simultaneous route objects are equivalent to six simultaneous goals. -/
 theorem six_routes_iff_six_goals
     (A B C D E F : Prop) :
     (Nonempty (PrizeRoute A) ∧
@@ -68,31 +62,27 @@ theorem six_routes_iff_six_goals
     (A ∧ B ∧ C ∧ D ∧ E ∧ F) := by
   simp only [nonempty_prizeRoute_iff]
 
-/-- The route and its negation cannot both be inhabited, but this does not
-choose the truth value of the goal. -/
 theorem route_mutual_exclusivity (Goal : Prop) :
     ¬ (Nonempty (PrizeRoute Goal) ∧ ¬ Goal) := by
-  simpa only [nonempty_prizeRoute_iff]
+  rw [nonempty_prizeRoute_iff]
+  intro h
+  exact h.2 h.1
 
-/-- Scalar density functions from the repository's Haar-inversion audit. -/
-def haarDensity (d : ℝ) : ℝ := d⁻¹ ^ 2
+noncomputable def haarDensity (d : ℝ) : ℝ := 1 / d ^ 2
 
-def inversionJacobian (d : ℝ) : ℝ := d⁻¹ ^ 4
+noncomputable def inversionJacobian (d : ℝ) : ℝ := 1 / d ^ 4
 
 def inversePointDensity (d : ℝ) : ℝ := d ^ 2
 
-def transformedDensity (d : ℝ) : ℝ :=
+noncomputable def transformedDensity (d : ℝ) : ℝ :=
   inversePointDensity d * inversionJacobian d
 
-/-- Correct scalar change-of-variables exponent cancellation. -/
 theorem transformedDensity_eq_haarDensity
     {d : ℝ} (hd : d ≠ 0) :
     transformedDensity d = haarDensity d := by
-  field_simp [transformedDensity, inversePointDensity,
-    inversionJacobian, haarDensity, hd]
-  ring
+  unfold transformedDensity inversePointDensity inversionJacobian haarDensity
+  field_simp [hd] <;> ring
 
-/-- Exact determinant-two witness against a spurious extra Haar-density factor. -/
 theorem claimed_extra_weight_fails_at_two :
     transformedDensity 2 ≠ haarDensity 2 * haarDensity 2 := by
   norm_num [transformedDensity, inversePointDensity,
