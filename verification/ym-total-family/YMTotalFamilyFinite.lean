@@ -55,7 +55,7 @@ theorem explicitCertificateTime
       _ = A * Real.exp (-E * ((C / A + 1) / (m - E))) := by
             rw [mul_assoc, ← Real.exp_add]
             congr 1
-            ring
+            ring_nf
 
 /-- A positive detected mode satisfying a common exponential upper bound at
 all nonnegative times has energy at least the advertised exponent. -/
