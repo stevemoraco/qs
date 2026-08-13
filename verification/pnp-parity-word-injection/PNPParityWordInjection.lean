@@ -225,9 +225,13 @@ theorem oddSliceStep {q pNext pOne pThree : ℝ}
       (3 * q - 2) * pOne + 6 * pThree
           ≤ (3 * q - 2) * pOne +
               (q - 1) * (q - 2) * pOne :=
-        add_le_add_left hrad _
+        add_le_add_right hrad _
       _ = q ^ 2 * pOne := by ring
-  exact (mul_le_mul_left hq2).mp hbound
+  by_contra hnot
+  have hlt : pOne < pNext := lt_of_not_ge hnot
+  have hscaled : q ^ 2 * pOne < q ^ 2 * pNext :=
+    mul_lt_mul_of_pos_left hlt hq2
+  exact (not_lt_of_ge hbound) hscaled
 
 #print axioms radialCoefficientIdentity
 #print axioms oddSliceStep
