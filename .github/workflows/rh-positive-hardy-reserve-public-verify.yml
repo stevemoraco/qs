@@ -26,7 +26,7 @@ jobs:
           dir='verification/rh-positive-hardy-reserve-public'
           file="$dir/RHPositiveHardyReserveFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='5851549afc8576da01451b97c07550f178dbd3f5'
+          expected_blob='b7ddaf9b20967b8b9ed90f6edca9dea01ff3913c'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
@@ -82,8 +82,15 @@ jobs:
 
           path = pathlib.Path('verification/rh-positive-hardy-reserve-public/lean-output.log')
           text = path.read_text()
-          with_axioms = re.findall(r"([A-Za-z0-9_.'-]+) depends on axioms: \[(.*?)\]", text)
-          without_axioms = re.findall(r"([A-Za-z0-9_.'-]+) does not depend on any axioms", text)
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
           expected = 12
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
