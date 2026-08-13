@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_prime_prefix_fixed_gauge_bregman/RHPrimePrefixFixedGaugeBregman.lean
-          EXPECTED_BLOB=8977f0800b5d3f1aac6542eb62f0444cc88f29c1
+          EXPECTED_BLOB=217ac84b120d5aba93be4b1e8c756627a6212863
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
@@ -95,9 +95,11 @@ jobs:
           PY
 
       - name: Record replay metadata
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p evidence/rh_prime_prefix_fixed_gauge_bregman
           {
             echo "repository=${GITHUB_REPOSITORY}"
             echo "ref=${GITHUB_REF}"
@@ -110,6 +112,7 @@ jobs:
           } > evidence/rh_prime_prefix_fixed_gauge_bregman/replay-metadata.txt
 
       - name: Upload exact compiler evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rh-prime-prefix-fixed-gauge-bregman-public-evidence
