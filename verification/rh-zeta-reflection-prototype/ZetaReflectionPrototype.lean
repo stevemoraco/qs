@@ -58,6 +58,7 @@ lemma reflected_not_trivial
   have hre : 1 ≤ s.re := by
     rw [hsform]
     norm_num
+    positivity
   exact (riemannZeta_ne_zero_of_one_le_re hre) hs.1
 
 lemma reflected_ne_one
