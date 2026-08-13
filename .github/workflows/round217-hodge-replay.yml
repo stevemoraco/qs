@@ -1,0 +1,12 @@
+name: Round217 Hodge replay
+
+on:
+  push:
+    branches: [agent/round217-hodge-replay]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
