@@ -30,6 +30,7 @@ jobs:
           declare -A expected
           expected[RHThetaIterationCocycleFinite.lean]='e9a61f6d157267c0d72b5c2a4fccd3ac646edc39'
           expected[RHThetaIterationPrimeIntervalFinite.lean]='6d22651b907d2b31452a63c2ab4b7c6930e65bce'
+          expected[RHThetaIterationTollLowerBoundFinite.lean]='710f901446f046c0475c0159c4c91069ff014134'
           : > source-identity.log
           for file in "${!expected[@]}"; do
             path="verification/rh-theta-iteration-cocycle/$file"
@@ -48,8 +49,8 @@ jobs:
 
           root = pathlib.Path('verification/rh-theta-iteration-cocycle')
           paths = sorted(root.glob('*.lean'))
-          if len(paths) != 2:
-              raise SystemExit(f'expected two Lean sources, found {len(paths)}')
+          if len(paths) != 3:
+              raise SystemExit(f'expected three Lean sources, found {len(paths)}')
           patterns = [
               r'^\s*(sorry|admit)\b',
               r'^\s*axiom\b',
@@ -87,7 +88,8 @@ jobs:
           : > lean-output.log
           for file in \
             RHThetaIterationCocycleFinite.lean \
-            RHThetaIterationPrimeIntervalFinite.lean
+            RHThetaIterationPrimeIntervalFinite.lean \
+            RHThetaIterationTollLowerBoundFinite.lean
           do
             echo "===== $file =====" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
@@ -96,7 +98,7 @@ jobs:
             echo 'Forbidden placeholder axiom or compiler error found.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite RH theta-iteration cocycle and prime-interval cores.'
+          echo 'VERIFIED all finite RH theta-iteration cores.'
 
       - name: Upload compiler evidence
         if: always()
