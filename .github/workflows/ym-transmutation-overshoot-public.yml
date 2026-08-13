@@ -21,18 +21,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/ym_transmutation_overshoot/YMTransmutationOvershoot.lean
-          test "$(git hash-object "$SRC")" = a218e1915be9a44a1abe21d4fc61f48830e5a1de
+          SRC=verification/ym_transmutation_overshoot/YMScaleWindowCore.lean
+          test "$(git hash-object "$SRC")" = 5b9f07230dd3d7fa70eecc62bf7112c10bab841f
           python3 - <<'PY'
           import json, pathlib, re, urllib.request
-          source_path = pathlib.Path('verification/ym_transmutation_overshoot/YMTransmutationOvershoot.lean')
+          source_path = pathlib.Path('verification/ym_transmutation_overshoot/YMScaleWindowCore.lean')
           source = source_path.read_text()
           forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
           match = forbidden.search(source)
           assert not match, match.group(2) if match else ''
           assert 'native_decide' not in source
           assert 'Lean.ofReduceBool' not in source
-          assert source.count('#print axioms') == 6
+          assert source.count('#print axioms') == 4
           payload = json.dumps({
               'content': source,
               'environment': 'lean-4.30.0',
