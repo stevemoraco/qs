@@ -30,8 +30,10 @@ divergence-free periodic datum, a weak solution which
 - is weak-* continuous in `BMO⁻¹`.
 
 The paper simultaneously identifies the ordinary classical branch from the
-same smooth trace at `T*`.  Remark 1.4 states that the anomalous branch is in
-neither `L∞_t L²_x` nor `L²_t H¹_x` near `T*`; Theorem 2.4 proves that its
+same smooth trace at `T*`.  Remark 1.5 is decisive: its time horizon remains
+strictly inside the already-existing maximal classical lifespan; the
+construction does not cross a classical terminal time.  Remark 1.4 states that
+the anomalous branch is in neither `L∞_t L²_x` nor `L²_t H¹_x` near `T*`; Theorem 2.4 proves that its
 energy diverges from the right.  Thus it is not a Leray--Hopf branch and is not
 spacetime-smooth across `T*`.
 
