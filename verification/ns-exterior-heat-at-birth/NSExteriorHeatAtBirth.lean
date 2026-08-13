@@ -90,7 +90,7 @@ theorem principal_exterior_ge_half_marked
       a * marked ≤ b * marked := hcoef
       _ ≤ 2 * a * exterior := hbudget
       _ = a * (2 * exterior) := by ring
-  exact (mul_le_mul_left ha).mp hscaled
+  nlinarith
 
 /-- With no damping, two variables driven by the same source mass are exactly
 slaved at their coefficient ratio. -/
@@ -128,14 +128,15 @@ theorem defect_budget_forces_principal_birth
   have hbirth : b * I ≤ (3 : ℝ) / 2 * exterior := by
     calc
       b * I = exterior + loss := hbalance.symm
-      _ ≤ exterior + x * exterior := add_le_add_left hloss exterior
+      _ ≤ exterior + x * exterior := by
+        simpa [add_comm] using add_le_add_left hloss exterior
       _ ≤ exterior + ((1 : ℝ) / 2) * exterior := by
         gcongr
       _ = (3 : ℝ) / 2 * exterior := by ring
   have hby : b * marked ≤ b * (a * I) :=
     mul_le_mul_of_nonneg_left hmarked hb
   have hmul : b * (a * I) ≤ a * ((3 : ℝ) / 2 * exterior) := by
-    have := mul_le_mul_of_nonneg_left hbirth (le_of_lt ha)
+    have hscaled := mul_le_mul_of_nonneg_left hbirth (le_of_lt ha)
     nlinarith
   calc
     b * marked ≤ b * (a * I) := hby
