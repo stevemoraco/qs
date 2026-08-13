@@ -1,4 +1,4 @@
-import BSDGVDiscriminantHeight
+import BSDGVRootNumberSpectrum
 
 #print axioms BSDGVSemiprimeDensity.totalStateCount_eq
 #print axioms BSDGVSemiprimeDensity.residuePairCount_eq
@@ -32,3 +32,9 @@ import BSDGVDiscriminantHeight
 #print axioms BSDGVSemiprimeDensity.discriminant_relative_density_certificate
 #print axioms BSDGVSemiprimeDensity.positive_sector_share_certificate
 #print axioms BSDGVSemiprimeDensity.negative_sector_share_certificate
+#print axioms BSDGVSemiprimeDensity.rootPositiveStateCount_eq
+#print axioms BSDGVSemiprimeDensity.accepted_implies_root_positive
+#print axioms BSDGVSemiprimeDensity.acceptedStates_subset_rootPositiveStates
+#print axioms BSDGVSemiprimeDensity.positive_root_complete_bsd_fraction_certificate
+#print axioms BSDGVSemiprimeDensity.positive_root_discriminant_family_coefficient
+#print axioms BSDGVSemiprimeDensity.positive_root_discriminant_relative_density
