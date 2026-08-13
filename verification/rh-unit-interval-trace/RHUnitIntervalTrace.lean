@@ -13,7 +13,7 @@ Lebesgue integration, the PNT, the von-Koch estimate, the B54 criterion, or RH.
 namespace RHUnitIntervalTrace
 
 /-- Exact energy of the affine profile `u ↦ y + u/2` on a unit interval. -/
-def unitIntervalEnergy (y : ℝ) : ℝ :=
+noncomputable def unitIntervalEnergy (y : ℝ) : ℝ :=
   y ^ 2 + y / 2 + 1 / 12
 
 /-- Complete-square form of the unit-interval energy. -/
