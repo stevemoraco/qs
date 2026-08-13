@@ -1,6 +1,12 @@
 name: Public RH primorial log-entropy replay
 
 on:
+  push:
+    branches:
+      - "verification/rh-primorial-log-entropy-20260813"
+    paths:
+      - "millennium-lean-entropy/**"
+      - ".github/workflows/rh-primorial-log-entropy-public-replay.yml"
   pull_request:
     paths:
       - "millennium-lean-entropy/**"
