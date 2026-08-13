@@ -2,7 +2,7 @@ import Mathlib
 
 namespace Millennium.GaugeCore
 
-def fraction (x y : ℝ) : ℝ := y ^ 2 / (x ^ 2 + y ^ 2)
+noncomputable def fraction (x y : ℝ) : ℝ := y ^ 2 / (x ^ 2 + y ^ 2)
 
 theorem firstAxis (x : ℝ) : fraction x 0 = 0 := by
   simp [fraction]
