@@ -15,7 +15,7 @@ theorem hard_source_forces_hard_restriction
     (hHard : q * (targetThreshold + overhead) < sourceCost) :
     ∃ i, targetThreshold < restrictionCost i := by
   by_contra h
-  push_neg at h
+  push Not at h
   have hUpper := hReconstruct h
   linarith
 
