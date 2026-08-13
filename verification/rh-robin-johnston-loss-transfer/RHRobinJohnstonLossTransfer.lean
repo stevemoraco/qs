@@ -24,6 +24,8 @@ smuggled into this module: it remains a separately auditable human dependency.
 
 namespace RHRobinJohnstonLossTransfer
 
+open scoped BigOperators
+
 /-- The negative part `x_- = max(-x, 0)`. -/
 def negPart (x : ℝ) : ℝ := max (-x) 0
 
@@ -90,7 +92,7 @@ theorem cocycle_weight_identity
     (z p L : ℝ) (hp : 0 < p) (hL : 0 < L) :
     negPart (L * z) / (p * L^2) = negPart z / (p * L) := by
   rw [negPart_mul_of_nonneg L z hL.le]
-  field_simp [ne_of_gt hp, ne_of_gt hL] <;> ring
+  field_simp [ne_of_gt hp, ne_of_gt hL]
 
 /-- The Robin loss is controlled directly by the weighted negative centered
 prime-arrival state `z_- / (p L)`. -/
