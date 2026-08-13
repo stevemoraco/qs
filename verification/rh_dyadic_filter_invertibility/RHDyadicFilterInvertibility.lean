@@ -47,7 +47,8 @@ theorem recovered_energy_bound
     (hq : q < 1)
     (hledger : (1 - q) * hE ≤ 2 * hD + q * boundary) :
     hE ≤ (2 * hD + q * boundary) / (1 - q) := by
-  exact (le_div_iff₀ (sub_pos.mpr hq)).2 hledger
+  apply (le_div_iff₀ (sub_pos.mpr hq)).2
+  simpa [mul_comm] using hledger
 
 /-- A nonzero complex denominator and nonzero numerator produce a nonzero
 Mellin filter quotient. -/
