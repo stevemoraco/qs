@@ -1,0 +1,194 @@
+name: RH sharp logarithmic threshold public Lean replay v2
+
+on:
+  push:
+    branches:
+      - verification/rh-bad-prime-block-tradeoff-public-replay-20260813
+    paths:
+      - 'verification/rh-sharp-log-threshold/RHSharpLogThresholdFiniteRepaired.lean'
+      - 'verification/rh-sharp-log-threshold/RHCenteredPrefixCriterionFinite.lean'
+      - '.github/workflows/rh-sharp-log-threshold-public-verify-v2.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-sharp-log-threshold/RHSharpLogThresholdFiniteRepaired.lean'
+      - 'verification/rh-sharp-log-threshold/RHCenteredPrefixCriterionFinite.lean'
+      - '.github/workflows/rh-sharp-log-threshold-public-verify-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='verification/rh-sharp-log-threshold'
+          while read -r file expected; do
+            actual=$(git hash-object "$root/$file")
+            echo "$file canonical RH-Lean blob: $expected"
+            echo "$file public verifier blob:   $actual"
+            test "$actual" = "$expected"
+          done <<'EOF'
+          RHSharpLogThresholdFiniteRepaired.lean f1f0c3fbae10820232c41a131d862090f6771040
+          RHCenteredPrefixCriterionFinite.lean b11d30243bba2a6975c947552183c4ef4fc37d89
+          EOF
+
+      - name: Reject placeholders and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root = pathlib.Path('verification/rh-sharp-log-threshold')
+          files = [
+              root / 'RHSharpLogThresholdFiniteRepaired.lean',
+              root / 'RHCenteredPrefixCriterionFinite.lean',
+          ]
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for path in files:
+              text = path.read_text()
+              stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+              for pattern in patterns:
+                  match = re.search(pattern, stripped, flags=re.M)
+                  if match:
+                      raise SystemExit(
+                          f'{path}: forbidden declaration: {match.group(0)!r}'
+                      )
+          PY
+
+      - name: Install exact Lean and Mathlib pins
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root='verification/rh-sharp-log-threshold'
+          lean --version | tee "$root/toolchain-v2.log"
+          lake --version | tee -a "$root/toolchain-v2.log"
+          cat > "$root/lean-toolchain" <<'EOF'
+          leanprover/lean4:v4.32.1
+          EOF
+          cat > "$root/lakefile.toml" <<'EOF'
+          name = "rh-sharp-log-threshold-v2"
+          version = "0.1.0"
+          defaultTargets = []
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.1"
+          EOF
+          cd "$root"
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit-v2.log
+
+      - name: Compile exact sources and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          root='verification/rh-sharp-log-threshold'
+          cd "$root"
+          sha256sum \
+            RHSharpLogThresholdFiniteRepaired.lean \
+            RHCenteredPrefixCriterionFinite.lean \
+            | tee source-sha256-v2.log
+          : > lean-output-v2.log
+          for file in \
+            RHSharpLogThresholdFiniteRepaired.lean \
+            RHCenteredPrefixCriterionFinite.lean
+          do
+            echo "=== $file ===" | tee -a lean-output-v2.log
+            lake env lean "$file" 2>&1 | tee -a lean-output-v2.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output-v2.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import pathlib, re
+          out = pathlib.Path('lean-output-v2.log').read_text()
+          namespaces = {
+              'RHSharpLogThresholdFinite': [
+                  'bounded_half_main_square_lower',
+                  'bounded_half_main_square_upper',
+                  'bounded_half_main_square_comparable',
+                  'logarithmic_threshold_shift',
+                  'logarithmic_threshold_positive',
+                  'logarithmic_threshold_endpoint',
+                  'logarithmic_threshold_negative',
+                  'false_rh_block_exponent_identity',
+                  'false_rh_block_margin',
+                  'normalized_root_identity',
+                  'sharp_log_series_criterion',
+              ],
+              'RHCenteredPrefixCriterionFinite': [
+                  'centered_negative_dominates',
+                  'centered_square_lower',
+                  'normalized_centered_identity',
+                  'normalized_centered_square_identity',
+                  'centered_log_threshold_positive',
+                  'centered_false_block_exponent',
+                  'centered_false_block_margin',
+                  'centered_series_criterion',
+              ],
+          }
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for namespace, names in namespaces.items():
+              for name in names:
+                  pattern = (
+                      rf"{namespace}\.{name}' depends on axioms: "
+                      rf"\[([^\]]*)\]"
+                  )
+                  match = re.search(pattern, out)
+                  if not match:
+                      raise SystemExit(
+                          f'missing axiom report for {namespace}.{name}'
+                      )
+                  actual = {
+                      item.strip()
+                      for item in match.group(1).split(',')
+                      if item.strip()
+                  }
+                  unexpected = actual - allowed
+                  if unexpected:
+                      raise SystemExit(
+                          f'unexpected axioms for {namespace}.{name}: '
+                          f'{sorted(unexpected)}'
+                      )
+                  print(
+                      f'{namespace}.{name}: accepted axioms {sorted(actual)}'
+                  )
+          PY
+          echo 'VERIFIED repaired sharp and centered logarithmic finite cores.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-sharp-log-threshold-v2-public-verification-evidence
+          path: |
+            verification/rh-sharp-log-threshold/lean-output-v2.log
+            verification/rh-sharp-log-threshold/source-sha256-v2.log
+            verification/rh-sharp-log-threshold/toolchain-v2.log
+            verification/rh-sharp-log-threshold/mathlib-commit-v2.log
+          if-no-files-found: warn
