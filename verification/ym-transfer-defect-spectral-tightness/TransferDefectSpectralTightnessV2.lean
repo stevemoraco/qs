@@ -62,7 +62,7 @@ theorem high_spectral_weight_le_half
       delta * (∑ i ∈ high, weight i) ≤
         delta * ((∑ i, weight i) / 2) :=
     hcost.trans (hsector.trans hbudget)
-  exact (mul_le_mul_left hdelta).mp hfinal
+  nlinarith [hfinal]
 
 theorem high_spectral_weight_le_half_of_covariance_defect
     {ι : Type*} [Fintype ι] [DecidableEq ι]
