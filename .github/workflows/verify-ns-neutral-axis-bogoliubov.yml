@@ -28,7 +28,7 @@ jobs:
           p = pathlib.Path('NSNeutralAxisBogoliubovFinite.lean')
           text = p.read_text()
           sha = hashlib.sha256(text.encode()).hexdigest()
-          if sha != 'b5ba946cdebe376e2b4b3023118e2a3e2f3860fe30f5e8768cf7553c61d6421d':
+          if sha != '99d5a7f14b34af4ce2407233d02db776f179d828763a81fa11666cc22883f388':
               raise SystemExit(f'source hash mismatch: {sha}')
           forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
           if forbidden.search(text) or 'Lean.ofReduceBool' in text or 'native_decide' in text:
@@ -85,8 +85,9 @@ jobs:
             echo "repository=${GITHUB_REPOSITORY}"
             echo "commit=${GITHUB_SHA}"
             echo "runner=${RUNNER_NAME}"
-            echo "canonical_private_commit=0a1b876e36dad6c96149d33076b3454cf8ae7c73"
-            echo "canonical_sha256=b5ba946cdebe376e2b4b3023118e2a3e2f3860fe30f5e8768cf7553c61d6421d"
+            echo "canonical_private_commit=7735f5712960dfc6547d8a2500c5956eb7b2a584"
+            echo "canonical_git_blob=5e39a661fca5b30dc3b91c8af8d8dafe7c9c308e"
+            echo "canonical_sha256=99d5a7f14b34af4ce2407233d02db776f179d828763a81fa11666cc22883f388"
             echo "environment=lean-4.30.0"
           } > "$OUT/replay-metadata.txt"
 
