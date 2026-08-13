@@ -26,7 +26,12 @@ def swapFirst (u v : α) : List α → List α
   intro xs
   induction xs with
   | nil => rfl
-  | cons x xs ih => simp [swapFirst, ih]
+  | cons x xs ih =>
+      by_cases hxu : x = u
+      · simp [swapFirst, hxu]
+      · by_cases hxv : x = v
+        · simp [swapFirst, hxu, hxv]
+        · simp [swapFirst, hxu, hxv, ih]
 
 /-- The first-occurrence swap is an involution when the symbols differ. -/
 theorem swapFirst_involutive {u v : α} (huv : u ≠ v) :
@@ -37,10 +42,10 @@ theorem swapFirst_involutive {u v : α} (huv : u ≠ v) :
   | cons x xs ih =>
       by_cases hxu : x = u
       · subst x
-        simp [swapFirst, huv, huv.symm]
+        simp [swapFirst, huv.symm]
       · by_cases hxv : x = v
         · subst x
-          simp [swapFirst, huv, huv.symm]
+          simp [swapFirst, huv.symm]
         · simp [swapFirst, hxu, hxv, ih]
 
 /-- Hence the first-occurrence swap is injective. -/
@@ -72,12 +77,12 @@ theorem parity_swapFirst_left {u v : α} (huv : u ≠ v) :
   | cons x xs ih =>
       by_cases hxu : x = u
       · subst x
-        simp [swapFirst, parity, huv, huv.symm]
+        simp [swapFirst, parity, huv.symm]
       · by_cases hxv : x = v
         · subst x
-          simp [swapFirst, parity, huv, huv.symm]
+          simp [swapFirst, parity, huv.symm]
         · have htail : u ∈ xs ∨ v ∈ xs := by
-            simpa [hxu, hxv] using hex
+            simpa [hxu, hxu.symm, hxv, hxv.symm] using hex
           simp [swapFirst, parity, hxu, hxv, ih htail]
 
 /-- Swapping the first `u`/`v` occurrence toggles the `v` parity. -/
@@ -91,12 +96,12 @@ theorem parity_swapFirst_right {u v : α} (huv : u ≠ v) :
   | cons x xs ih =>
       by_cases hxu : x = u
       · subst x
-        simp [swapFirst, parity, huv, huv.symm]
+        simp [swapFirst, parity, huv]
       · by_cases hxv : x = v
         · subst x
           simp [swapFirst, parity, huv, huv.symm]
         · have htail : u ∈ xs ∨ v ∈ xs := by
-            simpa [hxu, hxv] using hex
+            simpa [hxu, hxu.symm, hxv, hxv.symm] using hex
           simp [swapFirst, parity, hxu, hxv, ih htail]
 
 /-- Every other parity coordinate is unchanged. -/
@@ -110,10 +115,10 @@ theorem parity_swapFirst_other {u v x : α}
   | cons y ys ih =>
       by_cases hyu : y = u
       · subst y
-        simp [swapFirst, parity, hxu, hxv, hxu.symm, hxv.symm]
+        simp [swapFirst, parity, hxu.symm, hxv.symm]
       · by_cases hyv : y = v
         · subst y
-          simp [swapFirst, parity, hxu, hxv, hxu.symm, hxv.symm]
+          simp [swapFirst, parity, hyu, hxu.symm, hxv.symm]
         · simp [swapFirst, parity, hyu, hyv, ih]
 
 /-- Toggle exactly the two selected endpoint coordinates. -/
@@ -149,7 +154,9 @@ def fiberMap {u v : α} (huv : u ≠ v) {k : ℕ} {p : α → Bool}
     simpa [endpoint, hu] using hfun
   have hmem : u ∈ w.1 := parity_true_mem hpar
   refine ⟨swapFirst u v w.1, ?_, ?_⟩
-  · simpa using swapFirst_length u v w.1
+  · calc
+      (swapFirst u v w.1).length = w.1.length := swapFirst_length u v w.1
+      _ = k := w.2.1
   · calc
       endpoint (swapFirst u v w.1)
           = togglePair u v (endpoint w.1) :=
@@ -184,7 +191,9 @@ theorem odd_slice_descent
     calc
       q ^ 2 * pNext = (3 * q - 2) * pOne + 6 * pThree := hrec
       _ ≤ (3 * q - 2) * pOne + (q - 1) * (q - 2) * pOne :=
-        add_le_add_left hradial ((3 * q - 2) * pOne)
+        by
+          simpa [add_comm, add_left_comm, add_assoc] using
+            add_le_add_left hradial ((3 * q - 2) * pOne)
       _ = q ^ 2 * pOne := by
         rw [← coefficient_partition q]
         ring
