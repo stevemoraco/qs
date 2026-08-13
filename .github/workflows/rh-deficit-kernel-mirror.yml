@@ -25,16 +25,40 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
-      - name: Resolve, build, replay, and audit
+      - name: Resolve and build pinned clean interface
         working-directory: millennium/rh-deficit-kernel
         run: |
           set -euo pipefail
           lake update
           lake exe cache get
           lake build
-          lake env lean RHDeficitExactCriticalPoint.lean 2>&1 | tee lean-output.txt
-          if grep -Eq 'declaration uses .sorry.|declaration has metavariables|declaration uses sorry|unsolved goals' lean-output.txt; then
-            echo 'forbidden proof hole detected'
+      - name: Replay inherited theorem and dependency probes
+        working-directory: millennium/rh-deficit-kernel
+        run: |
+          set -euo pipefail
+          lake env lean RHDeficitExactCriticalPoint.lean 2>&1 | tee inherited-output.txt
+          lake env lean AxiomProbe.lean 2>&1 | tee probe-output.txt
+      - name: Replay clean event interface and enforce firewall
+        working-directory: millennium/rh-deficit-kernel
+        run: |
+          set -euo pipefail
+          lake env lean RHDeficitEventInterface.lean 2>&1 | tee clean-output.txt
+          if grep -Fq 'sorryAx' clean-output.txt; then
+            echo 'forbidden sorryAx detected in clean interface'
             exit 1
           fi
-          grep -F 'axioms' lean-output.txt
+          if grep -Eq 'declaration uses .sorry.|declaration has metavariables|declaration uses sorry|unsolved goals' clean-output.txt; then
+            echo 'forbidden proof hole detected in clean interface'
+            exit 1
+          fi
+          grep -F 'axioms' clean-output.txt
+      - name: Preserve replay outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-deficit-kernel-audit-${{ github.sha }}
+          path: |
+            millennium/rh-deficit-kernel/inherited-output.txt
+            millennium/rh-deficit-kernel/probe-output.txt
+            millennium/rh-deficit-kernel/clean-output.txt
+          if-no-files-found: warn
