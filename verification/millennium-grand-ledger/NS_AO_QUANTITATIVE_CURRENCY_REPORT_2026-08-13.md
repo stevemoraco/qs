@@ -66,6 +66,16 @@ complete scaled profile ball and prove that the actual one-generation map is a
 contraction there with a residual small enough to retain the open `b`,
 `Lambda''`, and global-separation margins.
 
+For an axisymmetric axial window, the pointwise cylindrical corrector has
+radial-flux derivative `-chiPrime*r*W` and axial derivative `chiPrime*W`.
+Dividing the first by `r` cancels the second exactly for `r != 0`. Lean checks
+this flux identity as
+
+`NSAOQuantitativeCurrency.axisymmetric_window_divergence_cancels`.
+
+This does not hide the axis: the function-space construction must still prove
+the derivative identities and regularity at `r=0`.
+
 ## 2. Hostile audit of the prior finite-energy claim
 
 The prior balanced window used carrier `N`, axial length `N^(-2/3)`, and pump
@@ -112,6 +122,23 @@ against both leading perturbations. These identities and the partial-sum bound
 are packaged by
 
 `NSAOQuantitativeCurrency.dyadic_ao_currency`.
+
+The exponents are the unique balanced choice. For general shell exponents
+`N=R^p`, `L=R^(-q)`, and `S=R^s`, the three margins are
+
+`energyDecay = 2p+q-2s`,
+
+`viscousGap = s-p`,
+
+`modulationGap = p-q`.
+
+If all three equal `m`, exact elimination gives
+
+`(p,q,s)=(4m,3m,5m)`.
+
+Lean proves both directions in `balanced_margin_ray` and
+`balanced_margin_ray_converse`. The present `(4,3,5)` choice is the primitive
+integer point on that ray, not an arbitrary numerical guess.
 
 ## 4. Claimant / critic / rebuilder
 
