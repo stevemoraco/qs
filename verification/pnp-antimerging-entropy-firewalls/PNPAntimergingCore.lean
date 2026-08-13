@@ -2,6 +2,8 @@ import Mathlib
 
 namespace PNPAntimergingCore
 
+open scoped BigOperators
+
 theorem entropyGateFloor (D Q t : ℕ)
     (hD : Q + 1 ≤ D) (hs : D ^ Q ≤ (t + 1) * D ^ t) : Q ≤ t + 1 := by
   by_contra h
@@ -51,8 +53,35 @@ theorem overwriteClosure
           exact hc (patch x y S) ih i (y i)
     simpa [patch] using hpatch (Finset.univ : Finset ι)
 
+theorem incidenceCeiling
+    {P L : Type*} [Fintype P] [Fintype L]
+    (R : P → L → Prop) [DecidableRel R]
+    (w : P → ℝ) (c : ℝ)
+    (hw : ∀ p, 0 ≤ w p)
+    (hcover : ∀ p, ∃ l, R p l)
+    (hcap : ∀ l, (∑ p, if R p l then w p else 0) ≤ c) :
+    (∑ p, w p) ≤ (Fintype.card L : ℝ) * c := by
+  classical
+  have hp : ∀ p : P, w p ≤ ∑ l : L, if R p l then w p else 0 := by
+    intro p
+    obtain ⟨l, hl⟩ := hcover p
+    calc
+      w p = (if R p l then w p else 0) := by simp [hl]
+      _ ≤ ∑ j : L, if R p j then w p else 0 := by
+        apply Finset.single_le_sum
+        · intro j _
+          by_cases h : R p j <;> simp [h, hw p]
+        · exact Finset.mem_univ l
+  calc
+    (∑ p, w p) ≤ ∑ p, ∑ l, if R p l then w p else 0 :=
+      Finset.sum_le_sum (fun p _ => hp p)
+    _ = ∑ l, ∑ p, if R p l then w p else 0 := by rw [Finset.sum_comm]
+    _ ≤ ∑ _l : L, c := Finset.sum_le_sum (fun l _ => hcap l)
+    _ = (Fintype.card L : ℝ) * c := by simp
+
 #print axioms entropyGateFloor
 #print axioms patchInsert
 #print axioms overwriteClosure
+#print axioms incidenceCeiling
 
 end PNPAntimergingCore
