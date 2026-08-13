@@ -1,0 +1,91 @@
+import Mathlib
+
+namespace UnifiedMillenniumPerelmanBraid
+
+open scoped BigOperators
+
+/-!
+# Unified executable Millennium--Perelman braid
+
+This file has two deliberately separate layers.
+
+* `CandidateBraid` records one scale-indexed object and one native bridge for
+  each of seven propositions: the six open Clay problems and the Poincare
+  theorem proved by Perelman.
+* `CertifiedBraid` additionally contains a seed proof and a uniform transition
+  proof for every lane.  Those data really do imply all seven propositions.
+
+The inverse theorem is the firewall: if a native target is false, then any
+candidate object must fail either at scale zero or at one concrete finite
+transition.  Thus no open analytic, geometric, arithmetic, PDE, physical, or
+complexity bridge is hidden by the unifying wrapper.
+-/
+
+inductive Prize where
+  | riemannHypothesis
+  | pVsNP
+  | birchSwinnertonDyer
+  | hodgeConjecture
+  | navierStokes
+  | yangMills
+  | poincarePerelman
+  deriving DecidableEq, BEq, Repr
+
+namespace Prize
+
+def all : List Prize :=
+  [riemannHypothesis, pVsNP, birchSwinnertonDyer, hodgeConjecture,
+    navierStokes, yangMills, poincarePerelman]
+
+def openClay : List Prize :=
+  [riemannHypothesis, pVsNP, birchSwinnertonDyer, hodgeConjecture,
+    navierStokes, yangMills]
+
+theorem all_length : all.length = 7 := by
+  rfl
+
+theorem openClay_length : openClay.length = 6 := by
+  rfl
+
+theorem poincare_mem_all : poincarePerelman ∈ all := by
+  simp [all]
+
+theorem poincare_not_mem_openClay : poincarePerelman ∉ openClay := by
+  simp [openClay]
+
+end Prize
+
+inductive LaneStatus where
+  | finiteCoresOnly
+  | humanTheoremNotKernelImported
+  deriving DecidableEq, BEq, Repr
+
+structure LaneEntry where
+  prize : Prize
+  status : LaneStatus
+  finiteBank : String
+  missingBridge : String
+  deriving Repr
+
+def currentLedger : List LaneEntry :=
+  [ { prize := .riemannHypothesis
+      status := .finiteCoresOnly
+      finiteBank := "Chebyshev, Schur, dyadic, trace, and finite positivity firewalls"
+      missingBridge := "one complete zeta/prime analytic criterion proof" }
+  , { prize := .pVsNP
+      status := .finiteCoresOnly
+      finiteBank := "weighted duality, parity, sparse-code, restriction, and absorption firewalls"
+      missingBridge := "one explicit sparse NP hard core against low-surplus B2 circuits" }
+  , { prize := .birchSwinnertonDyer
+      status := .finiteCoresOnly
+      finiteBank := "Fitting, signed extractor, determinant, and local-global firewalls"
+      missingBridge := "global arithmetic comparison with exact normalization" }
+  , { prize := .hodgeConjecture
+      status := .finiteCoresOnly
+      finiteBank := "secant, local-node, realization, and category firewalls"
+      missingBridge := "global algebraic-cycle realization" }
+  , { prize := .navierStokes
+      status := .finiteCoresOnly
+      finiteBank := "energy, relay, polarization, stress, and scaling firewalls"
+      missingBridge := "uniform PDE closure or a complete regularity argument" }
+  , { prize := .yangMills
