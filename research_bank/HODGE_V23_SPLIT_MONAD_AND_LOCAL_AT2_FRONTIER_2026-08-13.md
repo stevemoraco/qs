@@ -55,8 +55,8 @@ rank-three bundle with
 \]
 Expansion gives
 \[
- c_1=-9x,\quad c_2=66x^2,\quad c_3=-430x^3,\quad
- \boxed{c_4=2640x^4}. \tag{5}
+ c_1=-9x,\quad c_2=75x^2,\quad c_3=-555x^3,\quad
+ \boxed{c_4=3840x^4}. \tag{5}
 \]
 But \(c_4\) of a rank-three bundle is zero, and
 \(\int_Xx^4=24\). Hence \(B_1\) cannot be everywhere surjective. The
@@ -207,7 +207,86 @@ force splitting or contradict codimension-two CM support. A pd-one CM
 ideal minimalizes to a two-term local resolution, so its local
 \(\operatorname{At}^2\) block is vacuous.
 
-## 8. Surviving result and next bridge
+## 8. Nonsplit rank-two-minus-line obstruction
+
+The following strengthens the split-line search and uses no Néron--Severi
+rank assumption.
+
+Suppose a rank-two vector bundle \(F\) and a line bundle \(Q\) satisfy
+\[
+ [F]-[Q]=v_{23}. \tag{17}
+\]
+Write \(q=c_1(Q)\). From
+\(\operatorname{ch}(F)=v_{23}+e^q\), Newton's identities give
+\[
+ \begin{aligned}
+ c_1(F)&=q+x,\\
+ c_2(F)&=qx+12x^2,\\
+ c_3(F)&=4x^2(3q+x).
+ \end{aligned} \tag{18}
+\]
+An actual rank-two bundle has \(c_3(F)=0\). Hard Lefschetz makes
+\[
+ x^2\smile-:H^2(X,\mathbf Q)\longrightarrow H^6(X,\mathbf Q)
+\]
+an isomorphism, so (18) would force \(3q=-x\). This is impossible for
+integral \(q\): the principal polarization class \(x\) is not divisible
+by three. For example, \(x=3y\) with integral \(y\) would make
+\(\int_Xx^4\) divisible by \(81\), whereas \(\int_Xx^4=24\).
+
+Therefore (17) is impossible even when \(F\) is nonsplit. The sign is
+essential: for a complex in degrees \((-2,-1,0)\), cancellation to
+\([K]-[E]+[F]=[F]-[Q]\) must be checked before applying this theorem.
+
+## 9. Five theta-line arithmetic obstruction
+
+There are no integers \(a,b,c,d,k\) such that
+\[
+ e^{cx}+e^{dx}+e^{kx}-e^{ax}-e^{bx}=v_{23}
+ \quad\text{in }\mathbf Q[x]/(x^5). \tag{19}
+\]
+This is a pure split K-theory obstruction; it assumes neither positivity
+nor the existence of maps.
+
+The power moments of \(v_{23}\) are
+\[
+ (p_0,p_1,p_2,p_3,p_4)=(1,1,-23,-23,529),
+\]
+so Newton's identities give
+\[
+ c(v_{23})=1+x+12x^2+4x^3-68x^4. \tag{20}
+\]
+Multiplying (20) by \((1+ax)(1+bx)\) must produce
+\((1+cx)(1+dx)(1+kx)\), which has degree three. Its \(x^4\)
+coefficient therefore gives
+\[
+ -68+4(a+b)+12ab=0,
+ \qquad (3a+1)(3b+1)=52. \tag{21}
+\]
+Up to exchanging \(a,b\), the only integer possibilities are
+\[
+ (a,b)=(0,17),\quad(-1,-9),\quad(1,4). \tag{22}
+\]
+The remaining elementary symmetric functions of \(c,d,k\) are
+\[
+ c+d+k=1+a+b,\quad
+ cd+ck+dk=12+a+b+ab,\quad
+ cdk=4+12(a+b)+ab. \tag{23}
+\]
+Thus \(c,d,k\) would be the three integer roots of, respectively,
+\[
+ \begin{array}{c|c}
+ (a,b)&\text{cubic}\\ \hline
+ (0,17)&z^3-18z^2+29z-208,\\
+ (-1,-9)&z^3+9z^2+11z+107,\\
+ (1,4)&z^3-6z^2+21z-68.
+ \end{array} \tag{24}
+\]
+The first two reduce modulo three to \(z^3+2z+2\), which has no root in
+\(\mathbf F_3\); the third has no root in \(\mathbf F_5\).
+Consequently none can have even one integer root, proving (19).
+
+## 10. Surviving result and next bridge
 
 **Survives:** (1) is exact, but the natural theta-line monad cannot be
 true and cannot have a torsion-free sole middle cohomology without a
