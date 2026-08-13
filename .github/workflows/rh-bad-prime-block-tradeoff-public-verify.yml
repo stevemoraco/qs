@@ -30,7 +30,7 @@ jobs:
           set -euo pipefail
           file='verification/rh-bad-prime-block-tradeoff/RHBadPrimeBlockTradeoff.lean'
           actual=$(git hash-object "$file")
-          expected='128f7a5536e06c64999d3484c1d922ab4f40b070'
+          expected='f49f3ad9e02a8390ab10d2e765471d45b04506fe'
           echo "canonical RH-Lean blob: $expected"
           echo "public verifier blob:   $actual"
           test "$actual" = "$expected"
@@ -99,6 +99,11 @@ jobs:
               'symmetric_depth_stronger',
               'symmetric_dirichlet_exponent_identity',
               'symmetric_positive_choice',
+              'exact_subwindow_fits',
+              'exact_subwindow_guth_maynard',
+              'exact_subwindow_depth_stronger',
+              'exact_subwindow_dirichlet_exponent',
+              'escape_depth_dominates',
               'counting_dimension_positive',
           ]
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
