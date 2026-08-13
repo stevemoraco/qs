@@ -43,6 +43,27 @@ theorem quotientEqualityAloneDoesNotGiveEulerIdentity :
       3 * J ≠ 2 * Λ * A := by
   exact ⟨1, 1, 1, by norm_num⟩
 
+/-- A positive quotient saturator cannot also satisfy the asserted
+quadratic-versus-cubic amplitude stationarity identity with the quotient
+value itself as multiplier. Indeed `J = Λ A` turns `3J = 2ΛA` into
+`3J = 2J`, while positivity forces `J > 0`.
+
+This is the generic finite algebra behind the endpoint contradiction: the
+stationarity assertion is exactly the missing bridge, not a consequence of
+positive quotient saturation. -/
+theorem positiveQuotientSaturatorNotStationary
+    (A J Λ : ℝ)
+    (hA : 0 < A)
+    (hΛ : 0 < Λ)
+    (hSaturates : J = Λ * A) :
+    3 * J ≠ 2 * Λ * A := by
+  have hJ : 0 < J := by
+    rw [hSaturates]
+    exact mul_pos hΛ hA
+  intro hStationary
+  rw [hSaturates] at hStationary
+  nlinarith
+
 /-- A one-point discrete analogue of a localized Dirichlet contribution
 after the mass-preserving change of variables. The factor `s^2` is the
 unlocalized derivative scaling, while `cutoff (1/s)` records that a fixed
@@ -65,6 +86,7 @@ theorem fixedCutoffBreaksDegreeTwoHomogeneity :
 
 #print axioms constrainedQuotientMaximumDoesNotGiveAmbientEulerIdentity
 #print axioms quotientEqualityAloneDoesNotGiveEulerIdentity
+#print axioms positiveQuotientSaturatorNotStationary
 #print axioms fixedCutoffBreaksDegreeTwoHomogeneity
 
 end NavierStokesQuotientStationarityCountermodel
