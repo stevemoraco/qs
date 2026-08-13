@@ -1,0 +1,98 @@
+name: RH Theta-Iteration Cocycle Finite Lean
+
+on:
+  push:
+    branches:
+      - verification/rh-theta-iteration-cocycle-20260813
+    paths:
+      - 'verification/rh-theta-iteration-cocycle/**'
+      - '.github/workflows/rh-theta-iteration-cocycle-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-theta-iteration-cocycle/**'
+      - '.github/workflows/rh-theta-iteration-cocycle-lean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          path='verification/rh-theta-iteration-cocycle/RHThetaIterationCocycleFinite.lean'
+          actual="$(git hash-object "$path")"
+          expected='e9a61f6d157267c0d72b5c2a4fccd3ac646edc39'
+          test "$actual" = "$expected"
+          printf 'canonical_blob=%s\n' "$actual" | tee source-identity.log
+
+      - name: Reject explicit placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/rh-theta-iteration-cocycle/'
+              'RHThetaIterationCocycleFinite.lean'
+          )
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'Lean\.ofReduceBool',
+          ]
+          for pattern in patterns:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration/token: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/rh-theta-iteration-cocycle
+          lake update
+          lake exe cache get
+          lake env lean RHThetaIterationCocycleFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
+            echo 'Forbidden placeholder axiom or compiler error found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite RH theta-iteration cocycle core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-theta-iteration-cocycle-lean-evidence
+          path: |
+            verification/rh-theta-iteration-cocycle/lean-output.log
+            lean-version.log
+            lake-version.log
+            source-identity.log
+          if-no-files-found: warn
