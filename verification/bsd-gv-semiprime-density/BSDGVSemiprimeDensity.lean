@@ -96,6 +96,8 @@ def acceptedStateCount : Nat :=
 
 def totalStateCount : Nat := Fintype.card State
 
+def residuePairCount : Nat := Fintype.card ResiduePair
+
 def rowStateCount (p : OddResidue) : Nat :=
   ((Finset.univ : Finset (OddResidue × LegendreSign)).filter
     fun x => accepts p x.1 x.2 = true).card
@@ -104,11 +106,12 @@ def acceptedSignCount (s : LegendreSign) : Nat :=
   ((Finset.univ : Finset ResiduePair).filter
     fun x => accepts x.1 x.2 s = true).card
 
-def bothSignPairCount : Nat :=
-  ((Finset.univ : Finset ResiduePair).filter
-    fun x =>
-      accepts x.1 x.2 .pos = true &&
-      accepts x.1 x.2 .neg = true).card
+def bothSignPairs : Finset ResiduePair :=
+  (Finset.univ : Finset ResiduePair).filter fun x =>
+    accepts x.1 x.2 .pos = true ∧
+    accepts x.1 x.2 .neg = true
+
+def bothSignPairCount : Nat := bothSignPairs.card
 
 def expectedRowStateCount : OddResidue → Nat
   | .r3 => 5
@@ -131,6 +134,10 @@ def reciprocityTransport
 /-- There are eight odd residue classes, eight choices for the second prime,
 and two Legendre signs. -/
 theorem totalStateCount_eq : totalStateCount = 128 := by
+  decide
+
+/-- There are `8*8=64` ordered odd residue pairs modulo 16. -/
+theorem residuePairCount_eq : residuePairCount = 64 := by
   decide
 
 /-- Exactly 28 of the 128 residue/sign states satisfy the four conditions. -/
@@ -161,6 +168,36 @@ theorem both_sign_pairs_classification (p q : OddResidue) :
     (accepts p q .pos = true ∧ accepts p q .neg = true) ↔
       ((p = .r3 ∧ q = .r11) ∨ (p = .r11 ∧ q = .r3)) := by
   cases p <;> cases q <;> decide
+
+/-- A residue pair works independently of the Legendre symbol exactly for the
+two both-sign pairs. -/
+theorem residue_only_pair_iff (p q : OddResidue) :
+    (∀ s : LegendreSign, accepts p q s = true) ↔
+      ((p = .r3 ∧ q = .r11) ∨ (p = .r11 ∧ q = .r3)) := by
+  constructor
+  · intro hall
+    exact (both_sign_pairs_classification p q).1 ⟨hall .pos, hall .neg⟩
+  · intro hpq s
+    rcases hpq with hpq | hpq
+    · rcases hpq with ⟨rfl, rfl⟩
+      cases s <;> decide
+    · rcases hpq with ⟨rfl, rfl⟩
+      cases s <;> decide
+
+/-- Any selector depending only on the two residues and guaranteed to work for
+both Legendre signs contains at most two residue pairs. -/
+theorem residue_only_selector_card_le_two
+    (S : Finset ResiduePair)
+    (h : ∀ x ∈ S, ∀ s : LegendreSign, accepts x.1 x.2 s = true) :
+    S.card ≤ 2 := by
+  have hsub : S ⊆ bothSignPairs := by
+    intro x hx
+    simp only [bothSignPairs, Finset.mem_filter, Finset.mem_univ, true_and]
+    exact ⟨h x hx .pos, h x hx .neg⟩
+  calc
+    S.card ≤ bothSignPairs.card := Finset.card_le_card hsub
+    _ = bothSignPairCount := rfl
+    _ = 2 := bothSignPairCount_eq
 
 /-- The residue pair `(3,11)` works for either Legendre sign. -/
 theorem three_eleven_all_signs (s : LegendreSign) :
@@ -203,13 +240,33 @@ theorem negative_sign_fraction_certificate :
     acceptedSignCount .neg * 16 = 3 * totalStateCount := by
   decide
 
+/-- The optimal residue-only core has density coefficient `2/64=1/32`. -/
+theorem residue_only_core_fraction_certificate :
+    bothSignPairCount * 32 = residuePairCount := by
+  decide
+
+/-- The full accepted state count is the four states from the two both-sign
+pairs plus twenty-four genuinely sign-sensitive states. -/
+theorem character_sensitive_state_decomposition :
+    acceptedStateCount = 2 * bothSignPairCount + 24 := by
+  decide
+
+/-- The character-sensitive increment has coefficient `24/128=3/16`. -/
+theorem character_sensitive_increment_fraction_certificate :
+    (acceptedStateCount - 2 * bothSignPairCount) * 16 =
+      3 * totalStateCount := by
+  decide
+
 #print axioms totalStateCount_eq
+#print axioms residuePairCount_eq
 #print axioms acceptedStateCount_eq
 #print axioms rowStateCount_eq
 #print axioms acceptedPosCount_eq
 #print axioms acceptedNegCount_eq
 #print axioms bothSignPairCount_eq
 #print axioms both_sign_pairs_classification
+#print axioms residue_only_pair_iff
+#print axioms residue_only_selector_card_le_two
 #print axioms three_eleven_all_signs
 #print axioms eleven_three_all_signs
 #print axioms accepts_swap_with_reciprocity
@@ -217,5 +274,8 @@ theorem negative_sign_fraction_certificate :
 #print axioms unordered_coefficient_fraction_certificate
 #print axioms positive_sign_fraction_certificate
 #print axioms negative_sign_fraction_certificate
+#print axioms residue_only_core_fraction_certificate
+#print axioms character_sensitive_state_decomposition
+#print axioms character_sensitive_increment_fraction_certificate
 
 end BSDGVSemiprimeDensity
