@@ -17,6 +17,8 @@ bilinear operator, localized packets, normal forms, shadowing, or blow-up.
 
 namespace NSGolayHelicalReturn
 
+noncomputable section
+
 /-- The scalar `+` helical triple-product coefficient. The argument `sdelta`
 stands for `sin delta`. -/
 def channelPlus (c d Q sdelta : ℝ) : ℝ :=
@@ -40,7 +42,9 @@ theorem helical_channel_sum
       helicalAggregate c d Q sdelta := by
   unfold channelPlus channelMinus helicalAggregate
   have hsqrt : (Real.sqrt 2) ^ 2 = 2 := by norm_num
-  field_simp [hQ, hsqrt] <;> ring
+  field_simp [hQ]
+  rw [hsqrt]
+  ring
 
 /-- BANKER: under the cosine-law and sine-square identities for two equal
 radius parents, the aggregate reduces to a polynomial in `cos delta`. -/
@@ -51,7 +55,9 @@ theorem equal_radius_aggregate_formula
     helicalAggregate N N Q sdelta =
       N * (3 * x - 1) * (1 + x) / 4 := by
   unfold helicalAggregate
-  field_simp [hQ0] <;> nlinarith [hsin, hcos]
+  field_simp [hQ0]
+  rw [hsin, hcos]
+  ring
 
 /-- CRITIC: on the acute interval `cos delta >= 1/2`, the exact aggregate
 retains a fixed positive fraction of the parent frequency. There is no
@@ -104,5 +110,7 @@ theorem endpoint_parent_scale_is_nonzero :
 #print axioms equal_radius_aggregate_has_parent_scale_floor
 #print axioms near_equal_shell_budget_floor
 #print axioms endpoint_parent_scale_is_nonzero
+
+end
 
 end NSGolayHelicalReturn
