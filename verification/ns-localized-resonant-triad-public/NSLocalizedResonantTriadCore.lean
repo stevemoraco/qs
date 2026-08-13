@@ -22,9 +22,21 @@ def k0 (N : ℤ) : IVec3 := ⟨0, 2*N, 0⟩
 def p1 (K N : ℤ) : IVec3 := ⟨N, -2*K, 0⟩
 def ez : IVec3 := ⟨0, 0, 1⟩
 
+@[ext] theorem ivec3_ext {a b : IVec3}
+    (hx : a.x = b.x) (hy : a.y = b.y) (hz : a.z = b.z) : a = b := by
+  cases a with
+  | mk ax ay az =>
+    cases b with
+    | mk bx by bz =>
+      simp_all
+
 theorem carrier_resonance (K N : ℤ) :
     add (k1 K N) (k2 K N) = k0 N := by
-  apply IVec3.ext <;> simp [add, k1, k2, k0]
+  apply ivec3_ext
+  · simp [add, k1, k2, k0]
+  · simp [add, k1, k2, k0]
+    ring
+  · simp [add, k1, k2, k0]
 
 theorem equal_high_norm_sq (K N : ℤ) :
     normSq (k1 K N) = normSq (k2 K N) := by
@@ -73,6 +85,7 @@ theorem viscous_blob_beta_window {α β : ℝ}
     linarith
   · exact (blob_beta_lt_one_iff hβ).2 hhi
 
+#print axioms ivec3_ext
 #print axioms carrier_resonance
 #print axioms equal_high_norm_sq
 #print axioms p1_transverse
