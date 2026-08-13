@@ -124,7 +124,9 @@ theorem leftLimitZero_of_finitePart_remainder
   have hr := hK t ht
   calc
     |total t| = |finitePart K t + remainder K t| := by rw [hdecomp K t]
-    _ ≤ |finitePart K t| + |remainder K t| := abs_add _ _
+    _ ≤ |finitePart K t| + |remainder K t| := by
+      simpa [Real.norm_eq_abs] using
+        (norm_add_le (finitePart K t) (remainder K t))
     _ < ε / 2 + ε / 2 := add_lt_add hf hr
     _ = ε := by ring
 
