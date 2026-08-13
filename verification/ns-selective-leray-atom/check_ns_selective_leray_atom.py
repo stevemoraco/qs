@@ -172,7 +172,33 @@ for a in (-3, -2, -1, 1, 2, 3):
                        "2D3C low is purely passive")
             passive_cases += 1
 
-# E. Scalable shear cancellation: many potential labels, zero Euler symbol.
+# E. Isosceles relay: exact desired fibers plus omitted same-carrier polarization.
+iso_p, iso_q, iso_k = vec(1, 0, 0), vec(0, 1, 0), vec(-1, -1, 0)
+iso_a, iso_b, iso_n = vec(0, 1, -1), vec(-1, 0, 1), vec(0, 0, 1)
+iso_r = vec(0, 1, 1)
+require_eq(add(add(iso_p, iso_q), iso_k), vec(0, 0, 0),
+           "isosceles carrier relation")
+require_eq(dot(iso_p, iso_a), Q(0), "isosceles p transverse")
+require_eq(dot(iso_q, iso_b), Q(0), "isosceles q transverse")
+require_eq(dot(iso_k, iso_n), Q(0), "isosceles k transverse")
+require_eq(leray(add(iso_p, iso_q),
+                 sym_symbol(add(iso_p, iso_q), iso_a, iso_b)),
+           vec(0, 0, 2), "isosceles active sum")
+require_eq(leray(sub(iso_p, iso_q),
+                 sym_symbol(sub(iso_p, iso_q), iso_a, iso_b)),
+           vec(0, 0, 0), "isosceles conjugate difference killed")
+reciprocal = leray(add(iso_q, iso_k),
+                   sym_symbol(add(iso_q, iso_k), iso_b, iso_n))
+require_eq(reciprocal, iso_n, "isosceles full reciprocal output")
+require_eq(iso_n, add(scale(Q(-1, 2), iso_a), scale(Q(1, 2), iso_r)),
+           "isosceles reciprocal polarization decomposition")
+require_eq(dot(iso_a, iso_r), Q(0), "isosceles omitted polarization orthogonal")
+require_eq(dot(add(iso_q, iso_k), iso_r), Q(0),
+           "isosceles omitted polarization transverse")
+require(cross(iso_n, iso_a) != vec(0, 0, 0),
+        "isosceles reciprocal not in selected polarization")
+
+# F. Scalable shear cancellation: many potential labels, zero Euler symbol.
 shear_modes = [vec(n, 0, 0) for n in range(-4, 5) if n]
 for x in shear_modes:
     for y in shear_modes:
@@ -181,7 +207,7 @@ for x in shear_modes:
 differences = {sub(x, y) for x in shear_modes for y in shear_modes}
 require(len(differences) > len(shear_modes), "shear has a large difference set")
 
-# F. Exact finite multiplicity firewalls.
+# G. Exact finite multiplicity firewalls.
 circle = [(x, y) for x in range(-5, 6) for y in range(-5, 6)
           if x * x + y * y == 25]
 require_eq(len(circle), 12, "radius-five oriented circle")
@@ -210,7 +236,7 @@ require_eq(sum_counts[vec(2, 1, 1)], 1, "positive singleton fiber")
 require_eq(sum_counts[vec(2, -1, -1)], 1, "negative singleton fiber")
 require_eq(sum_counts[vec(0, 1, 1)], 4, "zero-axial repair multiplicity")
 
-# G. Sharp finite leakage inequality, checked on an exact witness family.
+# H. Sharp finite leakage inequality, checked on an exact witness family.
 amplitudes = {i: vec(i - 3, 2 - i, i % 2) for i in range(7)}
 target = {0, 3}
 threshold = Q(2)
@@ -219,7 +245,7 @@ outside_energy = sum((norm2(z) for i, z in amplitudes.items() if i not in target
 rhs = threshold * threshold * max(len(good) - len(target), 0)
 require(outside_energy >= rhs, "sharp conditional leakage inequality")
 
-# H. Exact rational exterior/Picard parameter ledgers (finite algebra only).
+# I. Exact rational exterior/Picard parameter ledgers (finite algebra only).
 nu, d2, a2, coupling, N = Q(3, 2), Q(4), Q(5), Q(7), 4
 mu = nu * (d2 + a2 * Q(2 * N - 1, 2) ** 2) - 2 * coupling
 require(mu > 0, "Jacobi exterior coercive parameter gate")
