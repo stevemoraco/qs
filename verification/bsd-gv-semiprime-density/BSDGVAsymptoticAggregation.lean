@@ -33,7 +33,7 @@ theorem accepted_uniform_mass
       intro x _hx
       exact h x
     _ = acceptedStates.card * c := by simp
-    _ = 28 * c := by rw [acceptedStates_card_eq]
+    _ = 28 * c := by norm_num [acceptedStates_card_eq]
 
 /-- Statewise convergence to a common mass `c` forces the accepted-state total
 to converge to `28 * c`. This is the exact finite-to-asymptotic algebra used
