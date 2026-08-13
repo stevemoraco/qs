@@ -25,9 +25,9 @@ theorem languagewise_bounds_compatible_with_no_uniform_exponent :
 
 theorem no_one_exponent_bounds_all_languages :
     ¬ ∃ k : ℕ, ∀ L : ℕ, HasExponentBound L k := by
-  intro h
-  rcases h with ⟨k, hk⟩
-  exact (every_exponent_misses_some_language k).choose_spec (hk (k + 1))
+  rintro ⟨k, hk⟩
+  have hbad : HasExponentBound (k + 1) k := hk (k + 1)
+  simp [HasExponentBound] at hbad
 
 theorem three_n_below_quadratic
     (n : ℕ) (hn : 4 ≤ n) :
