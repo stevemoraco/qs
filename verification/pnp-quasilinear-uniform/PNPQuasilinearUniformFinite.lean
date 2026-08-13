@@ -51,9 +51,13 @@ theorem solve {Goal : Prop} (R : Route Goal) : Goal :=
   R.frontierToGoal (R.objectToFrontier R.object.allScales)
 end Route
 
+def trivialSeventhObject : SeventhObject where
+  good := fun _ => True
+  seed := trivial
+  step := fun _ _ => trivial
+
 def routeOfGoal {Goal : Prop} (h : Goal) : Route Goal where
-  object := { good := fun _ => True, seed := trivial,
-    step := fun _ _ => trivial }
+  object := trivialSeventhObject
   frontier := Goal
   objectToFrontier := fun _ => h
   frontierToGoal := id
@@ -66,7 +70,12 @@ theorem route_nonempty_iff_goal (Goal : Prop) : Nonempty (Route Goal) ↔ Goal :
 
 structure NativeBraid (T : OpenTargets) where
   carrier : Prop
-  rhF pnpF bsdF hodgeF nsF ymF : Prop
+  rhF : Prop
+  pnpF : Prop
+  bsdF : Prop
+  hodgeF : Prop
+  nsF : Prop
+  ymF : Prop
   carrierToRH : carrier → rhF
   carrierToPNP : carrier → pnpF
   carrierToBSD : carrier → bsdF
