@@ -46,23 +46,27 @@ theorem factorized_fixed_weight_upper
   exact mul_le_mul_of_nonneg_right hsquare hweight
 
 /-- The scalar cancellation behind the weighted Hardy test:
-`(2 exp(-z)/z) * (2 z exp z)=4` for `z>0`. -/
+`(2 exp(-z)/z) * (2 z exp z)=4` for nonzero `z`. -/
 theorem hardy_weight_product
     {z : ℝ}
     (hz : z ≠ 0) :
     (2 * Real.exp (-z) / z) * (2 * z * Real.exp z) = 4 := by
+  have hexp : Real.exp (-z) * Real.exp z = 1 := by
+    rw [← Real.exp_add]
+    simp
   field_simp [hz]
-  rw [← Real.exp_add]
-  ring_nf
-  simp
+  nlinarith
 
 /-- A strict contraction with norm at most `1/sqrt 2` has a positive
 Neumann-series margin. -/
 theorem dyadic_fixed_weight_margin :
     0 < 1 - 1 / Real.sqrt 2 := by
+  have hsqrt_nonneg : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
+  have hsqrt_sq : (Real.sqrt 2) ^ 2 = 2 := by
+    simpa using Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)
   have hsqrt : 1 < Real.sqrt 2 := by
-    nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
-  have hsqrt_pos : 0 < Real.sqrt 2 := Real.sqrt_pos.2 (by norm_num)
+    nlinarith
+  have hsqrt_pos : 0 < Real.sqrt 2 := lt_trans (by norm_num) hsqrt
   have hone : 1 / Real.sqrt 2 < 1 := by
     exact (div_lt_one hsqrt_pos).2 hsqrt
   linarith
