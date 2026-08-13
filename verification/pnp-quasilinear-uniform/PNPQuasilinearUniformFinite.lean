@@ -1,162 +1,198 @@
 import Mathlib
 
-/-!
-# Quasilinear constant-gap MCSP magnification: finite core
+namespace Millennium
+namespace UnifiedPass1
 
-HONESTY BOUNDARY
+structure OpenTargets where
+  RH : Prop
+  PNeNP : Prop
+  BSD : Prop
+  Hodge : Prop
+  NavierStokes : Prop
+  YangMills : Prop
 
-This file formalizes only stable finite arithmetic, padding, promise-type, and
-logical interfaces used by a conditional magnification theorem.
+namespace OpenTargets
 
-It does not formalize Boolean circuits, MCSP, probability spaces, P-uniformity,
-P, NP, P/poly, #P, PP, asymptotics, or the Clay statement.
--/
+def allSix (T : OpenTargets) : Prop :=
+  T.RH ∧ T.PNeNP ∧ T.BSD ∧ T.Hodge ∧ T.NavierStokes ∧ T.YangMills
+end OpenTargets
 
-namespace MillenniumBraid
-namespace PNPQuasilinearUniformFinite
+structure SevenTargets extends OpenTargets where
+  Poincare : Prop
 
-/-- The exact rational inequality behind the one-test soundness exponent. -/
-theorem three_fourths_eighth_lt_one_eighth :
-    ((3 : ℚ) / 4) ^ 8 < (1 : ℚ) / 8 := by
-  norm_num
+namespace SevenTargets
 
-/-- If the repetition count covers `N+1` exponent units, the amplified
-union-bound exponent is strictly negative even after paying for `2^N` inputs. -/
-theorem repetition_exponent_strict
-    (N L t : ℕ)
-    (hcover : N + 1 ≤ (2 * L + 3) * t) :
-    N < (2 * L + 3) * t := by
-  omega
+def allSeven (T : SevenTargets) : Prop := T.toOpenTargets.allSix ∧ T.Poincare
+end SevenTargets
 
-/-- The `1^N` padding is large enough for an `O(N log N)` seed suffix:
-if `ell ≤ N` and the complete list has at most `13*N*ell` bits, then every
-missing suffix has length at most the quadratic polynomial `13*N^2`. -/
-theorem padded_suffix_has_polynomial_length
-    (N ell M prefixLength : ℕ)
-    (hEll : ell ≤ N)
-    (hM : M ≤ 13 * N * ell) :
-    M - prefixLength ≤ 13 * N * N := by
-  calc
-    M - prefixLength ≤ M := Nat.sub_le _ _
-    _ ≤ 13 * N * ell := hM
-    _ ≤ 13 * N * N := Nat.mul_le_mul_left (13 * N) hEll
+structure SeventhObject where
+  good : Nat → Prop
+  seed : good 0
+  step : ∀ n, good n → good (n + 1)
 
-/-- Abstract uniform terminality core. -/
-theorem uniform_majorant_contrapositive
-    (PEqualsNP SmallCircuits MajorantCircuits : Prop)
-    (hCollapseUpper : PEqualsNP → SmallCircuits)
-    (hEmbed : SmallCircuits → MajorantCircuits)
-    (hLower : ¬ MajorantCircuits) :
-    ¬ PEqualsNP := by
-  intro hEq
-  exact hLower (hEmbed (hCollapseUpper hEq))
+namespace SeventhObject
 
-/-- Abstract nonuniform terminality core. A lower bound against a majorant of
-the conditional small-circuit class refutes `NP ⊆ P/poly`; if `P=NP` implies
-that containment, the same lower bound also refutes `P=NP`. -/
-theorem nonuniform_majorant_contrapositive
-    (PEqualsNP NPSubPpoly SmallCircuits MajorantCircuits : Prop)
-    (hEqToContainment : PEqualsNP → NPSubPpoly)
-    (hContainmentUpper : NPSubPpoly → SmallCircuits)
-    (hEmbed : SmallCircuits → MajorantCircuits)
-    (hLower : ¬ MajorantCircuits) :
-    (¬ NPSubPpoly) ∧ (¬ PEqualsNP) := by
-  have hNotContainment : ¬ NPSubPpoly := by
-    intro hContainment
-    exact hLower (hEmbed (hContainmentUpper hContainment))
-  exact ⟨hNotContainment, fun hEq => hNotContainment (hEqToContainment hEq)⟩
+theorem allScales (C : SeventhObject) : ∀ n, C.good n := by
+  intro n
+  induction n with
+  | zero => exact C.seed
+  | succ n ih => exact C.step n ih
+end SeventhObject
 
-/-- An unbounded exponent schedule eventually strictly dominates every fixed
-exponent. -/
-theorem eventual_exponent_majorant
-    (h : ℕ → ℕ)
-    (hgrow : ∀ C : ℕ, ∃ n0 : ℕ, ∀ n : ℕ, n0 ≤ n → C + 1 ≤ h n)
-    (C : ℕ) :
-    ∃ n0 : ℕ, ∀ n : ℕ, n0 ≤ n → C < h n := by
-  obtain ⟨n0, hn0⟩ := hgrow C
-  exact ⟨n0, fun n hn => Nat.lt_of_succ_le (hn0 n hn)⟩
+structure Route (Goal : Prop) where
+  object : SeventhObject
+  frontier : Prop
+  objectToFrontier : (∀ n, object.good n) → frontier
+  frontierToGoal : frontier → Goal
 
-/-- One spare exponent absorbs a fixed multiplicative constant once the base
-itself dominates that constant. -/
-theorem spare_exponent_absorbs_multiplier
-    (K b C H : ℕ)
-    (hb : 1 ≤ b)
-    (hK : K ≤ b)
-    (hCH : C + 1 ≤ H) :
-    K * b ^ C ≤ b ^ H := by
-  calc
-    K * b ^ C ≤ b * b ^ C := Nat.mul_le_mul_right (b ^ C) hK
-    _ = b ^ (C + 1) := by simp [pow_succ, Nat.mul_comm]
-    _ ≤ b ^ H := Nat.pow_le_pow_right (by omega) hCH
+namespace Route
 
-/-- If the average of two rational child potentials is below one, at least one
-child potential is below one. This is the finite descent step used by exact
-conditional expectation. -/
-theorem one_child_lt_one_of_average_lt_one
-    (left right : ℚ)
-    (havg : (left + right) / 2 < 1) :
-    left < 1 ∨ right < 1 := by
-  by_contra h
-  push_neg at h
-  linarith
+theorem solve {Goal : Prop} (R : Route Goal) : Goal :=
+  R.frontierToGoal (R.objectToFrontier R.object.allScales)
+end Route
 
-/-- At a terminal leaf, a nonnegative integer potential strictly below one is
-zero. -/
-theorem terminal_nat_potential_zero
-    (potential : ℕ)
-    (hlt : (potential : ℚ) < 1) :
-    potential = 0 := by
-  have hNat : potential < 1 := by exact_mod_cast hlt
-  omega
+def routeOfGoal {Goal : Prop} (h : Goal) : Route Goal where
+  object := { good := fun _ => True, seed := trivial,
+    step := fun _ _ => trivial }
+  frontier := Goal
+  objectToFrontier := fun _ => h
+  frontierToGoal := id
 
-/-- A complete finite conditional-expectation endpoint: if one selected child
-retains a rational potential below one and the terminal potential counts bad
-witnesses, then the terminal bad-witness count is zero. -/
-theorem terminal_count_vanishes
-    (terminalCount : ℕ)
-    (terminalPotential : ℚ)
-    (hCount : terminalPotential = terminalCount)
-    (hlt : terminalPotential < 1) :
-    terminalCount = 0 := by
-  apply terminal_nat_potential_zero terminalCount
-  simpa [hCount] using hlt
+theorem route_nonempty_iff_goal (Goal : Prop) : Nonempty (Route Goal) ↔ Goal := by
+  constructor
+  · rintro ⟨R⟩
+    exact R.solve
+  · exact fun h => ⟨routeOfGoal h⟩
 
-/-- YES, NO, and outside-promise inputs remain distinct. -/
-inductive PromiseStatus where
-  | yes
-  | no
-  | outside
-  deriving DecidableEq
+structure NativeBraid (T : OpenTargets) where
+  carrier : Prop
+  rhF pnpF bsdF hodgeF nsF ymF : Prop
+  carrierToRH : carrier → rhF
+  carrierToPNP : carrier → pnpF
+  carrierToBSD : carrier → bsdF
+  carrierToHodge : carrier → hodgeF
+  carrierToNS : carrier → nsF
+  carrierToYM : carrier → ymF
+  rhBridge : rhF → T.RH
+  pnpBridge : pnpF → T.PNeNP
+  bsdBridge : bsdF → T.BSD
+  hodgeBridge : hodgeF → T.Hodge
+  nsBridge : nsF → T.NavierStokes
+  ymBridge : ymF → T.YangMills
 
-theorem yes_ne_no : PromiseStatus.yes ≠ PromiseStatus.no := by decide
+namespace NativeBraid
 
-theorem yes_ne_outside : PromiseStatus.yes ≠ PromiseStatus.outside := by decide
+theorem solveAll {T : OpenTargets} (B : NativeBraid T) (h : B.carrier) :
+    T.allSix := by
+  exact ⟨B.rhBridge (B.carrierToRH h), B.pnpBridge (B.carrierToPNP h),
+    B.bsdBridge (B.carrierToBSD h), B.hodgeBridge (B.carrierToHodge h),
+    B.nsBridge (B.carrierToNS h), B.ymBridge (B.carrierToYM h)⟩
+end NativeBraid
 
-theorem no_ne_outside : PromiseStatus.no ≠ PromiseStatus.outside := by decide
+def NativePackage (T : OpenTargets) := Sigma fun B : NativeBraid T => B.carrier
 
-/-- The exact quarter-gap threshold is integral at every truth-table length
-`N=2^ell` with `ell≥2`. -/
-theorem quarter_radius_integral
-    (ell : ℕ)
-    (hEll : 2 ≤ ell) :
-    4 ∣ 2 ^ ell := by
-  rw [show ell = 2 + (ell - 2) by omega, pow_add]
-  norm_num
+theorem nativePackage_nonempty_iff_allSix (T : OpenTargets) :
+    Nonempty (NativePackage T) ↔ T.allSix := by
+  constructor
+  · rintro ⟨⟨B, h⟩⟩
+    exact B.solveAll h
+  · rintro ⟨hRH, hPNP, hBSD, hHodge, hNS, hYM⟩
+    let B : NativeBraid T := {
+      carrier := True
+      rhF := T.RH
+      pnpF := T.PNeNP
+      bsdF := T.BSD
+      hodgeF := T.Hodge
+      nsF := T.NavierStokes
+      ymF := T.YangMills
+      carrierToRH := fun _ => hRH
+      carrierToPNP := fun _ => hPNP
+      carrierToBSD := fun _ => hBSD
+      carrierToHodge := fun _ => hHodge
+      carrierToNS := fun _ => hNS
+      carrierToYM := fun _ => hYM
+      rhBridge := id
+      pnpBridge := id
+      bsdBridge := id
+      hodgeBridge := id
+      nsBridge := id
+      ymBridge := id }
+    exact ⟨⟨B, trivial⟩⟩
 
-#print axioms three_fourths_eighth_lt_one_eighth
-#print axioms repetition_exponent_strict
-#print axioms padded_suffix_has_polynomial_length
-#print axioms uniform_majorant_contrapositive
-#print axioms nonuniform_majorant_contrapositive
-#print axioms eventual_exponent_majorant
-#print axioms spare_exponent_absorbs_multiplier
-#print axioms one_child_lt_one_of_average_lt_one
-#print axioms terminal_nat_potential_zero
-#print axioms terminal_count_vanishes
-#print axioms yes_ne_no
-#print axioms yes_ne_outside
-#print axioms no_ne_outside
-#print axioms quarter_radius_integral
+universe u
 
-end PNPQuasilinearUniformFinite
-end MillenniumBraid
+structure Involution (α : Type u) where
+  inv : α → α
+  inv_inv : ∀ x, inv (inv x) = x
+
+structure InversionAudit (α : Type u) (P : Prop) where
+  I : Involution α
+  cert : α → Prop
+  positiveSound : ∀ x, cert x → P
+  invertedSound : ∀ x, cert (I.inv x) → ¬ P
+
+namespace InversionAudit
+
+theorem noDual {α : Type u} {P : Prop} (A : InversionAudit α P) (x : α) :
+    ¬ (A.cert x ∧ A.cert (A.I.inv x)) := by
+  rintro ⟨hx, hi⟩
+  exact A.invertedSound x hi (A.positiveSound x hx)
+
+theorem noCertifiedFixedPoint {α : Type u} {P : Prop}
+    (A : InversionAudit α P) (x : α) (hfix : A.I.inv x = x) :
+    ¬ A.cert x := by
+  intro hx
+  have hi : A.cert (A.I.inv x) := by rw [hfix]; exact hx
+  exact A.invertedSound x hi (A.positiveSound x hx)
+end InversionAudit
+
+def emptyAudit (P : Prop) : InversionAudit Unit P where
+  I := { inv := id, inv_inv := by intro x; rfl }
+  cert := fun _ => False
+  positiveSound := fun _ h => False.elim h
+  invertedSound := fun _ h => False.elim h
+
+theorem inversion_not_exhaustive (P : Prop) : ∀ x : Unit, ¬ (emptyAudit P).cert x := by
+  intro x h
+  exact h
+
+structure PerelmanRoute (Goal : Prop) where proof : Goal
+
+theorem perelmanRoute_nonempty_iff_goal (Goal : Prop) :
+    Nonempty (PerelmanRoute Goal) ↔ Goal := by
+  constructor
+  · rintro ⟨R⟩
+    exact R.proof
+  · exact fun h => ⟨⟨h⟩⟩
+
+structure ExactInterfaceBank : Prop where
+  routeNoFreeLunch : ∀ Goal : Prop, Nonempty (Route Goal) ↔ Goal
+  nativeNoFreeLunch : ∀ T : OpenTargets, Nonempty (NativePackage T) ↔ T.allSix
+  inversionVacuity : ∀ P : Prop, ∀ x : Unit, ¬ (emptyAudit P).cert x
+  perelmanWrapper : ∀ Goal : Prop, Nonempty (PerelmanRoute Goal) ↔ Goal
+
+theorem exactInterfaceBank : ExactInterfaceBank := {
+  routeNoFreeLunch := route_nonempty_iff_goal
+  nativeNoFreeLunch := nativePackage_nonempty_iff_allSix
+  inversionVacuity := inversion_not_exhaustive
+  perelmanWrapper := perelmanRoute_nonempty_iff_goal }
+
+theorem unifiedMillenniumBraidExecutable
+    (T : SevenTargets) (B : NativeBraid T.toOpenTargets)
+    (hCarrier : B.carrier) (hPerelman : T.Poincare) :
+    T.allSeven ∧ ExactInterfaceBank ∧
+      (Nonempty (NativePackage T.toOpenTargets) ↔ T.toOpenTargets.allSix) ∧
+      (∀ Goal : Prop, Nonempty (Route Goal) ↔ Goal) := by
+  exact ⟨⟨B.solveAll hCarrier, hPerelman⟩, exactInterfaceBank,
+    nativePackage_nonempty_iff_allSix T.toOpenTargets, route_nonempty_iff_goal⟩
+
+#print axioms route_nonempty_iff_goal
+#print axioms nativePackage_nonempty_iff_allSix
+#print axioms InversionAudit.noDual
+#print axioms InversionAudit.noCertifiedFixedPoint
+#print axioms inversion_not_exhaustive
+#print axioms exactInterfaceBank
+#print axioms unifiedMillenniumBraidExecutable
+
+end UnifiedPass1
+end Millennium
