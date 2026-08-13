@@ -1,4 +1,4 @@
-name: PNP low-ball source smoke
+name: PNP low-ball finite kernel replay
 on:
   pull_request:
     branches: [main]
@@ -10,5 +10,9 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           lake-package-directory: verification/pnp-low-ball-syndrome
-      - run: lake env lean PNPLowBallSyndromeSeparator.lean
+      - name: Replay syndrome separator
+        run: lake env lean PNPLowBallSyndromeSeparator.lean
+        working-directory: verification/pnp-low-ball-syndrome
+      - name: Replay averaging contrapositive
+        run: lake env lean PNPLowBallAveragingContrapositive.lean
         working-directory: verification/pnp-low-ball-syndrome
