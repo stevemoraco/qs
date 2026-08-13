@@ -1,0 +1,61 @@
+name: Verify NS AO twin-ring feedback algebra
+on:
+  push:
+    branches: [agent/ns-ao-twin-ring-feedback-public-20260813]
+  pull_request:
+    branches: [agent/ns-ao-ground-state-current-verifier-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Exact source identity and trust scan
+        run: |
+          set -euo pipefail
+          SRC=formal/millennium_audit/SixLaneAudit/NSAOTwinRingFeedback.lean
+          test "$(git hash-object "$SRC")" = "01c368daa929b2bf95f211341f0145a33bacfa79"
+          test "$(grep -c '#print axioms' "$SRC")" = 10
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$SRC"; then
+            echo 'Rejected: proof hole or trust carrier found.'
+            exit 1
+          fi
+      - name: Lean replay
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-ao-twin-ring-feedback/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('formal/millennium_audit/SixLaneAudit/NSAOTwinRingFeedback.lean').read_text()
+          body = json.dumps({'content': source, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          request = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=body, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('verification/ns-ao-twin-ring-feedback/evidence/axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          assert result.get('okay') is True
+          assert result.get('failed_declarations', []) == []
+          assert result.get('lean_messages', {}).get('errors', []) == []
+          assert result.get('lean_messages', {}).get('warnings', []) == []
+          assert result.get('tool_messages', {}).get('errors', []) == []
+          assert result.get('tool_messages', {}).get('warnings', []) == []
+          rendered = json.dumps(result)
+          assert 'sorryAx' not in rendered
+          assert 'Lean.ofReduceBool' not in rendered
+          print(json.dumps(result, indent=2))
+          PY
+      - name: Replay metadata
+        if: always()
+        run: |
+          mkdir -p verification/ns-ao-twin-ring-feedback/evidence
+          printf 'commit=%s\ngit_blob=%s\nenvironment=lean-4.30.0\n' "$GITHUB_SHA" "$(git hash-object formal/millennium_audit/SixLaneAudit/NSAOTwinRingFeedback.lean)" > verification/ns-ao-twin-ring-feedback/evidence/replay-metadata.txt
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-ao-twin-ring-feedback-evidence
+          path: verification/ns-ao-twin-ring-feedback/evidence/
+          if-no-files-found: error
