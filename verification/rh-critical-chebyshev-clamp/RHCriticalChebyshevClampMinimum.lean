@@ -19,8 +19,7 @@ theorem left_difference_identity
     kernel s theta - kernel l theta =
       (s - l) * (s * l - theta) / (s * l) := by
   unfold kernel
-  field_simp [hs, hl]
-  <;> ring
+  field_simp [hs, hl] ; ring
 
 /-- Exact factorization comparing a point to the right endpoint. -/
 theorem right_difference_identity
@@ -30,8 +29,7 @@ theorem right_difference_identity
     kernel s theta - kernel u theta =
       (u - s) * (theta - s * u) / (s * u) := by
   unfold kernel
-  field_simp [hs, hu]
-  <;> ring
+  field_simp [hs, hu] ; ring
 
 /-- Exact square factorization at an interior critical point `theta = r^2`. -/
 theorem interior_difference_identity
@@ -39,8 +37,7 @@ theorem interior_difference_identity
     (hs : s ≠ 0) :
     kernel s (r ^ 2) - 2 * r = (s - r) ^ 2 / s := by
   unfold kernel
-  field_simp [hs]
-  <;> ring
+  field_simp [hs] ; ring
 
 /-- If `theta ≤ l^2`, the left endpoint minimizes the kernel on every
 point to its right. -/
