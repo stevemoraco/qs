@@ -22,16 +22,15 @@ theorem triangle_square_sum_le_cube (A : ℕ) :
           intro j hj
           exact Nat.pow_le_pow_left (Nat.sub_le A j) 2
     _ = A ^ 3 := by
-      simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-      ring
+      simp [Finset.sum_const, pow_succ, Nat.mul_comm]
 
 def rowCount (q : ℕ) : ℕ := q ^ 6
 
 def triangleHeight (q : ℕ) : ℕ := q ^ 4
 
-def diagonalTrace (q : ℕ) : ℕ := rowCount q * triangleHeight q
+def diagonalTotal (q : ℕ) : ℕ := rowCount q * triangleHeight q
 
-theorem row_square_moment_le_rh_scale (q : ℕ) :
+theorem row_square_moment_bound (q : ℕ) :
     Finset.sum (Finset.range (triangleHeight q))
       (fun j => triangle (triangleHeight q) j ^ 2) ≤ rowCount q ^ 2 := by
   calc
@@ -42,35 +41,25 @@ theorem row_square_moment_le_rh_scale (q : ℕ) :
       simp only [triangleHeight, rowCount]
       ring
 
-theorem diagonalTrace_eq (q : ℕ) : diagonalTrace q = q ^ 10 := by
-  simp only [diagonalTrace, rowCount, triangleHeight]
+theorem diagonalTotal_eq (q : ℕ) : diagonalTotal q = q ^ 10 := by
+  simp only [diagonalTotal, rowCount, triangleHeight]
   ring
 
-theorem trace_square_ratio (q : ℕ) :
-    diagonalTrace q ^ 2 = q ^ 2 * rowCount q ^ 3 := by
-  simp only [diagonalTrace, rowCount, triangleHeight]
+theorem normalized_square_identity (q : ℕ) :
+    diagonalTotal q ^ 2 = q ^ 2 * rowCount q ^ 3 := by
+  simp only [diagonalTotal, rowCount, triangleHeight]
   ring
-
-theorem trace_exceeds_fixed_squared_constant
-    (C q : ℕ) (hq : 0 < q) (hC : C ^ 2 < q ^ 2) :
-    C ^ 2 * rowCount q ^ 3 < diagonalTrace q ^ 2 := by
-  rw [trace_square_ratio]
-  have hpos : 0 < rowCount q ^ 3 := by
-    simp [rowCount, hq]
-  exact Nat.mul_lt_mul_of_pos_right hC hpos
 
 #check triangle_unit_step
 #check triangle_square_sum_le_cube
-#check row_square_moment_le_rh_scale
-#check diagonalTrace_eq
-#check trace_square_ratio
-#check trace_exceeds_fixed_squared_constant
+#check row_square_moment_bound
+#check diagonalTotal_eq
+#check normalized_square_identity
 
 #print axioms triangle_unit_step
 #print axioms triangle_square_sum_le_cube
-#print axioms row_square_moment_le_rh_scale
-#print axioms diagonalTrace_eq
-#print axioms trace_square_ratio
-#print axioms trace_exceeds_fixed_squared_constant
+#print axioms row_square_moment_bound
+#print axioms diagonalTotal_eq
+#print axioms normalized_square_identity
 
 end RH.SelbergDiagonalTrace
