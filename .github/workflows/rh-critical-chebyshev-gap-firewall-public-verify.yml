@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-critical-chebyshev-gap-firewall-public'
           file="$dir/RHCriticalChebyshevGapFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='018c8bd40b7c98b06fb8d2b1bc28be640150e76e'
+          expected_blob='91561e0a828239e71f329784ba5169bfa975b2b3'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_research_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
@@ -62,6 +62,9 @@ jobs:
             exit "$status"
           fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            exit 1
+          fi
+          if grep -Eq 'warning:' lean-output.log; then
             exit 1
           fi
           echo 'VERIFIED RH critical-Chebyshev gap finite algebra.'
