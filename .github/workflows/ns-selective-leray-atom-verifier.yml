@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-selective-leray-atom/NSSelectiveLerayAtom.lean
-          EXPECTED_GIT_BLOB=2340da1a691bbb463354b85be2b0c2e472503938
+          EXPECTED_GIT_BLOB=31ec9ffbb27f9983b54858fc236b8875679355ab
           ACTUAL_GIT_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_GIT_BLOB" = "$EXPECTED_GIT_BLOB"
           python3 - <<'PY'
