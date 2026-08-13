@@ -23,7 +23,7 @@ theorem eventually_lt_threshold_of_tendsto
     (hu : Tendsto u atTop (𝓝 limit))
     (h : limit < threshold) :
     ∀ᶠ n in atTop, u n < threshold := by
-  exact hu (Set.Iio_mem_nhds h)
+  exact hu (Iio_mem_nhds h)
 
 /-- A convergent real sequence eventually lies above any strict lower bound
 for its limit. -/
@@ -32,7 +32,7 @@ theorem eventually_threshold_lt_of_tendsto
     (hu : Tendsto u atTop (𝓝 limit))
     (h : threshold < limit) :
     ∀ᶠ n in atTop, threshold < u n := by
-  exact hu (Set.Ioi_mem_nhds h)
+  exact hu (Ioi_mem_nhds h)
 
 /-- Three indexed Ritz sequences inherit a strict exact spectral separation
 eventually.  The spectral theorem is external; here the limits and strict
