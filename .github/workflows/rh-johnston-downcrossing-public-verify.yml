@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-johnston-downcrossing-public'
           file="$dir/RHJohnstonDowncrossingFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='2e9f8f1de17141244c202ad7ea2d5e5819f71949'
+          expected_blob='9a8db187a3c10c21b8f9aa3ea2cb85b6cf33232a'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
