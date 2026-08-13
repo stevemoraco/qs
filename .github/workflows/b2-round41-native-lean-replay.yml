@@ -6,6 +6,7 @@ on:
       - automation/day0-b2-round41-lean-replay-20260812
     paths:
       - 'research/lean-replay/B2Round41AdversarialCores.lean'
+      - 'research/lean-replay/B2Round41FaithfulTransferCores.lean'
       - 'research/lean-replay/lakefile.lean'
       - 'research/lean-replay/lake-manifest.json'
       - 'research/lean-replay/lean-toolchain'
@@ -13,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'research/lean-replay/B2Round41AdversarialCores.lean'
+      - 'research/lean-replay/B2Round41FaithfulTransferCores.lean'
       - 'research/lean-replay/lakefile.lean'
       - 'research/lean-replay/lake-manifest.json'
       - 'research/lean-replay/lean-toolchain'
@@ -25,13 +27,17 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-      - name: Verify immutable source digest and placeholder absence
+      - name: Verify immutable source digests and placeholder absence
         shell: bash
         run: |
           set -euo pipefail
-          actual="$(sha256sum research/lean-replay/B2Round41AdversarialCores.lean | awk '{print $1}')"
-          test "$actual" = "91966bc4726d43082b8baf3ce122609c841c0e2b7693fcfa85ffadbac0708b25"
-          if grep -nE '\b(sorry|admit|sorryAx)\b' research/lean-replay/B2Round41AdversarialCores.lean; then
+          adversarial="$(sha256sum research/lean-replay/B2Round41AdversarialCores.lean | awk '{print $1}')"
+          faithful="$(sha256sum research/lean-replay/B2Round41FaithfulTransferCores.lean | awk '{print $1}')"
+          test "$adversarial" = "91966bc4726d43082b8baf3ce122609c841c0e2b7693fcfa85ffadbac0708b25"
+          test "$faithful" = "e2fc56f2ce8d9ba77579be4dd099c8243504bec81bea79758697675feb50670d"
+          if grep -nE '\b(sorry|admit|sorryAx)\b' \
+              research/lean-replay/B2Round41AdversarialCores.lean \
+              research/lean-replay/B2Round41FaithfulTransferCores.lean; then
             echo 'forbidden placeholder found' >&2
             exit 1
           fi
@@ -50,7 +56,9 @@ jobs:
         working-directory: research/lean-replay
         run: |
           set -euo pipefail
-          lake env lean B2Round41AdversarialCores.lean | tee round41-axioms.txt
+          : > round41-axioms.txt
+          lake env lean B2Round41AdversarialCores.lean | tee -a round41-axioms.txt
+          lake env lean B2Round41FaithfulTransferCores.lean | tee -a round41-axioms.txt
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -65,6 +73,9 @@ jobs:
               'monomial_cutoff_sharp_core',
               'nonseparating_test_class_counterexample',
               'positive_auxiliary_zero_target_counterexample',
+              'dense_test_epsilon_step',
+              'noncollapse_margin',
+              'closed_limit_transfer',
           ]
           for theorem in theorems:
               if theorem not in text:
@@ -86,9 +97,11 @@ jobs:
         run: |
           set -euo pipefail
           lake env leanchecker B2Round41AdversarialCores
+          lake env leanchecker B2Round41FaithfulTransferCores
       - name: Fresh-environment kernel replay
         shell: bash
         working-directory: research/lean-replay
         run: |
           set -euo pipefail
           lake env leanchecker --fresh B2Round41AdversarialCores
+          lake env leanchecker --fresh B2Round41FaithfulTransferCores
