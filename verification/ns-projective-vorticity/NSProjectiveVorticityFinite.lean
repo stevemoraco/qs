@@ -115,6 +115,74 @@ theorem shearSubcriticalWidthScale
     (1 / m ^ 3) ^ 2 * m ^ 2 = 1 / m ^ 4 := by
   field_simp [ne_of_gt hm]
 
+
+section DoubleCommutator
+
+variable {R : Type*} [Ring R]
+
+/-- The additive commutator in an arbitrary (possibly noncommutative) ring. -/
+def commutator (a b : R) : R := a * b - b * a
+
+/-- For an idempotent `p`, the double commutator with `p` is exactly the
+off-diagonal part relative to `p` and `1 - p`.  This is the algebraic core
+of the projective-vorticity evolution `[P, [P, A]]`; it uses no matrix
+dimension, topology, or PDE assumption. -/
+theorem doubleCommutator_offDiagonal
+    (p a : R) (hp : p * p = p) :
+    commutator p (commutator p a)
+      = p * a * (1 - p) + (1 - p) * a * p := by
+  calc
+    commutator p (commutator p a)
+        = (p * p) * a - p * a * p - p * a * p + a * (p * p) := by
+            simp only [commutator]
+            noncomm_ring
+    _ = p * a - p * a * p - p * a * p + a * p := by rw [hp]
+    _ = p * a * (1 - p) + (1 - p) * a * p := by noncomm_ring
+
+/-- An idempotent annihilates its complementary factor on the right. -/
+theorem projector_mul_complement
+    (p : R) (hp : p * p = p) :
+    p * (1 - p) = 0 := by
+  calc
+    p * (1 - p) = p - p * p := by noncomm_ring
+    _ = 0 := by rw [hp]; simp
+
+/-- An idempotent annihilates its complementary factor on the left. -/
+theorem complement_mul_projector
+    (p : R) (hp : p * p = p) :
+    (1 - p) * p = 0 := by
+  calc
+    (1 - p) * p = p - p * p := by noncomm_ring
+    _ = 0 := by rw [hp]; simp
+
+/-- The double commutator has no `p`-to-`p` block. -/
+theorem doubleCommutator_projectorSandwich
+    (p a : R) (hp : p * p = p) :
+    p * commutator p (commutator p a) * p = 0 := by
+  have hpq : p * (1 - p) = 0 := projector_mul_complement p hp
+  have hqp : (1 - p) * p = 0 := complement_mul_projector p hp
+  rw [doubleCommutator_offDiagonal p a hp]
+  calc
+    p * (p * a * (1 - p) + (1 - p) * a * p) * p
+        = (p * p) * a * ((1 - p) * p)
+          + (p * (1 - p)) * a * (p * p) := by noncomm_ring
+    _ = 0 := by rw [hpq, hqp]; simp
+
+/-- The double commutator also has no complementary diagonal block. -/
+theorem doubleCommutator_complementSandwich
+    (p a : R) (hp : p * p = p) :
+    (1 - p) * commutator p (commutator p a) * (1 - p) = 0 := by
+  have hpq : p * (1 - p) = 0 := projector_mul_complement p hp
+  have hqp : (1 - p) * p = 0 := complement_mul_projector p hp
+  rw [doubleCommutator_offDiagonal p a hp]
+  calc
+    (1 - p) * (p * a * (1 - p) + (1 - p) * a * p) * (1 - p)
+        = ((1 - p) * p) * a * ((1 - p) * (1 - p))
+          + ((1 - p) * (1 - p)) * a * (p * (1 - p)) := by noncomm_ring
+    _ = 0 := by rw [hpq, hqp]; simp
+
+end DoubleCommutator
+
 #print axioms rankOneParallelCross_first
 #print axioms rankOneParallelCross_second
 #print axioms rankOneParallelCross_third
@@ -127,5 +195,10 @@ theorem shearSubcriticalWidthScale
 #print axioms shearCriticalWeakScale
 #print axioms shearEnergySquaredScale
 #print axioms shearSubcriticalWidthScale
+#print axioms doubleCommutator_offDiagonal
+#print axioms projector_mul_complement
+#print axioms complement_mul_projector
+#print axioms doubleCommutator_projectorSandwich
+#print axioms doubleCommutator_complementSandwich
 
 end NSProjectiveVorticityFinite
