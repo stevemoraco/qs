@@ -1,0 +1,70 @@
+name: NS Palasek short-time slaving firewall
+
+on:
+  push:
+    paths:
+      - "verification/ns-palasek-shorttime-slaving/**"
+      - ".github/workflows/ns-palasek-shorttime-slaving.yml"
+  pull_request:
+    paths:
+      - "verification/ns-palasek-shorttime-slaving/**"
+      - ".github/workflows/ns-palasek-shorttime-slaving.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="verification/ns-palasek-shorttime-slaving"
+          ! grep -RInE '\b(sorry|admit)\b' "$root" --include='*.lean'
+          ! grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$root" --include='*.lean'
+          ! grep -RInE 'native_decide|Lean\.ofReduceBool|sorryAx' "$root" --include='*.lean'
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Resolve pinned dependencies
+        working-directory: verification/ns-palasek-shorttime-slaving
+        run: lake update
+      - name: Fetch Mathlib cache
+        working-directory: verification/ns-palasek-shorttime-slaving
+        run: lake exe cache get
+      - name: Build and replay exact sources
+        working-directory: verification/ns-palasek-shorttime-slaving
+        run: |
+          lake build NSPalasekShortTimeSlaving
+          lake env lean NSPalasekShortTimeSlaving.lean
+          lake env lean AxiomReport.lean | tee axiom-report.txt
+      - name: Enforce foundation-only axiom allowlist
+        working-directory: verification/ns-palasek-shorttime-slaving
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+          text = pathlib.Path("axiom-report.txt").read_text()
+          if "sorryAx" in text:
+              raise SystemExit("sorryAx found")
+          allowed = {"Classical.choice", "Classical.em", "Quot.sound", "funext", "propext"}
+          used = set()
+          for payload in re.findall(r"depends on axioms:\s*\[([^\]]*)\]", text):
+              used.update(name.strip() for name in payload.split(",") if name.strip())
+          unexpected = used - allowed
+          print("Axioms used:", sorted(used))
+          if unexpected:
+              raise SystemExit(f"Unexpected axioms: {sorted(unexpected)}")
+          PY
