@@ -1,4 +1,4 @@
-name: B2 Round 42 Padding and Sideband Firewalls
+name: B2 Round 42 Six-Lane Finite Firewalls
 
 on:
   push:
@@ -31,6 +31,10 @@ jobs:
           files=(
             verification/b2-round42/PNPRepSATPaddingProjection.lean
             verification/b2-round42/NSFastActivationSidebandFirewall.lean
+            verification/b2-round42/RHZeroNetGreenCountercycle.lean
+            verification/b2-round42/BSDBoundedDepthShaFirewall.lean
+            verification/b2-round42/HodgeClaimTypeFirewalls.lean
+            verification/b2-round42/YMCarlemanDeterminantFirewall.lean
           )
           for file in "${files[@]}"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
@@ -51,7 +55,7 @@ jobs:
           lake update
           lake exe cache get
 
-      - name: Compile and audit axioms
+      - name: Compile every finite firewall and record axiom output
         shell: bash
         run: |
           set -euo pipefail
@@ -61,6 +65,10 @@ jobs:
           files=(
             PNPRepSATPaddingProjection.lean
             NSFastActivationSidebandFirewall.lean
+            RHZeroNetGreenCountercycle.lean
+            BSDBoundedDepthShaFirewall.lean
+            HodgeClaimTypeFirewalls.lean
+            YMCarlemanDeterminantFirewall.lean
           )
           for file in "${files[@]}"; do
             echo "===== $file =====" | tee -a lean-output.log
@@ -70,12 +78,12 @@ jobs:
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED round-42 finite padding and sideband firewalls.'
+          echo 'VERIFIED all six finite round-42 lane firewalls.'
 
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: b2-round42-lean-evidence
+          name: b2-round42-six-lane-lean-evidence
           path: verification/b2-round42/lean-output.log
           if-no-files-found: warn
