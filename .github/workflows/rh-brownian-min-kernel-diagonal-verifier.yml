@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-brownian-min-kernel/RHBrownianMinKernelDiagonal.lean
-          EXPECTED_BLOB=7bab840c966411616691b645c1eaa145e491a618
+          EXPECTED_BLOB=2d897ac00cb901124d8862c47d729711e317d3e0
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
