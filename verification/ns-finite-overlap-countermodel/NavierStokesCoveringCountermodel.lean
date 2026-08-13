@@ -1,4 +1,5 @@
 import Mathlib
+import NavierStokesPressureRecurrence
 
 namespace NavierStokesCoveringCountermodel
 
