@@ -55,7 +55,8 @@ theorem paper_kp_smallness_fails
 
 theorem beta_630_is_beyond_half_activity_threshold :
     (2 / 3 : ℝ) * Real.log 2 < 630 := by
-  have hlog : Real.log 2 < 2 := Real.log_lt_sub_one_of_pos (by norm_num)
+  have hlog : Real.log (2 : ℝ) < 2 - 1 :=
+    Real.log_lt_sub_one_of_pos (by norm_num) (by norm_num)
   nlinarith
 
 theorem beta_630_kp_smallness_fails :
