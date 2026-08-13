@@ -30,7 +30,7 @@ def potential (u A c : ℝ) : ℝ := 2 * u - A - c
 `v^2-u^2=w`. -/
 theorem event_increment_identity
     {u v q w A c : ℝ}
-    (hq : q ≠ 0) (huv : u + v ≠ 0)
+    (_hq : q ≠ 0) (huv : u + v ≠ 0)
     (hmass : v ^ 2 = u ^ 2 + w) :
     potential v (A + w / q) c - potential u A c =
       w * (2 / (u + v) - 1 / q) := by
@@ -57,8 +57,10 @@ theorem event_increment_nonneg_iff_midpoint
   rw [event_increment_identity (ne_of_gt hq) (ne_of_gt huv) hmass]
   constructor
   · intro h
+    have h' : 0 ≤ (2 / (u + v) - 1 / q) * w := by
+      simpa [mul_comm] using h
     have hkernel : 0 ≤ 2 / (u + v) - 1 / q :=
-      nonneg_of_mul_nonneg_left h hw
+      nonneg_of_mul_nonneg_right h' hw
     have hfrac : 1 / q ≤ 2 / (u + v) := sub_nonneg.mp hkernel
     simpa using (div_le_div_iff₀ hq huv).mp hfrac
   · intro hmid
