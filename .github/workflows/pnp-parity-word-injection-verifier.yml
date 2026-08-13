@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/pnp-parity-word-injection/PNPParityWordInjection.lean
-          EXPECTED_GIT_BLOB=1a24a5f00d9d7d72e29d3f0067704a8fe6230a2b
+          EXPECTED_GIT_BLOB=ccc9b9800f10cb1f2d6caa0c8e3f7039c7691583
           ACTUAL_GIT_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_GIT_BLOB" = "$EXPECTED_GIT_BLOB"
           python3 - <<'PY'
