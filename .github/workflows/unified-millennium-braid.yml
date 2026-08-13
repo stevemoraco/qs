@@ -29,7 +29,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/unified-millennium-braid/UnifiedSevenFireCorpus.lean
-          test "$(sha256sum "$SRC" | awk '{print $1}')" =             eea483fc1abfaa22ca7cbc9e5e3fe4b53448de1b61321063ed6cade79f5ddedc
+          EXPECTED=eea483fc1abfaa22ca7cbc9e5e3fe4b53448de1b61321063ed6cade79f5ddedc
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = "$EXPECTED"
           if grep -nE '^[[:space:]]*(sorry|admit|axiom|constant|opaque|unsafe|native_decide)\b|\b(sorryAx|Lean\.ofReduceBool|implemented_by|extern)\b' "$SRC"; then
             echo 'Forbidden trust carrier'
             exit 1
@@ -60,11 +61,46 @@ jobs:
           lake env lean UnifiedSevenFireCorpus.lean 2>&1 | tee evidence/lean-replay.log
           lake env lean --version | tee evidence/lean-version.txt
           git -C .lake/packages/mathlib rev-parse HEAD | tee evidence/mathlib-commit.txt
-          test "$(grep -c 'depends on axioms:' evidence/lean-replay.log)" = 9
-          if grep -nE 'sorryAx|Lean\.ofReduceBool|declaration uses.*sorry'               evidence/lean-replay.log; then
-            echo 'Forbidden postcompile dependency'
-            exit 1
-          fi
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          log = pathlib.Path("evidence/lean-replay.log").read_text()
+          expected = [
+              "fires_length",
+              "seven_frontiers_iff_targets",
+              "nonempty_prizeRoute_iff",
+              "nonempty_sharedCertificate_iff_allSeven",
+              "no_common_local_witness",
+              "no_global_prefix_witness",
+              "exclusivity_does_not_prove_target",
+              "one_lane_does_not_close_bundle",
+              "unified_millennium_braid_executable",
+          ]
+          for name in expected:
+              needle = f"'Millennium.UnifiedSevenFire.{name}'"
+              if log.count(needle) != 1:
+                  raise SystemExit(f"missing or duplicate axiom report: {name}")
+          reports = re.findall(
+              r"'Millennium\.UnifiedSevenFire\.[^']+' "
+              r"(?:does not depend on any axioms|depends on axioms:\s*\[[^\]]*\])",
+              log,
+              flags=re.S,
+          )
+          if len(reports) != len(expected):
+              raise SystemExit(f"expected 9 complete axiom reports, got {len(reports)}")
+          allowed = {"propext", "Classical.choice", "Quot.sound"}
+          for report in reports:
+              match = re.search(r"depends on axioms:\s*\[([^\]]*)\]", report, re.S)
+              if match:
+                  used = {part.strip() for part in match.group(1).split(",") if part.strip()}
+                  if not used <= allowed:
+                      raise SystemExit(f"non-foundational axiom report: {used - allowed}")
+          forbidden = ("sorryAx", "Lean.ofReduceBool", "declaration uses 'sorry'")
+          if any(token in log for token in forbidden):
+              raise SystemExit("forbidden postcompile dependency")
+          print("AXIOM AUDIT PASS: 9 reports; standard foundations only")
+          PY
 
       - name: Preserve exact replay
         if: always()
