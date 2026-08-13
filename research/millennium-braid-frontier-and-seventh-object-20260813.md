@@ -85,13 +85,17 @@ Delta_n = max(0,-lambda_min(Fhat_n))
 This is the current highest-EV falsifiable RH ticket.  A fixed-support or
 finite-cutoff table has no cofinal force.
 
-**Execution firewall.**  The current odd-Weil branch does not yet expose a
-source-complete formula or program mapping the localized odd basis to the
-numerical blocks `A_n,B_n,D_n`; nor does it provide a constructive Yoshida
-cutoff or a computable coercivity constant.  Therefore even the first honest
-interval experiment for `Delta_n` begins one bridge earlier: specify and
-validate the complete Weil matrix, including prime powers, archimedean and
-endpoint normalization, and prove a quantitative cutoff/complement bound.
+**Execution firewall.**  Suzuki's explicit formula defines every finite
+localized odd matrix entry, including finite prime-power terms and an
+archimedean digamma integral, but the current repository does not implement
+that map to the numerical blocks `A_n,B_n,D_n`.  More importantly, the quoted
+Yoshida coercivity statement is existential: it supplies no constructive
+cutoff `N(a,mu)` or computable lower bound for the infinite high block.  It
+also supplies no explicit infinite-row residual-tail constant.  Therefore the
+first honest interval experiment must implement and validate the complete
+finite Weil matrix; the first genuinely load-bearing theorem is a quantitative
+Yoshida coercivity and omitted-row bound.  A finite high-block eigenvalue
+cannot substitute for either one.
 The Connes/prolate lane has stronger numerical motivation but the same missing
 proof-grade continuum/complement certificate, together with strip-amplified
 approximation error.  It does not presently outrank this ticket.
