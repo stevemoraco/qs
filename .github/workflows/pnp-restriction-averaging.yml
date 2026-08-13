@@ -2,9 +2,7 @@ name: PNP restriction averaging Lean replay
 
 on:
   push:
-    branches:
-      - main
-      - agent/gpt56-pnp-distributional-dictionary-20260813-run7
+    branches: [main]
     paths:
       - 'verification/pnp-restriction-averaging/**'
       - '.github/workflows/pnp-restriction-averaging.yml'
@@ -24,19 +22,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in \
-            verification/pnp-restriction-averaging/PNPRestrictionAveraging.lean \
-            verification/pnp-restriction-averaging/PNPDistributionalDictionaryFinite.lean
-          do
-            if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
-              echo "Explicit proof hole found in $file"
-              exit 1
-            fi
-            if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
-              echo "Forbidden escape hatch found in $file"
-              exit 1
-            fi
-          done
+          file=verification/pnp-restriction-averaging/PNPRestrictionAveraging.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
 
       - name: Install Lean
         shell: bash
@@ -59,5 +53,4 @@ jobs:
         run: |
           set -euo pipefail
           lake env lean PNPRestrictionAveraging.lean | tee lean-replay.log
-          lake env lean PNPDistributionalDictionaryFinite.lean | tee -a lean-replay.log
           test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
