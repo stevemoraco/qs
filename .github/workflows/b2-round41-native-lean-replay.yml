@@ -1,0 +1,51 @@
+name: B2 Round41 Native Lean Replay
+
+on:
+  push:
+    branches:
+      - automation/day0-b2-round41-lean-replay-20260812
+    paths:
+      - 'research/lean-replay/B2Round41AdversarialCores.lean'
+      - 'research/lean-replay/lakefile.lean'
+      - 'research/lean-replay/lean-toolchain'
+      - '.github/workflows/b2-round41-native-lean-replay.yml'
+  pull_request:
+    paths:
+      - 'research/lean-replay/B2Round41AdversarialCores.lean'
+      - 'research/lean-replay/lakefile.lean'
+      - 'research/lean-replay/lean-toolchain'
+      - '.github/workflows/b2-round41-native-lean-replay.yml'
+  workflow_dispatch:
+
+jobs:
+  native-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify immutable source digest and placeholder absence
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(sha256sum research/lean-replay/B2Round41AdversarialCores.lean | awk '{print $1}')"
+          test "$actual" = "91966bc4726d43082b8baf3ce122609c841c0e2b7693fcfa85ffadbac0708b25"
+          if grep -nE '\b(sorry|admit|sorryAx)\b' research/lean-replay/B2Round41AdversarialCores.lean; then
+            echo 'forbidden placeholder found' >&2
+            exit 1
+          fi
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: research/lean-replay
+          auto-config: false
+          build: true
+          test: false
+          lint: false
+          use-mathlib-cache: true
+          leanchecker: true
+      - name: Fresh direct kernel replay with axiom output
+        shell: bash
+        working-directory: research/lean-replay
+        run: |
+          set -euo pipefail
+          lake env lean B2Round41AdversarialCores.lean | tee round41-axioms.txt
+          test "$(grep -c 'does not depend on any axioms' round41-axioms.txt)" -eq 8
