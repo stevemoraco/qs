@@ -24,8 +24,6 @@ smuggled into this module: it remains a separately auditable human dependency.
 
 namespace RHRobinJohnstonLossTransfer
 
-open scoped BigOperators
-
 /-- The negative part `x_- = max(-x, 0)`. -/
 def negPart (x : ℝ) : ℝ := max (-x) 0
 
@@ -113,8 +111,7 @@ theorem sum_buffered_lower_bound
     {ι : Type*} (s : Finset ι)
     (robin buffer charge : ι → ℝ)
     (hcell : ∀ i ∈ s, buffer i - charge i ≤ robin i) :
-    (∑ i in s, buffer i) - (∑ i in s, charge i)
-      ≤ ∑ i in s, robin i := by
+    Finset.sum s buffer - Finset.sum s charge ≤ Finset.sum s robin := by
   simpa only [Finset.sum_sub_distrib] using
     (Finset.sum_le_sum (fun i hi => hcell i hi))
 
@@ -124,8 +121,8 @@ theorem cumulative_positive_of_block_budget
     (robin buffer charge : ι → ℝ)
     (initial final : ℝ)
     (hcell : ∀ i ∈ s, buffer i - charge i ≤ robin i)
-    (hfinal : final = initial + ∑ i in s, robin i)
-    (hbudget : ∑ i in s, charge i < initial + ∑ i in s, buffer i) :
+    (hfinal : final = initial + Finset.sum s robin)
+    (hbudget : Finset.sum s charge < initial + Finset.sum s buffer) :
     0 < final := by
   have hsum := sum_buffered_lower_bound s robin buffer charge hcell
   rw [hfinal]
