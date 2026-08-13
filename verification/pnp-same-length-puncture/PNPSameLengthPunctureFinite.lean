@@ -1,15 +1,8 @@
 import Mathlib
 
-/-!
-# Unified eight-lane finite kernel replay
-
-This file contains one finite theorem from each of six open-problem research
-lanes, a seventh target slot for the solved Poincare/Perelman benchmark, and an
-object-inversion/quantifier firewall. It does not assert any open Clay theorem.
-Every native conclusion remains an explicit bridge field.
--/
-
 namespace BraidReplay
+
+noncomputable section
 
 theorem lane1 (a b : ℝ) : 0 ≤ (a - b) ^ 2 := sq_nonneg (a - b)
 
@@ -32,8 +25,7 @@ def fiberDim (base relative copies : ℕ) : ℕ := base + copies * relative
 theorem lane3 : fiberDim 1 1 2 = 3 ∧ fiberDim 1 1 2 ≠ 4 := by
   norm_num [fiberDim]
 
-theorem lane4
-    {α : Type*} {A B : Set α} (h : A ⊆ B) : B ∩ A = A := by
+theorem lane4 {α : Type*} {A B : Set α} (h : A ⊆ B) : B ∩ A = A := by
   ext x
   constructor
   · intro hx
@@ -41,8 +33,7 @@ theorem lane4
   · intro hx
     exact ⟨h hx, hx⟩
 
-theorem lane5
-    {ι : Type*} [Fintype ι] (x : ι → ℝ) (i : ι) :
+theorem lane5 {ι : Type*} [Fintype ι] (x : ι → ℝ) (i : ι) :
     (x i) ^ 2 ≤ ∑ j : ι, (x j) ^ 2 := by
   exact Finset.single_le_sum
     (fun j _ => sq_nonneg (x j))
@@ -56,28 +47,26 @@ theorem lane6 {y : ℝ} (hy : y ≠ 0) : fraction 0 y = 1 := by
 
 structure FiniteBank where
   c1 : ∀ a b : ℝ, 0 ≤ (a - b) ^ 2
-  c2 :
-    (∀ i : Fin 2, ∃ w : Walk, linked w ∧ w i = mixed i) ∧
-    ¬ linked mixed
+  c2 : (∀ i : Fin 2, ∃ w : Walk, linked w ∧ w i = mixed i) ∧ ¬ linked mixed
   c3 : fiberDim 1 1 2 = 3 ∧ fiberDim 1 1 2 ≠ 4
   c4 : ∀ (A B : Set Bool), A ⊆ B → B ∩ A = A
-  c5 : ∀ (x : Fin 3 → ℝ) (i : Fin 3),
-    (x i) ^ 2 ≤ ∑ j : Fin 3, (x j) ^ 2
+  c5 : ∀ (x : Fin 3 → ℝ) (i : Fin 3), (x i) ^ 2 ≤ ∑ j : Fin 3, (x j) ^ 2
   c6 : ∀ y : ℝ, y ≠ 0 → fraction 0 y = 1
 
-def finiteBank : FiniteBank where
-  c1 := lane1
-  c2 := lane2
-  c3 := lane3
-  c4 := fun _ _ h => lane4 h
-  c5 := lane5
-  c6 := fun _ h => lane6 h
+theorem finiteBank : FiniteBank := by
+  exact {
+    c1 := lane1
+    c2 := lane2
+    c3 := lane3
+    c4 := fun _ _ h => lane4 h
+    c5 := lane5
+    c6 := fun _ h => lane6 h
+  }
 
 def works (a b : ℕ) : Prop := a < b
 
 def InversionCertificate : Prop :=
-  (∀ a : ℕ, ∃ b : ℕ, works a b) ∧
-  ¬ (∃ b : ℕ, ∀ a : ℕ, works a b)
+  (∀ a : ℕ, ∃ b : ℕ, works a b) ∧ ¬ (∃ b : ℕ, ∀ a : ℕ, works a b)
 
 theorem inversionCertificate : InversionCertificate := by
   constructor
@@ -124,17 +113,13 @@ structure Audit (α : Type u) (P : Prop) where
   direct : ∀ x, cert x → P
   reversed : ∀ x, cert (involution.inv x) → ¬ P
 
-theorem Audit.noDual
-    {α : Type u} {P : Prop} (A : Audit α P) (x : α) :
+theorem Audit.noDual {α : Type u} {P : Prop} (A : Audit α P) (x : α) :
     ¬ (A.cert x ∧ A.cert (A.involution.inv x)) := by
   intro h
   exact A.reversed x h.2 (A.direct x h.1)
 
 def emptyAudit (P : Prop) : Audit Unit P where
-  involution := {
-    inv := id
-    inv_inv := by intro x; rfl
-  }
+  involution := { inv := id, inv_inv := by intro x; rfl }
   cert := fun _ => False
   direct := fun _ h => False.elim h
   reversed := fun _ h => False.elim h
@@ -158,27 +143,16 @@ def AllTargets (T : Targets) : Prop :=
 
 structure Bridges (T : Targets) where
   b1 : (∀ a b : ℝ, 0 ≤ (a - b) ^ 2) → T.t1
-  b2 :
-    ((∀ i : Fin 2, ∃ w : Walk, linked w ∧ w i = mixed i) ∧
-      ¬ linked mixed) → T.t2
+  b2 : ((∀ i : Fin 2, ∃ w : Walk, linked w ∧ w i = mixed i) ∧ ¬ linked mixed) → T.t2
   b3 : (fiberDim 1 1 2 = 3 ∧ fiberDim 1 1 2 ≠ 4) → T.t3
   b4 : (∀ (A B : Set Bool), A ⊆ B → B ∩ A = A) → T.t4
-  b5 :
-    (∀ (x : Fin 3 → ℝ) (i : Fin 3),
-      (x i) ^ 2 ≤ ∑ j : Fin 3, (x j) ^ 2) → T.t5
+  b5 : (∀ (x : Fin 3 → ℝ) (i : Fin 3), (x i) ^ 2 ≤ ∑ j : Fin 3, (x j) ^ 2) → T.t5
   b6 : (∀ y : ℝ, y ≠ 0 → fraction 0 y = 1) → T.t6
   b7 : T.t7
 
 theorem allTargetsOfBridges (T : Targets) (B : Bridges T) : AllTargets T := by
-  exact ⟨
-    B.b1 finiteBank.c1,
-    B.b2 finiteBank.c2,
-    B.b3 finiteBank.c3,
-    B.b4 finiteBank.c4,
-    B.b5 finiteBank.c5,
-    B.b6 finiteBank.c6,
-    B.b7
-  ⟩
+  exact ⟨B.b1 finiteBank.c1, B.b2 finiteBank.c2, B.b3 finiteBank.c3,
+    B.b4 finiteBank.c4, B.b5 finiteBank.c5, B.b6 finiteBank.c6, B.b7⟩
 
 def falseFirst : Targets where
   t1 := False
@@ -189,14 +163,12 @@ def falseFirst : Targets where
   t6 := True
   t7 := True
 
-theorem finiteBankNotUniversal :
-    ¬ (FiniteBank → ∀ T : Targets, AllTargets T) := by
+theorem finiteBankNotUniversal : ¬ (FiniteBank → ∀ T : Targets, AllTargets T) := by
   intro h
   have hall : AllTargets falseFirst := h finiteBank falseFirst
   exact hall.1
 
-theorem bridgesIffAllTargets (T : Targets) :
-    Nonempty (Bridges T) ↔ AllTargets T := by
+theorem bridgesIffAllTargets (T : Targets) : Nonempty (Bridges T) ↔ AllTargets T := by
   constructor
   · rintro ⟨B⟩
     exact allTargetsOfBridges T B
@@ -218,20 +190,20 @@ structure GrandBank : Prop where
   upper : ∀ {a b e u : ℝ}, |a - b| ≤ e → b + e ≤ u → a ≤ u
   exclusivity : ∀ P : Prop, ¬ (P ∧ ¬ P)
   noExhaustivity : ¬ ((∀ P : Prop, ¬ (P ∧ ¬ P)) → ∀ P : Prop, P)
-  exactBridgeStrength :
-    ∀ T : Targets, Nonempty (Bridges T) ↔ AllTargets T
+  exactBridgeStrength : ∀ T : Targets, Nonempty (Bridges T) ↔ AllTargets T
   noSilentUpgrade : ¬ (FiniteBank → ∀ T : Targets, AllTargets T)
 
-theorem grandUnifiedStatement : GrandBank := {
-  finite := finiteBank
-  inversion := inversionCertificate
-  lower := lowerTransfer
-  upper := upperTransfer
-  exclusivity := noBoth
-  noExhaustivity := exclusionNotExhaustive
-  exactBridgeStrength := bridgesIffAllTargets
-  noSilentUpgrade := finiteBankNotUniversal
-}
+theorem grandUnifiedStatement : GrandBank := by
+  exact {
+    finite := finiteBank
+    inversion := inversionCertificate
+    lower := lowerTransfer
+    upper := upperTransfer
+    exclusivity := noBoth
+    noExhaustivity := exclusionNotExhaustive
+    exactBridgeStrength := bridgesIffAllTargets
+    noSilentUpgrade := finiteBankNotUniversal
+  }
 
 #print axioms lane1
 #print axioms lane2
