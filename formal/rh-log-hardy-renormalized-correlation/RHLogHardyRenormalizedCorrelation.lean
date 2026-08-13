@@ -25,7 +25,7 @@ theorem energy_upper_of_renormalized_cross_upper
     energy = diagonal + cross := hledger
     _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = (cross + renormalizer) + budget := by
-      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
+      simp [Int.add_comm, Int.add_left_comm]
     _ ≤ target + budget := Int.add_le_add_right hcross budget
 
 /--
@@ -42,7 +42,7 @@ theorem renormalized_cross_upper_of_energy_upper
     cross + renormalizer ≤ cross + (diagonal + budget) :=
       Int.add_le_add_left hdiag.1 cross
     _ = (diagonal + cross) + budget := by
-      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
+      simp [Int.add_comm, Int.add_left_comm]
     _ = energy + budget := by rw [← hledger]
     _ ≤ target + budget := Int.add_le_add_right henergy budget
 
@@ -62,7 +62,7 @@ theorem renormalized_cross_lower_of_nonnegative_energy
     _ = diagonal + cross := hledger
     _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = cross + renormalizer + budget := by
-      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
+      simp [Int.add_comm, Int.add_left_comm]
 
 /--
 A full `budget` of margin in the renormalized cross estimate pays the complete
@@ -78,7 +78,7 @@ theorem exact_energy_target_from_cross_margin
     energy = diagonal + cross := hledger
     _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = cross + renormalizer + budget := by
-      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
+      simp [Int.add_comm, Int.add_left_comm]
     _ ≤ target := hcross
 
 /-- The diagonal part of the smallest two-coordinate quadratic model. -/
@@ -106,7 +106,7 @@ theorem same_diagonal_different_cross_and_energy :
     twoPointEnergy 1 (-1) = 4 ∧
     Ledger 0 2 (-2) ∧
     Ledger 4 2 2 := by
-  decide
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 #print axioms energy_upper_of_renormalized_cross_upper
 #print axioms renormalized_cross_upper_of_energy_upper
