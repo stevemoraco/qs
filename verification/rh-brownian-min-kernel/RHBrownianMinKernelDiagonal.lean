@@ -82,6 +82,39 @@ theorem psd_kernel_sign_firewall :
     (3 : ℝ) - (1 / 2 : ℝ) * 3 ^ 2 < 0 := by
   norm_num
 
+/-- After subtracting the exact optimizer capacity, one Brownian cell relinearizes. -/
+theorem cell_debt_minus_capacity_linearization
+    (u v T : ℝ) (hu : u ≠ 0) (hv : v ≠ 0)
+    (hden : u ^ 2 + u * v + v ^ 2 ≠ 0) :
+    (1 / u ^ 3 - 1 / v ^ 3) *
+        (T - (u ^ 2 * v ^ 2) / (u ^ 2 + u * v + v ^ 2)) ^ 2 -
+      (u * v * (v - u)) / (u ^ 2 + u * v + v ^ 2) =
+    T * (v - u) *
+        ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) /
+      (u ^ 3 * v ^ 3) := by
+  field_simp [hu, hv, hden]
+  ring
+
+/-- The relinearized cell is nonnegative once its exact threshold is met. -/
+theorem cell_relinearized_nonnegative_of_threshold
+    (u v T : ℝ) (hu : 0 < u) (huv : u < v) (hT : 0 ≤ T)
+    (hthreshold : 2 * u ^ 2 * v ^ 2 ≤
+      (u ^ 2 + u * v + v ^ 2) * T) :
+    0 ≤ T * (v - u) *
+        ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) /
+      (u ^ 3 * v ^ 3) := by
+  have hv : 0 < v := lt_trans hu huv
+  have hgap : 0 ≤ v - u := sub_nonneg.mpr (le_of_lt huv)
+  have hbracket : 0 ≤
+      (u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2 :=
+    sub_nonneg.mpr hthreshold
+  have hnum : 0 ≤ T * (v - u) *
+      ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) :=
+    mul_nonneg (mul_nonneg hT hgap) hbracket
+  have hden : 0 ≤ u ^ 3 * v ^ 3 :=
+    le_of_lt (mul_pos (pow_pos hu 3) (pow_pos hv 3))
+  exact div_nonneg hnum hden
+
 #print axioms one_cell_completion
 #print axioms finite_diagonal_completion
 #print axioms finite_capacity_upper_bound
@@ -90,5 +123,7 @@ theorem psd_kernel_sign_firewall :
 #print axioms boundary_optimizer_identity
 #print axioms decreasing_slopes_give_nonnegative_atom
 #print axioms psd_kernel_sign_firewall
+#print axioms cell_debt_minus_capacity_linearization
+#print axioms cell_relinearized_nonnegative_of_threshold
 
 end RHBrownianMinKernelDiagonal
