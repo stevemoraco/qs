@@ -101,6 +101,14 @@ theorem isoR_not_in_isoA_line :
   norm_num [isoR, isoA, smul] at hy hz
   linarith
 
+/-- The desired active `P+Q=-K` interaction. -/
+theorem selected_active_sum :
+    leray (add isoP isoQ)
+      (symSymbol (add isoP isoQ) isoA isoB) = ⟨0, 0, 2⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoQ, isoA, isoB]
+
 /-- The original selected `A/B` pair has exact conjugate-difference
 cancellation. -/
 theorem selected_line_kills_conjugate_difference :
@@ -127,6 +135,43 @@ theorem leaked_line_reopens_conjugate_difference_ne_zero :
   have hz := congrArg V3.z h
   norm_num at hz
 
+/-- Even before the reciprocal polarization repair, the desired generated
+`-K` polarization `N` interacts with `P` to create the exterior carrier
+`P-K = 2P+Q`. -/
+theorem active_sum_generates_next_exterior :
+    leray (sub isoP isoK)
+      (symSymbol (sub isoP isoK) isoA isoN) = ⟨0, 0, 1⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoK, isoA, isoN]
+
+/-- Coefficient-level version: if the original `P,Q` amplitudes are `a,b`,
+the active sum creates `2ab N` at `-K`; pairing that generated mode with the
+real `P` amplitude gives the next exterior contribution `2 a^2 b`. -/
+theorem forced_active_sum_next_exterior (a b : ℝ) :
+    leray (sub isoP isoK)
+      (symSymbol (sub isoP isoK)
+        (smul a isoA) (smul (2 * a * b) isoN)) =
+      ⟨0, 0, 2 * a ^ 2 * b⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoK, isoA, isoN] <;>
+    ring
+
+/-- Nonzero desired input amplitudes therefore force a nonzero exterior mode
+at the very next bilinear generation in the isolated selected architecture. -/
+theorem forced_active_sum_next_exterior_ne_zero
+    {a b : ℝ} (ha : a ≠ 0) (hb : b ≠ 0) :
+    leray (sub isoP isoK)
+      (symSymbol (sub isoP isoK)
+        (smul a isoA) (smul (2 * a * b) isoN)) ≠ ⟨0, 0, 0⟩ := by
+  rw [forced_active_sum_next_exterior]
+  intro h
+  have hz : 2 * a ^ 2 * b = 0 := by
+    simpa using congrArg V3.z h
+  have htwo : (2 : ℝ) ≠ 0 := by norm_num
+  exact (mul_ne_zero (mul_ne_zero htwo (pow_ne_zero 2 ha)) hb) hz
+
 /-- The reciprocal `Q+K=-P` interaction that forced the polarization repair. -/
 theorem reciprocal_selected_pair_output :
     leray (add isoQ isoK)
@@ -135,8 +180,8 @@ theorem reciprocal_selected_pair_output :
   apply V3.ext <;>
     norm_num [dot, add, sub, smul, isoQ, isoK, isoB, isoN]
 
-/-- With scalar amplitudes `b,c`, the reciprocal output scales as `b*c` and
-contains a forced `isoR` coefficient `(b*c)/2`. -/
+/-- With scalar amplitudes `b,c`, the reciprocal output contains a forced
+`isoR` coefficient `(b*c)/2`. -/
 theorem scaled_reciprocal_output_decomposition (b c : ℝ) :
     smul (b * c) isoN =
       add (smul (-(b * c) / 2) isoA) (smul ((b * c) / 2) isoR) := by
@@ -144,10 +189,7 @@ theorem scaled_reciprocal_output_decomposition (b c : ℝ) :
     simp [smul, add, isoN, isoA, isoR] <;>
     ring
 
-/-- Exact coefficient-level second-generation leak.  Once the reciprocal
-interaction has generated its forced `R` coefficient `(b*c)/2`, pairing it
-with the real conjugate `Q` amplitude `b` produces the exterior `P-Q` mode with
-z-amplitude `-b^2*c`. -/
+/-- Exact coefficient-level second-generation leak from the reciprocal path. -/
 theorem forced_second_generation_exterior (b c : ℝ) :
     leray (sub isoP isoQ)
       (symSymbol (sub isoP isoQ)
@@ -158,9 +200,6 @@ theorem forced_second_generation_exterior (b c : ℝ) :
     norm_num [dot, add, sub, smul, isoP, isoQ, isoR, isoB] <;>
     ring
 
-/-- Therefore, inside the isolated triad, nonzero reciprocal-driving
-amplitudes force a genuinely nonzero exterior contribution at the next
-bilinear interaction. -/
 theorem forced_second_generation_exterior_ne_zero
     {b c : ℝ} (hb : b ≠ 0) (hc : c ≠ 0) :
     leray (sub isoP isoQ)
@@ -181,9 +220,13 @@ theorem forced_second_generation_exterior_ne_zero
 #print axioms iso_two_polarizations_span_transverse
 #print axioms iso_leray_output_in_two_polarization_bundle
 #print axioms isoR_not_in_isoA_line
+#print axioms selected_active_sum
 #print axioms selected_line_kills_conjugate_difference
 #print axioms leaked_line_reopens_conjugate_difference
 #print axioms leaked_line_reopens_conjugate_difference_ne_zero
+#print axioms active_sum_generates_next_exterior
+#print axioms forced_active_sum_next_exterior
+#print axioms forced_active_sum_next_exterior_ne_zero
 #print axioms reciprocal_selected_pair_output
 #print axioms scaled_reciprocal_output_decomposition
 #print axioms forced_second_generation_exterior
