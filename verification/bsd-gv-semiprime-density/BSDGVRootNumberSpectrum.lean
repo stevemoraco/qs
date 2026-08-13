@@ -57,6 +57,32 @@ theorem positive_root_complete_bsd_fraction_certificate :
     acceptedStateCount * 16 = 7 * rootPositiveStateCount := by
   decide
 
+/-- A selector using only the two residue classes and valid for both Legendre
+signs reaches at most the two both-sign pairs. Their four sign states form
+exactly `1/16` of the positive-root-number state space. -/
+theorem residue_only_positive_root_fraction_certificate :
+    (2 * bothSignPairCount) * 16 = rootPositiveStateCount := by
+  decide
+
+/-- Retaining one Legendre-symbol bit enlarges the certified state set by the
+exact factor seven. -/
+theorem character_bit_sevenfold_gain :
+    acceptedStateCount = 7 * (2 * bothSignPairCount) := by
+  decide
+
+/-- The genuinely character-sensitive increment is `24/64 = 3/8` of the
+positive-root-number state space. -/
+theorem character_sensitive_positive_root_fraction_certificate :
+    (acceptedStateCount - 2 * bothSignPairCount) * 8 =
+      3 * rootPositiveStateCount := by
+  decide
+
+/-- Six sevenths of the certified family comes from states that cannot be
+recovered by a residue-only selector. -/
+theorem character_sensitive_certified_share :
+    (24 / 28 : ℚ) = 6 / 7 := by
+  norm_num
+
 /-- Half of the total minimal-discriminant coefficient `3/4` is `3/8`. -/
 theorem positive_root_discriminant_family_coefficient :
     (1 / 2 : ℚ) * (3 / 4) = 3 / 8 := by
@@ -72,6 +98,10 @@ theorem positive_root_discriminant_relative_density :
 #print axioms accepted_implies_root_positive
 #print axioms acceptedStates_subset_rootPositiveStates
 #print axioms positive_root_complete_bsd_fraction_certificate
+#print axioms residue_only_positive_root_fraction_certificate
+#print axioms character_bit_sevenfold_gain
+#print axioms character_sensitive_positive_root_fraction_certificate
+#print axioms character_sensitive_certified_share
 #print axioms positive_root_discriminant_family_coefficient
 #print axioms positive_root_discriminant_relative_density
 
