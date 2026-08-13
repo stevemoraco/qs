@@ -18,7 +18,7 @@ jobs:
           for f in "$dir"/*.lean; do
             ! grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$f"
           done
-          test "$(git hash-object "$dir/RHMobiusHyperbolaKernel.lean")" = 04b388c54153552039244fb7e06dbe749291b346
+          test "$(git hash-object "$dir/RHMobiusHyperbolaKernel.lean")" = 895ae6c5df15d0914dbdbb89b4726ea1a4dcf49d
           test "$(git hash-object "$dir/RHMobiusHyperbolaLedger.lean")" = 2f16934fa100328625d37454ba3017e988f284ec
       - name: Install Lean
         run: |
