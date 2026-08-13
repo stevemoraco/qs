@@ -1,4 +1,4 @@
-import BSDGVSemiprimeDensity
+import BSDGVAsymptoticAggregation
 
 #print axioms BSDGVSemiprimeDensity.totalStateCount_eq
 #print axioms BSDGVSemiprimeDensity.acceptedStateCount_eq
@@ -8,3 +8,7 @@ import BSDGVSemiprimeDensity
 #print axioms BSDGVSemiprimeDensity.accepts_swap_with_reciprocity
 #print axioms BSDGVSemiprimeDensity.ordered_density_fraction_certificate
 #print axioms BSDGVSemiprimeDensity.unordered_coefficient_fraction_certificate
+#print axioms BSDGVSemiprimeDensity.acceptedStates_card_eq
+#print axioms BSDGVSemiprimeDensity.accepted_uniform_mass
+#print axioms BSDGVSemiprimeDensity.accepted_mass_tendsto
+#print axioms BSDGVSemiprimeDensity.accepted_density_tendsto
