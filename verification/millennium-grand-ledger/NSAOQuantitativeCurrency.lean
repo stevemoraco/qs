@@ -19,6 +19,10 @@ exact Navier--Stokes relay, infinite iteration, or blow-up.
 
 namespace NSAOQuantitativeCurrency
 
+noncomputable section
+
+open scoped BigOperators
+
 /-! ## Batchelor transversality and retuning -/
 
 /-- The sign pattern in the AO Batchelor formulas forces the full two-variable
@@ -43,7 +47,13 @@ theorem cramer_retuning
     let y := (c * u - a * v) / (a * d - b * c)
     a * x + b * y + u = 0 ∧ c * x + d * y + v = 0 := by
   dsimp
-  constructor <;> field_simp [hdet] <;> ring
+  have hdet' : -(c * b) + d * a ≠ 0 := by
+    intro hzero
+    apply hdet
+    calc
+      a * d - b * c = -(c * b) + d * a := by ring
+      _ = 0 := hzero
+  constructor <;> field_simp [hdet, hdet'] <;> ring
 
 /-- A strict reference margin survives an additive perturbation bounded by half
 the recorded reference value. -/
@@ -117,14 +127,14 @@ def viscosityScale (j : ℕ) : ℝ := carrier j ^ 2
 def envelopeBandwidth (j : ℕ) : ℝ := shell j ^ 3
 
 theorem shell_ne_zero (j : ℕ) : shell j ≠ 0 := by
-  positivity
+  unfold shell
+  exact pow_ne_zero j (by norm_num)
 
 /-- The energy tax is exactly one inverse shell: `2^{-j}`. -/
 theorem pump_energy_identity (j : ℕ) :
     pumpEnergy j = 1 / shell j := by
   unfold pumpEnergy amplitude activeVolume
   field_simp [shell_ne_zero j]
-  ring
 
 /-- The local instability clock has exponent `9/4` in the physical carrier. -/
 theorem local_growth_identity (j : ℕ) :
@@ -138,18 +148,16 @@ theorem viscosity_to_growth_identity (j : ℕ) :
   rw [local_growth_identity]
   unfold viscosityScale carrier
   field_simp [shell_ne_zero j]
-  ring
 
 /-- Slow axial modulation has the same one-inverse-shell relative margin. -/
 theorem modulation_to_carrier_identity (j : ℕ) :
     envelopeBandwidth j / carrier j = 1 / shell j := by
   unfold envelopeBandwidth carrier
   field_simp [shell_ne_zero j]
-  ring
 
 theorem inverse_shell_eq_half_pow (j : ℕ) :
     1 / shell j = (1 / 2 : ℝ) ^ j := by
-  simp [shell, div_pow]
+  simp [shell]
 
 /-- Exact finite geometric-energy ledger. -/
 theorem dyadic_energy_partial_sum (n : ℕ) :
