@@ -11,6 +11,9 @@ Johnston's criterion, or the Riemann hypothesis.
 
 namespace Millennium.RH.B54Q420Finite
 
+set_option maxRecDepth 100000
+set_option maxHeartbeats 0
+
 /-- The exact Q=420 Landau cell value on the common 420-cell grid. -/
 def q420Landau (k : ℕ) : ℤ :=
   ((420 * k / 420 : ℕ) : ℤ)
@@ -171,6 +174,7 @@ theorem finite_reflected_weight_lower
   by_cases hir : i ∈ required
   · simp only [hir, if_true, hrequired i hir]
     ring_nf
+    exact le_rfl
   · simp only [hir, if_false, add_zero]
     exact reflected_pair_lower (g i) (wLeft i) (wRight i)
       (hg i hi) (hweight i hi)
