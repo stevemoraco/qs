@@ -1,0 +1,189 @@
+name: RH parity rank-one countermodel Lean
+
+on:
+  push:
+    branches:
+      - agent/rh-parity-rank-one-countermodel-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-parity-rank-one-countermodel/**'
+      - '.github/workflows/rh-parity-rank-one-countermodel-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+
+      - name: Record exact replay ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-parity-rank-one-countermodel'
+          actual_head="$(git rev-parse HEAD)"
+          test "$actual_head" = "$GITHUB_SHA"
+          {
+            printf 'event=%s\n' "$GITHUB_EVENT_NAME"
+            printf 'ref=%s\n' "$GITHUB_REF"
+            printf 'github_sha=%s\n' "$GITHUB_SHA"
+            printf 'checkout_head=%s\n' "$actual_head"
+          } | tee "$dir/replay-ref.txt"
+
+      - name: Verify exact source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-parity-rank-one-countermodel'
+          file="$dir/RHParityRankOneCountermodel.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='679f6a8a0b829c08692009b622d015b8baff253f'
+          test "$actual_blob" = "$expected_blob"
+          printf 'source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/rh-parity-rank-one-countermodel/'
+              'RHParityRankOneCountermodel.lean'
+          )
+          source = path.read_text()
+          stripped = re.sub(r'/-.*?-/', '', source, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'\bsorryAx\b',
+              r'^\s*(axiom|opaque)\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in forbidden:
+              match = re.search(pattern, stripped, flags=re.M)
+              if match:
+                  raise SystemExit(f'forbidden declaration: {match.group(0)!r}')
+          expected = [
+              'oneDimSector_eq_smul_generator',
+              'positiveGenerator_ne_zero',
+              'simpleNegativePositiveGeneratorCertificate',
+              'parityRankOneOrderReversal',
+              'generatorEnergyOrderReversal',
+              'rationalParityCountermodel',
+              'realParityCountermodel',
+          ]
+          for name in expected:
+              if f'#print axioms {name}' not in source:
+                  raise SystemExit(f'missing axiom report: {name}')
+          PY
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-parity-rank-one-countermodel'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          mathlib_commit="$(git -C .lake/packages/mathlib rev-parse HEAD)"
+          expected_mathlib='520045ab14e26149ee970e2e617ca04b09bde5d6'
+          test "$mathlib_commit" = "$expected_mathlib"
+          printf 'mathlib_commit=%s\n' "$mathlib_commit" \
+            | tee mathlib-commit.txt
+          lake exe cache get
+          set +e
+          lake env lean RHParityRankOneCountermodel.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq \
+            'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool|native_decide' \
+            lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+
+      - name: Enforce exact foundation-only axiom reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          directory = pathlib.Path(
+              'verification/rh-parity-rank-one-countermodel'
+          )
+          text = (directory / 'lean-output.log').read_text()
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          namespace = 'RHParityRankOneCountermodel.'
+          expected = {
+              namespace + 'oneDimSector_eq_smul_generator',
+              namespace + 'positiveGenerator_ne_zero',
+              namespace + 'simpleNegativePositiveGeneratorCertificate',
+              namespace + 'parityRankOneOrderReversal',
+              namespace + 'generatorEnergyOrderReversal',
+              namespace + 'rationalParityCountermodel',
+              namespace + 'realParityCountermodel',
+          }
+          found = {name for name, _ in with_axioms} | set(without_axioms)
+          if found != expected:
+              raise SystemExit(
+                  f'axiom report name mismatch: missing={sorted(expected-found)}, '
+                  f'extra={sorted(found-expected)}'
+              )
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(
+                      f'{theorem} has non-foundation axioms: {sorted(extra)}'
+                  )
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+          report = '\n'.join(sorted(rows)) + '\n'
+          (directory / 'axiom-report.txt').write_text(report)
+          print(report, end='')
+          PY
+          echo 'VERIFIED finite scalar parity rank-one countermodel.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-parity-rank-one-countermodel-lean-evidence
+          path: |
+            verification/rh-parity-rank-one-countermodel/replay-ref.txt
+            verification/rh-parity-rank-one-countermodel/source-blob.txt
+            verification/rh-parity-rank-one-countermodel/source-sha256.txt
+            verification/rh-parity-rank-one-countermodel/lean-version.txt
+            verification/rh-parity-rank-one-countermodel/mathlib-commit.txt
+            verification/rh-parity-rank-one-countermodel/lean-output.log
+            verification/rh-parity-rank-one-countermodel/axiom-report.txt
