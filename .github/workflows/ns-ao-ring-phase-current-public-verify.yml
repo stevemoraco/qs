@@ -1,0 +1,153 @@
+name: NS AO ring phase-current finite verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-ao-ring-phase-current-public-verifier-20260813-gpt56
+    paths:
+      - 'verification/ns-ao-ring-phase-current/**'
+      - '.github/workflows/ns-ao-ring-phase-current-public-verify.yml'
+  pull_request:
+    paths:
+      - 'verification/ns-ao-ring-phase-current/**'
+      - '.github/workflows/ns-ao-ring-phase-current-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ns-ao-phase-current-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Audit exact source blob and forbidden trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/ns-ao-ring-phase-current'
+          SRC="$ROOT/NSAORingPhaseCurrent.lean"
+          EXPECTED_BLOB='2e1930e8f20ba3d246468d435ccd94b1fbbd0302'
+          ACTUAL_BLOB="$(git hash-object "$SRC")"
+          printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          sha256sum "$SRC" | tee source-sha256.txt
+          if grep -RInE '\b(sorry|admit|sorryAx)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden proof hole detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden custom trust declaration detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '\b(native_decide|Lean\.ofReduceBool)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden native/oracle shortcut detected.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/elan" default leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/lean" --version | tee lean-version.txt
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ns-ao-ring-phase-current
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile exact source and emit axiom reports
+        shell: bash
+        working-directory: verification/ns-ao-ring-phase-current
+        run: |
+          set -euo pipefail
+          lake env lean NSAORingPhaseCurrent.lean 2>&1 | tee lean-source-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-source-output.log; then
+            echo 'Lean compiler or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+
+      - name: Audit printed axiom dependencies
+        shell: bash
+        working-directory: verification/ns-ao-ring-phase-current
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('lean-source-output.log').read_text()
+          names = [
+              'NSAORingPhaseCurrent.pressure_correction_denominator_cancels',
+              'NSAORingPhaseCurrent.stressMismatch_eq_phaseCurrent',
+              'NSAORingPhaseCurrent.phaseCurrent_of_growth_twist',
+              'NSAORingPhaseCurrent.stressMismatch_of_growth_twist',
+              'NSAORingPhaseCurrent.constant_phase_stressMismatch_zero',
+              'NSAORingPhaseCurrent.dopplerForce_mismatch_decomposition',
+              'NSAORingPhaseCurrent.dopplerForce_phaseCurrent_decomposition',
+              'NSAORingPhaseCurrent.zero_phaseCurrent_dopplerForce',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          report = []
+          starts = {}
+          for name in names:
+              quoted = f"'{name}'"
+              pos = text.find(quoted)
+              if pos < 0:
+                  raise SystemExit(f'missing #print axioms report for {name}')
+              starts[name] = pos
+          ordered = sorted((pos, name) for name, pos in starts.items())
+          for index, (start, name) in enumerate(ordered):
+              end = ordered[index + 1][0] if index + 1 < len(ordered) else len(text)
+              block = text[start:end]
+              if 'does not depend on any axioms' in block:
+                  deps = set()
+              else:
+                  match = re.search(r'depends on axioms:\s*\[(.*?)\]', block, re.S)
+                  if not match:
+                      raise SystemExit(f'unparseable #print axioms report for {name}: {block!r}')
+                  deps = set(re.findall(r'[A-Za-z_][A-Za-z0-9_.]*', match.group(1)))
+              forbidden = deps - allowed
+              if forbidden:
+                  raise SystemExit(f'forbidden axiom(s) for {name}: {sorted(forbidden)}')
+              report.append(f'{name}: {sorted(deps)}')
+          Path('axiom-report.txt').write_text('\n'.join(report) + '\n')
+          print('\n'.join(report))
+          PY
+
+      - name: Collect replay receipt
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          mkdir -p replay-receipt
+          cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
+          cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp lean-version.txt replay-receipt/ 2>/dev/null || true
+          cp verification/ns-ao-ring-phase-current/lake-manifest.json replay-receipt/ 2>/dev/null || true
+          cp verification/ns-ao-ring-phase-current/lean-source-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/ns-ao-ring-phase-current/axiom-report.txt replay-receipt/ 2>/dev/null || true
+          git rev-parse HEAD | tee replay-receipt/commit.txt
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-ao-ring-phase-current-${{ github.sha }}
+          path: replay-receipt
+          if-no-files-found: error
+          retention-days: 90
