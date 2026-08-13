@@ -1,0 +1,94 @@
+name: Verify NS periodic Golay frame 3D
+
+on:
+  push:
+    branches:
+      - verification/ns-periodic-golay-3d-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean
+          git hash-object "$SRC"
+          python3 - <<'PY'
+          import pathlib, re
+          text = pathlib.Path('verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean').read_text()
+          m = re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)', text)
+          if m:
+              raise SystemExit(f'forbidden token: {m.group(2)}')
+          if 'native_decide' in text or 'Lean.ofReduceBool' in text:
+              raise SystemExit('forbidden token')
+          if text.count('#print axioms') != 7:
+              raise SystemExit('expected seven axiom reports')
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-periodic-golay-3d/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean')
+          out = pathlib.Path('verification/ns-periodic-golay-3d/evidence/axle-response.json')
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=json.dumps({
+                  'content': src.read_text(),
+                  'environment': 'lean-4.30.0',
+                  'ignore_imports': True,
+                  'mathlib_options': False,
+                  'timeout_seconds': 900,
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=960) as r:
+                  result = json.load(r)
+          except Exception as exc:
+              result = {'okay': False, 'request_exception': repr(exc), 'lean_messages': {'errors': []}, 'tool_messages': {'errors': []}, 'failed_declarations': []}
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-periodic-golay-3d-evidence
+          path: verification/ns-periodic-golay-3d/evidence/
+          if-no-files-found: error
+
+      - name: Enforce verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('verification/ns-periodic-golay-3d/evidence/axle-response.json')
+          if not p.exists(): raise SystemExit('missing response')
+          r=json.loads(p.read_text())
+          if not r.get('okay') or r.get('lean_messages',{}).get('errors') or r.get('tool_messages',{}).get('errors') or r.get('failed_declarations'):
+              raise SystemExit('Lean/AXLE verification failed')
+          rendered=json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          print('VERIFIED')
+          PY
