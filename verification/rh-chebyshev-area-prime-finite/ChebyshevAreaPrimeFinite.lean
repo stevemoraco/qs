@@ -4,7 +4,7 @@ import Mathlib
 # Genuine finite-prime geometry of Johnston's Chebyshev-area criterion
 
 This file replaces the arbitrary weighted support by the actual finite prime
-weights `log p`.  At prefix `n`, define
+weights `log p`. At prefix `n`, define
 
 `thetaNat n = ∑ p ≤ n, p.Prime ? log p : 0`
 
@@ -14,7 +14,7 @@ and the corresponding closed-form area parabola
 
 On the real unit interval `[n,n+1]`, this is exactly the integrated Chebyshev
 staircase, up to the separate analytic theorem identifying the real integral
-with the finite sum.  The file proves the prefix recurrences, the exact
+with the finite sum. The file proves the prefix recurrences, the exact
 parabola, endpoint compatibility, and equivalence between positivity on each
 unit interval and positivity of one explicit interval minimum.
 
@@ -26,6 +26,7 @@ positive.
 namespace Millennium.RH.ChebyshevAreaPrimeFinite
 
 open Set
+open scoped BigOperators
 
 noncomputable section
 
@@ -44,7 +45,7 @@ def primeMoment (n : ℕ) : ℝ :=
 /-- Closed-form area on a unit interval carrying the prime prefix through `n`. -/
 def primeArea (n : ℕ) (x : ℝ) : ℝ :=
   x ^ 2 / 2 - 2 -
-    ∑ p in Finset.range (n + 1), (x - p) * primeWeight p
+    ∑ p in Finset.range (n + 1), (x - (p : ℝ)) * primeWeight p
 
 /-- Value of the prime-prefix area parabola at its center. -/
 def primeCenter (n : ℕ) : ℝ :=
@@ -59,23 +60,22 @@ theorem thetaNat_succ (n : ℕ) :
 /-- The first prime moment has the corresponding exact prefix recurrence. -/
 theorem primeMoment_succ (n : ℕ) :
     primeMoment (n + 1) =
-      primeMoment n + (n + 1 : ℕ) * primeWeight (n + 1) := by
+      primeMoment n + (n + 1 : ℝ) * primeWeight (n + 1) := by
   unfold primeMoment
   rw [Finset.sum_range_succ]
-  norm_num
 
 /-- Exact update of the finite area after adding the next possible prime. -/
 theorem primeArea_succ (n : ℕ) (x : ℝ) :
     primeArea (n + 1) x =
-      primeArea n x - (x - (n + 1 : ℕ)) * primeWeight (n + 1) := by
+      primeArea n x - (x - (n + 1 : ℝ)) * primeWeight (n + 1) := by
   unfold primeArea
   rw [Finset.sum_range_succ]
   ring
 
 /-- At the new integer endpoint, the newly added prime term has zero lever arm. -/
 theorem primeArea_endpoint_compatible (n : ℕ) :
-    primeArea (n + 1) (n + 1 : ℕ) =
-      primeArea n (n + 1 : ℕ) := by
+    primeArea (n + 1) (n + 1 : ℝ) =
+      primeArea n (n + 1 : ℝ) := by
   rw [primeArea_succ]
   ring
 
@@ -98,15 +98,15 @@ theorem primeCenter_le_primeArea (n : ℕ) (x : ℝ) :
 def unitIntervalMinimum (n : ℕ) : ℝ :=
   if thetaNat n ≤ (n : ℝ) then
     primeArea n n
-  else if thetaNat n ≤ (n + 1 : ℕ) then
+  else if thetaNat n ≤ (n + 1 : ℝ) then
     primeCenter n
   else
-    primeArea n (n + 1 : ℕ)
+    primeArea n (n + 1 : ℝ)
 
 /-- The explicit interval minimum is below every area value in its unit interval. -/
 theorem unitIntervalMinimum_le_primeArea
     (n : ℕ) {x : ℝ}
-    (hx : x ∈ Icc (n : ℝ) (n + 1 : ℕ)) :
+    (hx : x ∈ Icc (n : ℝ) (n + 1 : ℝ)) :
     unitIntervalMinimum n ≤ primeArea n x := by
   unfold unitIntervalMinimum
   by_cases hleft : thetaNat n ≤ (n : ℝ)
@@ -125,28 +125,28 @@ theorem unitIntervalMinimum_le_primeArea
     rw [primeArea_eq_center_add_square, primeArea_eq_center_add_square]
     nlinarith
   · simp only [hleft, if_false]
-    by_cases hright : thetaNat n ≤ (n + 1 : ℕ)
+    by_cases hright : thetaNat n ≤ (n + 1 : ℝ)
     · simp only [hright, if_true]
       exact primeCenter_le_primeArea n x
     · simp only [hright, if_false]
-      have hright' : (n + 1 : ℕ) ≤ thetaNat n := le_of_not_ge hright
+      have hright' : (n + 1 : ℝ) ≤ thetaNat n := le_of_not_ge hright
       have hstep :
-          0 ≤ (thetaNat n - x) - (thetaNat n - (n + 1 : ℕ)) := by
+          0 ≤ (thetaNat n - x) - (thetaNat n - (n + 1 : ℝ)) := by
         linarith [hx.2]
       have hsum :
-          0 ≤ (thetaNat n - x) + (thetaNat n - (n + 1 : ℕ)) := by
+          0 ≤ (thetaNat n - x) + (thetaNat n - (n + 1 : ℝ)) := by
         linarith [hx.2, hright']
       have hprod :
           0 ≤
-            ((thetaNat n - x) - (thetaNat n - (n + 1 : ℕ))) *
-            ((thetaNat n - x) + (thetaNat n - (n + 1 : ℕ))) :=
+            ((thetaNat n - x) - (thetaNat n - (n + 1 : ℝ))) *
+            ((thetaNat n - x) + (thetaNat n - (n + 1 : ℝ))) :=
         mul_nonneg hstep hsum
       rw [primeArea_eq_center_add_square, primeArea_eq_center_add_square]
       nlinarith
 
 /-- Positivity on one entire unit interval is equivalent to positivity of its explicit minimum. -/
 theorem positive_on_unitInterval_iff (n : ℕ) :
-    (∀ x ∈ Icc (n : ℝ) (n + 1 : ℕ), 0 < primeArea n x) ↔
+    (∀ x ∈ Icc (n : ℝ) (n + 1 : ℝ), 0 < primeArea n x) ↔
       0 < unitIntervalMinimum n := by
   constructor
   · intro hpos
@@ -159,19 +159,19 @@ theorem positive_on_unitInterval_iff (n : ℕ) :
       · norm_num
     · simp only [hleft, if_false]
       have hleft' : (n : ℝ) < thetaNat n := lt_of_not_ge hleft
-      by_cases hright : thetaNat n ≤ (n + 1 : ℕ)
+      by_cases hright : thetaNat n ≤ (n + 1 : ℝ)
       · simp only [hright, if_true]
-        have hcenter : thetaNat n ∈ Icc (n : ℝ) (n + 1 : ℕ) :=
+        have hcenter : thetaNat n ∈ Icc (n : ℝ) (n + 1 : ℝ) :=
           ⟨hleft'.le, hright⟩
         have h := hpos (thetaNat n) hcenter
         simpa [primeArea_eq_center_add_square] using h
       · simp only [hright, if_false]
-        apply hpos (n + 1 : ℕ)
+        apply hpos (n + 1 : ℝ)
         constructor
         · norm_num
         · exact le_rfl
   · intro hmin x hx
-    exact hmin.trans_le (unitIntervalMinimum_le_primeArea n hx)
+    exact lt_of_lt_of_le hmin (unitIntervalMinimum_le_primeArea n hx)
 
 /-- The exact discrete finite-prime target induced by Johnston's sign criterion. -/
 def DiscreteJohnstonCriterion : Prop :=
@@ -181,7 +181,7 @@ def DiscreteJohnstonCriterion : Prop :=
 theorem discreteJohnstonCriterion_iff :
     DiscreteJohnstonCriterion ↔
       ∀ n : ℕ, 2 ≤ n →
-        ∀ x ∈ Icc (n : ℝ) (n + 1 : ℕ), 0 < primeArea n x := by
+        ∀ x ∈ Icc (n : ℝ) (n + 1 : ℝ), 0 < primeArea n x := by
   constructor
   · intro hcrit n hn
     exact (positive_on_unitInterval_iff n).2 (hcrit n hn)
@@ -197,5 +197,7 @@ theorem discreteJohnstonCriterion_iff :
 #print axioms unitIntervalMinimum_le_primeArea
 #print axioms positive_on_unitInterval_iff
 #print axioms discreteJohnstonCriterion_iff
+
+end
 
 end Millennium.RH.ChebyshevAreaPrimeFinite
