@@ -1,5 +1,13 @@
 import Mathlib
 
+/-!
+# P versus NP: dual-rail and tribes bottleneck firewalls
+
+This file formalizes only finite Boolean/combinatorial cores.
+It does not define Boolean circuits, MCSP, Gap-MCSP, Sokolov games,
+P, NP, or P versus NP.
+-/
+
 namespace PNP
 namespace DualRailTribesFirewall
 
@@ -164,12 +172,12 @@ theorem exists_missed_block
   let used : Finset (Fin blocks) := coordinates.image Prod.fst
   have hused_le : used.card ≤ coordinates.card := Finset.card_image_le
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   have huniv_subset : (Finset.univ : Finset (Fin blocks)) ⊆ used := by
     intro j hj
     obtain ⟨q, hq, hqj⟩ := hnone j
-    have hqjeq : q.1 = j := not_ne.mp hqj
-    simp [used, hq, hqjeq]
+    change j ∈ coordinates.image Prod.fst
+    exact Finset.mem_image.mpr ⟨q, hq, hqj⟩
   have hcard_all : Fintype.card (Fin blocks) ≤ used.card := by
     simpa using Finset.card_le_card huniv_subset
   have : blocks ≤ coordinates.card := by
