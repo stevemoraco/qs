@@ -143,7 +143,7 @@ theorem growing_residual_fraction_at_least_half
     (hδ : 0 ≤ δ) (hg : δ ≤ g)
     (hsum : 0 < g + δ) :
     1 / 2 ≤ 1 - growingResponseCoefficient δ g T := by
-  have h := growing_response_coefficient_at_most_half hδ hg hsum
+  have h := growing_response_coefficient_at_most_half (T := T) hδ hg hsum
   linarith
 
 /-- Palasek's viscous parameter condition gives a positive gap between the
