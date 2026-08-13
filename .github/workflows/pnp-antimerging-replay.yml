@@ -13,13 +13,23 @@ jobs:
       - name: Install Lean
         run: |
           set -euo pipefail
-          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
-      - name: Replay
-        working-directory: verification/pnp-restriction-averaging
+      - name: Isolated replay
         run: |
           set -euo pipefail
+          mkdir -p /tmp/pnp-antimerging
+          cp verification/pnp-antimerging-entropy-firewalls/PNPAntimergingCore.lean /tmp/pnp-antimerging/
+          cat > /tmp/pnp-antimerging/lakefile.toml <<'EOF'
+          name = "pnp_antimerging_firewalls"
+          version = "0.1.0"
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.1"
+          EOF
+          cd /tmp/pnp-antimerging
           lake update
           lake exe cache get
-          lake env lean ../pnp-antimerging-entropy-firewalls/PNPAntimergingCore.lean 2>&1 | tee anti-merging-replay.log
+          lake env lean PNPAntimergingCore.lean 2>&1 | tee anti-merging-replay.log
           if grep -Eq 'sorryAx|declaration uses .sorry.|admit' anti-merging-replay.log; then exit 1; fi
