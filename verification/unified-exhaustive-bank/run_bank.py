@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Lake-aware hardening wrapper for `generate_bank.py`.
 
-The base generator is kept readable and portable.  This runner makes every
+The base generator is kept readable and portable. This runner makes every
 Lean invocation pass through the pinned Lake package, excludes package
-configuration files from the theorem-source corpus, and preserves one exact
-compiler log for every rejected candidate before the master conductor is built.
+configuration files from the theorem-source corpus, changes canonical
+provenance headers into ordinary comments so imports remain first commands,
+and preserves one exact compiler log for every rejected candidate.
 """
 from __future__ import annotations
 
@@ -48,6 +49,20 @@ def strict_inventory(origin, root, outroot):
 
 
 generate_bank.inventory = strict_inventory
+
+_original_stage = generate_bank.stage
+
+
+def stage_with_import_safe_provenance(candidates, outroot):
+    _original_stage(candidates, outroot)
+    for candidate in candidates:
+        text = candidate.staged.read_text()
+        prefix = "/-! Canonical copy:"
+        if text.startswith(prefix):
+            candidate.staged.write_text("/- Canonical copy:" + text[len(prefix):])
+
+
+generate_bank.stage = stage_with_import_safe_provenance
 
 
 def compile_individual_with_logs(candidates, outroot, base, per_file):
