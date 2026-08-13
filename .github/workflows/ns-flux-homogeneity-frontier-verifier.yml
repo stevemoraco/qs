@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-flux-homogeneity-frontier/NSFluxHomogeneityFrontierFinite.lean
-          EXPECTED_BLOB=f16d5ec894c32daace8b0fc54c5c36e29d1f3fb1
+          EXPECTED_BLOB=7672d992652d61d1f783bda30ccead0e8853c63a
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
