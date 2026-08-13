@@ -1,0 +1,116 @@
+name: NS full-helicity decomposition finite core
+
+on:
+  push:
+    branches:
+      - agent/ns-full-helicity-decomposition-public-20260813-gpt56pro
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean'
+      - '.github/workflows/ns-full-helicity-decomposition.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean'
+      - '.github/workflows/ns-full-helicity-decomposition.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean'
+          expected='1a15d089d71631be674ad36fb97fcd6bcde6d9f6'
+          actual="$(git hash-object "$file")"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject explicit proof holes and unsafe proof carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|sorryAx|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Submit exact source to Lean honesty firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          source_path = pathlib.Path('formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean')
+          result_path = pathlib.Path('formal/millennium_audit/SixLaneAudit/ns-full-helicity-compile-result.json')
+
+          def read_json(request_or_url, *, attempts=12, timeout=120):
+              last_error = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=timeout) as response:
+                          return json.load(response)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
+                      last_error = error
+                      delay = min(5 * attempt, 60)
+                      print(f'network attempt {attempt}/{attempts} failed: {type(error).__name__}: {error}; sleeping {delay}s', flush=True)
+                      time.sleep(delay)
+              raise RuntimeError(f'compile-farm retry budget exhausted: {last_error}')
+
+          request = urllib.request.Request(
+              f'{API}/compile',
+              data=json.dumps({
+                  'name': 'ns-full-helicity-decomposition-finite-core',
+                  'lean_source': source_path.read_text(),
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          job = read_json(request)
+          job_id = job['id']
+          print('job', job_id, flush=True)
+
+          for poll in range(180):
+              time.sleep(20)
+              try:
+                  job = read_json(f'{API}/jobs/{job_id}', attempts=4, timeout=120)
+              except RuntimeError as error:
+                  print(f'poll {poll}: transient failure: {error}', flush=True)
+                  continue
+              print(f"poll {poll}: {job.get('status')} {job.get('verdict')}", flush=True)
+              if job.get('status') in ('done', 'failed'):
+                  result_path.write_text(json.dumps(job, indent=2, sort_keys=True) + '\n')
+                  print(json.dumps(job, indent=2), flush=True)
+                  payload = json.dumps(job)
+                  if 'sorryAx' in payload or 'Lean.ofReduceBool' in payload:
+                      raise SystemExit(1)
+                  if job.get('verdict') != 'VERIFIED' or job.get('sorry_count') != 0:
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('compile farm did not return a verdict before timeout')
+          PY
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-full-helicity-decomposition-${{ github.sha }}
+          path: |
+            formal/millennium_audit/SixLaneAudit/NSFullHelicityDecomposition.lean
+            formal/millennium_audit/SixLaneAudit/ns-full-helicity-compile-result.json
+          if-no-files-found: warn
