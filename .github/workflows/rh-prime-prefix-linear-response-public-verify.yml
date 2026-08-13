@@ -24,26 +24,32 @@ jobs:
         run: |
           set -euo pipefail
           dir='verification/rh-prime-prefix-linear-response-public'
-          file="$dir/RHPrimePrefixLinearResponse.lean"
-          actual_blob="$(git hash-object "$file")"
-          expected_blob='0b03be5ce2be5e79a1e2246086174b4005e92d7c'
-          test "$actual_blob" = "$expected_blob"
-          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
-          sha256sum "$file" | tee "$dir/source-sha256.txt"
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
-            echo 'Forbidden proof placeholder found.' >&2
-            exit 1
-          fi
-          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
-            echo 'Forbidden trust declaration found.' >&2
-            exit 1
-          fi
-          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
-            echo 'Forbidden computational trust escape found.' >&2
-            exit 1
-          fi
+          declare -A expected
+          expected[RHPrimePrefixLinearResponse.lean]='0b03be5ce2be5e79a1e2246086174b4005e92d7c'
+          expected[RHPrimePrefixBregmanReserve.lean]='a640ce97dfa5a6dfa0fa2adde24f1618e91d2be0'
+          : > "$dir/source-blobs.txt"
+          : > "$dir/source-sha256.txt"
+          for name in RHPrimePrefixLinearResponse.lean RHPrimePrefixBregmanReserve.lean; do
+            file="$dir/$name"
+            actual_blob="$(git hash-object "$file")"
+            test "$actual_blob" = "${expected[$name]}"
+            printf '%s=%s\n' "$name" "$actual_blob" | tee -a "$dir/source-blobs.txt"
+            sha256sum "$file" | tee -a "$dir/source-sha256.txt"
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden proof placeholder found in $name." >&2
+              exit 1
+            fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              echo "Forbidden trust declaration found in $name." >&2
+              exit 1
+            fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+              echo "Forbidden computational trust escape found in $name." >&2
+              exit 1
+            fi
+          done
 
-      - name: Install pinned Lean and compile exact source
+      - name: Install pinned Lean and compile exact sources
         shell: bash
         run: |
           set -euo pipefail
@@ -57,10 +63,19 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
-          set +e
-          lake env lean RHPrimePrefixLinearResponse.lean > lean-output.log 2>&1
-          status=$?
-          set -e
+          : > lean-output.log
+          status=0
+          for src in RHPrimePrefixLinearResponse.lean RHPrimePrefixBregmanReserve.lean; do
+            printf '\n===== %s =====\n' "$src" | tee -a lean-output.log
+            set +e
+            lake env lean "$src" >> lean-output.log 2>&1
+            one_status=$?
+            set -e
+            if [ "$one_status" -ne 0 ]; then
+              status=$one_status
+              break
+            fi
+          done
           cat lean-output.log
           if [ "$status" -ne 0 ]; then
             echo "Lean compilation failed with status $status" >&2
@@ -90,7 +105,7 @@ jobs:
               r"'([^']+)' does not depend on any axioms",
               text,
           )
-          expected = 5
+          expected = 10
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
               raise SystemExit(f'expected {expected} staged axiom reports, found {found}')
@@ -109,7 +124,7 @@ jobs:
           out.write_text(report)
           print(report, end='')
           PY
-          echo 'VERIFIED RH prime-prefix exact linear-response finite core.'
+          echo 'VERIFIED RH prime-prefix linear-response and Bregman finite cores.'
 
       - name: Upload verification evidence
         if: always()
@@ -117,7 +132,7 @@ jobs:
         with:
           name: rh-prime-prefix-linear-response-public-evidence
           path: |
-            verification/rh-prime-prefix-linear-response-public/source-blob.txt
+            verification/rh-prime-prefix-linear-response-public/source-blobs.txt
             verification/rh-prime-prefix-linear-response-public/source-sha256.txt
             verification/rh-prime-prefix-linear-response-public/lean-version.txt
             verification/rh-prime-prefix-linear-response-public/lean-output.log
