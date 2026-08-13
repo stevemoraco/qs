@@ -1,0 +1,63 @@
+name: NS dual four-mode Leray switch verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-dual-four-mode-leray-switch-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-dual-four-mode-leray-switch/**'
+      - '.github/workflows/ns-dual-four-mode-leray-switch-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-dual-four-mode-leray-switch'
+          file="$dir/NSDualFourModeLeraySwitch.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='ff94184b0da1ac9257cd7ac079fdec859cc04ad4'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-dual-four-mode-leray-switch'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSDualFourModeLeraySwitch.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED dual four-mode Leray switch finite core.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-dual-four-mode-leray-switch-evidence
+          path: |
+            verification/ns-dual-four-mode-leray-switch/source-blob.txt
+            verification/ns-dual-four-mode-leray-switch/source-sha256.txt
+            verification/ns-dual-four-mode-leray-switch/lean-version.txt
+            verification/ns-dual-four-mode-leray-switch/lean-output.log
