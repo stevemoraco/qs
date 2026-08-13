@@ -129,6 +129,7 @@ jobs:
             echo "source_sha256=$(sha256sum verification/ns-selective-leray-atom/NSSelectiveLerayAtom.lean | awk '{print $1}')"
             echo "environment=lean-4.30.0"
           } > "$OUT/replay-metadata.txt"
+          cat "$OUT/replay-metadata.txt"
 
       - name: Upload exact compiler evidence before verdict
         if: always()
