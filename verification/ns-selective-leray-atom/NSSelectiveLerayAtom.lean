@@ -346,6 +346,55 @@ theorem braid_exterior_pollution_ne_zero :
   have hz := congrArg V3.z h
   norm_num [zero] at hz
 
+/-! Second-generation audit of the coplanar isosceles carrier ledger.
+The first new normal exterior mode has coefficient one in this normalization.
+A later active pair generates the normal mode at -2q with coefficient -2.
+This is a passive-scalar sideband inside the fixed carrier plane, not a
+three-dimensional feedback mechanism. -/
+
+def relayR : V3 := ⟨2, 1, 0⟩
+def relayS : V3 := ⟨1, 2, 0⟩
+def relayMinusS : V3 := ⟨-1, -2, 0⟩
+def relayW : V3 := ⟨0, -2, 0⟩
+
+theorem relay_first_exterior_unit :
+    leray relayR (symSymbol relayR isoA isoN) = isoN := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, relayR, isoA, isoN]
+
+theorem relay_second_generation_double :
+    leray relayW (symSymbol relayW isoA isoN) =
+      smul (-2) isoN := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, relayW, isoA, isoN]
+
+theorem relay_competing_self_pair_zero :
+    leray relayW (symSymbol relayW isoB isoB) = zero := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, relayW, isoB, zero]
+
+theorem relay_second_generation_return :
+    leray relayMinusS (symSymbol relayMinusS isoN isoA) =
+      smul (-2) isoN := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, relayMinusS, isoN, isoA]
+
+theorem relay_normal_pair_no_horizontal_feedback :
+    leray isoP (symSymbol isoP isoN isoN) = zero := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoN, zero]
+
+#print axioms relay_first_exterior_unit
+#print axioms relay_second_generation_double
+#print axioms relay_competing_self_pair_zero
+#print axioms relay_second_generation_return
+#print axioms relay_normal_pair_no_horizontal_feedback
+
 #print axioms carrier_transverse
 #print axioms equal_shell_and_norm
 #print axioms high_symbol_parallel
