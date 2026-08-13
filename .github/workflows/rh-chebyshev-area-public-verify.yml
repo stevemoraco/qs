@@ -34,7 +34,7 @@ jobs:
 
           finite_blob="$(git hash-object "$finite")"
           landau_blob="$(git hash-object "$landau")"
-          test "$finite_blob" = 'e8dfd5092bce73928da11ceea13e563363894c42'
+          test "$finite_blob" = 'f92f1a7c9749173070b405870f4a2903211efeee'
           test "$landau_blob" = '4c178f672979d947b3313bb28497f309c1e3f238'
 
           printf 'finite_blob=%s\nlandau_blob=%s\n' \
