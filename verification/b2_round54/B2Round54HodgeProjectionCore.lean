@@ -6,7 +6,7 @@ def hodgeWitness (i : Fin 6) : Int := if i = 4 then 1 else 0
 
 theorem hodge_projection_core_values :
     And (hodgeWitness 4 = 1) (hodgeWitness 0 = 0) := by
-  norm_num [hodgeWitness]
+  constructor <;> rfl
 
 #print axioms hodge_projection_core_values
 
