@@ -46,6 +46,28 @@ theorem spikeGrowthIncompatibleWithUniformLinearAverage
   have hB := halfFiberLinearBoundForcesWeightBound N B C hN haverage
   linarith
 
+/-- A multiplicity correction cannot simultaneously retain a fixed positive
+amount of every threshold and average arbitrarily large spike weights.
+
+`N` is a fiber size, `w` the corrected weight of each threshold, `c` the
+minimum weight needed to retain the original critical superposition, `B` the
+exceptional shell spike, and `C` the claimed linear-average constant. -/
+theorem criticalFiberRetentionAndSpikeAverageIncompatible
+    (N B w c C : ℝ)
+    (hN : 0 < N)
+    (hB : 0 ≤ B)
+    (hretain : c ≤ w)
+    (hlarge : 2 * C < B * c)
+    (haverage : N * B * w ≤ C * (2 * N)) :
+    False := by
+  have hBw : B * c ≤ B * w :=
+    mul_le_mul_of_nonneg_left hretain hB
+  have hscaled : N * (B * c) ≤ N * (B * w) :=
+    mul_le_mul_of_nonneg_left hBw (le_of_lt hN)
+  have hover : N * (2 * C) < N * (B * c) :=
+    mul_lt_mul_of_pos_left hlarge hN
+  nlinarith
+
 /-- If an exceptional dyadic block occupies half of all thresholds up to `n`
 and every threshold in that block has weight at least eight, then the
 exceptional block alone contributes more than `3n`.
@@ -101,6 +123,7 @@ theorem fourToOneExceptionalImageCountermodel :
 #print axioms imageCardinalityDoesNotBoundRepeatedFiber
 #print axioms halfFiberLinearBoundForcesWeightBound
 #print axioms spikeGrowthIncompatibleWithUniformLinearAverage
+#print axioms criticalFiberRetentionAndSpikeAverageIncompatible
 #print axioms weightEightHalfBlockExceedsThreeTotal
 #print axioms exceptionalBlockOverrunsClaimedLinearBound
 #print axioms fourToOneExceptionalImageCountermodel
