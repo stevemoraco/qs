@@ -29,7 +29,6 @@ theorem refresh_return_product
       load * coupling := by
   unfold refreshLedger returnLedger
   field_simp [hsigma]
-  <;> ring
 
 /-- Positive load and coupling give positive ledgers at every positive pulse
 length. -/
@@ -127,7 +126,7 @@ theorem slaving_window_before_balance
 times, but the first-return exponent is still positive. -/
 theorem slaved_but_return_large
     {alpha beta : ℝ}
-    (hslaved : alpha / 2 < beta)
+    (_hslaved : alpha / 2 < beta)
     (hcheap : beta < alpha - 1) :
     refreshExponent alpha beta < 0 ∧
       0 < returnExponent alpha beta := by
