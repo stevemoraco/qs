@@ -174,6 +174,18 @@ theorem exclusivity_does_not_prove_target :
     ∃ Goal : Prop, (¬ (Goal ∧ ¬ Goal)) ∧ ¬ Goal := by
   exact ⟨False, fun h => h.1, id⟩
 
+/-- Hostile exclusions identify a survivor only after an independently proved
+exhaustiveness theorem says that some route is valid. -/
+theorem survivor_from_exhaustiveness
+    {ι : Type*} (Valid : ι → Prop) (winner : ι)
+    (hexhaustive : ∃ i, Valid i)
+    (hkilled : ∀ i, i ≠ winner → ¬ Valid i) :
+    Valid winner := by
+  rcases hexhaustive with ⟨i, hi⟩
+  by_cases h : i = winner
+  · simpa [h] using hi
+  · exact False.elim (hkilled i h hi)
+
 /-- One solved coordinate cannot imply the full braid by packaging alone. -/
 theorem one_lane_does_not_close_bundle :
     ∃ T : TargetInterfaces, T.pNeNP ∧ ¬ T.allSix := by
@@ -229,6 +241,8 @@ structure UnifiedBraidReceipt (T : TargetInterfaces) : Prop where
       ¬ ∃ w : Nat, ∀ i : Nat, PrefixCert i w
   exclusivityFirewall :
     ∃ Goal : Prop, (¬ (Goal ∧ ¬ Goal)) ∧ ¬ Goal
+  survivorRule : ∀ {ι : Type*} (Valid : ι → Prop) (winner : ι),
+    (∃ i, Valid i) → (∀ i, i ≠ winner → ¬ Valid i) → Valid winner
 
 theorem unified_millennium_braid_executable
     (T : TargetInterfaces) : UnifiedBraidReceipt T := {
@@ -242,6 +256,7 @@ theorem unified_millennium_braid_executable
   finiteInfiniteFirewall :=
     ⟨every_finite_prefix_has_witness, no_global_prefix_witness⟩
   exclusivityFirewall := exclusivity_does_not_prove_target
+  survivorRule := survivor_from_exhaustiveness
 }
 
 #print axioms fires_length
@@ -251,6 +266,7 @@ theorem unified_millennium_braid_executable
 #print axioms no_common_local_witness
 #print axioms no_global_prefix_witness
 #print axioms exclusivity_does_not_prove_target
+#print axioms survivor_from_exhaustiveness
 #print axioms one_lane_does_not_close_bundle
 #print axioms unified_millennium_braid_executable
 
