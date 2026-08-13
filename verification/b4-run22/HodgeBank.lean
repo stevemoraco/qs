@@ -24,7 +24,7 @@ noncomputable section
 /-- The four coefficient channels placed in their six formal bivector
 coordinates. -/
 def phi2 (K : Type*) [CommRing K] :
-    LinearMap K (Fin 4 → K) (Fin 6 → K) where
+    LinearMap (RingHom.id K) (Fin 4 → K) (Fin 6 → K) where
   toFun coeff :=
     ![0, coeff 3, -coeff 2, -coeff 1, coeff 0, 0]
   map_add' left right := by
