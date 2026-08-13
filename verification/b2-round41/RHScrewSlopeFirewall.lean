@@ -27,7 +27,7 @@ theorem linearModel_nonnegative (t : ℝ) :
 /-- The model is subadditive. -/
 theorem linearModel_subadditive (s t : ℝ) :
     linearModel (s + t) ≤ linearModel s + linearModel t := by
-  exact abs_add s t
+  simpa [linearModel] using abs_add_le s t
 
 /-- On the positive ray the exact dyadic increment has slope one. -/
 theorem linearModel_dyadic_increment
