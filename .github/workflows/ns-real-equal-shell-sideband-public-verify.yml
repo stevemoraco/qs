@@ -25,7 +25,7 @@ jobs:
           dir='verification/ns-real-equal-shell-sideband-public'
           file="$dir/RealEqualShellTriadSidebandFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='038b27f97530976108d9a81e65ab8b6fba21b41c'
+          expected_blob='4f6443d6398bd61a73a9f53c85e0cf8181b0079b'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_rh_lean_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
