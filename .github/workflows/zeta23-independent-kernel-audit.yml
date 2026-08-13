@@ -40,7 +40,7 @@ jobs:
             echo "commit=$(git -C external-zeta23 rev-parse HEAD)"
             echo "tree=$(git -C external-zeta23 rev-parse HEAD^{tree})"
             echo "toolchain=$(cat external-zeta23/lean-toolchain)"
-            echo "mathlib=$(jq -r '.packages[] | select(.name == "mathlib") | .rev' external-zeta23/lake-manifest.json)"
+            echo "mathlib=$(jq -r '.packages[] | select(.name == \"mathlib\") | .rev' external-zeta23/lake-manifest.json)"
             sha256sum external-zeta23/comparator/ChallengeDeps.lean
             sha256sum external-zeta23/comparator/Challenge.lean
             sha256sum external-zeta23/comparator/Solution.lean
@@ -50,7 +50,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 verification/zeta23-independent-audit/scan_lean_trust.py external-zeta23             | tee trust-scan.log
+          python3 verification/zeta23-independent-audit/scan_lean_trust.py external-zeta23 \
+            | tee trust-scan.log
 
       - name: Install pinned Lean toolchain
         shell: bash
@@ -71,13 +72,15 @@ jobs:
         working-directory: external-zeta23
         run: |
           set -euo pipefail
-          lake build Zeta23 Solution Solution.Multiplicity Solution.XiPrime 2>&1             | tee ../build.log
+          lake build Zeta23 Solution Solution.Multiplicity Solution.XiPrime 2>&1 \
+            | tee ../build.log
 
       - name: Replay trusted-shape canaries
         shell: bash
         run: |
           set -euo pipefail
-          cp verification/zeta23-independent-audit/ExternalAudit.lean             external-zeta23/ExternalAudit.lean
+          cp verification/zeta23-independent-audit/ExternalAudit.lean \
+            external-zeta23/ExternalAudit.lean
           cd external-zeta23
           lake env lean ExternalAudit.lean 2>&1 | tee ../canary.log
 
@@ -87,10 +90,15 @@ jobs:
         run: |
           set -euo pipefail
           : > ../axioms.log
-          for file in             comparator/PrintAxioms.lean             comparator/PrintAxioms/Multiplicity.lean             comparator/PrintAxioms/XiPrime.lean; do
+          for file in \
+            comparator/PrintAxioms.lean \
+            comparator/PrintAxioms/Multiplicity.lean \
+            comparator/PrintAxioms/XiPrime.lean \
+            comparator/PrintAxioms/PairCeiling.lean; do
             lake env lean "$file" 2>&1 | tee -a ../axioms.log
           done
-          python3 ../verification/zeta23-independent-audit/check_axiom_report.py             ../axioms.log | tee ../axiom-check.log
+          python3 ../verification/zeta23-independent-audit/check_axiom_report.py \
+            ../axioms.log | tee ../axiom-check.log
 
       - name: Upload replay evidence
         if: always()
