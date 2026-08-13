@@ -41,7 +41,9 @@ theorem ScaleCertificate.invariant (C : ScaleCertificate) : Tube C := by
         C.defect (n + 1) ≤
             C.rho * C.defect n + C.epsilon * C.margin := C.step n
         _ ≤ C.rho * C.margin + C.epsilon * C.margin :=
-            add_le_add_right hrho (C.epsilon * C.margin)
+            by
+              simpa [add_comm] using
+                add_le_add_right hrho (C.epsilon * C.margin)
         _ = (C.rho + C.epsilon) * C.margin := by ring
         _ ≤ 1 * C.margin :=
             mul_le_mul_of_nonneg_right C.budget C.margin_nonneg
