@@ -34,6 +34,8 @@ jobs:
           printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           sha256sum "$SRC" | tee source-sha256.txt
+          git status --porcelain=v1 | tee checkout-status.txt
+          test ! -s checkout-status.txt
 
           if grep -nE '\b(sorry|admit|sorryAx)\b' "$SRC"; then
             echo 'Forbidden proof hole detected.' >&2
@@ -55,6 +57,7 @@ jobs:
           curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.32.1
+          "$HOME/.elan/bin/elan" default leanprover/lean4:v4.32.1
           "$HOME/.elan/bin/lean" --version | tee lean-version.txt
 
       - name: Fetch pinned Mathlib cache
@@ -123,11 +126,12 @@ jobs:
           mkdir -p replay-receipt
           cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
           cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp checkout-status.txt replay-receipt/ 2>/dev/null || true
           cp lean-version.txt replay-receipt/ 2>/dev/null || true
           cp verification/rh-suzuki-two-divisor-witness/lean-output.log replay-receipt/ 2>/dev/null || true
           cp verification/rh-suzuki-two-divisor-witness/axiom-report.txt replay-receipt/ 2>/dev/null || true
           git rev-parse HEAD | tee replay-receipt/commit.txt
-          git status --porcelain=v1 | tee replay-receipt/git-status.txt
+          git status --porcelain=v1 | tee replay-receipt/post-run-git-status.txt
 
       - name: Upload replay receipt
         if: always()
