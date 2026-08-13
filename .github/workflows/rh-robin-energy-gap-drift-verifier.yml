@@ -1,6 +1,9 @@
 name: RH gap-drift finite public verifier
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - agent/rh-robin-energy-gap-drift-verifier-20260813-r2
