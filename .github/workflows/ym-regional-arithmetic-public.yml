@@ -1,0 +1,13 @@
+name: YM regional arithmetic verifier
+on:
+  push:
+    branches: [agent/ym-regional-energy-public-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo replay-pending
