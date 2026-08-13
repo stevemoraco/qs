@@ -19,7 +19,7 @@ one pinned Lean/Mathlib project.
 | Navier--Stokes | #976, `9a0b837a6455df07e22a6a89b011a9bc1cb0150e` | `039323b80f1cb8fe89dece3a7380bf81d1b6bf1b` | `86e0497e7ab2747a35908a047209f8f60985415b1808f82af2abe5d2ae838f74` | 15 |
 | Yang--Mills | #983, `46455556507ee0878388c51ad6f048c3f6966674` | `030b4c18fc859434c220caaa3ed01519d229a9fe` | `94ef451cd7ad8fc406892285593feb97943ad619c92b91d23f3d7eb5f2f6b818` | 7 |
 | RH | #992, `5293b4f170a84db5aa7ff3a41167c3308842743e` | `162ff3a480da4a58717eb2fd84da9be0f5a4a213` | `035f470022330ec1af80e3b4cb1170f4fa6aea49beb824d4bb5e6f7da2456901` | 4 |
-| RH Hilbert upgrade | qs #310 candidate | `a0c986a8c11aac7e3a313008c7230382b9212794` | `591640a053f9107a38a31ef11cbcc53e40f97b9e80991fb9cbe48026144bf86a` | 3 |
+| RH Hilbert upgrade | qs #310 candidate | `74381d19753cf811dcd646648a13ba11fa5d10e9` | `3a53d52d82c2d52c5b73cd14e3e78aad23251062b299a78ca6f6d0d20d944162` | 4 |
 
 The replay branch starts from qs `main` at
 `e832133f25f4432ffba007f99359989d1bb16734`.
@@ -102,9 +102,12 @@ reproduced cleanly in run/job `31707539664/94471787302`.
   minimization under nonnegativity.  It assumes neither completeness nor
   coercivity.  It does not construct `D` or `z`, prove range/closed-range or
   residual stability, define the Weil form, or imply RH.
+  It additionally proves the exact coercive penalty
+  `Q(y)-Q(z)>=-||Dz-b||^2/mu` from an explicit `mu>0` form lower bound; it
+  does not supply that lower bound for any Weil operator.
 
 The workflow rejects proof holes, custom trust declarations, and hidden
-computational escapes; requires all 39 requested axiom reports; whitelists
+computational escapes; requires all 40 requested axiom reports; whitelists
 only `propext`, `Quot.sound`, and `Classical.choice`; and preserves the exact
 sources, toolchain, manifest, logs, hashes, and audit summaries even on
 failure.
