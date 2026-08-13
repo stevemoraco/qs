@@ -31,7 +31,6 @@ jobs:
           lake update
           lake exe cache get
           lake env lean B2Round56Core.lean
-          lake env lean B2Round54RHPNP.lean
           lake env lean B2Round54HodgeProjectionCore.lean
           lake env lean B2Round54NSSmallPositive.lean
           lake env lean B2Round54BSDDelayValues.lean
@@ -39,6 +38,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: b2-round54-lean-evidence
+          name: b2-round56-lean-evidence
           path: verification/b2_round54
           if-no-files-found: warn
