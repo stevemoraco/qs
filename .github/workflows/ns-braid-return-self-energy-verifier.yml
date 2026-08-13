@@ -1,0 +1,143 @@
+name: Verify NS braid return self-energy Lean core
+
+on:
+  push:
+    branches:
+      - verification/ns-braid-return-self-energy-20260813
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Trust and provenance preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean
+          test "$(git hash-object "$SRC")" = "a71764d98a2ed22e50bdf6168c55e7c79922ec45"
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = "13c15e0c095c092b0e88918abf07551a398c207cb7e6564d9e60cd28b0a452df"
+          python3 - <<'PY'
+          import pathlib
+          import re
+          text = pathlib.Path(
+              "verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean"
+          ).read_text()
+          forbidden = re.compile(
+              r"(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)"
+              r"([^A-Za-z0-9_]|$)"
+          )
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f"forbidden token: {match.group(2)}")
+          for token in ("Lean.ofReduceBool", "native_decide"):
+              if token in text:
+                  raise SystemExit(f"forbidden token: {token}")
+          if text.count("#print axioms") != 13:
+              raise SystemExit("expected thirteen #print axioms commands")
+          print("trust preflight clean")
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-braid-return-self-energy/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+          source = pathlib.Path(
+              "verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean"
+          ).read_text()
+          payload = json.dumps({
+              "content": source,
+              "environment": "lean-4.30.0",
+              "ignore_imports": True,
+              "mathlib_options": False,
+              "timeout_seconds": 900,
+          }).encode()
+          request = urllib.request.Request(
+              "https://axle.axiommath.ai/api/v1/check",
+              data=payload,
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  "okay": False,
+                  "request_exception": repr(exc),
+                  "lean_messages": {"errors": [], "warnings": []},
+                  "tool_messages": {"errors": []},
+                  "failed_declarations": [],
+              }
+          pathlib.Path(
+              "verification/ns-braid-return-self-energy/evidence/axle-response.json"
+          ).write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Record metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-braid-return-self-energy/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "commit=$GITHUB_SHA"
+            echo "runner=$RUNNER_NAME"
+            echo "source_git_blob=$(git hash-object verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean)"
+            echo "source_sha256=$(sha256sum verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-braid-return-self-energy-evidence
+          path: verification/ns-braid-return-self-energy/evidence/
+          if-no-files-found: error
+
+      - name: Enforce clean compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          path = pathlib.Path(
+              "verification/ns-braid-return-self-energy/evidence/axle-response.json"
+          )
+          if not path.exists():
+              raise SystemExit("missing compiler evidence")
+          result = json.loads(path.read_text())
+          errors = result.get("lean_messages", {}).get("errors", [])
+          warnings = result.get("lean_messages", {}).get("warnings", [])
+          tool_errors = result.get("tool_messages", {}).get("errors", [])
+          failed = result.get("failed_declarations", [])
+          if not result.get("okay") or errors or warnings or tool_errors or failed:
+              raise SystemExit("Lean replay failed or warned")
+          rendered = json.dumps(result)
+          if "sorryAx" in rendered or "Lean.ofReduceBool" in rendered:
+              raise SystemExit("forbidden postcompile dependency")
+          print("warning-free Lean 4.30 replay passed")
+          PY
