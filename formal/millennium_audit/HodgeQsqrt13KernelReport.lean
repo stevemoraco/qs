@@ -1,0 +1,7 @@
+import SixLaneAudit.HodgeQsqrt13FiniteCore
+
+#print axioms SixLaneAudit.hodge_isometric_loop_eq_one_or_neg_one
+#print axioms SixLaneAudit.hodge_rational_span_of_isometric_loops
+#print axioms SixLaneAudit.hodge_irrational_generator_not_in_rational_span
+#print axioms SixLaneAudit.hodge_index_sandwich_base_one
+#print axioms SixLaneAudit.hodge_index_sandwich_base_thirteen
