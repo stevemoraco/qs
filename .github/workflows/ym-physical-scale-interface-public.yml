@@ -15,7 +15,7 @@ jobs:
       - name: Verify exact Lean source
         run: |
           set -euo pipefail
-          test "$(git hash-object verification/ym_physical_scale_interface/PhysicalScaleInterfaceFirewall.lean)" = ad34e493e3e4cf8abb855ff46a2ed8728c8f9799
+          test "$(git hash-object verification/ym_physical_scale_interface/PhysicalScaleInterfaceFirewall.lean)" = d7d22aaa47f3a9479e6dc2d467621bb8752ff488
           python3 - <<'PY'
           import json, pathlib, urllib.request
           source = pathlib.Path('verification/ym_physical_scale_interface/PhysicalScaleInterfaceFirewall.lean').read_text()
