@@ -93,7 +93,7 @@ theorem smoothPrimitive_sub_raw
   ring
 
 /-- Algebraic cocycle law for interval increments. -/
-def intervalIncrement (K u v : ℝ) : ℝ :=
+noncomputable def intervalIncrement (K u v : ℝ) : ℝ :=
   smoothPrimitive K v - smoothPrimitive K u
 
 theorem intervalIncrement_add
@@ -101,7 +101,6 @@ theorem intervalIncrement_add
     intervalIncrement K u v + intervalIncrement K v w =
       intervalIncrement K u w := by
   simp [intervalIncrement]
-  ring
 
 /-- Order-theoretic continuum firewall: decreasing into `r` and increasing out
 of `r` reduces the whole interval minimum to the single event candidate `r`. -/
