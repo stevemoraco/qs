@@ -49,7 +49,7 @@ unlocalized derivative scaling, while `cutoff (1/s)` records that a fixed
 physical cutoff becomes `χ(Z/s)` in the rescaled coordinates. -/
 def cutoff (x : ℝ) : ℝ := x
 
-def fixedCutoffScaledVisibility (s : ℝ) : ℝ :=
+noncomputable def fixedCutoffScaledVisibility (s : ℝ) : ℝ :=
   s ^ 2 * cutoff (1 / s) ^ 2
 
 /-- Keeping a nonconstant cutoff fixed destroys exact degree-two
