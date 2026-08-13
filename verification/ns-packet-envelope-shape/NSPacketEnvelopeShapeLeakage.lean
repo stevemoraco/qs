@@ -54,7 +54,6 @@ theorem fixed_residual_to_marked_ratio
   unfold residualSq markedSq
   have hsq : μ₃ ^ 2 ≠ 0 := pow_ne_zero 2 hμ₃
   field_simp
-  ring
 
 /-- The same identity written without division: concentration multiplies the
 marked and residual channels by the same factor. -/
