@@ -1,173 +1,151 @@
 import Mathlib
 
 namespace Millennium
-namespace UnifiedPass2
+namespace UnifiedPass3
 
-namespace RHCore
+namespace HodgeCore
 
-def posPart (x : ℝ) := max x 0
-
-def energy (x : ℝ) := posPart x ^ 2 / 2
-
-def residual (a b : ℝ) := posPart b * (b - a) - (energy b - energy a)
-
-theorem residual_nonneg (a b : ℝ) : 0 ≤ residual a b := by
-  unfold residual energy posPart
-  by_cases hb : 0 ≤ b
-  · rw [max_eq_left hb]
-    by_cases ha : 0 ≤ a
-    · rw [max_eq_left ha]
-      nlinarith [sq_nonneg (b - a)]
-    · have ha' : a ≤ 0 := le_of_not_ge ha
-      rw [max_eq_right ha']
-      nlinarith [mul_nonpos_of_nonpos_of_nonneg ha' hb]
-  · have hb' : b ≤ 0 := le_of_not_ge hb
-    rw [max_eq_right hb']
-    by_cases ha : 0 ≤ a
-    · rw [max_eq_left ha]
-      positivity
-    · have ha' : a ≤ 0 := le_of_not_ge ha
-      rw [max_eq_right ha']
-      norm_num
-
-theorem edge_identity (theta delta mu nu y : ℝ) :
-    -(2 * theta + delta) * y + (theta - mu) * y + (theta - nu) * y =
-      -(delta + mu + nu) * y := by ring
-
-theorem abel_floor (delta mu nu omega : ℝ)
-    (hd : 0 ≤ delta) (hm : 0 ≤ mu) (hn : 0 ≤ nu) :
-    delta ^ 2 ≤ (delta + mu + nu) ^ 2 + omega ^ 2 := by
-  have hmn : 0 ≤ mu + nu := add_nonneg hm hn
-  have hc : 0 ≤ 2 * delta * (mu + nu) :=
-    mul_nonneg (mul_nonneg (by norm_num) hd) hmn
-  nlinarith [sq_nonneg (mu + nu), sq_nonneg omega]
-
-theorem schur_residual (A B D y : ℝ) (hD : D ≠ 0) :
-    A - B ^ 2 / D =
-      (A - 2 * B * y + D * y ^ 2) - (D * y - B) ^ 2 / D := by
-  field_simp [hD]
-  ring
-
-theorem exact_tail_residual (B D : ℝ) (hD : D ≠ 0) :
-    D * (B / D) - B = 0 := by field_simp [hD]
-end RHCore
-
-namespace PNPCore
-
-theorem sampling_bound : ((3 : ℚ) / 4) ^ 8 < (1 : ℚ) / 8 := by norm_num
-
-theorem repetition (N L t : ℕ) (h : N + 1 ≤ (2 * L + 3) * t) :
-    N < (2 * L + 3) * t := by omega
-
-theorem padding (N ell M p : ℕ) (he : ell ≤ N) (hM : M ≤ 13 * N * ell) :
-    M - p ≤ 13 * N * N := by
+theorem cycle_compatible_transfer
+    {ZX ZY HX HY : Type} (clX : ZX → HX) (clY : ZY → HY)
+    (includeH : HY → HX) (projectH : HX → HY) (projectZ : ZX → ZY)
+    (alpha : HY) (hsection : projectH (includeH alpha) = alpha)
+    (hcompat : ∀ z, projectH (clX z) = clY (projectZ z))
+    (hnon : alpha ∉ Set.range clY) : includeH alpha ∉ Set.range clX := by
+  rintro ⟨z, hz⟩
+  apply hnon
+  refine ⟨projectZ z, ?_⟩
   calc
-    M - p ≤ M := Nat.sub_le _ _
-    _ ≤ 13 * N * ell := hM
-    _ ≤ 13 * N * N := Nat.mul_le_mul_left (13 * N) he
+    clY (projectZ z) = projectH (clX z) := (hcompat z).symm
+    _ = projectH (includeH alpha) := by rw [hz]
+    _ = alpha := hsection
 
-theorem uniform_contrapositive
-    (PEqNP Small Major : Prop) (hU : PEqNP → Small)
-    (hE : Small → Major) (hL : ¬ Major) : ¬ PEqNP := by
-  intro h
-  exact hL (hE (hU h))
-
-theorem eventual_majorant (h : ℕ → ℕ)
-    (hg : ∀ C, ∃ n0, ∀ n, n0 ≤ n → C + 1 ≤ h n) (C : ℕ) :
-    ∃ n0, ∀ n, n0 ≤ n → C < h n := by
-  obtain ⟨n0, hn⟩ := hg C
-  exact ⟨n0, fun n h0 => Nat.lt_of_succ_le (hn n h0)⟩
-
-theorem absorb_multiplier (K b C H : ℕ) (hb : 1 ≤ b)
-    (hK : K ≤ b) (hCH : C + 1 ≤ H) : K * b ^ C ≤ b ^ H := by
+theorem projector_exhaustion
+    {Z H : Type} (cl : Z → H) (pH : H → H) (pZ : Z → Z) (alpha : H)
+    (hfix : pH alpha = alpha) (hcompat : ∀ z, pH (cl z) = cl (pZ z))
+    (hAlg : alpha ∈ Set.range cl) :
+    alpha ∈ Set.range (fun z => cl (pZ z)) := by
+  rcases hAlg with ⟨z, hz⟩
+  refine ⟨z, ?_⟩
   calc
-    K * b ^ C ≤ b * b ^ C := Nat.mul_le_mul_right (b ^ C) hK
-    _ = b ^ (C + 1) := by simp [pow_succ, Nat.mul_comm]
-    _ ≤ b ^ H := Nat.pow_le_pow_right (by omega) hCH
+    cl (pZ z) = pH (cl z) := (hcompat z).symm
+    _ = pH alpha := by rw [hz]
+    _ = alpha := hfix
 
-theorem one_child_lt_one (l r : ℚ) (h : (l + r) / 2 < 1) :
-    l < 1 ∨ r < 1 := by
-  by_contra hn
-  push Not at hn
+theorem projector_algebraicity_iff
+    {Z H : Type} (cl : Z → H) (pH : H → H) (pZ : Z → Z) (alpha : H)
+    (hfix : pH alpha = alpha) (hcompat : ∀ z, pH (cl z) = cl (pZ z)) :
+    alpha ∈ Set.range cl ↔ alpha ∈ Set.range (fun z => cl (pZ z)) := by
+  constructor
+  · exact projector_exhaustion cl pH pZ alpha hfix hcompat
+  · rintro ⟨z, hz⟩
+    exact ⟨pZ z, hz⟩
+end HodgeCore
+
+namespace NSCore
+
+theorem critical_scaling (L lambda r : ℝ) (hL : L ≠ 0) :
+    (L ^ 2 * lambda) * (r / L) ^ 2 = lambda * r ^ 2 := by
+  field_simp [hL]
+
+theorem twist_scaling (L q g v t : ℝ) (hL : L ≠ 0) :
+    (L ^ 2 * q) * (L ^ 2 * g) * (v / L ^ 3) * (t / L ^ 2) =
+      (q * g * v * t) / L := by
+  field_simp [hL]
+
+theorem no_uniform_charge (J c : ℝ) (hJ : 0 < J) (hc : 0 < c) :
+    ∃ L : ℝ, 0 < L ∧ J / L < c := by
+  let L := J / c + 1
+  have hL : 0 < L := by dsimp [L]; positivity
+  refine ⟨L, hL, ?_⟩
+  rw [div_lt_iff₀ hL]
+  dsimp [L]
+  field_simp [ne_of_gt hc]
+  nlinarith
+
+theorem helicity_reversal {ell m h : ℝ}
+    (he : 0 < ell) (hem : ell < m) (hmh : m < h) :
+    (m - ell) / (h - ell) < m / h ∧ m / h < (m + ell) / (h + ell) := by
+  have hh : 0 < h := lt_trans (lt_trans he hem) hmh
+  have hhe : 0 < h - ell := sub_pos.mpr (lt_trans hem hmh)
+  have hhp : 0 < h + ell := add_pos hh he
+  constructor
+  · apply (div_lt_div_iff₀ hhe hh).2
+    nlinarith [mul_pos he (sub_pos.mpr hmh)]
+  · apply (div_lt_div_iff₀ hh hhp).2
+    nlinarith [mul_pos he (sub_pos.mpr hmh)]
+end NSCore
+
+namespace YMCore
+
+theorem cumulative_budget (m d : ℕ → ℝ)
+    (hstep : ∀ k, m (k + 1) ≥ m k - d k) :
+    ∀ n, m n ≥ m 0 - ∑ k ∈ Finset.range n, d k := by
+  intro n
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      have hs := hstep n
+      rw [Finset.sum_range_succ]
+      linarith
+
+theorem gap_survives_margin (d0 d dN loss : ℝ)
+    (hp : d0 - loss ≤ dN) (hl : loss ≤ d0 - d) : d ≤ dN := by
   linarith
 
-theorem terminal_potential_zero (n : ℕ) (h : (n : ℚ) < 1) : n = 0 := by
-  have hn : n < 1 := by exact_mod_cast h
-  omega
+theorem summable_defect_can_close_gap :
+    ∃ d0 loss d1 : ℝ, 0 < d0 ∧ 0 ≤ loss ∧ d0 - loss ≤ d1 ∧ ¬ 0 < d1 := by
+  refine ⟨1, 1, 0, ?_, ?_, ?_, ?_⟩ <;> norm_num
 
-theorem terminal_count_zero (n : ℕ) (q : ℚ)
-    (hq : q = n) (h : q < 1) : n = 0 := by
-  apply terminal_potential_zero n
-  simpa [hq] using h
+theorem fixed_time_contraction_implies_gap (Lambda c m tau : ℝ)
+    (ht : 0 < tau)
+    (hc : Real.exp (-m * tau) ≤ Real.exp (-(c * Lambda) * tau)) :
+    c * Lambda ≤ m := by
+  have hlin : -m * tau ≤ -(c * Lambda) * tau := (Real.exp_le_exp).mp hc
+  have hcoeff : -m ≤ -(c * Lambda) := (mul_le_mul_right ht).mp hlin
+  linarith
 
-def W (k n : ℕ) : Prop := k < n
+theorem quadratic_margin_step (rho r q q' E : ℝ)
+    (hrho : 0 ≤ rho) (hr : 0 ≤ r) (hq : 0 ≤ q)
+    (hqb : q ≤ rho * r) (hp : q' ≤ q ^ 2 + E)
+    (hE : E ≤ (rho - rho ^ 2) * r ^ 2) : q' ≤ rho * r ^ 2 := by
+  have hrr : 0 ≤ rho * r := mul_nonneg hrho hr
+  have hsq : q ^ 2 ≤ (rho * r) ^ 2 := by nlinarith
+  calc
+    q' ≤ q ^ 2 + E := hp
+    _ ≤ (rho * r) ^ 2 + (rho - rho ^ 2) * r ^ 2 := add_le_add hsq hE
+    _ = rho * r ^ 2 := by ring
+end YMCore
 
-theorem quantifier_firewall :
-    (∀ k, ∃ n, W k n) ∧ ¬ (∃ n, ∀ k, W k n) := by
-  constructor
-  · exact fun k => ⟨k + 1, Nat.lt_succ_self k⟩
-  · rintro ⟨n, hn⟩
-    exact (Nat.lt_irrefl n) (hn n)
+structure ExactPass3 : Prop where
+  hodgeProjector : ∀ {Z H : Type} (cl : Z → H) (pH : H → H)
+    (pZ : Z → Z) (a : H), pH a = a →
+      (∀ z, pH (cl z) = cl (pZ z)) →
+      (a ∈ Set.range cl ↔ a ∈ Set.range (fun z => cl (pZ z)))
+  nsScaling : ∀ L lambda r : ℝ, L ≠ 0 →
+    (L ^ 2 * lambda) * (r / L) ^ 2 = lambda * r ^ 2
+  nsNoUniformCharge : ∀ J c : ℝ, 0 < J → 0 < c →
+    ∃ L : ℝ, 0 < L ∧ J / L < c
+  ymBudget : ∀ m d : ℕ → ℝ, (∀ k, m (k + 1) ≥ m k - d k) →
+    ∀ n, m n ≥ m 0 - ∑ k ∈ Finset.range n, d k
+  ymCounterexample : ∃ d0 loss d1 : ℝ,
+    0 < d0 ∧ 0 ≤ loss ∧ d0 - loss ≤ d1 ∧ ¬ 0 < d1
 
-theorem quarter_integral (ell : ℕ) (h : 2 ≤ ell) : 4 ∣ 2 ^ ell := by
-  rw [show ell = 2 + (ell - 2) by omega, pow_add]
-  norm_num
-end PNPCore
+theorem exactPass3 : ExactPass3 := {
+  hodgeProjector := HodgeCore.projector_algebraicity_iff
+  nsScaling := NSCore.critical_scaling
+  nsNoUniformCharge := NSCore.no_uniform_charge
+  ymBudget := YMCore.cumulative_budget
+  ymCounterexample := YMCore.summable_defect_can_close_gap }
 
-namespace BSDCore
+#print axioms HodgeCore.cycle_compatible_transfer
+#print axioms HodgeCore.projector_algebraicity_iff
+#print axioms NSCore.critical_scaling
+#print axioms NSCore.no_uniform_charge
+#print axioms NSCore.helicity_reversal
+#print axioms YMCore.cumulative_budget
+#print axioms YMCore.fixed_time_contraction_implies_gap
+#print axioms YMCore.quadratic_margin_step
+#print axioms exactPass3
 
-theorem faithful_realization {V W : Type} (f : V → W)
-    (hf : Function.Injective f) {x y : V} (h : f x = f y) : x = y := hf h
-
-theorem unit_ambiguity : ∃ x y : ℤ, x ≠ y ∧ x * x = y * y := by
-  refine ⟨1, -1, ?_, ?_⟩ <;> norm_num
-
-def haar (d : ℝ) := d⁻¹ ^ 2
-
-def jacobian (d : ℝ) := d⁻¹ ^ 4
-
-def inverseDensity (d : ℝ) := d ^ 2
-
-def transformed (d : ℝ) := inverseDensity d * jacobian d
-
-def naivelySquared (d : ℝ) := haar d * haar d
-
-theorem transformed_eq_haar {d : ℝ} (hd : d ≠ 0) :
-    transformed d = haar d := by
-  field_simp [transformed, inverseDensity, jacobian, haar, hd]
-  ring
-
-theorem determinant_two_mismatch : transformed 2 ≠ naivelySquared 2 := by
-  norm_num [transformed, inverseDensity, jacobian, naivelySquared, haar]
-end BSDCore
-
-structure ExactPass2 : Prop where
-  rhResidual : ∀ a b : ℝ, 0 ≤ RHCore.residual a b
-  rhEdge : ∀ t d m n y : ℝ,
-    -(2*t+d)*y + (t-m)*y + (t-n)*y = -(d+m+n)*y
-  pnpSampling : ((3 : ℚ) / 4) ^ 8 < (1 : ℚ) / 8
-  pnpQuantifiers : (∀ k, ∃ n, PNPCore.W k n) ∧ ¬ (∃ n, ∀ k, PNPCore.W k n)
-  bsdAmbiguity : ∃ x y : ℤ, x ≠ y ∧ x*x = y*y
-  bsdMismatch : BSDCore.transformed 2 ≠ BSDCore.naivelySquared 2
-
-theorem exactPass2 : ExactPass2 := {
-  rhResidual := RHCore.residual_nonneg
-  rhEdge := RHCore.edge_identity
-  pnpSampling := PNPCore.sampling_bound
-  pnpQuantifiers := PNPCore.quantifier_firewall
-  bsdAmbiguity := BSDCore.unit_ambiguity
-  bsdMismatch := BSDCore.determinant_two_mismatch }
-
-#print axioms RHCore.residual_nonneg
-#print axioms RHCore.abel_floor
-#print axioms RHCore.schur_residual
-#print axioms PNPCore.sampling_bound
-#print axioms PNPCore.eventual_majorant
-#print axioms PNPCore.one_child_lt_one
-#print axioms PNPCore.quantifier_firewall
-#print axioms BSDCore.transformed_eq_haar
-#print axioms BSDCore.determinant_two_mismatch
-#print axioms exactPass2
-
-end UnifiedPass2
+end UnifiedPass3
 end Millennium
