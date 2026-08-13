@@ -59,11 +59,39 @@ theorem sampleQuarterIntegral
     (256 * n * L) / 4 = 64 * n * L := by
   omega
 
+/-- Algebra behind the whole-weight-four-core estimate.  The hypothesis
+`Q >= (2b-1)M` is exactly what turns more than `Q/b-M` false positives into
+at least a `1/(2b)` fraction of the complement core. -/
+theorem wholeCoreScaledDensity
+    (b Q M : ℚ)
+    (h : (2 * b - 1) * M ≤ Q) :
+    Q - M ≤ 2 * (Q - b * M) := by
+  nlinarith
+
+/-- If an error edge contains at least a `1/(2b)` fraction of a fixed core,
+uniform core weight gives edge mass at least one and total mass `2b`. -/
+theorem inverseLinearCoreEdgeMass
+    (b H e : ℚ)
+    (hH : 0 < H)
+    (he : H ≤ 2 * b * e) :
+    1 ≤ (2 * b * e) / H := by
+  exact (le_div_iff₀ hH).2 (by simpa using he)
+
+/-- Total mass of the inverse-linear uniform core weighting. -/
+theorem inverseLinearCoreTotalMass
+    (b H : ℚ)
+    (hH : 0 < H) :
+    (2 * b * H) / H = 2 * b := by
+  field_simp [ne_of_gt hH]
+
 #print axioms sliceRestrictionBudget
 #print axioms quarterCoreEdgeMass
 #print axioms quarterCoreTotalMass
 #print axioms quarterCoreAverage
 #print axioms sampleQuarterIntegral
+#print axioms wholeCoreScaledDensity
+#print axioms inverseLinearCoreEdgeMass
+#print axioms inverseLinearCoreTotalMass
 
 end PNPCommonHardCoreFinite
 end MillenniumBraid
