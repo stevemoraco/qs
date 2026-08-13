@@ -25,7 +25,7 @@ jobs:
           dir='formal/rh_positive_excess_chain'
           file="$dir/RHPositiveExcessChainFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='ec961fc213825451338a3c7d9a7b3396c3d3b923'
+          expected_blob='60ca3856729500a7dbfc2a69258d4e52e4f4f570'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
