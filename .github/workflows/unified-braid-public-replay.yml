@@ -18,21 +18,28 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout public verifier
+        uses: actions/checkout@v4
 
-      - name: Fetch immutable sources and verify Git blobs
+      - name: Checkout immutable RH-Lean source commit
+        uses: actions/checkout@v4
+        with:
+          repository: stevemoraco/RH-Lean
+          ref: 99a0d103251d29fcd370fc23ca358cffefd2beb1
+          path: upstream-rh-lean
+
+      - name: Copy exact sources and verify Git blobs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p verification/unified_braid/exact_sources
 
-          curl --fail --location --retry 8 --retry-all-errors \
-            'https://raw.githubusercontent.com/stevemoraco/RH-Lean/2d86000b4782b147c2443b6f2244db25e75ede6c/Millennium/GrandBraid/UnifiedSevenProblemBraid.lean' \
-            -o verification/unified_braid/exact_sources/UnifiedSevenProblemBraid.lean
-
-          curl --fail --location --retry 8 --retry-all-errors \
-            'https://raw.githubusercontent.com/stevemoraco/RH-Lean/99a0d103251d29fcd370fc23ca358cffefd2beb1/Millennium/GrandBraid/MutualExclusivityAudit.lean' \
-            -o verification/unified_braid/exact_sources/MutualExclusivityAudit.lean
+          cp \
+            upstream-rh-lean/Millennium/GrandBraid/UnifiedSevenProblemBraid.lean \
+            verification/unified_braid/exact_sources/UnifiedSevenProblemBraid.lean
+          cp \
+            upstream-rh-lean/Millennium/GrandBraid/MutualExclusivityAudit.lean \
+            verification/unified_braid/exact_sources/MutualExclusivityAudit.lean
 
           test "$(git hash-object verification/unified_braid/exact_sources/UnifiedSevenProblemBraid.lean)" \
             = 'c335b15902470af581f4b5cc4c7ec00e254aee6d'
