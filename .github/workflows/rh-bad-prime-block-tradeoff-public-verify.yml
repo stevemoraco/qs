@@ -40,6 +40,7 @@ jobs:
           RHRootPrefixBlockTransfer.lean 9f8b2f0c075505b788165e46d84ba71a8006983e
           RHRootPrefixHilbertEnergyFinite.lean 00494a772aa37c2bba5054da3a03a62192d3338f
           RHDyadicRootHilbertTransferFinite.lean 33d099731a6c0cfd6b30b1df26eada0a3596213b
+          RHSingleDampedCriterionFinite.lean 596e0c0eff3a07db98f0ef0a890c89a28fa8b893
           EOF
 
       - name: Reject placeholders and custom trust escapes
@@ -55,6 +56,7 @@ jobs:
               root / 'RHRootPrefixBlockTransfer.lean',
               root / 'RHRootPrefixHilbertEnergyFinite.lean',
               root / 'RHDyadicRootHilbertTransferFinite.lean',
+              root / 'RHSingleDampedCriterionFinite.lean',
           ]
           patterns = [
               r'^\s*(sorry|admit)\b',
@@ -97,6 +99,7 @@ jobs:
             RHRootPrefixBlockTransfer.lean \
             RHRootPrefixHilbertEnergyFinite.lean \
             RHDyadicRootHilbertTransferFinite.lean \
+            RHSingleDampedCriterionFinite.lean \
             | tee source-sha256.log
           : > lean-output.log
           for file in \
@@ -104,7 +107,8 @@ jobs:
             RHBadPrimeMomentTradeoff.lean \
             RHRootPrefixBlockTransfer.lean \
             RHRootPrefixHilbertEnergyFinite.lean \
-            RHDyadicRootHilbertTransferFinite.lean
+            RHDyadicRootHilbertTransferFinite.lean \
+            RHSingleDampedCriterionFinite.lean
           do
             echo "=== $file ===" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
@@ -180,6 +184,17 @@ jobs:
                   'dyadic_norm_exponent_identity',
                   'dyadic_norm_exponent_negative',
               ],
+              'RHSingleDampedCriterionFinite': [
+                  'fixed_damped_block_margin',
+                  'fixed_damped_block_exponent_identity',
+                  'factorized_fixed_weight_lower',
+                  'factorized_fixed_weight_upper',
+                  'hardy_weight_product',
+                  'dyadic_fixed_weight_margin',
+                  'single_series_criterion',
+                  'logarithmic_hardy_denominator_shift',
+                  'choose_fixed_damped_loss',
+              ],
           }
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           for namespace, names in namespaces.items():
@@ -210,7 +225,7 @@ jobs:
           PY
           test -s source-sha256.log
           test -s mathlib-commit.log
-          echo 'VERIFIED RH block, moment, root, Hilbert, and transfer finite cores.'
+          echo 'VERIFIED RH block, moment, root, Hilbert, transfer, and fixed-damping finite cores.'
 
       - name: Upload replay evidence
         if: always()
