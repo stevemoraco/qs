@@ -7,7 +7,15 @@ def sub(x,y): return tuple(a-b for a,b in zip(x,y))
 def scale(c,x): return tuple(c*a for a in x)
 def dot(x,y): return sum(a*b for a,b in zip(x,y))
 def cross(x,y): return (x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0])
-def leray(k,x): return sub(x,scale(F(dot(k,x),dot(k,k)),k))
+def leray(k,x):
+    kk=dot(k,k)
+    if kk==0:
+        # The zero Fourier mode is not projected.  In every use below its
+        # convective raw vector vanishes; assert that fact rather than divide
+        # by zero or silently choose a convention.
+        assert x==(0,0,0)
+        return x
+    return sub(x,scale(F(dot(k,x),kk),k))
 def leray_num(k,x): return sub(scale(dot(k,k),x),scale(dot(k,x),k))
 def bilinear(k,uk,l,ul):
     out=add(k,l)
