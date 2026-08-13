@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym-faizal-constant-adjoint/FaizalConstantAdjointFirewallV2.lean
-          test "$(git hash-object "$SRC")" = b0ba0b91f2dbc2ea6a7b66b36d544b9f49bbff3c
+          test "$(git hash-object "$SRC")" = f725bce72abececa34b914cf55e1fe9ff8e3fb83
           python3 - <<'PY'
           import json, pathlib, re, urllib.request
           source_path = pathlib.Path('verification/ym-faizal-constant-adjoint/FaizalConstantAdjointFirewallV2.lean')
