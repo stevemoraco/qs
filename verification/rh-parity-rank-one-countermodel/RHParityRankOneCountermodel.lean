@@ -63,7 +63,7 @@ the entire eigendirection is one-dimensional.  The word "simple" here means
 exactly the displayed spanning assertion; no infinite-dimensional spectral or
 Perron--Frobenius theorem is imported. -/
 theorem simpleNegativePositiveGeneratorCertificate
-    {𝕜 : Type*} [LinearOrderedField 𝕜] :
+    {𝕜 : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜] :
     (positiveGenerator : OneDimSector 𝕜) ≠ 0 ∧
       (0 : 𝕜) < positiveGenerator 0 ∧
       scalarEnergy (-1 : 𝕜) positiveGenerator = -1 ∧
@@ -80,7 +80,7 @@ theorem simpleNegativePositiveGeneratorCertificate
 uniform over every linear ordered field and therefore applies to both `ℚ` and
 `ℝ`. -/
 theorem parityRankOneOrderReversal
-    {𝕜 : Type*} [LinearOrderedField 𝕜] :
+    {𝕜 : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜] :
     let Bₑ : 𝕜 := -1
     let Bₒ : 𝕜 := 1 / 2
     let C : 𝕜 := 1
@@ -95,7 +95,7 @@ theorem parityRankOneOrderReversal
 order reversal: pole-free even is negative, pole-free odd is positive, but the
 full odd energy is strictly below the full even energy. -/
 theorem generatorEnergyOrderReversal
-    {𝕜 : Type*} [LinearOrderedField 𝕜] :
+    {𝕜 : Type*} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜] :
     scalarEnergy (-1 : 𝕜) positiveGenerator = -1 ∧
       scalarEnergy (1 / 2 : 𝕜) positiveGenerator = 1 / 2 ∧
       evenFullEnergy (-1 : 𝕜) 1 positiveGenerator = 1 ∧
