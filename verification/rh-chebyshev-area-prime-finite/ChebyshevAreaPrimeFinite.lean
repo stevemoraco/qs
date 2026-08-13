@@ -64,6 +64,7 @@ theorem primeMoment_succ (n : ℕ) :
   unfold primeMoment
   rw [Finset.sum_range_succ]
   push_cast
+  rfl
 
 /-- Exact update of the finite area after adding the next possible prime. -/
 theorem primeArea_succ (n : ℕ) (x : ℝ) :
