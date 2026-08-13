@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           file='formal/rh-semilocal-reality-positivity/RHSemilocalRealityPositivityFirewall.lean'
-          expected='5a6b58cac60d03abe6ac136af9c38023d86eef11'
+          expected='c1604c6e6f313b99e73735d475562f3198b6b638'
           actual="$(git hash-object "$file")"
           printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
           test "$actual" = "$expected"
