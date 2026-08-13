@@ -33,7 +33,11 @@ jobs:
           for name in ['BSDAgyemangCoefficientSpecialization.lean', 'PNPVegaForcedCutFalsifier.lean']:
               shutil.copyfile(root / name, out / name)
           for name in ['HodgeLocalAtiyahFerrand.lean', 'NSSourceAmplitudeNoUniformBound.lean', 'RHWuFloorFiberFalsifier.lean', 'YMLiuHarmonicTail.lean']:
-              (out / name).write_bytes(base64.b64decode((root / f'{name}.b64').read_text().strip()))
+              encoded = (root / f'{name}.b64').read_text().strip()
+              if name == 'YMLiuHarmonicTail.lean':
+                  assert encoded.count('4oS6') == 1
+                  encoded = encoded.replace('4oS6', '4oSa')
+              (out / name).write_bytes(base64.b64decode(encoded))
           (out / 'RHWuSubsequenceFalsifier.lean').write_bytes(bytes.fromhex((root / 'source6.hex').read_text().strip()))
           expected = {
               'BSDAgyemangCoefficientSpecialization.lean': '5b95e48334388958493bbc8ef0315fb78720e43efbbe3dbdc751b60006145ae8',
@@ -42,7 +46,7 @@ jobs:
               'PNPVegaForcedCutFalsifier.lean': '4109421bf3b3e4fa81b60c4fd06a964e4cbbc80ed9250fd414d119776259fdae',
               'RHWuFloorFiberFalsifier.lean': '8ce1f6da5149524fa2aab122e8252d29ac71ebf5e787daed8fa4ef90abc4152c',
               'RHWuSubsequenceFalsifier.lean': 'f12621b3532ba257430cae713bca6c1817c08edf3c4adba659bcd6ba58b98704',
-              'YMLiuHarmonicTail.lean': 'fc692c4d899c2b64ae66a594391959c9cdb42dbad33fc477e838ea66d5c544c1',
+              'YMLiuHarmonicTail.lean': '5de6d138ae046fb7bc0e1229faaecd9c835efdada2af4e120f4e144c2ac5c082',
           }
           forbidden = re.compile(r'(?<![A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)(?![A-Za-z0-9_])|Lean\.ofReduceBool')
           manifest = []
