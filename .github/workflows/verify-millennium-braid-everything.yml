@@ -122,6 +122,7 @@ jobs:
           : > module-replay.tsv
           mkdir -p module-logs
           status=0
+          lake build BSDToupinHaarInversionFirewall HodgeRationalIntegralFirewall NSSelectiveLerayAtom PNPParityWordInjection PerelmanCompletionRouteEquivalenceFirewall RHPureSimpleZeroNoCoercivity SeventhObjectRouteEquivalenceFirewall YMJacobsenActivityFirewall
           for src in lean-worker/{MillenniumBraidAll,BSDToupinHaarInversionFirewall,HodgeRationalIntegralFirewall,NSSelectiveLerayAtom,PNPParityWordInjection,PerelmanCompletionRouteEquivalenceFirewall,RHPureSimpleZeroNoCoercivity,SeventhObjectRouteEquivalenceFirewall,YMJacobsenActivityFirewall}.lean; do
             module=$(basename "$src" .lean)
             if lake env lean "$src" > "module-logs/$module.log" 2>&1; then
