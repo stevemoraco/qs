@@ -75,15 +75,18 @@ theorem scale_budget_gives_sixth_power_return_margin
     (hscale : r * M ^ 8 ≤ K) :
     r * M ^ 2 / K ≤ 1 / M ^ 6 := by
   have hM0 : M ≠ 0 := ne_of_gt hM
-  have hK0 : K ≠ 0 := ne_of_gt hK
   have hM6 : 0 < M ^ 6 := by positivity
-  have hKM6 : 0 < K * M ^ 6 := mul_pos hK hM6
+  have hpow : r * M ^ 2 * M ^ 6 ≤ K := by
+    calc
+      r * M ^ 2 * M ^ 6 = r * M ^ 8 := by ring
+      _ ≤ K := hscale
+  have hdiv : r * M ^ 2 ≤ K / M ^ 6 :=
+    (le_div_iff₀ hM6).2 hpow
   apply (div_le_iff₀ hK).2
-  apply (le_div_iff₀ hM6).2
   calc
-    r * M ^ 2 * M ^ 6 = r * M ^ 8 := by ring
-    _ ≤ K := hscale
-    _ = K * 1 := by ring
+    r * M ^ 2 ≤ K / M ^ 6 := hdiv
+    _ = (1 / M ^ 6) * K := by
+      field_simp [hM0]
 
 #print axioms cleared_rational_circle_identity
 #print axioms pythagorean_carrier_radius
