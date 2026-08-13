@@ -1,0 +1,157 @@
+name: RH Chebyshev area public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-chebyshev-area-public-verifier-20260813-gpt56
+    paths:
+      - 'verification/rh-chebyshev-area-public/**'
+      - '.github/workflows/rh-chebyshev-area-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-chebyshev-area-public/**'
+      - '.github/workflows/rh-chebyshev-area-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-area-public'
+          finite="$dir/ChebyshevAreaFinite.lean"
+          landau="$dir/ChebyshevAreaLandauSkeleton.lean"
+
+          finite_blob="$(git hash-object "$finite")"
+          landau_blob="$(git hash-object "$landau")"
+          test "$finite_blob" = 'e8dfd5092bce73928da11ceea13e563363894c42'
+          test "$landau_blob" = '4c178f672979d947b3313bb28497f309c1e3f238'
+
+          printf 'finite_blob=%s\nlandau_blob=%s\n' \
+            "$finite_blob" "$landau_blob" | tee "$dir/source-blobs.txt"
+          sha256sum "$finite" "$landau" | tee "$dir/source-sha256.txt"
+
+          files=("$finite" "$landau")
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "${files[@]}"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "${files[@]}"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-area-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+
+          : > lean-output.log
+          for file in ChebyshevAreaFinite.lean ChebyshevAreaLandauSkeleton.lean; do
+            echo "=== $file ===" | tee -a lean-output.log
+            set +e
+            lake env lean "$file" >> lean-output.log 2>&1
+            status=$?
+            set -e
+            cat lean-output.log
+            if [ "$status" -ne 0 ]; then
+              echo "$file compilation failed with status $status" >&2
+              exit "$status"
+            fi
+          done
+
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+
+      - name: Enforce foundation-only axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/rh-chebyshev-area-public/lean-output.log'
+          )
+          text = path.read_text()
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          expected = 14
+          found = len(with_axioms) + len(without_axioms)
+          if found != expected:
+              raise SystemExit(
+                  f'expected {expected} staged axiom reports, found {found}'
+              )
+
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {
+                  part.strip()
+                  for part in payload.split(',')
+                  if part.strip()
+              }
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(
+                      f'{theorem} has non-foundation axioms: {sorted(extra)}'
+                  )
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+
+          report = '\n'.join(sorted(rows)) + '\n'
+          out = pathlib.Path(
+              'verification/rh-chebyshev-area-public/axiom-report.txt'
+          )
+          out.write_text(report)
+          print(report, end='')
+          PY
+          echo 'VERIFIED RH Chebyshev area finite and logical skeleton cores.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-chebyshev-area-public-evidence
+          path: |
+            verification/rh-chebyshev-area-public/source-blobs.txt
+            verification/rh-chebyshev-area-public/source-sha256.txt
+            verification/rh-chebyshev-area-public/lean-version.txt
+            verification/rh-chebyshev-area-public/lean-output.log
+            verification/rh-chebyshev-area-public/axiom-report.txt
+          if-no-files-found: warn
