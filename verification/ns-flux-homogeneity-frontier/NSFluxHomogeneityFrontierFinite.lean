@@ -113,7 +113,7 @@ theorem pavesi_two_axis_no_constant
 /-- The two independent exponent deficits in the advertised estimate are
 exactly one missing amplitude power and two missing frequency powers. -/
 theorem pavesi_ratio_scaling_identity
-    (A C n x : ℝ) :
+    (A n x : ℝ) :
     (A * n * x ^ 3) * n = A * n ^ 2 * x * x ^ 2 := by
   ring
 
