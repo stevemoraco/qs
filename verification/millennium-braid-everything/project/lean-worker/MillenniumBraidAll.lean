@@ -1,6 +1,7 @@
 import Mathlib
 
 -- BSD / arithmetic firewalls
+import BSDToupinHaarInversionFirewall
 
 -- Hodge / algebraic-cycle firewalls
 import HodgeRationalIntegralFirewall
