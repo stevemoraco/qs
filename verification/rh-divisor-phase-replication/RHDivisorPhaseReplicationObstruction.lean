@@ -40,12 +40,17 @@ theorem replicated_target_jump_forces_cell
     (htarget : 1 ≤ f 1)
     (hnonneg : ∀ n, 0 ≤ f n) :
     1 ≤ f m := by
-  have hrec1 := hrec 1 (by omega)
+  have hrec1 : f 1 = f 0 + jump 1 := by
+    simpa using hrec 1 (by omega)
   have hrecm := hrec m hm
   have hprev := hnonneg (m - 1)
   have hjump : 1 ≤ jump 1 := by
     omega
-  omega
+  calc
+    1 ≤ jump 1 := hjump
+    _ = jump m := hrepl.symm
+    _ ≤ f (m - 1) + jump m := by omega
+    _ = f m := hrecm.symm
 
 /-- Nonnegativity and the target cell alone do not control another cell when
 jump replication is absent. -/
