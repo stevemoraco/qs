@@ -3,21 +3,20 @@ import Mathlib
 /-!
 # Yang--Mills finite detected-spectrum common-exponent firewall
 
-This file isolates the exact scalar obstruction behind a finite spectral
-argument: a mode of energy `E` detected with positive weight `A` cannot
-obey an exponential upper bound with exponent `m > E`.
+This file isolates the exact scalar obstruction behind the following finite
+spectral argument: a mode of energy `E` detected with positive weight `A`
+cannot obey an eventual upper bound with exponent `m > E`.
 
 The first theorem produces a concrete certificate time. The second converts
-an all-time bound into `m ≤ E`. The last theorem applies the scalar result to
-every mode in a finite covered family.
-
-This does not formalize a Yang--Mills measure, Osterwalder--Schrader
-reconstruction, a transfer matrix, a continuum Hamiltonian, or the Clay
-Yang--Mills existence and mass-gap statement.
+an eventual bound into `m ≤ E`. The last theorem applies the scalar result to
+every mode in a finite detected family. No continuum limit, transfer matrix,
+Hamiltonian construction, or Yang--Mills existence theorem is formalized.
 -/
 
 namespace MillenniumBraid
 namespace YMTotalFamilyFinite
+
+open Filter
 
 /-- If `A > 0`, `C ≥ 0`, and `E < m`, the explicit nonnegative time
 `(C / A + 1) / (m - E)` makes the slower exponential strictly dominate. -/
@@ -35,8 +34,7 @@ theorem explicitCertificateTime
     div_nonneg (by linarith) (le_of_lt hgap)
   constructor
   · exact ht
-  · have hlinear :
-        C < A * (1 + (m - E) * ((C / A + 1) / (m - E))) := by
+  · have hlinear : C < A * (1 + (m - E) * ((C / A + 1) / (m - E))) := by
       field_simp
       nlinarith
     have hexpLower :
@@ -46,11 +44,10 @@ theorem explicitCertificateTime
         Real.add_one_le_exp ((m - E) * ((C / A + 1) / (m - E)))
     have hscaled :
         C < A * Real.exp ((m - E) * ((C / A + 1) / (m - E))) :=
-      lt_of_lt_of_le hlinear
-        (mul_le_mul_of_nonneg_left hexpLower (le_of_lt hA))
+      lt_of_lt_of_le hlinear (mul_le_mul_of_nonneg_left hexpLower (le_of_lt hA))
     have hmul :=
-      (mul_lt_mul_right
-        (Real.exp_pos (-m * ((C / A + 1) / (m - E))))).mpr hscaled
+      mul_lt_mul_of_pos_right hscaled
+        (Real.exp_pos (-m * ((C / A + 1) / (m - E))))
     calc
       C * Real.exp (-m * ((C / A + 1) / (m - E))) <
           (A * Real.exp ((m - E) * ((C / A + 1) / (m - E)))) *
