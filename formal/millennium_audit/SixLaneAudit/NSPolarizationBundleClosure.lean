@@ -19,15 +19,37 @@ def smul (a : ℝ) (u : V3) : V3 := ⟨a * u.x, a * u.y, a * u.z⟩
 noncomputable def leray (k s : V3) : V3 :=
   sub s (smul (dot s k / dot k k) k)
 
+theorem dot_comm (u v : V3) : dot u v = dot v u := by
+  simp [dot]
+  ring
+
+theorem dot_sub_right (u v w : V3) :
+    dot u (sub v w) = dot u v - dot u w := by
+  simp [dot, sub]
+  ring
+
+theorem dot_smul_right (u v : V3) (a : ℝ) :
+    dot u (smul a v) = a * dot u v := by
+  simp [dot, smul]
+  ring
+
 /-- At every nonzero carrier, the explicit Leray projector lands in the full
 transverse polarization fiber.  This is the exact fixed-carrier closure fact
 needed after the one-polarization relay obstruction. -/
 theorem leray_transverse (k s : V3) (hkk : dot k k ≠ 0) :
     dot k (leray k s) = 0 := by
-  unfold leray
-  simp [dot, sub, smul] at hkk ⊢
-  field_simp [hkk]
-  ring
+  calc
+    dot k (leray k s) =
+        dot k s - dot k (smul (dot s k / dot k k) k) := by
+      rw [show leray k s = sub s (smul (dot s k / dot k k) k) by rfl]
+      exact dot_sub_right k s (smul (dot s k / dot k k) k)
+    _ = dot k s - (dot s k / dot k k) * dot k k := by
+      rw [dot_smul_right]
+    _ = dot s k - (dot s k / dot k k) * dot k k := by
+      rw [dot_comm k s]
+    _ = 0 := by
+      rw [div_mul_cancel₀ (dot s k) hkk]
+      ring
 
 /-- The carrier appearing in the hostile isosceles relay after the reciprocal
 interaction, together with the selected and orthogonal polarization lines. -/
@@ -75,6 +97,9 @@ theorem isoR_not_in_isoA_line :
   norm_num [isoR, isoA, smul] at hy hz
   linarith
 
+#print axioms dot_comm
+#print axioms dot_sub_right
+#print axioms dot_smul_right
 #print axioms leray_transverse
 #print axioms iso_transverse_iff_x_zero
 #print axioms iso_two_polarizations_span_transverse
