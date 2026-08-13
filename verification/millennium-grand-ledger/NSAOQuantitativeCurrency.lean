@@ -189,6 +189,29 @@ theorem dyadic_ao_currency : DyadicAOCurrency where
   modulationMargin := fun j =>
     (modulation_to_carrier_identity j).trans (inverse_shell_eq_half_pow j)
 
+/-- The finite, theorem-bearing portion of the current AO gate.  The nonlinear
+contraction theorem above is kept separately because its profile space is
+polymorphic; the PDE work is precisely to instantiate it. -/
+structure AOQuantitativeCore : Prop where
+  transversality : ∀ {beta F1r F1beta gprime : ℝ},
+    0 < beta → 0 < F1r → F1beta < 0 → gprime < 0 →
+      -2 * beta * F1r - F1beta * gprime < 0
+  linearRetuning : ∀ {a b c d u v : ℝ}, a * d - b * c ≠ 0 →
+    let x := (b * v - d * u) / (a * d - b * c)
+    let y := (c * u - a * v) / (a * d - b * c)
+    a * x + b * y + u = 0 ∧ c * x + d * y + v = 0
+  marginStability : ∀ {reference margin error : ℝ},
+    2 * margin ≤ reference → |error| ≤ margin →
+      margin ≤ reference + error
+  currency : DyadicAOCurrency
+
+theorem ao_quantitative_core : AOQuantitativeCore where
+  transversality := fun hbeta hF1r hF1beta hgprime =>
+    batchelor_jacobian_negative hbeta hF1r hF1beta hgprime
+  linearRetuning := fun hdet => cramer_retuning hdet
+  marginStability := fun href herror => open_margin_survives href herror
+  currency := dyadic_ao_currency
+
 #print axioms batchelor_jacobian_negative
 #print axioms cramer_retuning
 #print axioms open_margin_survives
@@ -198,5 +221,6 @@ theorem dyadic_ao_currency : DyadicAOCurrency where
 #print axioms viscosity_to_growth_identity
 #print axioms dyadic_pump_energy_uniformly_bounded
 #print axioms dyadic_ao_currency
+#print axioms ao_quantitative_core
 
 end NSAOQuantitativeCurrency
