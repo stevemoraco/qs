@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-connes-rayleigh-gap/RHConnesRayleighGap.lean
-          EXPECTED=d76ede98f110cad1dbba12bfeddabd61dacbb5a9929b3056640a33ac478cf851
+          EXPECTED=201f591adb02bf822a257eb25f67b18fc6fe5ae6498b2e3c346d2c1ac51494f6
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
