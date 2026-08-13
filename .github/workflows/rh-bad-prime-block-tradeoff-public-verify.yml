@@ -1,0 +1,139 @@
+name: RH bad-prime block public Lean replay
+
+on:
+  push:
+    branches:
+      - verification/rh-bad-prime-block-tradeoff-public-replay-20260813
+    paths:
+      - 'verification/rh-bad-prime-block-tradeoff/**'
+      - '.github/workflows/rh-bad-prime-block-tradeoff-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-bad-prime-block-tradeoff/**'
+      - '.github/workflows/rh-bad-prime-block-tradeoff-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/rh-bad-prime-block-tradeoff/RHBadPrimeBlockTradeoff.lean'
+          actual=$(git hash-object "$file")
+          expected='128f7a5536e06c64999d3484c1d922ab4f40b070'
+          echo "canonical RH-Lean blob: $expected"
+          echo "public verifier blob:   $actual"
+          test "$actual" = "$expected"
+
+      - name: Reject placeholders and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path(
+              'verification/rh-bad-prime-block-tradeoff/'
+              'RHBadPrimeBlockTradeoff.lean'
+          )
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in patterns:
+              match = re.search(pattern, stripped, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install exact Lean and Mathlib pins, compile, and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root='verification/rh-bad-prime-block-tradeoff'
+          lean --version | tee "$root/toolchain.log"
+          lake --version | tee -a "$root/toolchain.log"
+          cd "$root"
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.log
+          sha256sum RHBadPrimeBlockTradeoff.lean | tee source-sha256.log
+          lake env lean RHBadPrimeBlockTradeoff.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import pathlib, re
+          out = pathlib.Path('lean-output.log').read_text()
+          expected = [
+              'persistence_exponent_identity',
+              'guth_maynard_improves_huxley',
+              'guth_maynard_window_admissible',
+              'dirichlet_block_exponent_identity',
+              'dirichlet_block_exponent_positive',
+              'symmetric_window_identity',
+              'symmetric_window_guth_maynard',
+              'symmetric_depth_stronger',
+              'symmetric_dirichlet_exponent_identity',
+              'symmetric_positive_choice',
+              'counting_dimension_positive',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for name in expected:
+              pattern = (
+                  rf"RHBadPrimeBlockTradeoff\.{name}' depends on axioms: "
+                  rf"\[([^\]]*)\]"
+              )
+              match = re.search(pattern, out)
+              if not match:
+                  raise SystemExit(f'missing axiom report for {name}')
+              actual = {
+                  item.strip()
+                  for item in match.group(1).split(',')
+                  if item.strip()
+              }
+              unexpected = actual - allowed
+              if unexpected:
+                  raise SystemExit(
+                      f'unexpected axioms for {name}: {sorted(unexpected)}'
+                  )
+              print(f'{name}: accepted axioms {sorted(actual)}')
+          PY
+          test -s source-sha256.log
+          test -s mathlib-commit.log
+          echo 'VERIFIED RH bad-prime block finite tradeoff core.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-bad-prime-block-public-verification-evidence
+          path: |
+            verification/rh-bad-prime-block-tradeoff/lean-output.log
+            verification/rh-bad-prime-block-tradeoff/source-sha256.log
+            verification/rh-bad-prime-block-tradeoff/toolchain.log
+            verification/rh-bad-prime-block-tradeoff/mathlib-commit.log
+          if-no-files-found: warn
