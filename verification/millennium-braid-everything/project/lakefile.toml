@@ -1,6 +1,6 @@
 name = "RHLeanUnified"
 version = "0.1.0"
-defaultTargets = ["MillenniumBraidAll"]
+defaultTargets = ["MillenniumBraidAll", "MillenniumExpandedCandidate"]
 
 [[require]]
 name = "mathlib"
@@ -19,5 +19,258 @@ roots = [
   "PerelmanCompletionRouteEquivalenceFirewall",
   "RHPureSimpleZeroNoCoercivity",
   "SeventhObjectRouteEquivalenceFirewall",
-  "YMJacobsenActivityFirewall"
+  "YMJacobsenActivityFirewall",
+  "MillenniumExpandedCandidate"
+]
+
+[[lean_lib]]
+name = "ExpandedBank01"
+srcDir = "Millennium/BSD"
+roots = [
+  "KugaSatoObjectFirewall"
+]
+
+[[lean_lib]]
+name = "ExpandedBank02"
+srcDir = "Millennium/Hodge"
+roots = [
+  "SecantIntersectionFirewall"
+]
+
+[[lean_lib]]
+name = "ExpandedBank03"
+srcDir = "Millennium/NavierStokes"
+roots = [
+  "AOWindowedColumnScaling",
+  "AccumulatingForceFirewall",
+  "FiniteCarrierIsolation",
+  "FiniteEnergyNoBlowupFirewall",
+  "Helical345Core",
+  "HelicalStarRotorCore",
+  "HyperbolicRelayCore",
+  "IsoscelesExteriorRatioCore",
+  "IsoscelesExteriorRenormalizationCore",
+  "NineDirectionStressCone",
+  "NinePolarizationCarrierDesign",
+  "StarViscosityEnergyGate"
+]
+
+[[lean_lib]]
+name = "ExpandedBank04"
+srcDir = "Millennium/PNP"
+roots = [
+  "GraphWalkConstraintFirewall"
+]
+
+[[lean_lib]]
+name = "ExpandedBank05"
+srcDir = "Millennium/RH"
+roots = [
+  "ChebyshevPositiveBregmanFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank06"
+srcDir = "Millennium/YangMills"
+roots = [
+  "ChiralityAbsorptionFirewall"
+]
+
+[[lean_lib]]
+name = "ExpandedBank07"
+srcDir = "millennium/p-vs-np"
+roots = [
+  "AdversarySpectrumLabelBarrier",
+  "AlgebraicFiberEmbedding",
+  "BasisOrientationComplexity",
+  "ExactThreeCNFCore",
+  "FiberFloorBarrier",
+  "FourierPhaseEmbedding",
+  "IsospectralUniversality",
+  "LexicographicRangeAvoidance",
+  "NonlinearProjectionUniversality",
+  "NormalFormBarrier",
+  "RestrictionUniversalFiber",
+  "SpectralCSPLabelBarrier",
+  "SpectralProofComplexityBarrier",
+  "StretchNonrange"
+]
+
+[[lean_lib]]
+name = "ExpandedBank08"
+srcDir = "millennium/rh"
+roots = [
+  "TwoThirdsOperatorAlgebra"
+]
+
+[[lean_lib]]
+name = "ExpandedBank09"
+srcDir = "scratch/b3"
+roots = [
+  "CriticalPathExactSlackFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank10"
+srcDir = "scratch/bsd_braid"
+roots = [
+  "AdelicRestrictednessFinite",
+  "BocksteinDefectArea",
+  "CasselsTatePrimaryFiniteNoGo",
+  "CrossPrimeRationalCoherenceFinite",
+  "EulerPlateauStopping",
+  "FINITE_PRIME_SQUARE_CORE",
+  "FiniteControlEulerCharacteristicFinite",
+  "FiniteLevelTorsionGrowth",
+  "GlobalPositivityExactification",
+  "JetCapacityObstruction",
+  "ShapeScaleFiniteDifference",
+  "UnitBlindness"
+]
+
+[[lean_lib]]
+name = "ExpandedBank11"
+srcDir = "scratch/hodge_braid"
+roots = [
+  "BoundaryVanishingForcesInterior",
+  "RationalEigenlineDescentFinite",
+  "SecantIntersectionFatalFinite",
+  "WeilFieldOrbitGate"
+]
+
+[[lean_lib]]
+name = "ExpandedBank12"
+srcDir = "scratch/millennium"
+roots = [
+  "NAVIER_STOKES_QUARTIC_GAP_COUNTEREXAMPLE",
+  "NS_MixedSupportCounterexample"
+]
+
+[[lean_lib]]
+name = "ExpandedBank13"
+srcDir = "scratch/millennium_braid"
+roots = [
+  "B3_BSD_KuriharaCurvature",
+  "B4_QUANTITATIVE_CORES",
+  "B4_SIGN_CERTIFIED_TRUNCATION",
+  "BSDCyclicRelaxationRigidity",
+  "ExcessSlotCharging",
+  "HodgeProjectorCountermodel",
+  "NSAOAxialReflection",
+  "NSThresholdZeroCountermodel",
+  "PNPMcspPaddingNoGo",
+  "PNPQuantifierObstructionFinite",
+  "PNPQuantifierSwapCountermodel",
+  "PNPRestrictionAveraging",
+  "YANG_MILLS_POLYMER_SCALAR_CORE",
+  "YMClaimAuditCounterexamples",
+  "YMTwoLoopNormalFormFinite",
+  "YMUniformGapCountermodels"
+]
+
+[[lean_lib]]
+name = "ExpandedBank14"
+srcDir = "scratch/millennium_braid/run14"
+roots = [
+  "PNPUnitMaskBarrierFinite",
+  "RH4ChristoffelFloorFinite",
+  "RHGumbelEndpointFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank15"
+srcDir = "scratch/navier_stokes_braid"
+roots = [
+  "PositiveScaleNoMinimum"
+]
+
+[[lean_lib]]
+name = "ExpandedBank16"
+srcDir = "scratch/pvsnp_braid"
+roots = [
+  "AffineCodeDualCheckFinite",
+  "BlockUnitSurplusFinite",
+  "CJWPaddingExponentNoGo",
+  "DecodableGeneratorBarrierFinite",
+  "DenseHitterSliceTightFinite",
+  "ExponentialPaddingConservation",
+  "LowDimAffineSparseSupersetFinite",
+  "ProjectionCylinderFloorFinite",
+  "SystematicDenseHitterGateFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank17"
+srcDir = "scratch/rh_braid"
+roots = [
+  "AntiDiagonalExteriorFinite",
+  "BivariateExteriorFinite",
+  "BivariateExteriorScalarFinite",
+  "BivariateTwoPointFinite",
+  "CenteredFiniteDifferenceExteriorFinite",
+  "ChebyshevAmplifiedFiniteDifferenceFinite",
+  "ChebyshevCascadeFinite",
+  "ConstantModePoleNeutralFactor",
+  "CorrectedGreenFinite",
+  "Cos2JDensityTransitionNoGo",
+  "Cos2JSupportDensityFinite",
+  "Cos4RationalCore",
+  "CramerDepthExponentFinite",
+  "CramerLpDepthFinite",
+  "CramerShortIntervalDepthFinite",
+  "FejerRieszDepthOptimizerFinite",
+  "HausdorffBinomialConditioningFinite",
+  "HermiteExteriorFinite",
+  "JointMinimaxGreenFinite",
+  "LocalCellEnergyFinite",
+  "PoleNeutralTwoModeArchFactor",
+  "PrimeEnergyFiniteCore",
+  "PrimeErrorSpikePersistenceFinite",
+  "RHGumbelPrimePairCancellationFinite",
+  "RHTentRayFinite",
+  "SupportCostDepthFinite",
+  "SupportOptimalMarginFinite",
+  "SurjectiveNegativeIndexCore",
+  "SurjectivePullbackNegative",
+  "SuzukiShiftCountermodel",
+  "TotalVariationOuterStepFinite",
+  "TranslationExteriorFinite",
+  "TranslationPairDeterminant",
+  "XiHausdorffFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank18"
+srcDir = "scratch/yang_mills_braid"
+roots = [
+  "CutoffGapLimitNoGoFinite",
+  "CyclicObservableGapFinite",
+  "FiniteObservableFrameGapCore",
+  "FiniteObservableListNoGo",
+  "FixedNeighborhoodCannotRunToInfinity",
+  "FlagClassFunctionObstructionFinite",
+  "FrameToFineGapCertificateFinite",
+  "MarginalCubicNotStrictLinearContraction",
+  "MarginalRobustFinite",
+  "TotalObservableCommonBaseFinite",
+  "VacuumLeakageGapBudgetFinite"
+]
+
+[[lean_lib]]
+name = "ExpandedBank19"
+srcDir = "verification/run14"
+roots = [
+  "B7QuantitativeCore",
+  "HodgeTransfer",
+  "MillenniumRun14",
+  "NSTriadOutputFrequency",
+  "NSVanishingThreshold",
+  "PNPExponentRatio",
+  "PNPPaddingTradeoff",
+  "PNPQuantifierGap",
+  "SchurComplementFinite",
+  "TempleFinite",
+  "TwoScaleFrameFinite",
+  "YMAbsoluteDefectGapFirewall",
+  "YMGapBudget"
 ]
