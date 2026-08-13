@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym-physical-scale-firewall/PhysicalScaleFirewall.lean
-          test "$(git hash-object "$SRC")" = 15112e75338c02e09848a3be9937c1f33d8c475c
+          test "$(git hash-object "$SRC")" = 51682d6b77b7070efb33e3d10f121475fed7151c
           python3 - <<'PY'
           import json, pathlib, urllib.request
           source = pathlib.Path('verification/ym-physical-scale-firewall/PhysicalScaleFirewall.lean').read_text()
