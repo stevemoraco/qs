@@ -1,0 +1,63 @@
+name: RH Johnston clipped public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-johnston-clipped-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-johnston-clipped-public/**'
+      - '.github/workflows/rh-johnston-clipped-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-johnston-clipped-public'
+          file="$dir/RHJohnstonClippedPrimePrefix.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='15f2072590885509f7fbeea520618788c9b4e415'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-johnston-clipped-public'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHJohnstonClippedPrimePrefix.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED RH Johnston clipped prime-prefix finite reduction.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-johnston-clipped-public-evidence
+          path: |
+            verification/rh-johnston-clipped-public/source-blob.txt
+            verification/rh-johnston-clipped-public/source-sha256.txt
+            verification/rh-johnston-clipped-public/lean-version.txt
+            verification/rh-johnston-clipped-public/lean-output.log
