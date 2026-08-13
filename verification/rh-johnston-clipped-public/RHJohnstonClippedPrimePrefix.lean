@@ -2,6 +2,8 @@ import Mathlib
 
 namespace RHJohnstonClippedPrimePrefix
 
+noncomputable section
+
 /-- On one prime gap, Johnston's unweighted Chebyshev deficit has the form
 `energy + (x-theta)^2/2`, where `theta` and `energy` are frozen prime-prefix
 data. -/
@@ -158,5 +160,7 @@ theorem gap_positive_iff_energy_plus_clipped_penalty
 #print axioms clipped_minimum
 #print axioms gap_positive_iff_clipped_certificate
 #print axioms gap_positive_iff_energy_plus_clipped_penalty
+
+end
 
 end RHJohnstonClippedPrimePrefix
