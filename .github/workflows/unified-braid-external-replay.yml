@@ -1,0 +1,61 @@
+name: Unified Millennium braid public replay
+
+on:
+  push:
+    branches:
+      - verification/unified-braid-public-replay-20260813-b
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch exact canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=https://raw.githubusercontent.com/stevemoraco/RH-Lean/3dce47cf3828aec7bec8d9cf528a2ac4d72c6480/Millennium/Unified/UnifiedMillenniumBraid.lean
+          curl -fsSL "$url" -o /tmp/UnifiedMillenniumBraid.lean
+          sha256sum /tmp/UnifiedMillenniumBraid.lean | tee unified-source.sha256
+          ! grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' /tmp/UnifiedMillenniumBraid.lean
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned project dependencies
+        working-directory: formal/millennium_audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay
+        working-directory: formal/millennium_audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean /tmp/UnifiedMillenniumBraid.lean | tee unified-braid.log
+          grep -q '^true$' unified-braid.log
+          ! grep -q sorryAx unified-braid.log
+
+      - name: Preserve replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-replay
+          path: |
+            /tmp/UnifiedMillenniumBraid.lean
+            unified-source.sha256
+            formal/millennium_audit/unified-braid.log
