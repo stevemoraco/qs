@@ -1,5 +1,6 @@
 import PNPWeightedDual
 import PNPFullCubeRandomWalk
+import PNPHammingBallFlux
 
 #print axioms PNPFullCubeDual.weighted_cover_mass_lower_bound
 #print axioms PNPFullCubeRandomWalk.swapFirst_length
@@ -15,3 +16,6 @@ import PNPFullCubeRandomWalk
 #print axioms PNPFullCubeRandomWalk.odd_slice_descent
 #print axioms PNPFullCubeRandomWalk.three_step_success_count
 #print axioms PNPFullCubeRandomWalk.iterate_descent
+#print axioms PNPHammingBallFlux.choose_boundary_identity
+#print axioms PNPHammingBallFlux.boundary_flux_nonincrease
+#print axioms PNPHammingBallFlux.hamming_ball_boundary_flux_nonincrease
