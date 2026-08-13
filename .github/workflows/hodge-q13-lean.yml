@@ -1,0 +1,51 @@
+name: Hodge Qsqrt13 Lean CI
+
+on:
+  push:
+    branches:
+      - automation/hodge-q13-finite-core-lean-20260813
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=formal/millennium_audit/SixLaneAudit/HodgeQsqrt13FiniteCore.lean
+          ! grep -nE '\b(sorry|admit|sorryAx|native_decide|Lean\.ofReduceBool)\b' "$file"
+          ! grep -nE '^[[:space:]]*(axiom|opaque|unsafe)\b' "$file"
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve dependencies
+        working-directory: formal/millennium_audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Replay
+        working-directory: formal/millennium_audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake build SixLaneAudit
+          lake env lean SixLaneAudit/HodgeQsqrt13FiniteCore.lean
+          lake env lean HodgeQsqrt13KernelReport.lean | tee hodge-q13-kernel-report.log
+          ! grep -q 'sorryAx' hodge-q13-kernel-report.log
