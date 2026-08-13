@@ -47,11 +47,7 @@ theorem residual_partial_sum_eq_one
     (n : ℕ)
     (t : ℝ) :
     (∑ k ∈ Finset.range (n + 1), residual k t) = 1 := by
-  induction n with
-  | zero => simp [residual]
-  | succ n ih =>
-      rw [Finset.sum_range_succ]
-      simpa [residual] using ih
+  simp [residual]
 
 /-- Elementary epsilon-delta definition of a zero left limit. -/
 def LeftLimitZero (f : ℝ → ℝ) (T : ℝ) : Prop :=
