@@ -431,7 +431,7 @@ def master_source(candidates, rejected_count, baseline_count, theorem_names):
     declarations = sum(candidate.decls for candidate in candidates)
     theorem_syntax = sum(candidate.thms for candidate in candidates)
     bank_count = len(theorem_names)
-    theorem_manifest = ",\n  ".join(theorem_names)
+    theorem_manifest = ",\n    ".join("``" + name for name in theorem_names)
     return f"""import Mathlib
 {imports}
 namespace UnifiedMillenniumPublicBank
@@ -482,44 +482,43 @@ private def mkBalancedAndBundle
     layer := next
   return layer[0]!
 
-syntax (name := bundleTheoremsCmd)
-  "#bundle_theorems " ident " from [" ident,* "]" : command
+elab "#bundleAcceptedCorpusKernel" : command => do
+  let theoremNames : Array Name := #[
+    {theorem_manifest}
+  ]
+  if theoremNames.isEmpty then
+    throwError "the accepted-theorem manifest is empty"
+  Command.liftTermElabM do
+    let env ← getEnv
+    let mut seen : NameSet := {{}}
+    let mut leaves : Array (Expr × Expr) := #[]
+    for n in theoremNames do
+      if seen.contains n then
+        throwError m!"duplicate theorem in manifest: {{n}}"
+      seen := seen.insert n
+      let some info := env.find? n
+        | throwError m!"unknown theorem: {{n}}"
+      match info with
+      | .thmInfo _ => pure ()
+      | _ => throwError m!"accepted entry is not a theorem declaration: {{n}}"
+      let levels := List.replicate info.levelParams.length Level.zero
+      let proof := mkConst n levels
+      let type ← inferType proof
+      unless (← isProp type) do
+        throwError m!"theorem did not instantiate to Prop: {{n}}"
+      leaves := leaves.push (type, proof)
+    let (type, value) ← mkBalancedAndBundle leaves
+    addDecl <| Declaration.thmDecl {{
+      name := Name.str
+        (Name.str Name.anonymous "UnifiedMillenniumPublicBank")
+        "acceptedCorpusKernelBundle"
+      levelParams := []
+      type
+      value
+    }}
+    logInfo m!"bundled {{leaves.size}} theorem constants into acceptedCorpusKernelBundle"
 
-elab_rules : command
-  | \x60(#bundle_theorems $out:ident from [$ids:ident,*]) => do
-      let ids := ids.getElems
-      if ids.isEmpty then
-        throwErrorAt out "the accepted-theorem manifest is empty"
-      let outName := (← getCurrNamespace) ++ out.getId
-      Command.liftTermElabM do
-        let env ← getEnv
-        let mut seen : NameSet := {{}}
-        let mut leaves : Array (Expr × Expr) := #[]
-        for id in ids do
-          let n ← resolveGlobalConstNoOverload id
-          if seen.contains n then
-            throwErrorAt id m!"duplicate theorem in manifest: {{n}}"
-          seen := seen.insert n
-          let some info := env.find? n
-            | throwErrorAt id m!"unknown theorem: {{n}}"
-          match info with
-          | .thmInfo _ => pure ()
-          | _ => throwErrorAt id m!"accepted entry is not a theorem declaration: {{n}}"
-          let levels := List.replicate info.levelParams.length Level.zero
-          let proof := mkConst n levels
-          let type ← inferType proof
-          unless (← isProp type) do
-            throwErrorAt id m!"theorem did not instantiate to Prop: {{n}}"
-          leaves := leaves.push (type, proof)
-        let (type, value) ← mkBalancedAndBundle leaves
-        addDecl <| Declaration.thmDecl {{
-          name := outName, levelParams := [], type, value
-        }}
-        logInfoAt out m!"bundled {{leaves.size}} theorem constants into {{outName}}"
-
-#bundle_theorems acceptedCorpusKernelBundle from [
-  {theorem_manifest}
-]
+#bundleAcceptedCorpusKernel
 
 #check UnifiedMillenniumBraid.millennium_perelman_inversion_executable
 #check acceptedCorpusKernelBundle
