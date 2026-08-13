@@ -22,16 +22,18 @@ jobs:
         run: |
           set -euo pipefail
           dir='verification/rh-johnston-clipped-public'
-          file="$dir/RHJohnstonClippedPrimePrefix.lean"
-          actual_blob="$(git hash-object "$file")"
-          expected_blob='15f2072590885509f7fbeea520618788c9b4e415'
-          test "$actual_blob" = "$expected_blob"
-          printf 'canonical_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
-          sha256sum "$file" | tee "$dir/source-sha256.txt"
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
-          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
-          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
-      - name: Install pinned Lean and compile exact source
+          clipped="$dir/RHJohnstonClippedPrimePrefix.lean"
+          recurrence="$dir/RHJohnstonPrimeEnergyRecurrence.lean"
+          test "$(git hash-object "$clipped")" = '15f2072590885509f7fbeea520618788c9b4e415'
+          test "$(git hash-object "$recurrence")" = '1796e83a8742864f763577e3de435b8e1a8c3742'
+          { git hash-object "$clipped"; git hash-object "$recurrence"; } | tee "$dir/source-blobs.txt"
+          sha256sum "$clipped" "$recurrence" | tee "$dir/source-sha256.txt"
+          for file in "$clipped" "$recurrence"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+          done
+      - name: Install pinned Lean and compile exact sources
         shell: bash
         run: |
           set -euo pipefail
@@ -44,20 +46,23 @@ jobs:
           lake update
           lake exe cache get
           set +e
-          lake env lean RHJohnstonClippedPrimePrefix.lean > lean-output.log 2>&1
-          status=$?
+          lake env lean RHJohnstonClippedPrimePrefix.lean > clipped-output.log 2>&1
+          s1=$?
+          lake env lean RHJohnstonPrimeEnergyRecurrence.lean > recurrence-output.log 2>&1
+          s2=$?
           set -e
-          cat lean-output.log
-          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          cat clipped-output.log recurrence-output.log | tee lean-output.log
+          if [ "$s1" -ne 0 ]; then exit "$s1"; fi
+          if [ "$s2" -ne 0 ]; then exit "$s2"; fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
-          echo 'VERIFIED RH Johnston clipped prime-prefix finite reduction.'
+          echo 'VERIFIED RH Johnston clipped reduction and prime-energy recurrence.'
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rh-johnston-clipped-public-evidence
           path: |
-            verification/rh-johnston-clipped-public/source-blob.txt
+            verification/rh-johnston-clipped-public/source-blobs.txt
             verification/rh-johnston-clipped-public/source-sha256.txt
             verification/rh-johnston-clipped-public/lean-version.txt
             verification/rh-johnston-clipped-public/lean-output.log
