@@ -69,7 +69,8 @@ theorem scaled_margin_pos_iff
     nlinarith [sq_nonneg (r * c + s * d)]
   · intro h
     by_contra hnot
-    have hle : r * c ≤ s * d := le_of_not_gt hnot
+    have hdiff : r * c - s * d ≤ 0 := le_of_not_gt hnot
+    have hle : r * c ≤ s * d := by linarith
     nlinarith [sq_nonneg (r * c + s * d)]
 
 theorem return_lobe_budget
