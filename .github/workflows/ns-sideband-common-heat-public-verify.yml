@@ -1,0 +1,78 @@
+name: NS sideband common-heat public verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-sideband-common-heat-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-sideband-common-heat-public/**'
+      - '.github/workflows/ns-sideband-common-heat-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-sideband-common-heat-public'
+          file="$dir/NSSidebandCommonHeatFirewall.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='81343d9b6edfc3c9cc75c704e7468ac64aee9196'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-sideband-common-heat-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSSidebandCommonHeatFirewall.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            exit 1
+          fi
+          echo 'VERIFIED NS sideband common-heat finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-sideband-common-heat-public-evidence
+          path: |
+            verification/ns-sideband-common-heat-public/source-blob.txt
+            verification/ns-sideband-common-heat-public/source-sha256.txt
+            verification/ns-sideband-common-heat-public/lean-version.txt
+            verification/ns-sideband-common-heat-public/lean-output.log
