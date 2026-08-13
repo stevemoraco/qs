@@ -1,7 +1,5 @@
 import Mathlib
 
-open scoped BigOperators
-
 namespace Millennium.RH.WuFloorFiberFalsifier
 
 /-- The floor fiber used in the claimed lower bound:
@@ -11,7 +9,7 @@ def floorFiber (N m : ℕ) : Finset ℕ :=
 
 /-- The numerator of the paper's weight `sum_{k in J_m} k/N`. -/
 def fiberNumerator (N m : ℕ) : ℕ :=
-  ∑ k in floorFiber N m, k
+  Finset.sum (floorFiber N m) (fun k => k)
 
 /-- After multiplying by the positive denominator `2*m*N`, the claimed
 Lemma 9 says `N ≤ 2*m*sum_{k in J_m} k`. -/
