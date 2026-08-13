@@ -30,21 +30,28 @@ jobs:
           python3 - <<'PY'
           import pathlib
           import re
-          path = pathlib.Path('verification/ns-finite-overlap-countermodel/NavierStokesCoveringCountermodel.lean')
-          text = path.read_text(encoding='utf-8')
-          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
-          text = re.sub(r'--.*$', '', text, flags=re.M)
-          for pattern in [
-              r'^\s*(sorry|admit)\b',
-              r'^\s*axiom\b',
-              r'^\s*opaque\b',
-              r'^\s*unsafe\b',
-              r'\bnative_decide\b',
-              r'Lean\.ofReduceBool',
-          ]:
-              match = re.search(pattern, text, flags=re.M)
-              if match:
-                  raise SystemExit(f'forbidden declaration/token: {match.group(0)!r}')
+          root = pathlib.Path('verification/ns-finite-overlap-countermodel')
+          paths = sorted(root.glob('*.lean'))
+          if not paths:
+              raise SystemExit('no Lean files found')
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              text = re.sub(r'--.*$', '', text, flags=re.M)
+              for pattern in [
+                  r'^\s*(sorry|admit)\b',
+                  r'^\s*axiom\b',
+                  r'^\s*opaque\b',
+                  r'^\s*unsafe\b',
+                  r'\bnative_decide\b',
+                  r'Lean\.ofReduceBool',
+              ]:
+                  match = re.search(pattern, text, flags=re.M)
+                  if match:
+                      raise SystemExit(
+                          f'{path}: forbidden declaration/token: {match.group(0)!r}'
+                      )
+          print('trust scan passed for:', ', '.join(str(p) for p in paths))
           PY
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
@@ -60,12 +67,16 @@ jobs:
           cd verification/ns-finite-overlap-countermodel
           lake update
           lake exe cache get
-          lake env lean NavierStokesCoveringCountermodel.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in *.lean; do
+            echo "===== compiling ${file} =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
             echo 'Forbidden placeholder axiom or compiler error found.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite NS overlap countermodel core.'
+          echo 'VERIFIED finite NS countermodel cores.'
 
       - name: Upload compiler evidence
         if: always()
