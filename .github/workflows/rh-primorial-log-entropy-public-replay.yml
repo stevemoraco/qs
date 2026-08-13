@@ -1,0 +1,51 @@
+name: Public RH primorial log-entropy replay
+
+on:
+  pull_request:
+    paths:
+      - "millennium-lean-entropy/**"
+      - ".github/workflows/rh-primorial-log-entropy-public-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes
+        run: |
+          set -euo pipefail
+          if grep -nE '\b(sorry|admit)\b' millennium-lean-entropy/RHPrimorialLogEntropy.lean; then
+            echo "Explicit proof hole found"
+            exit 1
+          fi
+
+      - name: Install elan
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and cache
+        working-directory: millennium-lean-entropy
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        working-directory: millennium-lean-entropy
+        run: |
+          set -euo pipefail
+          lake env lean RHPrimorialLogEntropy.lean | tee axioms.txt
+          cat axioms.txt
+          if grep -q 'sorryAx' axioms.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
