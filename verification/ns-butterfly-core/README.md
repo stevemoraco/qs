@@ -1,0 +1,1 @@
+Finite algebra verifier for a five-mode shared-mode system. This is not a PDE or Millennium theorem.
