@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-output-capacity-firewall/OutputCapacityFirewall.lean
-          EXPECTED_BLOB=7fbce8605ed9bca0665302eda999d5216861ee04
+          EXPECTED_BLOB=5c2319aeb3feffecfac2a976f47a1870b9cc6c05
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
