@@ -32,10 +32,10 @@ namespace Millennium.Hodge.SeparatedNodeLocalCore
 abbrev Var := Fin 4
 abbrev Poly := MvPolynomial Var ℤ
 
-def u : Poly := MvPolynomial.X 0
-def v : Poly := MvPolynomial.X 1
-def w : Poly := MvPolynomial.X 2
-def z : Poly := MvPolynomial.X 3
+abbrev u : Poly := MvPolynomial.X 0
+abbrev v : Poly := MvPolynomial.X 1
+abbrev w : Poly := MvPolynomial.X 2
+abbrev z : Poly := MvPolynomial.X 3
 
 /-- Evaluation at the origin.  For a multivariate polynomial this is its
 constant coefficient. -/
@@ -89,7 +89,7 @@ structure HZero where
   m4 : Poly
 
 /-- The two scalar entries of `D1 * hminus + hzero * D0`. -/
-def boundaryRow (hminus : HMinus) (hzero : HZero) : Poly × Poly :=
+abbrev boundaryRow (hminus : HMinus) (hzero : HZero) : Poly × Poly :=
   ( (-u) * hminus.m11 + (-v) * hminus.m21 +
       w * hminus.m31 + z * hminus.m41 +
       hzero.m1 * (-v) + hzero.m2 * u,
