@@ -18,17 +18,17 @@ def phaseCurrent (x y xr yr : ℝ) : ℝ :=
 
 /-- Real part of the exact transverse-polarization defect
 `-i (r u' + u) / n`. -/
-def defectRe (n r x y xr yr : ℝ) : ℝ :=
+noncomputable def defectRe (n r x y xr yr : ℝ) : ℝ :=
   (r * yr + y) / n
 
 /-- Imaginary part of the exact transverse-polarization defect
 `-i (r u' + u) / n`. -/
-def defectIm (n r x y xr yr : ℝ) : ℝ :=
+noncomputable def defectIm (n r x y xr yr : ℝ) : ℝ :=
   -(r * xr + x) / n
 
 /-- Normalized zero-phase stress pairing between `u` and the exact transverse
 polarization defect. -/
-def stressMismatch (n r x y xr yr : ℝ) : ℝ :=
+noncomputable def stressMismatch (n r x y xr yr : ℝ) : ℝ :=
   x * defectRe n r x y xr yr + y * defectIm n r x y xr yr
 
 /-- The pressure-correction denominators cancel exactly in
@@ -92,10 +92,39 @@ theorem constant_phase_stressMismatch_zero
       (n := n) (r := r) (x := x) (y := y)
       (growth := growth) (twist := 0) hn)
 
+/-- The fundamental AO Weber Gaussian has equal negative amplitude-growth and
+phase-twist rates.  Its phase current is therefore `-kappa*xi*|u|^2`. -/
+theorem chirpedWeber_phaseCurrent
+    (x y kappa xi : ℝ) :
+    phaseCurrent x y
+        (-kappa * xi * x + kappa * xi * y)
+        (-kappa * xi * y - kappa * xi * x)
+      = -kappa * xi * (x ^ 2 + y ^ 2) := by
+  simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm,
+    mul_assoc, mul_left_comm, mul_comm] using
+    (phaseCurrent_of_growth_twist
+      x y (-kappa * xi) (-kappa * xi))
+
+/-- Product-rule algebra for differentiating
+`j(xi)=-kappa*xi*rho(xi)` when `rho'=-2*kappa*xi*rho`. -/
+theorem chirpedCurrent_derivative_algebra
+    (kappa xi rho : ℝ) :
+    -kappa * rho + (-kappa * xi) * (-2 * kappa * xi * rho)
+      = kappa * (2 * kappa * xi ^ 2 - 1) * rho := by
+  ring
+
+/-- The resulting normalized Doppler profile is exactly minus one half of the
+second derivative profile of the Gaussian density. -/
+theorem chirpedDoppler_is_negative_half_densitySecond
+    (kappa xi rho : ℝ) :
+    kappa * (1 - 2 * kappa * xi ^ 2) * rho
+      = -(1 / 2 : ℝ) * ((4 * kappa ^ 2 * xi ^ 2 - 2 * kappa) * rho) := by
+  ring
+
 /-- Cylindrical Doppler forcing built from the `rz` stress and the `r theta`
 stress.  The derivative arguments are supplied explicitly so this remains a
 finite algebra theorem. -/
-def dopplerForce
+noncomputable def dopplerForce
     (r beta rz drz rtheta drtheta : ℝ) : ℝ :=
   beta * (drz + rz / r) - (drtheta + 2 * rtheta / r) / r
 
@@ -146,6 +175,9 @@ theorem zero_phaseCurrent_dopplerForce
 #print axioms phaseCurrent_of_growth_twist
 #print axioms stressMismatch_of_growth_twist
 #print axioms constant_phase_stressMismatch_zero
+#print axioms chirpedWeber_phaseCurrent
+#print axioms chirpedCurrent_derivative_algebra
+#print axioms chirpedDoppler_is_negative_half_densitySecond
 #print axioms dopplerForce_mismatch_decomposition
 #print axioms dopplerForce_phaseCurrent_decomposition
 #print axioms zero_phaseCurrent_dopplerForce
