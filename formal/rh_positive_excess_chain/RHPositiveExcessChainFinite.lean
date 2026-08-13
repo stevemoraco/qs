@@ -13,11 +13,11 @@ namespace RHPositiveExcessChain
 def posPart (x : ℝ) : ℝ := max x 0
 
 /-- Quadratic positive-part energy. -/
-def energy (x : ℝ) : ℝ := (posPart x) ^ 2 / 2
+noncomputable def energy (x : ℝ) : ℝ := (posPart x) ^ 2 / 2
 
 /-- Difference between the endpoint rectangle and the positive-part energy
 created by one nonnegative jump. -/
-def jumpRemainder (a ell : ℝ) : ℝ :=
+noncomputable def jumpRemainder (a ell : ℝ) : ℝ :=
   posPart (a + ell) * ell - (energy (a + ell) - energy a)
 
 theorem posPart_nonnegative (x : ℝ) : 0 ≤ posPart x := by
@@ -81,10 +81,10 @@ theorem one_step_chain
 /-- Finite weighted summation by parts for successive energy increments. -/
 theorem weighted_telescope
     (n : ℕ) (w phi : ℕ → ℝ) :
-    (∑ k in Finset.range (n + 1),
+    (∑ k ∈ Finset.range (n + 1),
         w k * (phi (k + 1) - phi k)) =
       w n * phi (n + 1) - w 0 * phi 0 +
-        ∑ k in Finset.range n,
+        ∑ k ∈ Finset.range n,
           (w k - w (k + 1)) * phi (k + 1) := by
   induction n with
   | zero =>
@@ -102,23 +102,23 @@ theorem weighted_chain
     (hStep : ∀ k < n + 1,
       source k =
         phi (k + 1) - phi k + area k + remainder k) :
-    (∑ k in Finset.range (n + 1), w k * source k) =
+    (∑ k ∈ Finset.range (n + 1), w k * source k) =
       w n * phi (n + 1) - w 0 * phi 0 +
-        ∑ k in Finset.range n,
+        ∑ k ∈ Finset.range n,
           (w k - w (k + 1)) * phi (k + 1) +
-        ∑ k in Finset.range (n + 1), w k * area k +
-        ∑ k in Finset.range (n + 1), w k * remainder k := by
+        ∑ k ∈ Finset.range (n + 1), w k * area k +
+        ∑ k ∈ Finset.range (n + 1), w k * remainder k := by
   calc
-    (∑ k in Finset.range (n + 1), w k * source k) =
-        ∑ k in Finset.range (n + 1),
+    (∑ k ∈ Finset.range (n + 1), w k * source k) =
+        ∑ k ∈ Finset.range (n + 1),
           w k * (phi (k + 1) - phi k + area k + remainder k) := by
       apply Finset.sum_congr rfl
       intro k hk
       rw [hStep k (Finset.mem_range.mp hk)]
-    _ = (∑ k in Finset.range (n + 1),
+    _ = (∑ k ∈ Finset.range (n + 1),
           w k * (phi (k + 1) - phi k)) +
-        (∑ k in Finset.range (n + 1), w k * area k) +
-        (∑ k in Finset.range (n + 1), w k * remainder k) := by
+        (∑ k ∈ Finset.range (n + 1), w k * area k) +
+        (∑ k ∈ Finset.range (n + 1), w k * remainder k) := by
       simp_rw [mul_add, Finset.sum_add_distrib]
       ring
     _ = _ := by
@@ -138,14 +138,14 @@ theorem area_budget_le_source
     (hPhi : ∀ k < n + 2, 0 ≤ phi k)
     (hPhi0 : phi 0 = 0)
     (hRem : ∀ k < n + 1, 0 ≤ remainder k) :
-    (∑ k in Finset.range (n + 1), w k * area k) ≤
-      ∑ k in Finset.range (n + 1), w k * source k := by
+    (∑ k ∈ Finset.range (n + 1), w k * area k) ≤
+      ∑ k ∈ Finset.range (n + 1), w k * source k := by
   rw [weighted_chain n w source phi area remainder hStep, hPhi0]
   simp only [mul_zero, sub_zero]
   have hBoundary : 0 ≤ w n * phi (n + 1) := by
     exact mul_nonneg (hW n (by omega)) (hPhi (n + 1) (by omega))
   have hVariation :
-      0 ≤ ∑ k in Finset.range n,
+      0 ≤ ∑ k ∈ Finset.range n,
         (w k - w (k + 1)) * phi (k + 1) := by
     apply Finset.sum_nonneg
     intro k hk
@@ -153,7 +153,7 @@ theorem area_budget_le_source
     exact mul_nonneg (sub_nonneg.mpr (hMono k hklt))
       (hPhi (k + 1) (by omega))
   have hRemainder :
-      0 ≤ ∑ k in Finset.range (n + 1), w k * remainder k := by
+      0 ≤ ∑ k ∈ Finset.range (n + 1), w k * remainder k := by
     apply Finset.sum_nonneg
     intro k hk
     have hklt : k < n + 1 := Finset.mem_range.mp hk
