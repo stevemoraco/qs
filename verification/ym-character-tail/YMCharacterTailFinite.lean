@@ -36,29 +36,37 @@ theorem positive_floor_survives_uniform_error
 old and new factors have modulus at most one. -/
 theorem two_factor_product_error
     (a b A B epsilon error : ℝ)
-    (ha : |a| ≤ 1)
+    (_ha : |a| ≤ 1)
     (hb : |b| ≤ 1)
     (hA : |A| ≤ 1)
     (_hB : |B| ≤ 1)
     (hab : |a - b| ≤ epsilon)
     (hAB : |A - B| ≤ error)
-    (hepsilon : 0 ≤ epsilon)
-    (herror : 0 ≤ error) :
+    (_hepsilon : 0 ≤ epsilon)
+    (_herror : 0 ≤ error) :
     |a * A - b * B| ≤ epsilon + error := by
   have hrewrite : a * A - b * B = (a - b) * A + b * (A - B) := by
     ring
   rw [hrewrite]
-  calc
-    |(a - b) * A + b * (A - B)|
-        ≤ |(a - b) * A| + |b * (A - B)| := abs_add _ _
-    _ = |a - b| * |A| + |b| * |A - B| := by
-      rw [abs_mul, abs_mul]
-    _ ≤ epsilon + error := by
-      have hfirst_nonneg : 0 ≤ (1 - |A|) * |a - b| :=
-        mul_nonneg (sub_nonneg.mpr hA) (abs_nonneg (a - b))
-      have hsecond_nonneg : 0 ≤ (1 - |b|) * |A - B| :=
-        mul_nonneg (sub_nonneg.mpr hb) (abs_nonneg (A - B))
-      nlinarith
+  have htri :
+      |(a - b) * A + b * (A - B)|
+        ≤ |(a - b) * A| + |b * (A - B)| := by
+    simpa [Real.norm_eq_abs] using
+      (norm_add_le ((a - b) * A) (b * (A - B)))
+  have hfirst : |a - b| * |A| ≤ epsilon := by
+    calc
+      |a - b| * |A| ≤ |a - b| * 1 :=
+        mul_le_mul_of_nonneg_left hA (abs_nonneg (a - b))
+      _ = |a - b| := by ring
+      _ ≤ epsilon := hab
+  have hsecond : |b| * |A - B| ≤ error := by
+    calc
+      |b| * |A - B| ≤ 1 * |A - B| :=
+        mul_le_mul_of_nonneg_right hb (abs_nonneg (A - B))
+      _ = |A - B| := by ring
+      _ ≤ error := hAB
+  rw [abs_mul, abs_mul] at htri
+  linarith
 
 /-- A per-factor error `epsilon` accumulated through `P` factors is bounded by
 `P*epsilon` once the telescoping/product step has been established. -/
@@ -82,7 +90,7 @@ theorem block_floor_survives
 Lipschitz budget `E/(m-E)` is strictly less than one. -/
 theorem logarithmic_denominator_budget_lt_one
     (m E : ℝ)
-    (hE : 0 ≤ E)
+    (_hE : 0 ≤ E)
     (hhalf : 2 * E < m) :
     E / (m - E) < 1 := by
   have hden : 0 < m - E := by linarith
@@ -93,7 +101,7 @@ theorem logarithmic_denominator_budget_lt_one
 for the logarithmic error estimate. -/
 theorem logarithmic_denominator_positive
     (m E : ℝ)
-    (hE : 0 ≤ E)
+    (_hE : 0 ≤ E)
     (hhalf : 2 * E < m) :
     0 < m - E := by
   linarith
