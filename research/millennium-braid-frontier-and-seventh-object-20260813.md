@@ -70,9 +70,25 @@ The verified scalar shadow is
 A-B^2/D = (A-2By+Dy^2) - (Dy-B)^2/D.
 ```
 
+The verified inverse-free operator shadow now keeps the residual explicit:
+
+```text
+Q(y)-Q(z) = <D(y-z),y-z> + 2 <Dz-b,y-z>.
+```
+
+For symmetric `D`, an exact range witness `Dz=b` removes the last term; if
+`D` is nonnegative, `z` is a minimizer.  This assumes no completeness or
+coercivity, but it also proves no range, uniqueness, or residual stability.
+
 **Critic.**  Dropping the residual is false already for
 `A=1`, `B=sqrt(1+epsilon)`, `D=1`, `y=0`: the completed square is `1` while
 the exact Schur value is `-epsilon`.
+
+At operator level, positivity does not replace symmetry (`D=I+J` on `R^2`
+with `J` a quarter-turn), and small residual does not control energy without a
+gap (`D e_n=e_n/n`, `z_n=sqrt(n)e_n`).  A strictly positive operator can also
+have a finite unattained quadratic infimum.  Thus exact solvability and
+quantitative coercivity are genuine bridges, not notation.
 
 **Rebuilder.**  Construct one fully normalized cofinal schedule with complete
 prime, prime-power, archimedean, endpoint, and high-tail terms and certify
