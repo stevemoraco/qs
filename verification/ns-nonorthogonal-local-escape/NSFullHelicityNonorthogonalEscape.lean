@@ -52,7 +52,7 @@ theorem retention_gain_gt_one
         (g * (1 - x) * (g ^ 2 + 1)) / (2 * (g ^ 2 - x)) := by
     ring
   rw [hre]
-  exact (lt_div_iff₀ hden).2 hcross
+  exact (lt_div_iff₀ hden).2 (by simpa using hcross)
 
 /-- The exact positive local sideband eigenvalue for the integer cell. -/
 theorem integer_cell_positive_eigenvalue :
@@ -118,7 +118,6 @@ theorem fraction_normalization
       ((1 - L2 / M2) * (H2 / M2 + 1)) /
         (2 * (H2 / M2 - L2 / M2)) := by
   field_simp
-  ring
 
 #print axioms retention_gain_factorization
 #print axioms retention_gain_gt_one
