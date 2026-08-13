@@ -2,8 +2,6 @@ import Mathlib
 
 namespace BraidReplay
 
-noncomputable section
-
 theorem lane1 (a b : ℝ) : 0 ≤ (a - b) ^ 2 := sq_nonneg (a - b)
 
 abbrev Walk := Fin 2 → Bool
@@ -39,7 +37,7 @@ theorem lane5 {ι : Type*} [Fintype ι] (x : ι → ℝ) (i : ι) :
     (fun j _ => sq_nonneg (x j))
     (Finset.mem_univ i)
 
-def fraction (x y : ℝ) : ℝ := y ^ 2 / (x ^ 2 + y ^ 2)
+noncomputable def fraction (x y : ℝ) : ℝ := y ^ 2 / (x ^ 2 + y ^ 2)
 
 theorem lane6 {y : ℝ} (hy : y ≠ 0) : fraction 0 y = 1 := by
   have hs : y ^ 2 ≠ 0 := pow_ne_zero 2 hy
