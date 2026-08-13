@@ -9,7 +9,7 @@ SIX-ALARM OFF.**
 
 - repository/PR: `stevemoraco/qs` #310;
 - branch: `agent/millennium-braid-finite-public-replay-20260813`;
-- canonical source commit: `2b4d9ae47588b54c09c9a72c8572339f771c0e59`;
+- canonical source commit: `81af348941b4872b76ccb914ef374cb456d4e59d`;
 - runner: Ubuntu 24.04.4;
 - Lean: 4.32.1, commit
   `f054605aea4b840552cca2e725580bffd1e1b704`;
@@ -30,20 +30,20 @@ sources, versions, manifest, logs, hashes, and audit summaries.
 | NS noncollinear octagon | `039323b80f1cb8fe89dece3a7380bf81d1b6bf1b` | `86e0497e7ab2747a35908a047209f8f60985415b1808f82af2abe5d2ae838f74` | 15 |
 | YM pure-electric defect | `030b4c18fc859434c220caaa3ed01519d229a9fe` | `94ef451cd7ad8fc406892285593feb97943ad619c92b91d23f3d7eb5f2f6b818` | 7 |
 | RH scalar Schur residual | `162ff3a480da4a58717eb2fd84da9be0f5a4a213` | `035f470022330ec1af80e3b4cb1170f4fa6aea49beb824d4bb5e6f7da2456901` | 4 |
-| RH residual-visible operator square | `a0c986a8c11aac7e3a313008c7230382b9212794` | `591640a053f9107a38a31ef11cbcc53e40f97b9e80991fb9cbe48026144bf86a` | 3 |
+| RH residual-visible/coercive operator square | `6452df9ad04056917ddf199afd4eb49b5a08d6f0` | `886e495e616bd65c6deefc1ab8ebedf14ef46e3b5d77f0018fb56936832361d5` | 4 |
 
-All 39 reports use only `propext`, `Quot.sound`, and `Classical.choice`.
+All 40 reports use only `propext`, `Quot.sound`, and `Classical.choice`.
 No report contains `sorryAx`.
 
 ## Successful push replay
 
-- run/job: `31720503044/94515997035`;
+- run/job: `31732412037/94555799093`;
 - conclusion: success in every step;
-- artifact: `9189157836`;
+- artifact: `9193823138`;
 - artifact name:
-  `millennium-braid-five-core-replay-2b4d9ae47588b54c09c9a72c8572339f771c0e59`;
+  `millennium-braid-five-core-replay-81af348941b4872b76ccb914ef374cb456d4e59d`;
 - archive SHA-256:
-  `ccf140a26e13a720fea00be5ad48925fcc14773bcfa45358d60fffb437131290`;
+  `438b2bdb80aefda5213cfaeed074a390ce37e36c7af0b307a9b07ea01412f420`;
 - expiry: 2026-11-11.
 
 Kernel-output SHA-256 values:
@@ -54,19 +54,19 @@ Kernel-output SHA-256 values:
 | NS | `45fd1bfe133030ce199541b446e44b0fbad8f9573e30c2e0d87a1eb28c6befb6` |
 | YM | `e693c3d4999093cbb8f342619a743f36b49d730f1f81c87ff355b096c057fca8` |
 | RH scalar | `0f28361ce6a36a1b0aad5af5f0c2618ca9da524ce79eda6bdbc7506f853bb2ab` |
-| RH operator | `782e2a9970680ac022efc849c294ec838ce0cbb72b1cd0e4614cedb626bd9efa` |
+| RH operator | `c8130edd5cb4ad2aa9122d7fc525da9180f6b3d67ac2c83331d4d7e32678fa60` |
 
 ## Independent pull-request replay
 
-- run/job: `31720507111/94516010357`;
+- run/job: `31732415904/94555810341`;
 - conclusion: success in every step;
-- artifact: `9189401600`;
+- artifact: `9193820216`;
 - archive SHA-256:
-  `918ba7a79e79bda48b55799083bc6f9de0e0ed9c0be6ca36cb7c36ca67e48ec1`.
+  `f34c127adacc377521c0a9baf7d7959045624fadc36ecb4b6363bb0a87d7feaf`.
 
 The pull-request checkout used merge commit
-`c3a6971c0282ce33a04780b5af0ca70eb35b1792`; the workflow record identifies
-the same canonical head `2b4d9ae47588b54c09c9a72c8572339f771c0e59`.
+`aaac225a303490d6afa0199991828232f6cfa575`; the workflow record identifies
+the same canonical head `81af348941b4872b76ccb914ef374cb456d4e59d`.
 
 ## Failure provenance
 
@@ -77,7 +77,12 @@ notation instead of Mathlib's real inner product.  The failure artifact is
 `0e8853f6e241f63c21dc2fae5265f9ed924a6aa7765ef9becbaaabb2c86fe9a5`.
 The notation-only repair then passed as a two-theorem source in run/job
 `31715057383/94497560829`.  The final source adds the independently derived
-residual-visible theorem and is the byte identity recorded above.
+residual-visible theorem.  A first coercive-penalty replay
+`31730780639/94550469077` failed only because `div_le_iff` did not normalize
+the outer negation; failure artifact `9193219113`, archive SHA-256
+`b5293597c0858a441f4315b0b90ba8ee1835b7d67cfffecbb56bf1557eaa58ac`.
+The final source makes that normalization explicit and is the byte identity
+recorded above.
 
 ## Exact operator theorem and boundary
 
@@ -89,8 +94,11 @@ Q(y)-Q(z) = <D(y-z),y-z> + 2 <Dz-b,y-z>.
 ```
 
 If `D z=b`, the residual term vanishes.  If additionally the quadratic part
-is nonnegative, `z` is a global minimizer.  Completeness, inverse existence,
-and coercivity are not assumed.
+is nonnegative, `z` is a global minimizer.  If instead
+`mu||x||^2<=<Dx,x>` for an explicit `mu>0`, then
+`Q(y)-Q(z)>=-||Dz-b||^2/mu`.  Completeness and inverse existence are not
+assumed; coercivity is used only in the last theorem and remains an explicit
+hypothesis.
 
 This does **not** construct `D` or `z`, prove that `b` is in the range, give
 closed range, uniqueness, a spectral gap, or stability of approximate solves.
