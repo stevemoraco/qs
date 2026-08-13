@@ -44,7 +44,7 @@ elab "#audit_braid_axioms" : command => do
   let mut rows : Array String := #[]
   for n in theorems do
     let axs ← Lean.collectAxioms n
-    let axArray := axs.toArray
+    let axArray := axs
     let unexpected := axArray.filter fun ax =>
       !acceptedFoundationAxioms.contains ax
     rows := rows.push <|
