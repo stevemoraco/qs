@@ -1,0 +1,95 @@
+name: B2 Round 41 Six-Lane Finite Firewalls
+
+on:
+  push:
+    branches:
+      - automation/b2-adversarial-braid-realstate-20260813-round41
+  pull_request:
+    paths:
+      - 'verification/b2-round41/**'
+      - '.github/workflows/b2-round41-lean-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: b2-round41-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom proof carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            verification/b2-round41/PNPSharedDecoderFirewall.lean
+            verification/b2-round41/PNPRepSATSparseHashFirewall.lean
+            verification/b2-round41/PNPRepSATBiasedHashFirewall.lean
+            verification/b2-round41/NSAnisotropicEnergyTax.lean
+            verification/b2-round41/NSClaimTypeFirewall.lean
+            verification/b2-round41/RHScrewSlopeFirewall.lean
+            verification/b2-round41/BSDFloorFiltrationFirewall.lean
+            verification/b2-round41/HodgeSecantIntersectionFirewall.lean
+            verification/b2-round41/YMBoundaryMixtureFirewall.lean
+          )
+          for file in "${files[@]}"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
+              echo "Forbidden proof placeholder or custom proof carrier found in $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean and fetch pinned Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/b2-round41
+          lake update
+          lake exe cache get
+
+      - name: Compile every finite firewall and record axiom output
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/b2-round41
+          : > lean-output.log
+          files=(
+            PNPSharedDecoderFirewall.lean
+            PNPRepSATSparseHashFirewall.lean
+            PNPRepSATBiasedHashFirewall.lean
+            NSAnisotropicEnergyTax.lean
+            NSClaimTypeFirewall.lean
+            RHScrewSlopeFirewall.lean
+            BSDFloorFiltrationFirewall.lean
+            HodgeSecantIntersectionFirewall.lean
+            YMBoundaryMixtureFirewall.lean
+          )
+          for file in "${files[@]}"; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED all six finite round-41 lane firewalls.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2-round41-lean-evidence
+          path: verification/b2-round41/lean-output.log
+          if-no-files-found: warn
