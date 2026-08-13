@@ -1,5 +1,7 @@
 import Mathlib
 
+open scoped BigOperators
+
 namespace SixLaneAudit
 
 /-- Field-theoretic core: a square-one element is a sign. -/
@@ -65,18 +67,19 @@ theorem hodge_index_sandwich_base_thirteen
     (j m : ℕ) (hlower : 13 ^ j ∣ 13 * m)
     (hupper : 13 * m ∣ 13 * 13 ^ j) :
     m = 13 ^ j ∨ ∃ k : ℕ, j = k + 1 ∧ m = 13 ^ k := by
+  have h13 : 0 < (13 : ℕ) := by norm_num
   cases j with
   | zero =>
       left
       have hm : m ∣ 1 := by
-        exact Nat.dvd_of_mul_dvd_mul_left (by norm_num) (by simpa using hupper)
+        exact Nat.dvd_of_mul_dvd_mul_left h13 (by simpa using hupper)
       simpa using Nat.eq_one_of_dvd_one hm
   | succ j =>
       have hlower' : 13 ^ j ∣ m := by
-        apply Nat.dvd_of_mul_dvd_mul_left (by norm_num : 0 < 13)
+        apply Nat.dvd_of_mul_dvd_mul_left h13
         simpa [pow_succ, Nat.mul_comm] using hlower
       have hupperRaw : m ∣ 13 ^ (j + 1) := by
-        exact Nat.dvd_of_mul_dvd_mul_left (by norm_num) (by simpa using hupper)
+        exact Nat.dvd_of_mul_dvd_mul_left h13 hupper
       have hupper' : m ∣ 13 * 13 ^ j := by
         simpa [pow_succ, Nat.mul_comm] using hupperRaw
       rcases hodge_index_sandwich_base_one j m hlower' hupper' with hm | hm
