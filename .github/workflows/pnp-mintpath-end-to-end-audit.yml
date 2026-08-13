@@ -42,6 +42,7 @@ jobs:
             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             | sh -s -- -y --default-toolchain leanprover/lean4:v4.28.0
           export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           lean --version | tee "$dir/lean-version.txt"
           lake --version | tee -a "$dir/lean-version.txt"
           cd "$dir"
