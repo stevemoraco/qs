@@ -1,0 +1,1 @@
+Latest queued public replay observed: workflow run 31669969164 at branch head 2e23345e218a3983c7deead1ce82ba46dd0a594e. Earlier branch commits may also have runs; only the latest complete green run is eligible as the branch receipt.
