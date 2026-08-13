@@ -44,11 +44,18 @@ This does not kill (2) as a derived architecture. A generic sheaf-injective
 \[
  c_3(E_{\mathrm{acc}})=432x^3. \tag{5}
 \]
-Meanwhile the extra component \(L^{-5}\to L^4\) can make \(\beta\)
-surjective even where the restricted map
-\(L^{-2}\oplus3L^2\to L^4\) vanishes. Hence a rank-two reflexive
-cohomology sheaf, singular along a curve, remains a live possibility. Its
-existence, stability, simplicity, and Hochschild evaluation are not proved.
+Meanwhile the extra component \(L^{-5}\to L^4\) can in
+principle make \(\beta\) surjective even where the restricted map
+\(L^{-2}\oplus3L^2\to L^4\) vanishes. However, \(\alpha\) and
+\(\beta\) cannot be chosen independently: the incidence equation
+\[
+ \beta\alpha=0 \tag{5a}
+\]
+forces the image of \(\alpha\) into the kernel of \(\beta\).
+No nonempty-incidence or simultaneous genericity theorem is asserted.
+Subject to this unresolved constraint, a rank-two reflexive cohomology
+sheaf, singular along a curve, remains a live possibility. Its existence,
+stability, simplicity, and Hochschild evaluation are not proved.
 
 ## 2. Rank-three class
 
