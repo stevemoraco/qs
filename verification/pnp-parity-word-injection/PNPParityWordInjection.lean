@@ -415,7 +415,7 @@ theorem oddSupport_firstSwap_of_mem [Fintype α]
       simp [hau, hav]
 
 /-- Weight-three words tagged by an ordered pair of distinct odd letters. -/
-def WeightThreeTags [Fintype α] (S : Finset (List α)) : Type* :=
+def WeightThreeTags [Fintype α] (S : Finset (List α)) :=
   {t : {xs // xs ∈ S} × (α × α) //
     (oddSupport t.1.1).card = 3 ∧
     t.2.1 ∈ oddSupport t.1.1 ∧
@@ -423,7 +423,7 @@ def WeightThreeTags [Fintype α] (S : Finset (List α)) : Type* :=
     t.2.1 ≠ t.2.2}
 
 /-- Weight-one words tagged by an ordered distinct pair outside their odd support. -/
-def WeightOneComplementTags [Fintype α] (S : Finset (List α)) : Type* :=
+def WeightOneComplementTags [Fintype α] (S : Finset (List α)) :=
   {t : {xs // xs ∈ S} × (α × α) //
     (oddSupport t.1.1).card = 1 ∧
     t.2.1 ∉ oddSupport t.1.1 ∧
