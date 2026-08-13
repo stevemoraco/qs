@@ -152,20 +152,19 @@ theorem gapMargin_critical_minimum
     {s u theta A c : ℝ}
     (hu : 0 < u) (htheta : theta = s ^ 2) :
     gapMargin s theta A c ≤ gapMargin u theta A c := by
-  by_cases hs : s = 0
-  · subst s
-    simp [gapMargin, le_of_lt hu]
-  · have hcrit : gapMargin s theta A c = 2 * s - c - A := by
-      rw [htheta]
-      unfold gapMargin
+  have hcrit : gapMargin s theta A c = 2 * s - c - A := by
+    rw [htheta]
+    by_cases hs : s = 0
+    · simp [gapMargin, hs]
+    · unfold gapMargin
       field_simp [hs]
       ring
-    have hexcess := gapMargin_critical_excess (A := A) (c := c)
-      (ne_of_gt hu) htheta
-    have hnonneg : 0 ≤ (u - s) ^ 2 / u :=
-      div_nonneg (sq_nonneg (u - s)) (le_of_lt hu)
-    rw [hcrit]
-    linarith
+  have hexcess := gapMargin_critical_excess (A := A) (c := c)
+    (ne_of_gt hu) htheta
+  have hnonneg : 0 ≤ (u - s) ^ 2 / u :=
+    div_nonneg (sq_nonneg (u - s)) (le_of_lt hu)
+  rw [hcrit]
+  linarith
 
 /-- Exact two-sector Schur identity. -/
 theorem schur_twoSector_identity
@@ -437,7 +436,7 @@ structure QuantitativeBank : Prop where
   strictMargin : ∀ {x y ε m : ℝ}, |x - y| ≤ ε → m + ε < y → m < x
   rhArrival : ∀ {s theta A c atom : ℝ}, s ≠ 0 →
     gapMargin s (theta + atom) (A + atom / s) c = gapMargin s theta A c
-  rhCritical : ∀ {s u theta A c : ℝ}, 0 < s → 0 < u → theta = s ^ 2 →
+  rhCritical : ∀ {s u theta A c : ℝ}, 0 < u → theta = s ^ 2 →
     gapMargin s theta A c ≤ gapMargin u theta A c
   rhSchur : ∀ {alpha tau kappa x y : ℝ}, 0 < tau →
     kappa ^ 2 ≤ alpha * tau →
@@ -489,7 +488,7 @@ theorem unifiedQuantitativeBank : QuantitativeBank := by
     exact strictMargin_transfer hxy hy
   · intro s theta A c atom hs
     exact gapMargin_arrival_continuity hs
-  · intro s u theta A c hs hu htheta
+  · intro s u theta A c hu htheta
     exact gapMargin_critical_minimum hu htheta
   · intro alpha tau kappa x y htau hdet
     exact schur_twoSector_psd htau hdet
