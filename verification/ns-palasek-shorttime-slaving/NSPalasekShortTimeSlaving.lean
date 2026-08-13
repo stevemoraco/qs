@@ -2,6 +2,8 @@ import Mathlib
 
 namespace NSPalasekShortTimeSlaving
 
+noncomputable section
+
 /-- The formal quasi-steady response to a constant source in
 `b' + δ b = -S`. -/
 def quasiSteady (δ S : ℝ) : ℝ := -S / δ
@@ -111,12 +113,12 @@ theorem growing_residual_identity
   field_simp [hδ, hsum]
   ring
 
-/-- If the source grows at least as fast as the viscous damping and time is
-nonnegative, the exact response reaches at most half of the instantaneous
-quasi-steady coefficient. -/
+/-- If the source grows at least as fast as the viscous damping, the exact
+response reaches at most half of the instantaneous quasi-steady coefficient.
+The upper bound in fact holds for every real endpoint time. -/
 theorem growing_response_coefficient_at_most_half
     {δ g T : ℝ}
-    (hδ : 0 ≤ δ) (hg : δ ≤ g) (hT : 0 ≤ T)
+    (hδ : 0 ≤ δ) (hg : δ ≤ g)
     (hsum : 0 < g + δ) :
     growingResponseCoefficient δ g T ≤ 1 / 2 := by
   have hExp : 0 ≤ Real.exp (-((g + δ) * T)) :=
@@ -138,10 +140,10 @@ theorem growing_response_coefficient_at_most_half
 coefficient remains unresolved whenever `g ≥ δ`. -/
 theorem growing_residual_fraction_at_least_half
     {δ g T : ℝ}
-    (hδ : 0 ≤ δ) (hg : δ ≤ g) (hT : 0 ≤ T)
+    (hδ : 0 ≤ δ) (hg : δ ≤ g)
     (hsum : 0 < g + δ) :
     1 / 2 ≤ 1 - growingResponseCoefficient δ g T := by
-  have h := growing_response_coefficient_at_most_half hδ hg hT hsum
+  have h := growing_response_coefficient_at_most_half hδ hg hsum
   linarith
 
 /-- Palasek's viscous parameter condition gives a positive gap between the
@@ -166,5 +168,7 @@ theorem palasek_parameter_witness :
     2 < α ∧ 1 < b ∧ b < α / 2 ∧ 2 * b < β ∧ β < α ∧
       β - 2 * b = 1 / 40 := by
   norm_num
+
+end
 
 end NSPalasekShortTimeSlaving
