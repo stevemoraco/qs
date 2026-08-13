@@ -24,27 +24,35 @@ Adjunction gives
 
 The ruling restricts to a trigonal morphism `π_B : B → P¹`, since `B.f=3`.
 
-Let `B_s,B_t` be the moving branch curves of source and target. The quadratic-cover lift condition implies, at the generic valuation of `B_s`, that the pullback of a rational branch function for the target has odd valuation. Choosing the target branch function with only even poles, its center therefore lies on the target branch divisor `S_t+B_t`.
+Let `R_s,R_t` denote the ramification curves upstairs over the moving branch curves `B_s,B_t`. Every point of `R_s` is fixed by the source deck involution. At any point where the rational K3 map `γ` is regular, deck equivariance
 
-For a general source ruling fibre `F_u`, the descended map restricts as a degree-one map
+`γ ∘ ι_s = ι_t ∘ γ`
 
-`q|F_u : F_u → D_u`,
+therefore sends that point into the fixed locus of the target deck involution. Downstairs, a general point of `B_s` must consequently map into the target branch support `S_t ∪ B_t`. This fixed-locus argument is invariant and avoids any choice of affine branch function or square multiplier.
 
-where `D_u ∈ |c_t|`. Because `c_t.S_t=0`, `D_u` is disjoint from `S_t`. Thus the three points of `B_s∩F_u` cannot map to `S_t`; generically `B_s` maps into `B_t`.
+For a general source ruling fibre `F_u`, the descended map restricts as a degree-one rational map
 
-It also cannot be contracted: for general `u`, the three distinct points of `B_s∩F_u` avoid the indeterminacy locus, whereas `q|F_u` is degree one and hence injective.
+`q|F_u : F_u ⇢ D_u`,
 
-Therefore the restriction gives a nonconstant morphism
+where `D_u ∈ |c_t|`. Since `c_t.S_t=0`, the section `D_u` is disjoint from `S_t`. Thus the three general points of `B_s∩F_u` map into `B_t`, not `S_t`; by irreducibility, the generic image of `B_s` lies in `B_t`.
+
+`B_s` cannot be contracted. For general `u`, the three distinct points of `B_s∩F_u` avoid the finite indeterminacy locus, while the rational map from the smooth projective curve `F_u≅P¹` to the normalization of `D_u` has degree one and hence is injective. A contraction of `B_s` would send all three points to one target point, contradiction.
+
+Therefore restriction gives a nonconstant rational map `B_s ⇢ B_t`, which extends uniquely to a morphism
 
 `α : B_s → B_t`.
 
-Both curves have genus 10. Riemann--Hurwitz forces `deg α=1`, so `α` is an isomorphism.
+Both curves have genus 10. Riemann--Hurwitz gives
 
-Now `π_t∘α` and `π_s` are two degree-three maps from the genus-10 curve `B_s` to `P¹`. They must be the same trigonal pencil up to a Möbius transformation. Indeed, if they are independent, Castelnuovo--Severi gives
+`18 = deg(α)·18 + Ram`,
+
+so `deg α=1` and `Ram=0`; hence `α` is an isomorphism.
+
+Now `π_t∘α` and `π_s` are two degree-three maps from the genus-10 curve `B_s` to `P¹`. They must be the same trigonal pencil up to a Möbius transformation. If the product map to `P¹×P¹` were birational onto its image, Castelnuovo--Severi would give
 
 `g(B_s) ≤ (3-1)(3-1)=4`,
 
-contradicting `g(B_s)=10`; since 3 is prime, the only non-independent alternative is equality up to an automorphism of `P¹`.
+contradicting `g(B_s)=10`. If it is not birational, the common factor degree divides the prime degree 3; the only nontrivial possibility has degree 3 and makes both residual maps degree one, so the two trigonal maps differ by an automorphism of `P¹`.
 
 Hence there is `τ∈PGL₂` with
 
@@ -54,35 +62,37 @@ Take a general source ruling fibre `F_u`. Its three branch points `x₁,x₂,x�
 
 `π_t(q(x₁)) = π_t(q(x₂)) = π_t(q(x₃)) = τ(u)`.
 
-But `q(F_u)=D_u∈|s+4f|`, and the target ruling restricts to degree one on `D_u` because `D_u.f=1`. Thus `π_t∘q|F_u` is degree one and injective. It cannot take the same value at three distinct points. Contradiction.
+But `q(F_u)=D_u∈|s+4f|`, and the target ruling has degree `D_u.f=1` on the normalization of `D_u`. Thus `π_t∘q|F_u : P¹ ⇢ P¹` has degree one and is injective. It cannot take the same value at three distinct points. Contradiction.
 
-**Conclusion:** there is no descended graph map satisfying the banked equivariance and ruling-to-section hypotheses in the `NS(Y)=U`, `L²=8` layer.
+**Conclusion:** there is no descended graph map satisfying the banked deck-equivariance and ruling-to-section hypotheses in the `NS(Y)=U`, `L²=8` layer.
 
 ## Hostile critic
 
-The naive affine implication `F_source=0 ⇒ F_target∘q=0` is not safe without controlling poles of the square multiplier. The repaired argument is valuation-theoretic: represent the quadratic target cover by a rational branch function whose poles are even. The lift identity makes the valuation at the generic source moving-branch divisor odd, so the image center lies on the target branch support. The possible target component `S_t` is then excluded by `D_u.S_t=0` on general fibres.
+The first version of this note used the square identity to move the source branch into the target branch. That formulation carried an unnecessary pole/valuation subtlety. It has been removed. Deck equivariance itself is stronger: regular fixed points upstairs map to regular fixed points upstairs. Since a rational map from a smooth surface has only finitely many indeterminacy points, a general ruling fibre and its three moving-branch points avoid them.
 
-Indeterminacy also does not create an escape. A rational surface map has only finitely many basepoints; for general `u`, the three branch points on `F_u` avoid them. The induced rational map between the smooth projective curves `B_s` and `B_t` extends uniquely to a morphism.
+The remaining two possible escapes are also closed. Mapping the moving branch to the target negative branch component is impossible because every general image section `D_u∈|s+4f|` is disjoint from `S_t`; contracting the moving branch is impossible because three distinct points on a general source fibre cannot collide under its degree-one target-base map.
 
 ## Repaired survivor
 
 None remains in the `NS(Y)=U`, `L²=8` graph layer. This does **not** touch the higher `U` layers, the `U(13)` layers, or the independent non-graph/relative-cycle route.
 
+The global rational-square system remains useful as a coordinate realization and for other layers, but it is no longer needed to kill this first `U` layer.
+
 ## Lean firewall
 
-`formal/millennium_audit/SixLaneAudit/HodgeF4TrigonalObstruction.lean` formalizes the final finite collision only: trigonal uniqueness makes the three target base values equal, while the ruling-to-section hypothesis makes those values injective. It deliberately does not encode the algebro-geometric bridges above as axioms disguised as conclusions.
+`formal/millennium_audit/SixLaneAudit/HodgeF4TrigonalObstruction.lean` formalizes only the arithmetic/final finite core: the genus-10 adjunction number, the Riemann--Hurwitz degree arithmetic, the Castelnuovo--Severi `3×3` numerical ceiling, and the final three-point injectivity collision. It deliberately does not encode the algebro-geometric bridges above as hidden axioms carrying the conclusion.
 
 ## Source audit
 
 Primary geometric source:
 
-- Mauro Fortuna and Giacomo Mezzedimi, *The Kodaira dimension of some moduli spaces of elliptic K3 surfaces*, J. London Math. Soc. 104 (2021), arXiv:2003.10957v3, §5.2. In particular: `Pic(F₄)=Z<f,s>`, intersection form, `K_F₄=-2s-6f`, branch decomposition `S+B₀` with `B₀∈|3s+12f|` smooth irreducible and disjoint from `S`, and the very-general `NS(X)=U` statement.
+- Mauro Fortuna and Giacomo Mezzedimi, *The Kodaira dimension of some moduli spaces of elliptic K3 surfaces*, J. London Math. Soc. 104 (2021), arXiv:2003.10957v3, §5.2. In particular: `Pic(F₄)=Z<f,s>`, the intersection form, `K_F₄=-2s-6f`, branch decomposition `S+B₀` with `B₀∈|3s+12f|` smooth irreducible and disjoint from `S`, and the very-general `NS(X)=U` statement.
 
 Current cross-check only (not used in the new contradiction):
 
 - Jun-Muk Hwang and Guolei Zhong, *Holomorphic symplectic geometry of elliptic surfaces*, arXiv:2607.10375 (submitted 11 July 2026).
 
-Classical input already banked:
+Classical inputs already banked:
 
 - Riemann--Hurwitz for morphisms of curves.
 - Castelnuovo--Severi inequality for two independent maps to curves.
