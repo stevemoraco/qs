@@ -1,0 +1,130 @@
+name: RH dyadic theta depth spine verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-dyadic-theta-depth-spine-verifier-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rh-dyadic-theta-depth-spine-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact verifier source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh_dyadic_theta_depth_spine/RHDyadicThetaDepthSpine.lean
+          EXPECTED_BLOB=94f40b448c0d3db2f1c20edbe9067634a65b0361
+          EXPECTED_SHA256=963144a0b7ff8f8e70ae1cfe727a8bb27f22d965f89e64ab6f050131ad9b012f
+          test "$(git hash-object "$SRC")" = "$EXPECTED_BLOB"
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh_dyadic_theta_depth_spine/RHDyadicThetaDepthSpine.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'forbidden source token: {token}')
+          if text.count('#print axioms') != 7:
+              raise SystemExit('expected exactly seven staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/rh_dyadic_theta_depth_spine
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path(
+              'verification/rh_dyadic_theta_depth_spine/RHDyadicThetaDepthSpine.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+
+          out = pathlib.Path('evidence/rh_dyadic_theta_depth_spine/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          tool_warnings = result.get('tool_messages', {}).get('warnings', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or lean_warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('Lean/AXLE verification failed or emitted warnings')
+
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED: exact warning-free source compiled under AXLE Lean 4.30')
+          PY
+
+      - name: Record replay metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/rh_dyadic_theta_depth_spine
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object verification/rh_dyadic_theta_depth_spine/RHDyadicThetaDepthSpine.lean)"
+            echo "source_sha256=$(sha256sum verification/rh_dyadic_theta_depth_spine/RHDyadicThetaDepthSpine.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-dyadic-theta-depth-spine-evidence
+          path: evidence/rh_dyadic_theta_depth_spine/
+          if-no-files-found: error
