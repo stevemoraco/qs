@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=BSDMazurTateSpectralExtractor.lean
-          test "$(git hash-object "$file")" = "7985e5a36e6e4769499629158b83ce1689610447"
+          test "$(git hash-object "$file")" = "e91a8e129c7328b34ddeefbd3d525867f0b183c7"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
