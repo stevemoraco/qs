@@ -1,0 +1,10 @@
+import BSDGVSemiprimeDensity
+
+#print axioms BSDGVSemiprimeDensity.totalStateCount_eq
+#print axioms BSDGVSemiprimeDensity.acceptedStateCount_eq
+#print axioms BSDGVSemiprimeDensity.rowStateCount_eq
+#print axioms BSDGVSemiprimeDensity.three_eleven_all_signs
+#print axioms BSDGVSemiprimeDensity.eleven_three_all_signs
+#print axioms BSDGVSemiprimeDensity.accepts_swap_with_reciprocity
+#print axioms BSDGVSemiprimeDensity.ordered_density_fraction_certificate
+#print axioms BSDGVSemiprimeDensity.unordered_coefficient_fraction_certificate

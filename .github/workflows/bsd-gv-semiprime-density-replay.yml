@@ -1,0 +1,91 @@
+name: BSD semiprime density Lean replay
+
+on:
+  pull_request:
+    paths:
+      - "verification/bsd-gv-semiprime-density/**"
+      - ".github/workflows/bsd-gv-semiprime-density-replay.yml"
+  push:
+    paths:
+      - "verification/bsd-gv-semiprime-density/**"
+      - ".github/workflows/bsd-gv-semiprime-density-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and result-carrying declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="verification/bsd-gv-semiprime-density"
+          ! grep -RInE '\b(sorry|admit)\b' "$root" --include='*.lean'
+          ! grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$root" --include='*.lean'
+          ! grep -RInE 'native_decide|Lean\.ofReduceBool|sorryAx' "$root" --include='*.lean'
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned dependencies
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake update
+
+      - name: Fetch Mathlib cache
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake exe cache get
+
+      - name: Build theorem module
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake build BSDGVSemiprimeDensity
+
+      - name: Replay exact source
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake env lean BSDGVSemiprimeDensity.lean
+
+      - name: Print axiom report
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake env lean AxiomReport.lean | tee axiom-report.txt
+
+      - name: Enforce foundation-only axiom allowlist
+        working-directory: verification/bsd-gv-semiprime-density
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          text = pathlib.Path("axiom-report.txt").read_text()
+          if "sorryAx" in text:
+              raise SystemExit("sorryAx found")
+
+          allowed = {
+              "Classical.choice",
+              "Classical.em",
+              "Quot.sound",
+              "funext",
+              "propext",
+          }
+          used = set()
+          for payload in re.findall(r"depends on axioms:\s*\[([^\]]*)\]", text):
+              used.update(name.strip() for name in payload.split(",") if name.strip())
+
+          print("Axioms used:", sorted(used))
+          unexpected = used - allowed
+          if unexpected:
+              raise SystemExit(f"Unexpected axioms: {sorted(unexpected)}")
+          PY
