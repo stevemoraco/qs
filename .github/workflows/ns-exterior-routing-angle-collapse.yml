@@ -1,0 +1,105 @@
+name: AXLE verify NS exterior routing angle collapse
+
+on:
+  push:
+    branches: [agent/ns-exterior-routing-angle-collapse-verifier-20260813]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ns-exterior-routing-angle-collapse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            verification/ns-exterior-routing-angle-collapse
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Exact-source trust preflight
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+
+          path = Path('verification/ns-exterior-routing-angle-collapse/NSExteriorRoutingAngleCollapse.lean')
+          text = path.read_text()
+          forbidden = {
+              'sorry': r'(^|[^A-Za-z0-9_])sorry([^A-Za-z0-9_]|$)',
+              'admit': r'(^|[^A-Za-z0-9_])admit([^A-Za-z0-9_]|$)',
+              'sorryAx': r'(^|[^A-Za-z0-9_])sorryAx([^A-Za-z0-9_]|$)',
+              'custom axiom': r'(?m)^\s*axiom\s+',
+              'opaque': r'(?m)^\s*opaque\s+',
+              'unsafe': r'(?m)^\s*unsafe\s+',
+          }
+          for label, pattern in forbidden.items():
+              if re.search(pattern, text):
+                  raise SystemExit(f'forbidden source token: {label}')
+          count = len(re.findall(r'(?m)^theorem\s+', text))
+          if count != 8:
+              raise SystemExit(f'expected 8 theorem declarations, found {count}')
+          prints = len(re.findall(r'(?m)^#print axioms\s+', text))
+          if prints != 8:
+              raise SystemExit(f'expected 8 staged axiom prints, found {prints}')
+          print(f'source_sha256={hashlib.sha256(text.encode()).hexdigest()}')
+          print('SOURCE TRUST PREFLIGHT: PASS')
+          PY
+
+      - name: AXLE Lean 4.30 compile and axiom replay
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path('verification/ns-exterior-routing-angle-collapse/NSExteriorRoutingAngleCollapse.lean')
+          payload = json.dumps({
+              'content': source.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          result_path = pathlib.Path('verification/ns-exterior-routing-angle-collapse/axle-result.json')
+          result_path.write_text(json.dumps(result, indent=2))
+          print(json.dumps(result, indent=2))
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          output = json.dumps(result)
+          if not result.get('okay') or lean_errors or tool_errors or failed:
+              raise SystemExit(1)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in output:
+                  raise SystemExit(f'forbidden postcompile dependency: {forbidden}')
+          print('VERIFIED: AXLE Lean 4.30 compiled all 8 finite cores')
+          PY
+
+      - name: Upload exact verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-exterior-routing-angle-collapse-evidence-${{ github.run_attempt }}
+          path: |
+            verification/ns-exterior-routing-angle-collapse/NSExteriorRoutingAngleCollapse.lean
+            verification/ns-exterior-routing-angle-collapse/axle-result.json
+          if-no-files-found: warn
