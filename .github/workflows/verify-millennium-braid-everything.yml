@@ -87,6 +87,7 @@ jobs:
           )
           trusted = {
               'MillenniumBraidAll.lean',
+              'MillenniumBraidAxiomAudit.lean',
               'BSDToupinHaarInversionFirewall.lean',
               'HodgeRationalIntegralFirewall.lean',
               'NSSelectiveLerayAtom.lean',
@@ -122,8 +123,8 @@ jobs:
           : > module-replay.tsv
           mkdir -p module-logs
           status=0
-          lake build BSDToupinHaarInversionFirewall HodgeRationalIntegralFirewall NSSelectiveLerayAtom PNPParityWordInjection PerelmanCompletionRouteEquivalenceFirewall RHPureSimpleZeroNoCoercivity SeventhObjectRouteEquivalenceFirewall YMJacobsenActivityFirewall
-          for src in lean-worker/{MillenniumBraidAll,BSDToupinHaarInversionFirewall,HodgeRationalIntegralFirewall,NSSelectiveLerayAtom,PNPParityWordInjection,PerelmanCompletionRouteEquivalenceFirewall,RHPureSimpleZeroNoCoercivity,SeventhObjectRouteEquivalenceFirewall,YMJacobsenActivityFirewall}.lean; do
+          lake build MillenniumBraidAxiomAudit BSDToupinHaarInversionFirewall HodgeRationalIntegralFirewall NSSelectiveLerayAtom PNPParityWordInjection PerelmanCompletionRouteEquivalenceFirewall RHPureSimpleZeroNoCoercivity SeventhObjectRouteEquivalenceFirewall YMJacobsenActivityFirewall
+          for src in lean-worker/{MillenniumBraidAll,MillenniumBraidAxiomAudit,BSDToupinHaarInversionFirewall,HodgeRationalIntegralFirewall,NSSelectiveLerayAtom,PNPParityWordInjection,PerelmanCompletionRouteEquivalenceFirewall,RHPureSimpleZeroNoCoercivity,SeventhObjectRouteEquivalenceFirewall,YMJacobsenActivityFirewall}.lean; do
             module=$(basename "$src" .lean)
             if lake env lean "$src" > "module-logs/$module.log" 2>&1; then
               if grep -q 'sorryAx' "module-logs/$module.log"; then
@@ -225,7 +226,7 @@ jobs:
                   'declaration_lines': len(kinds),
               })
           report = {
-              'canonical_source_commit': '9fa0d584e0cb9a39d800ae9c5538a7b5ae96e4a1',
+              'canonical_source_commit': 'ebc83198173429cf11a963dd19115339d036a906',
               'verifier_commit': subprocess.check_output(
                   ['git', 'rev-parse', 'HEAD'], text=True
               ).strip(),
@@ -254,6 +255,7 @@ jobs:
           path: |
             verification/millennium-braid-everything/project/unified-build.txt
             verification/millennium-braid-everything/project/unified-axioms.txt
+            verification/millennium-braid-everything/project/unified-axioms.tsv
             verification/millennium-braid-everything/project/unified-manifest.json
             verification/millennium-braid-everything/project/module-replay.tsv
             verification/millennium-braid-everything/project/module-logs/
