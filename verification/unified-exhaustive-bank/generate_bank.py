@@ -425,11 +425,13 @@ elab "#dumpBankTheorems" : command => do
     return set(re.findall(r"BANK_THEOREM_NAME=([^\s]+)", log))
 
 
-def master_source(candidates, rejected_count, baseline_count, bank_count):
+def master_source(candidates, rejected_count, baseline_count, theorem_names):
     imports = "\n".join("import " + candidate.module for candidate in candidates)
     files = len(candidates)
     declarations = sum(candidate.decls for candidate in candidates)
     theorem_syntax = sum(candidate.thms for candidate in candidates)
+    bank_count = len(theorem_names)
+    theorem_manifest = ",\n  ".join(theorem_names)
     return f"""import Mathlib
 {imports}
 namespace UnifiedMillenniumPublicBank
@@ -457,9 +459,73 @@ theorem unified_millennium_public_bank_checkpoint : Checkpoint := by
   refine ⟨rfl, rfl, rfl, rfl, rfl, ?_⟩
   exact UnifiedMillenniumBraid.millennium_perelman_inversion_executable
 
+open Lean Meta Elab Command
+
+private def mkBalancedAndBundle
+    (leaves : Array (Expr × Expr)) : MetaM (Expr × Expr) := do
+  if leaves.isEmpty then
+    return (mkConst \x60\x60True, mkConst \x60\x60True.intro)
+  let mut layer := leaves
+  while layer.size > 1 do
+    let mut next : Array (Expr × Expr) := #[]
+    let mut i := 0
+    while i < layer.size do
+      if i + 1 < layer.size then
+        let (p, hp) := layer[i]!
+        let (q, hq) := layer[i + 1]!
+        let pq := mkApp2 (mkConst \x60\x60And) p q
+        let hpq := mkAppN (mkConst \x60\x60And.intro) #[p, q, hp, hq]
+        next := next.push (pq, hpq)
+      else
+        next := next.push layer[i]!
+      i := i + 2
+    layer := next
+  return layer[0]!
+
+syntax (name := bundleTheoremsCmd)
+  "#bundle_theorems " ident " from [" ident,* "]" : command
+
+elab_rules : command
+  | \x60(#bundle_theorems $out:ident from [$ids:ident,*]) => do
+      let ids := ids.getElems
+      if ids.isEmpty then
+        throwErrorAt out "the accepted-theorem manifest is empty"
+      let outName := (← getCurrNamespace) ++ out.getId
+      Command.liftTermElabM do
+        let env ← getEnv
+        let mut seen : NameSet := {}
+        let mut leaves : Array (Expr × Expr) := #[]
+        for id in ids do
+          let n ← resolveGlobalConstNoOverload id
+          if seen.contains n then
+            throwErrorAt id m!"duplicate theorem in manifest: {n}"
+          seen := seen.insert n
+          let some info := env.find? n
+            | throwErrorAt id m!"unknown theorem: {n}"
+          match info with
+          | .thmInfo _ => pure ()
+          | _ => throwErrorAt id m!"accepted entry is not a theorem declaration: {n}"
+          let levels := List.replicate info.levelParams.length Level.zero
+          let proof := mkConst n levels
+          let type ← inferType proof
+          unless (← isProp type) do
+            throwErrorAt id m!"theorem did not instantiate to Prop: {n}"
+          leaves := leaves.push (type, proof)
+        let (type, value) ← mkBalancedAndBundle leaves
+        addDecl <| Declaration.thmDecl {{
+          name := outName, levelParams := [], type, value
+        }}
+        logInfoAt out m!"bundled {leaves.size} theorem constants into {outName}"
+
+#bundle_theorems acceptedCorpusKernelBundle from [
+  {theorem_manifest}
+]
+
 #check UnifiedMillenniumBraid.millennium_perelman_inversion_executable
+#check acceptedCorpusKernelBundle
 #eval importedModuleCount
 #eval importedBankTheoremCount
+#print axioms acceptedCorpusKernelBundle
 #print axioms unified_millennium_public_bank_checkpoint
 
 end UnifiedMillenniumPublicBank
@@ -525,7 +591,7 @@ def main():
     generated = outroot / "generated"
     conductor = generated / "UnifiedMillenniumPublicBank.lean"
     conductor.write_text(
-        master_source(joint, len(rejected), len(baseline), len(imported))
+        master_source(joint, len(rejected), len(baseline), imported)
     )
     code, log = run(
         [
