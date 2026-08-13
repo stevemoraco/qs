@@ -104,15 +104,35 @@ jobs:
           lake update
           lake exe cache get
 
-      - name: Build and replay complete import spine
+      - name: Replay every module and classify the coherent closure
         working-directory: verification/millennium-braid-everything/project
         run: |
           set -euo pipefail
-          lake build MillenniumBraidAll 2>&1 | tee unified-build.txt
-          lake env lean lean-worker/MillenniumBraidAll.lean 2>&1 | tee unified-axioms.txt
-          if grep -q 'sorryAx' unified-axioms.txt; then
+          : > module-replay.tsv
+          mkdir -p module-logs
+          status=0
+          for src in lean-worker/*.lean; do
+            module=$(basename "$src" .lean)
+            if lake env lean "$src" > "module-logs/$module.log" 2>&1; then
+              if grep -q 'sorryAx' "module-logs/$module.log"; then
+                printf 'SORRY_AX\\t%s\\n' "$src" >> module-replay.tsv
+                status=1
+              else
+                printf 'PASS\\t%s\\n' "$src" >> module-replay.tsv
+              fi
+            else
+              printf 'FAIL\\t%s\\n' "$src" >> module-replay.tsv
+              status=1
+            fi
+          done
+          cat module-replay.tsv
+          if [ "$status" -ne 0 ]; then
+            echo "Historical bank is not yet one coherent Lean-4.31 closure."
             exit 1
           fi
+          lake build MillenniumBraidAll 2>&1 | tee unified-build.txt
+          lake env lean lean-worker/MillenniumBraidAll.lean 2>&1 | tee unified-axioms.txt
+          ! grep -q 'sorryAx' unified-axioms.txt
 
       - name: Generate SHA and declaration manifest
         working-directory: verification/millennium-braid-everything/project
@@ -172,4 +192,6 @@ jobs:
             verification/millennium-braid-everything/project/unified-build.txt
             verification/millennium-braid-everything/project/unified-axioms.txt
             verification/millennium-braid-everything/project/unified-manifest.json
+            verification/millennium-braid-everything/project/module-replay.tsv
+            verification/millennium-braid-everything/project/module-logs/
           if-no-files-found: warn
