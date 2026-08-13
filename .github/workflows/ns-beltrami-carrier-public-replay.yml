@@ -47,11 +47,24 @@ jobs:
             exit 1
           fi
 
-      - name: Install Lean, generate the pinned manifest, build, and run nanoda
+      - name: Bootstrap the pinned Lean toolchain and manifest
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version
+          "$HOME/.elan/bin/lake" --version
+          "$HOME/.elan/bin/lake" update
+          test -f lake-manifest.json
+          sha256sum lake-manifest.json
+
+      - name: Build with Lean kernel and run independent nanoda checker
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: formal/millennium_audit
-          auto-config: true
+          auto-config: false
           build: true
           test: false
           lint: false
