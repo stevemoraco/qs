@@ -1,10 +1,11 @@
-name: PNP restriction averaging Lean replay
+name: PNP dual-rail tribes finite Lean replay
 
 on:
   push:
-    branches: [main]
+    branches:
+      - agent/pnp-dualrail-tribes-public-replay-20260813
     paths:
-      - 'verification/pnp-restriction-averaging/**'
+      - 'verification/pnp-dualrail-tribes/**'
       - '.github/workflows/pnp-restriction-averaging.yml'
   workflow_dispatch:
 
@@ -13,7 +14,7 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/pnp-restriction-averaging/PNPRestrictionAveraging.lean
+          file=verification/pnp-dualrail-tribes/PNPDualRailTribesFirewall.lean
           if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
             echo 'Explicit proof hole found'
             exit 1
@@ -32,16 +33,18 @@ jobs:
             exit 1
           fi
 
-      - name: Install Lean
+      - name: Install pinned Lean
         shell: bash
         run: |
           set -euo pipefail
-          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Resolve pinned Mathlib and fetch cache
         shell: bash
-        working-directory: verification/pnp-restriction-averaging
+        working-directory: verification/pnp-dualrail-tribes
         run: |
           set -euo pipefail
           lake update
@@ -49,8 +52,19 @@ jobs:
 
       - name: Kernel replay and axiom report
         shell: bash
-        working-directory: verification/pnp-restriction-averaging
+        working-directory: verification/pnp-dualrail-tribes
         run: |
           set -euo pipefail
-          lake env lean PNPRestrictionAveraging.lean | tee lean-replay.log
-          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
+          lake env lean PNPDualRailTribesFirewall.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Placeholder dependency found'
+            exit 1
+          fi
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-dualrail-tribes-lean-evidence
+          path: verification/pnp-dualrail-tribes/lean-output.log
+          if-no-files-found: warn
