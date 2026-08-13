@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/hodge-rational-integral-firewall/HodgeRationalIntegralFirewall.lean
-          EXPECTED_GIT_BLOB=7f89562e01fdcc3e63114deaf15c7fbef5e23279
+          EXPECTED_GIT_BLOB=3de215048f9c00655463c39378e727843360f12e
           test "$(git hash-object "$SRC")" = "$EXPECTED_GIT_BLOB"
           python3 - <<'PY'
           import pathlib, re

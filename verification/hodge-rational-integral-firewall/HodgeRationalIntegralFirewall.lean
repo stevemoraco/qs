@@ -18,7 +18,8 @@ theorem rationalSpan_not_integralImage :
     exact ⟨q / 2, by ring⟩
   · intro h
     obtain ⟨z, hz⟩ := h 1
-    omega
+    have hdiv : (2 : ℤ) ∣ 1 := ⟨z, hz.symm⟩
+    norm_num at hdiv
 
 #print axioms rationalSpan_not_integralImage
 
