@@ -1,0 +1,64 @@
+name: Verify RH B54 Q420 finite core
+
+on:
+  push:
+    branches:
+      - agent/rh-b54-q420-public-verifier-20260813-gpt56
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/RHB54Q420Finite.lean'
+      - 'verification/rh-b54-q420/**'
+      - '.github/workflows/verify-rh-b54-q420-finite.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/RHB54Q420Finite.lean'
+      - 'verification/rh-b54-q420/**'
+      - '.github/workflows/verify-rh-b54-q420-finite.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject explicit placeholders and trust carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=formal/millennium_audit/SixLaneAudit/RHB54Q420Finite.lean
+          test "$(git hash-object "$file")" = "da5ad8e3eeafec82f93a5f707f9dced12dcfdd64"
+          test "$(grep -c '#print axioms' "$file")" = 16
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden Lean placeholder or trust carrier found." >&2
+            exit 1
+          fi
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cp formal/millennium_audit/SixLaneAudit/RHB54Q420Finite.lean \
+            verification/rh-b54-q420/RHB54Q420Finite.lean
+          cd verification/rh-b54-q420
+          lake update
+          lake exe cache get
+          lake env lean RHB54Q420Finite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or trust carrier found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite RH B54 Q420 cores.'
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-b54-q420-lean-evidence
+          path: verification/rh-b54-q420/lean-output.log
+          if-no-files-found: warn
