@@ -1,5 +1,7 @@
 import Mathlib
 
+-- This file is replayed independently after the syndrome-separation source.
+
 /-!
 # P versus NP finite firewall: averaging contrapositive
 
