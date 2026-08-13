@@ -171,16 +171,16 @@ theorem finiteSelectedIntervalDepletion
     (hstep : ∀ k : ℕ,
       budget (k + 1) + c * activity k ≤ budget k + error k)
     (hterminal : 0 ≤ budget n) :
-    c * (∑ k in Finset.range n, activity k) ≤
-      budget 0 + ∑ k in Finset.range n, error k := by
+    c * Finset.sum (Finset.range n) activity ≤
+      budget 0 + Finset.sum (Finset.range n) error := by
   have htel :
-      budget n + c * (∑ k in Finset.range n, activity k) ≤
-        budget 0 + ∑ k in Finset.range n, error k := by
+      budget n + c * Finset.sum (Finset.range n) activity ≤
+        budget 0 + Finset.sum (Finset.range n) error := by
     induction n with
     | zero => simp
     | succ n ih =>
       have hs := hstep n
-      simp only [Finset.sum_range_succ]
+      rw [Finset.sum_range_succ, Finset.sum_range_succ]
       nlinarith
   linarith
 
@@ -200,18 +200,18 @@ theorem finiteDepletionOverrunImpossible
     (hterminal : 0 ≤ budget n)
     (hfloor : ∀ k < n, floor k ≤ activity k)
     (hoverrun :
-      budget 0 + (∑ k in Finset.range n, error k) <
-        c * ∑ k in Finset.range n, floor k) :
+      budget 0 + Finset.sum (Finset.range n) error <
+        c * Finset.sum (Finset.range n) floor) :
     False := by
   have hsum :
-      (∑ k in Finset.range n, floor k) ≤
-        ∑ k in Finset.range n, activity k := by
+      Finset.sum (Finset.range n) floor ≤
+        Finset.sum (Finset.range n) activity := by
     apply Finset.sum_le_sum
     intro k hk
     exact hfloor k (Finset.mem_range.mp hk)
   have hweighted :
-      c * (∑ k in Finset.range n, floor k) ≤
-        c * ∑ k in Finset.range n, activity k :=
+      c * Finset.sum (Finset.range n) floor ≤
+        c * Finset.sum (Finset.range n) activity :=
     mul_le_mul_of_nonneg_left hsum hc
   have hdepletion :=
     finiteSelectedIntervalDepletion n budget activity error c hstep hterminal
