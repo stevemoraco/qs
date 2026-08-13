@@ -8,6 +8,8 @@ Status: research theorem only; no NP-uniform construction and no P-vs-NP conclus
 
 Chen--Li--Yang, ECCC TR22-086 rev.1 (2022), https://eccc.weizmann.ac.il/report/2022/086/ gives the sparse-NP hardness-magnification frontier `2n+O(n/log log n)` and permits a one-sided lower-bound premise. Fan--Li--Yang, ECCC TR21-125 rev.1 (2021), https://eccc.weizmann.ac.il/report/2021/125/ is the source of the `2n-2` critical-path baseline. Internal circuit-count provenance is `verification/pnp-linear-random-list/verify.py` at commit `5a7335d5fb9ed65300abe45654b9fcb678f55195`.
 
+Primary-source correction: CLY Theorem 1.1 states `ell=log^2 n/log log n` and seed length `r=O(ell log^2 n)`, not `O(ell log^3 n)`. Thus the expanded seed bound is `O(log^4 n/log log n)`. The earlier branch note had one extra factor of `log n`; this commit corrects it explicitly.
+
 ## Theorem
 
 Let `U_n={x in {0,1}^n: |x|=4}` and `Q=binom(n,4)`. For powers of two `n` sufficiently large, set `L=log_2 n` and `M=256 n L`. There exist disjoint `T_n,H_n subset U_n`, each of size `M`, such that every deterministic fan-in-two `B_2` circuit with at most `3n` gates that accepts all of `T_n` accepts at least `M/4` points of `H_n`.
@@ -50,7 +52,7 @@ So visible selection costs exactly `2r` relative to the `2m` baseline, and one-s
 
 However, if all `2^r` selectors contribute at least one positive, then `|L_N|>=2^r`. The CLY sparse envelope `N^{log N/log log N}` has base-two logarithm only `Theta((log N)^2/log log N)`. Therefore an all-seed packed language can expose only `r=O((log N)^2/log log N)` selector bits. The tempting `r=Theta(N/log log N)` use of circuit slack violates sparsity exponentially.
 
-There is a second mismatch: CLY Theorem 1.1 uses seed length `O(ell log^3 N)` for `ell=log^2 N/log log N`, namely `O(log^5 N/log log N)`. Blindly exposing all of those hash seeds as positive prefixes exceeds the same sparse-language budget by about a `log^3 N` factor in the exponent.
+There is a second mismatch: CLY Theorem 1.1 uses seed length `O(ell log^2 N)` for `ell=log^2 N/log log N`, namely `O(log^4 N/log log N)`. Blindly exposing all of those hash seeds as positive prefixes exceeds the same sparse-language budget by about a `log^2 N` factor in the exponent.
 
 **Salvage:** find a much smaller seed family, expose only an NP-sparse subset of longer seeds, or prove a collision-absorption theorem for hidden seeds sharing a visible prefix.
 
