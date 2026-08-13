@@ -33,8 +33,10 @@ exactly the volume factor `r²V`. -/
 theorem active_gain_square_identity
     (r G V c : ℝ) (hG : G ^ 2 = V) (hc : c = r * G) :
     c ^ 2 = r ^ 2 * V := by
-  rw [hc, hG]
-  ring
+  rw [hc]
+  calc
+    (r * G) ^ 2 = r ^ 2 * G ^ 2 := by ring
+    _ = r ^ 2 * V := by rw [hG]
 
 /-- CRITIC: the volume-free quadratic separation can grow while the true
 packet loop remains exactly one. -/
