@@ -56,9 +56,9 @@ theorem critical_square_iff
   constructor
   · intro h
     have hsum : 0 < (2 * s - (A + c)) := by linarith
-    have hplus : 0 ≤ 2 * s + (A + c) := by linarith
+    have hplus : 0 < 2 * s + (A + c) := by linarith
     have hprod : 0 < (2 * s - (A + c)) * (2 * s + (A + c)) :=
-      mul_pos_of_pos_of_nonneg hsum hplus
+      mul_pos hsum hplus
     nlinarith [hprod]
   · intro h
     by_contra hnot
