@@ -1,0 +1,62 @@
+name: NS Clay-D diagonal public verifier
+
+on:
+  pull_request:
+    paths:
+      - 'verification/ns-clay-d-diagonal-public/**'
+      - '.github/workflows/ns-clay-d-diagonal-public-verify.yml'
+  push:
+    branches:
+      - agent/ns-clay-d-diagonal-public-verifier-20260813
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        file:
+          - NSClayDDiagonalResidualCore.lean
+          - NSSidonLocalizationWindow.lean
+          - NSExplicitParameterCertificate.lean
+          - NSMesocellWindow.lean
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trust scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-clay-d-diagonal-public'
+          file="$dir/${{ matrix.file }}"
+          sha256sum "$file"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          dir='verification/ns-clay-d-diagonal-public'
+          cat > "$dir/lakefile.toml" <<'EOF'
+          name = "ns-clay-d-diagonal-public"
+          version = "0.1.0"
+          defaultTargets = []
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "520045ab14e26149ee970e2e617ca04b09bde5d6"
+          EOF
+          cd "$dir"
+          lake update
+          lake exe cache get
+          lake env lean '${{ matrix.file }}' | tee "${{ matrix.file }}.log"
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' "${{ matrix.file }}.log"; then exit 1; fi
+          echo "VERIFIED ${{ matrix.file }}"
