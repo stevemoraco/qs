@@ -1,10 +1,9 @@
 import Mathlib
-import NavierStokesPressureRecurrence
 
 namespace NavierStokesCoveringCountermodel
 
 /-- An equal-mass finite partition can have total mass one while every
-single cell has arbitrarily small mass.  This is the finite algebraic
+single cell has arbitrarily small mass. This is the finite algebraic
 countermodel behind the failure of any pigeonhole lower bound depending
 only on overlap and not on cover cardinality.
 
@@ -77,7 +76,7 @@ structure ThreeScaleScore where
   deriving DecidableEq
 
 /-- The displayed first-threshold definition controls the crossing packet
-and its strict descendants.  It does not mention the larger ancestor. -/
+and its strict descendants. It does not mention the larger ancestor. -/
 def printedFirstThreshold (S : ThreeScaleScore) : Prop :=
   S.threshold ≤ S.crossingScore ∧ S.descendantScore < S.threshold
 
@@ -87,7 +86,7 @@ def lowAncestorHighCrossing (S : ThreeScaleScore) : Prop :=
   S.ancestorScore < S.threshold ∧ S.threshold ≤ S.crossingScore
 
 /-- The displayed first-threshold condition alone does not imply the
-additional low-ancestor premise.  A separate adjacency/continuity theorem
+additional low-ancestor premise. A separate adjacency/continuity theorem
 is required to pass from one formulation to the other. -/
 theorem firstThresholdDoesNotSupplyLowAncestor :
     ∃ S : ThreeScaleScore,
@@ -110,7 +109,7 @@ structure ScoreMassRecord where
   deriving DecidableEq
 
 /-- A packet can be numerically subthreshold in score while its spacetime
-mass exceeds the same threshold.  Thus score smallness does not by itself
+mass exceeds the same threshold. Thus score smallness does not by itself
 supply the mass seed required by a separate theorem. -/
 theorem subthresholdScoreDoesNotImplySmallMass :
     ∃ S : ScoreMassRecord,
@@ -122,7 +121,7 @@ countermodel. -/
 def atomPoint (N : ℕ) : Fin (N + 1) :=
   ⟨N, Nat.lt_succ_self N⟩
 
-/-- One packet at each labelled scale.  As the scale index grows, these
+/-- One packet at each labelled scale. As the scale index grows, these
 sets are nested decreasing, and every one contains the terminal atom. -/
 def packetAtScale (N : ℕ) (k : Fin N) : Set (Fin (N + 1)) :=
   {x | k.val ≤ x.val}
@@ -150,7 +149,7 @@ lemma everyPacketHasFullAtomMass (N : ℕ) (k : Fin N) :
 
 /-- For every finite number `N` of distinct scale labels, one unit of
 atomic ledger mass funds all `N` nested packets, with only one packet at
-each scale.  Consequently fixed-scale overlap one plus finite total measure
+each scale. Consequently fixed-scale overlap one plus finite total measure
 does not by itself bound cross-scale packet count. -/
 theorem atomicLedgerFundsArbitrarilyManyNestedScales (N : ℕ) :
     ∃ totalMass : ℕ,
@@ -161,7 +160,7 @@ theorem atomicLedgerFundsArbitrarilyManyNestedScales (N : ℕ) :
   intro k
   exact everyPacketHasFullAtomMass N k
 
-/-- A selected-interval depletion inequality telescopes exactly.  This is
+/-- A selected-interval depletion inequality telescopes exactly. This is
 the finite budget algebra needed by any repaired cross-scale stopping
 argument: visible activity can persist only while its accumulated charge is
 bounded by the initial budget plus accumulated errors. -/
@@ -188,7 +187,7 @@ theorem finiteSelectedIntervalDepletion
 
 /-- If each selected activity dominates a proposed floor and the depletion
 coefficient is nonnegative, then no finite prefix may have floor charge
-strictly larger than the initial budget plus all prefix errors.  This is the
+strictly larger than the initial budget plus all prefix errors. This is the
 finite firewall behind a valid vanishing-threshold diagonal: the powered
 threshold floors must have divergent partial sums, while the depletion
 constant and error budget stay uniform. -/
@@ -238,7 +237,7 @@ theorem parabolicFrequencyWeakTrace (N : ℕ) (hN : 0 < N) :
 /-- For every fixed frequency cutoff and every positive trace tolerance,
 there is a frequency above the cutoff whose parabolic gradient action is
 exactly one while its order-minus-one `L^1_t` trace cost is below the
-tolerance.  This is the finite scaling firewall behind the exact decaying
+tolerance. This is the finite scaling firewall behind the exact decaying
 shear-flow initial-layer counterexample. -/
 theorem arbitrarilyHighFrequencyCriticalActionWeakTrace
     (M : ℕ) (ε : ℝ) (hε : 0 < ε) :
@@ -266,6 +265,43 @@ theorem arbitrarilyHighFrequencyCriticalActionWeakTrace
       parabolicFrequencyWeakTrace N hNpos
     _ < ε := hsmallInv
 
+/-- Abstract two-scale pressure-decay firewall.
+
+Suppose `cubic k + pressure k` stays above the CKN floor at every scale,
+`pressure` is uniformly bounded, and pressure obeys the standard recurrence
+`pressure (k+1) ≤ a * pressure k + b * cubic k`.
+If the constants are chosen so that two consecutive subthreshold cubic
+values would force the next total below the CKN floor, then every adjacent
+pair contains a definite cubic event. -/
+theorem cubicEventInEveryAdjacentPair
+    (cubic pressure : ℕ → ℝ)
+    (a b K δ ε : ℝ)
+    (ha : 0 ≤ a)
+    (hb : 0 ≤ b)
+    (hpressure : ∀ k : ℕ, pressure k ≤ K)
+    (hbad : ∀ k : ℕ, ε ≤ cubic k + pressure k)
+    (hrec : ∀ k : ℕ,
+      pressure (k + 1) ≤ a * pressure k + b * cubic k)
+    (hparameter : a * K + b * δ + δ < ε) :
+    ∀ k : ℕ, δ < cubic k ∨ δ < cubic (k + 1) := by
+  intro k
+  by_contra hpair
+  push_neg at hpair
+  have hnextPressure :
+      pressure (k + 1) ≤ a * K + b * δ := by
+    calc
+      pressure (k + 1) ≤ a * pressure k + b * cubic k := hrec k
+      _ ≤ a * K + b * δ := by
+        exact add_le_add
+          (mul_le_mul_of_nonneg_left (hpressure k) ha)
+          (mul_le_mul_of_nonneg_left hpair.1 hb)
+  have hnextTotal :
+      cubic (k + 1) + pressure (k + 1) ≤
+        δ + (a * K + b * δ) :=
+    add_le_add hpair.2 hnextPressure
+  have hnextBad := hbad (k + 1)
+  linarith
+
 #print axioms equalCellTotal
 #print axioms noUniformSingleCellFraction
 #print axioms typedZeroDoesNotImplyExternalZero
@@ -277,5 +313,6 @@ theorem arbitrarilyHighFrequencyCriticalActionWeakTrace
 #print axioms parabolicFrequencyAction
 #print axioms parabolicFrequencyWeakTrace
 #print axioms arbitrarilyHighFrequencyCriticalActionWeakTrace
+#print axioms cubicEventInEveryAdjacentPair
 
 end NavierStokesCoveringCountermodel
