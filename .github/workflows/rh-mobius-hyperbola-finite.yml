@@ -1,0 +1,38 @@
+name: RH Mobius hyperbola finite replay
+on:
+  push:
+    branches: ['verification/rh-mobius-hyperbola-finite-20260813']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust gates
+        run: |
+          set -euo pipefail
+          dir=verification/rh-mobius-hyperbola
+          for f in "$dir"/*.lean; do
+            ! grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$f"
+          done
+          test "$(git hash-object "$dir/RHMobiusHyperbolaKernel.lean")" = 04b388c54153552039244fb7e06dbe749291b346
+          test "$(git hash-object "$dir/RHMobiusHyperbolaLedger.lean")" = 2f16934fa100328625d37454ba3017e988f284ec
+      - name: Install Lean
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Fetch Mathlib
+        working-directory: verification/rh-mobius-hyperbola
+        run: |
+          lake update
+          lake exe cache get
+      - name: Replay
+        working-directory: verification/rh-mobius-hyperbola
+        run: |
+          set -euo pipefail
+          lake env lean RHMobiusHyperbolaKernel.lean | tee kernel.log
+          lake env lean RHMobiusHyperbolaLedger.lean | tee ledger.log
+          ! grep -nE '(error:|sorryAx|Lean\.ofReduceBool)' kernel.log ledger.log
