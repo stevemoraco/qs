@@ -8,4 +8,7 @@ require mathlib from git
 
 @[default_target]
 lean_lib Round41Replay where
-  roots := #[`B2Round41AdversarialCores]
+  roots := #[
+    `B2Round41AdversarialCores,
+    `B2Round41FaithfulTransferCores
+  ]
