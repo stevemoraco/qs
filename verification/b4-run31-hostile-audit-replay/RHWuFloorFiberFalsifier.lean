@@ -1,5 +1,7 @@
 import Mathlib
 
+open scoped BigOperators
+
 namespace Millennium.RH.WuFloorFiberFalsifier
 
 /-- The floor fiber used in the claimed lower bound:
