@@ -1,0 +1,21 @@
+{
+  "date": "2026-08-13",
+  "status": ["PROVED_FINITE", "LEAN_SOURCE", "LEAN_VERIFIED", "REFUTED_PROOF_EDGE", "HODGE_OPEN"],
+  "source_path": "verification/hodge_secant_self_intersection/HodgeSecantSelfIntersection.lean",
+  "source_commit": "2be1daa99cf96dd5aa8e55726279ebbe6cf08213",
+  "source_blob": "1a7983b45ce0d829f3d1e722bcd9a5b34ce2c2ee",
+  "source_sha256": "c6f7d22fe5392dfb7139cab8370511b6fc4cfb156900778f1840b0d1de2660b3",
+  "theorems": [
+    {"name": "banker_secant_containment_forces_self_intersection", "assumptions": "arbitrary type; sets X and Sec; X subset Sec", "result": "X intersect Sec equals X"},
+    {"name": "critic_expected_proper_intersection_fails", "assumptions": "one-point type; X and Sec both universal", "result": "nonempty nested intersection is the whole X"},
+    {"name": "cleaner_nonwhole_intersection_iff_noncontainment", "assumptions": "arbitrary type and sets", "result": "X intersect Sec differs from X iff X is not contained in Sec"}
+  ],
+  "provenance": {"manuscript": "Relative Secant Cycles and Hodge Classes", "identifier": "202602.0462", "version": 5, "posted": "2026-08-05", "location": "Definition 3 and lines asserting expected codimension of Sec^n(A^vee) intersect A^vee"},
+  "critic": "The secant variety of A^vee contains A^vee, so its intersection with A^vee is A^vee, not a codimension-n cycle. Ordinary restriction of O_Sigma to A^vee is O_A^vee.",
+  "repair": "Use a translate or external incidence locus not containing A^vee and reprove codimension, flatness, K-equivariance, nonvanishing, and the fibrewise class formula.",
+  "compile": {"pr": 328, "phase": "first", "head": "8ad60543dd9606d90919792a9fb3548abfe07229", "checked_merge": "fedb00bf86bfac32eede9c30e045b7b43498ccf1", "run": 31699175311, "job": 94443856169, "runner": "GitHub Actions 1000021166", "environment": "lean-4.30.0", "request": "187526d2-5204-4a43-aaee-196a6aa9724e", "artifact": 9180517973, "artifact_digest": "sha256:b6ac4ece1405e35b925c637b8e0e67975346cc4aa029666fcfe10a637694b111", "okay": true, "errors": 0, "warnings": 0},
+  "dependencies": [["propext", "Quot.sound"], ["propext", "Quot.sound"], ["propext", "Quot.sound"]],
+  "source_audit": {"theorems": 3, "dependency_reports": 3, "sorry": 0, "admit": 0, "sorryAx": 0, "custom_axiom": 0, "opaque": 0, "unsafe": 0, "native_decide": 0, "Lean.ofReduceBool": 0},
+  "remaining_gap": "a genuine relative cycle with the required class and all family and equivariance properties",
+  "six_alarm": false
+}

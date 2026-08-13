@@ -1,0 +1,19 @@
+{
+  "date": "2026-08-13",
+  "status": ["PROVED_FINITE", "LEAN_SOURCE", "LEAN_VERIFIED", "BRIDGE_MISSING"],
+  "source_path": "verification/hodge_local_atiyah_square/HodgeLocalAtiyahSquare.lean",
+  "source_commit": "b02c5a9ae089261299ca3322db540e1fd6fc01ad",
+  "source_blob": "0e8f18d65cb42451b4d4a16f6c2256bb501acef8",
+  "source_sha256": "43870a6dcae19908b9b29b1b8935d5a3e0dffc447bb929e37de809686626f654",
+  "theorems": [
+    {"name": "banker_raw_square_is_twice_normalized", "assumptions": "closed integer definitions", "result": "raw row is twice normalized row"},
+    {"name": "critic_raw_square_is_not_normalized", "assumptions": "closed integer definitions", "result": "raw row differs from normalized row"},
+    {"name": "cleaner_normalized_uv_contraction", "assumptions": "closed integer definitions", "result": "normalized uv contraction equals (1,0)"}
+  ],
+  "provenance": "qs PR 312 HODGE_W2_PARTIAL_NORMALIZATION_EXACT_SECANT_AND_LOCAL_SEMIREG_OBSTRUCTION_2026-08-13.md",
+  "compile": {"pr": 323, "run": 31698707423, "job": 94442346706, "runner": "GitHub Actions 1000021118", "environment": "lean-4.30.0", "request": "e850c7c6-c116-4f12-bdb3-d44964560b75", "artifact": 9180344598, "artifact_digest": "sha256:f34df28c45a4c5384f4819e4c8bc60d4b4e0c9e2ddd3b31d949f1104de9c6ab5", "okay": true, "errors": 0, "warnings": 0},
+  "dependencies": [[], [], []],
+  "source_audit": {"theorems": 3, "dependency_reports": 3, "placeholders": 0, "user_conclusion_assumptions": 0},
+  "remaining_gap": "actual Atiyah class, differential forms, mapping cone, Ext2, HKR, semiregularity, and every global Hodge bridge",
+  "six_alarm": false
+}
