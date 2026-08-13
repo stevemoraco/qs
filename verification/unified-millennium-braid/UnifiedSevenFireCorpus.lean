@@ -186,6 +186,19 @@ theorem survivor_from_exhaustiveness
   · simpa [h] using hi
   · exact False.elim (hkilled i h hi)
 
+/-- Pairwise exclusivity identifies a unique survivor exactly when an
+independent exhaustiveness theorem supplies at least one valid route. -/
+theorem unique_survivor_from_exhaustiveness
+    {ι : Type*} (Valid : ι → Prop)
+    (hexhaustive : ∃ i, Valid i)
+    (hexclusive : ∀ i j, i ≠ j → Valid i → ¬ Valid j) :
+    ∃! i, Valid i := by
+  rcases hexhaustive with ⟨winner, hwinner⟩
+  refine ⟨winner, hwinner, ?_⟩
+  intro candidate hcandidate
+  by_contra hne
+  exact (hexclusive winner candidate (Ne.symm hne) hwinner) hcandidate
+
 /-- One solved coordinate cannot imply the full braid by packaging alone. -/
 theorem one_lane_does_not_close_bundle :
     ∃ T : TargetInterfaces, T.pNeNP ∧ ¬ T.allSix := by
@@ -243,6 +256,9 @@ structure UnifiedBraidReceipt (T : TargetInterfaces) : Prop where
     ∃ Goal : Prop, (¬ (Goal ∧ ¬ Goal)) ∧ ¬ Goal
   survivorRule : ∀ {ι : Type*} (Valid : ι → Prop) (winner : ι),
     (∃ i, Valid i) → (∀ i, i ≠ winner → ¬ Valid i) → Valid winner
+  uniqueSurvivorRule : ∀ {ι : Type*} (Valid : ι → Prop),
+    (∃ i, Valid i) →
+      (∀ i j, i ≠ j → Valid i → ¬ Valid j) → ∃! i, Valid i
 
 theorem unified_millennium_braid_executable
     (T : TargetInterfaces) : UnifiedBraidReceipt T := {
@@ -257,6 +273,7 @@ theorem unified_millennium_braid_executable
     ⟨every_finite_prefix_has_witness, no_global_prefix_witness⟩
   exclusivityFirewall := exclusivity_does_not_prove_target
   survivorRule := survivor_from_exhaustiveness
+  uniqueSurvivorRule := unique_survivor_from_exhaustiveness
 }
 
 #print axioms fires_length
@@ -267,6 +284,7 @@ theorem unified_millennium_braid_executable
 #print axioms no_global_prefix_witness
 #print axioms exclusivity_does_not_prove_target
 #print axioms survivor_from_exhaustiveness
+#print axioms unique_survivor_from_exhaustiveness
 #print axioms one_lane_does_not_close_bundle
 #print axioms unified_millennium_braid_executable
 
