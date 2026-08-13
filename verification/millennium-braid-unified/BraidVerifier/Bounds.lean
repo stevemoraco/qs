@@ -15,9 +15,11 @@ theorem iterate
       have hri : r * E n ≤ r * m := mul_le_mul_of_nonneg_left ih hr
       calc
         E (n + 1) ≤ r * E n + e * m := hs n
-        _ ≤ r * m + e * m := add_le_add_right hri (e * m)
+        _ ≤ r * m + e * m := add_le_add hri le_rfl
         _ = (r + e) * m := by ring
         _ ≤ 1 * m := mul_le_mul_of_nonneg_right hb hm
         _ = m := by ring
+
+#print axioms iterate
 
 end BraidVerifier.Bounds
