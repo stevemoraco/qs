@@ -25,7 +25,7 @@ jobs:
           dir='verification/ns-localized-resonant-triad-public'
           file="$dir/NSLocalizedResonantTriadCore.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='37f78f144e2e48cc012f79eab417c934ed0b6d13'
+          expected_blob='f06964eab9621cf561bb4c37c8b719ee1d14cd44'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_rh_lean_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
