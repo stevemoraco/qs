@@ -1,0 +1,108 @@
+name: Unified seven-problem braid public verifier
+
+on:
+  push:
+    branches:
+      - agent/unified-seven-braid-public-verifier-20260813-gpt56-r2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify exact unified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/millennium_grand_braid/UnifiedSevenProblemBraid.lean
+          EXPECTED_BLOB=8a5b75ff99b0513cc429b3b29e8d6410b08ffd35
+          test "$(git hash-object "$SRC")" = "$EXPECTED_BLOB"
+          mkdir -p evidence/unified_seven_braid
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import re
+          import urllib.request
+
+          path = pathlib.Path('verification/millennium_grand_braid/UnifiedSevenProblemBraid.lean')
+          source = path.read_text()
+          forbidden = re.compile(
+              r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)'
+          )
+          match = forbidden.search(source)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          for token in ('native_decide', 'Lean.ofReduceBool'):
+              if token in source:
+                  raise SystemExit(f'forbidden source token: {token}')
+          if source.count('#print axioms') != 28:
+              raise SystemExit('expected exactly 28 staged axiom reports')
+
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+
+          pathlib.Path('evidence/unified_seven_braid/axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True)
+          )
+          print(json.dumps(result, indent=2))
+
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          assert not lean.get('errors', [])
+          assert not lean.get('warnings', [])
+          assert not tool.get('errors', [])
+          assert not tool.get('warnings', [])
+          rendered = json.dumps(result)
+          assert 'sorryAx' not in rendered
+          print('VERIFIED: unified exact source compiled warning-free')
+          PY
+
+      - name: Record replay identity
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/unified_seven_braid
+          SRC=verification/millennium_grand_braid/UnifiedSevenProblemBraid.lean
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "ref=${GITHUB_REF}"
+            echo "runner=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object "$SRC")"
+            echo "source_sha256=$(sha256sum "$SRC" | awk '{print $1}')"
+            echo "compiler=AXLE Lean 4.30.0"
+          } > evidence/unified_seven_braid/replay-metadata.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-seven-braid-evidence
+          path: evidence/unified_seven_braid/
+          if-no-files-found: error
