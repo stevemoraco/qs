@@ -1,0 +1,52 @@
+name: YM Rayleigh covariance survival replay v2
+
+on:
+  push:
+    branches:
+      - verification/ym-rayleigh-covariance-survival-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reconstruct and verify exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ym-rayleigh-covariance-survival-v2
+          cat <<'B64' | base64 -d | gzip -d > verification/ym-rayleigh-covariance-survival-v2/RayleighCovarianceSurvivalCore.lean
+          H4sIAGwofmoC/8VXy47bNhTd6ysu0EWkxHE7XQYzzWKSboJkkXZTDAYCLV1bBCRSISk/WgQo0KKYLpN9kU2BtJ+Qn8hH+Et6SeptzcNpinoxHvKe+z68pHlRSmXgOTNZzhdBIFiBumQJwnOe5ygEr4r5D0ys7FLPX7JdjnyVncs1U5yJBL+r1JqvWX4uFQaBLFHAt1xoNEFgMqTNAqTAWFeLOMcYt2UscAXhFh7B/tc/IngUAH1O4CFsYf/7n/ASWT4nGIQPtyQ9g8WOEBlbI2R26eQsTWNr1Vt0UALlXFBQJus8b2ysBlPnN5FKYc4MlyLO5QaV8/zTxw8Uyve7Eu+/hosnmPCULXJ8+go+frh0iFATwOdEexGEG0CBarWjbVLe//bWZxKaOievlW3s8upn4PT3CvQMvnIJboA3WYf7qzedmARwH0JbCkP/1D54FFk1hweYUOgVLBzpNdVjZZnv6hTmuips3eiLJFwYJclMxmmBW5YYKKrcyu2XXMZCCuoXbSyND3mqmSO3NnVrMuoaQa1B6s2P1Ip+G3iKwnCz+686cWSdz+oqH+CjGjtlqNVvy52wPPkkv6P+hlajdjzy1TlrPgc9TqRYKVDLvAcatLv5KC5WbhnD2XTqg72pcA6iURu46MViCZNybRRfXN7s6u5VnnBlOUvuLjveqXpexYsqXaGJS4Ua1Rp1nLF82efi/zcMaoSPsGYs3KEQ3VSYZOyX8PW1/HfSfz1Wruf52D58rma3I74h0Z1O2IEZvSuK3tIPvltmFGhoe21q/7aFx9au5/fm62ngELJNx2rc0lnSFhV7uZ3UrTG6KhVb2cvxc3NaU8cRzofMtsp6/oLuhaI0uxv4ftpne4FMtFw/gufnJHJhRFPciRrG769+6QSNKdeu1kBLisXOzkqjGGRUUdooK53BC2mAmWbLvz9KSQN0nNgwJBv86SiFHv1GA9ibfUomu7BOB3rW/xi/IUlTT4c5QNAgtAJ3lZvmKi+ljpXliPVIRhxe86JkcGEhiSyKWX39L01vybSWySVUmi4KZ7stCA3ba5p4UJUITqdvuWtrpXBJJ3LwbDF2vEO4rITLGM6+ISr5rrgHx9y6exx79YRp1BQjbGhgwP7dX3xGmP27v4PuzDe7M+iZ8ZA2w3tdirew7+gU6+qPrq+m0v6J5gMNhTQ2f+rjyjaYjk/ko+uNhVcVy2PDC6yHQZxKuums5kJWIm2GhcvAzwZPuWf+RL+2p9kfDUevOtPuRHmr3XAgnVnQH2U0kE8I+d6z02/Z5bNDdjdFqLtMjTiZ9XAP/PfMPmBmhAQhVRGLiij5OPYN6p77X5TK9o5tuSz0xM+NEeCWXwVD8G0v1yH6iPfGUPHOI32kdlTLAxTpJ/2u+wf8igKQJg4AAA==
+          B64
+          SRC=verification/ym-rayleigh-covariance-survival-v2/RayleighCovarianceSurvivalCore.lean
+          test "$(git hash-object "$SRC")" = 3915711a4a78306fc888f3b5a3524fc6a25f7c07
+          test "$(sha256sum "$SRC" | cut -d' ' -f1)" = 276156d3fb89ae3237074134ddc84e06ef76507c16971b1e385b269574f8c7d0
+          python3 - <<'PY'
+          import json, pathlib, re, urllib.request
+          source = pathlib.Path('verification/ym-rayleigh-covariance-survival-v2/RayleighCovarianceSurvivalCore.lean').read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(source)
+          assert not m, m.group(2) if m else ''
+          assert 'native_decide' not in source
+          assert 'Lean.ofReduceBool' not in source
+          assert source.count('#print axioms') == 6
+          payload = json.dumps({'content':source,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          assert not lean.get('errors', []) and not lean.get('warnings', [])
+          assert not tool.get('errors', []) and not tool.get('warnings', [])
+          assert 'sorryAx' not in json.dumps(result)
+          print('VERIFIED: exact warning-free source compiled under AXLE Lean 4.30')
+          PY
