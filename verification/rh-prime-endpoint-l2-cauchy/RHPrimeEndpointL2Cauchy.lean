@@ -34,7 +34,7 @@ theorem weighted_abs_cauchy {ι : Type*}
     exact mul_nonneg (hw i hi) (sq_nonneg _)
   · intro i hi
     rw [mul_pow, sq_abs]
-    ring
+    ring_nf
 
 /-- Prime-entry positive mass is controlled by total weight times the weighted
 block square mass. This is the finite implication
