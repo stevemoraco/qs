@@ -70,19 +70,17 @@ theorem fakeStableSequence_prefix_recurrence
     fakeStableSequence N (n + 4) -
         (p ^ 2 + 1) * fakeStableSequence N (n + 2) +
         p ^ 2 * fakeStableSequence N n = 0 := by
-  have h0 : n ≠ N + 5 := by omega
-  have h2 : n + 2 ≠ N + 5 := by omega
-  have h4 : n + 4 ≠ N + 5 := by omega
-  simp [fakeStableSequence, h0, h2, h4]
+  have h1 : n ≠ N + 1 := by omega
+  have h3 : n ≠ N + 3 := by omega
+  have h5 : n ≠ N + 5 := by omega
+  simp [fakeStableSequence, h1, h3, h5]
 
 theorem fakeStableSequence_next_recurrence_fails
     (N : ℕ) (p : ℤ) :
     fakeStableSequence N (N + 5) -
         (p ^ 2 + 1) * fakeStableSequence N (N + 3) +
         p ^ 2 * fakeStableSequence N (N + 1) ≠ 0 := by
-  have h1 : N + 1 ≠ N + 5 := by omega
-  have h3 : N + 3 ≠ N + 5 := by omega
-  simp [fakeStableSequence, h1, h3]
+  simp [fakeStableSequence]
 
 #print axioms recover_stationary_mode
 #print axioms two_mode_recurrence
