@@ -55,9 +55,9 @@ theorem normalized_identric_log_gap_le
       congr 1
       dsimp [p, n]
       ring
-    convert hraw using 1
-    · ext y
-      simp [G, p, n]
+    convert! hraw using 1
+    · funext y
+      rfl
     · rw [hlog]
       dsimp [p, n]
       field_simp [hp, hn]
