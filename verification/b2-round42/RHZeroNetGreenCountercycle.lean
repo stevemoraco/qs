@@ -50,7 +50,7 @@ theorem three_step_energy_strictly_negative
     L1 * (-d) + L2 * (-2 * d) + L3 * 0 < 0 := by
   have hsum : 0 < L1 + 2 * L2 := by positivity
   rw [three_step_energy_identity]
-  exact neg_neg_of_pos (mul_pos hd hsum)
+  nlinarith [mul_pos hd hsum]
 
 /-- Endpoint equality and zero net forcing do not imply nonnegative energy:
 an explicit finite witness packages all three facts. -/
