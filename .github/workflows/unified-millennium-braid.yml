@@ -75,6 +75,7 @@ jobs:
               "no_global_prefix_witness",
               "exclusivity_does_not_prove_target",
               "survivor_from_exhaustiveness",
+              "unique_survivor_from_exhaustiveness",
               "one_lane_does_not_close_bundle",
               "unified_millennium_braid_executable",
           ]
@@ -89,7 +90,7 @@ jobs:
               flags=re.S,
           )
           if len(reports) != len(expected):
-              raise SystemExit(f"expected 10 complete axiom reports, got {len(reports)}")
+              raise SystemExit(f"expected 11 complete axiom reports, got {len(reports)}")
           allowed = {"propext", "Classical.choice", "Quot.sound"}
           for report in reports:
               match = re.search(r"depends on axioms:\s*\[([^\]]*)\]", report, re.S)
@@ -100,7 +101,7 @@ jobs:
           forbidden = ("sorryAx", "Lean.ofReduceBool", "declaration uses 'sorry'")
           if any(token in log for token in forbidden):
               raise SystemExit("forbidden postcompile dependency")
-          print("AXIOM AUDIT PASS: 10 reports; standard foundations only")
+          print("AXIOM AUDIT PASS: 11 reports; standard foundations only")
           PY
 
       - name: Preserve exact replay
