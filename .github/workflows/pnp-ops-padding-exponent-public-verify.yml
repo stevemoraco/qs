@@ -1,0 +1,83 @@
+name: PNP OPS padding exponent public verifier
+
+on:
+  push:
+    branches:
+      - agent/pnp-ops-padding-exponent-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/pnp-ops-padding-exponent-public/**'
+      - '.github/workflows/pnp-ops-padding-exponent-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-ops-padding-exponent-public'
+          file="$dir/PNPOPSPaddingExponentFirewall.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='1f339a53438130b64e3b8ffc79fd52529a65f07c'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-ops-padding-exponent-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean PNPOPSPaddingExponentFirewall.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED OPS padding exponent finite firewall.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-ops-padding-exponent-public-evidence
+          path: |
+            verification/pnp-ops-padding-exponent-public/source-blob.txt
+            verification/pnp-ops-padding-exponent-public/source-sha256.txt
+            verification/pnp-ops-padding-exponent-public/lean-version.txt
+            verification/pnp-ops-padding-exponent-public/lean-output.log
