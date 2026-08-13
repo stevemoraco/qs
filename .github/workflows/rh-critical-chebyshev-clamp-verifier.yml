@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-critical-chebyshev-clamp/RHCriticalChebyshevClampMinimum.lean
-          EXPECTED_BLOB=a37a000eb5d1551272c2940101ae5d02af239659
+          EXPECTED_BLOB=1b281dd4ae9026d3a3c174654948cfd934fa42ea
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
@@ -127,13 +127,15 @@ jobs:
               raise SystemExit('missing AXLE response evidence')
           result = json.loads(p.read_text())
           lean_errors = result.get('lean_messages', {}).get('errors', [])
+          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
+          tool_warnings = result.get('tool_messages', {}).get('warnings', [])
           failed = result.get('failed_declarations', [])
-          if not result.get('okay') or lean_errors or tool_errors or failed:
-              raise SystemExit('Lean/AXLE verification failed; inspect uploaded response artifact')
+          if not result.get('okay') or lean_errors or lean_warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('Lean/AXLE verification failed or warned; inspect uploaded response artifact')
           rendered = json.dumps(result)
           for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
               if forbidden in rendered:
                   raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
-          print('VERIFIED: exact clamp-minimum source compiled under AXLE Lean 4.30')
+          print('VERIFIED WARNING-FREE: exact clamp-minimum source compiled under AXLE Lean 4.30')
           PY
