@@ -29,22 +29,15 @@ theorem quadraticWitnessContradiction
     {A c : Real}
     (CP coercivity : Nat -> Real)
     (n : Nat)
+    (hc : 0 <= c)
     (hCPnonneg : 0 <= CP n)
     (hquadratic : (n + 1 : Real) ^ 2 <= CP n)
     (hfloor : c <= coercivity n)
     (hproduct : CP n * coercivity n <= A)
     (hlarge : A < (n + 1 : Real) ^ 2 * c) :
     False := by
-  have h1 : (n + 1 : Real) ^ 2 * c <= CP n * c := by
-    have hcNonneg : 0 <= c := by
-      have hkNonneg : 0 <= coercivity n := by
-        by_contra hk
-        have hkneg : coercivity n < 0 := lt_of_not_ge hk
-        have hp : CP n * coercivity n <= 0 :=
-          mul_nonpos_of_nonneg_of_nonpos hCPnonneg hkneg.le
-        linarith
-      linarith
-    exact mul_le_mul_of_nonneg_right hquadratic hcNonneg
+  have h1 : (n + 1 : Real) ^ 2 * c <= CP n * c :=
+    mul_le_mul_of_nonneg_right hquadratic hc
   have h2 : CP n * c <= CP n * coercivity n :=
     mul_le_mul_of_nonneg_left hfloor hCPnonneg
   linarith
