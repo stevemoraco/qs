@@ -32,6 +32,7 @@ jobs:
             verification/b2-round42/PNPOptimalLinearSketchFirewall.lean
             verification/b2-round42/NSCompactGapExponentFirewall.lean
             verification/b2-round42/NSCriticalScoreScalingFirewall.lean
+            verification/b2-round42/NSAxisSourceScalingFirewall.lean
           )
           for file in "${files[@]}"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
@@ -63,6 +64,7 @@ jobs:
             PNPOptimalLinearSketchFirewall.lean
             NSCompactGapExponentFirewall.lean
             NSCriticalScoreScalingFirewall.lean
+            NSAxisSourceScalingFirewall.lean
           )
           for file in "${files[@]}"; do
             echo "===== $file =====" | tee -a lean-output.log
