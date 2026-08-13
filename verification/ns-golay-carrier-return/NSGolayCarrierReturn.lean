@@ -78,10 +78,8 @@ theorem linear_separation_can_miss_quadratic_gate
   have hm0 : m ≠ 0 := ne_of_gt hmpos
   have hlinear : m ^ 4 * m⁻¹ = m ^ 3 := by
     field_simp [hm0]
-    ring
   have hquadratic : m ^ 4 * (m⁻¹) ^ 2 = m ^ 2 := by
     field_simp [hm0]
-    ring
   rw [hlinear, hquadratic]
   constructor
   · have hpos : 0 < m ^ 2 * (m - 1) :=
@@ -101,7 +99,6 @@ theorem linear_separation_family_has_unit_return_gain
   have hm0 : m ≠ 0 := by
     nlinarith
   field_simp [hm0]
-  ring
 
 /-- CLEANER: the corrected quadratic separation budget is exactly what is
 needed to bound the normalized scalar return gain. -/
@@ -139,7 +136,6 @@ theorem slaved_cross_mode_parent_return_bound
       mul_le_mul_of_nonneg_left hX hNnonneg
     _ = r / (nu * N * theta ^ 2) := by
       field_simp [ne_of_gt hN, ne_of_gt htheta, ne_of_gt hnu]
-      ring
 
 #print axioms cross_mode_returns_to_first
 #print axioms neg_cross_mode_returns_to_second
