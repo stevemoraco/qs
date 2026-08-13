@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-zeta-reflection-prototype'
           file="$dir/ZetaReflectionPrototype.lean"
           actual="$(git hash-object "$file")"
-          test "$actual" = '54a525a0375bff215ffcb472d615bfb186ba0ef1'
+          test "$actual" = 'fd5aff5c69dc89d60157c3dace9fae46946cb8a0'
           printf 'source_blob=%s\n' "$actual" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
