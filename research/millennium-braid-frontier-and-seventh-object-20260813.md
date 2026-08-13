@@ -96,6 +96,22 @@ The Connes/prolate lane has stronger numerical motivation but the same missing
 proof-grade continuum/complement certificate, together with strip-amplified
 approximation error.  It does not presently outrank this ticket.
 
+For a bounded Connes feasibility probe, the first honest target is one
+prime-active cutoff with an endpoint-zero even/odd basis (initially `N=8`),
+outward-rounded matrix and tail assembly, interval eigenvalue counts and
+candidate residual.  It must additionally certify the continuum complement
+floor `d0` and cross-coupling bound `beta`; otherwise a hidden state outside
+the Galerkin space can reverse the result.  The decisive finite-to-continuum
+test is
+
+```text
+min(b1,d0)-b0 > 2 beta
+```
+
+plus the required odd/even ordering.  Current executable Connes artifacts use
+synthetic rational spectra rather than actual Weil matrices, so they do not
+instantiate this test.
+
 ### 3.2 P versus NP
 
 **Claimant.**  The strongest exact cut in the current bank is the fixed
