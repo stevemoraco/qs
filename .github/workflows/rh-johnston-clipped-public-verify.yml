@@ -27,7 +27,7 @@ jobs:
           actual="$dir/RHJohnstonActualPrimePrefix.lean"
           test "$(git hash-object "$clipped")" = '38766cb794fac3d5d934a670d8c92466fd82f9e3'
           test "$(git hash-object "$recurrence")" = 'b2eb28fc85c94a450329d77d16cb4fdc0a7cdaae'
-          test "$(git hash-object "$actual")" = '8714fb11c5408a10ed8b6059c6a85708c69a2de2'
+          test "$(git hash-object "$actual")" = '8388bcc29c1ea180d0bdfc5d8f5cda17ee06614f'
           { git hash-object "$clipped"; git hash-object "$recurrence"; git hash-object "$actual"; } | tee "$dir/source-blobs.txt"
           sha256sum "$clipped" "$recurrence" "$actual" | tee "$dir/source-sha256.txt"
           for file in "$clipped" "$recurrence" "$actual"; do
