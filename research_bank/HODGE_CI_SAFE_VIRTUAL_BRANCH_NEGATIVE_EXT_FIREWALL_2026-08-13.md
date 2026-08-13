@@ -1,0 +1,203 @@
+# A locally Atiyah-safe complete-intersection branch and its negative-Ext firewall
+
+**Date:** 2026-08-13  
+**Status:** exact positive local algebra with an exact global twist; not a viable
+Markman/Perry deformation object because the split virtual representative is
+not gluable  
+**Scope:** codimension-two complete intersections and the transverse-node
+K-class. Local vanishing is proved; global semiregularity is not.
+
+## 1. The local rank-one module
+
+Let \(R\) be a smooth local \(\mathbf C\)-algebra and let
+\(I=(x,y)\) be a regular-sequence ideal. Put
+\[
+ u=\binom{x}{y},\qquad v=(x,y),\qquad
+ B=uv=\begin{pmatrix}x^2&xy\\xy&y^2\end{pmatrix},
+ \qquad A=\binom{-y}{x}. \tag{1}
+\]
+Since \(u:R\to R^2\) is injective,
+\[
+ \ker B=\ker v=\operatorname{im}A.
+\]
+Thus, for \(N=\operatorname{coker}B\),
+\[
+ 0\longrightarrow R\xrightarrow{A}R^2
+ \xrightarrow{B}R^2\longrightarrow N\longrightarrow0
+ \tag{2}
+\]
+is exact.
+
+The image of \(B\) is \(uI\subset uR\). Quotienting first by \(uI\)
+and then by \(uR\) gives
+\[
+ 0\longrightarrow uR/uI\longrightarrow N
+ \longrightarrow R^2/uR\longrightarrow0.
+\]
+Here \(uR/uI\simeq R/I\), while
+\[
+ R^2/uR\xrightarrow{\sim}I,qquad
+ [(a,b)]\longmapsto -ya+xb.
+\]
+Consequently
+\[
+ \boxed{0\longrightarrow R/I\longrightarrow N
+ \longrightarrow I\longrightarrow0,}
+ \qquad
+ [R/I]=[N]-[I]. \tag{3}
+\]
+The split derived object
+\[
+ Q_I=N\oplus I[1] \tag{4}
+\]
+therefore has the K-class of \(R/I\).
+
+## 2. Exact local Atiyah-square nullhomotopy
+
+With the trivial connections on (2), the raw degree-two Atiyah block on
+\(\partial_x\wedge\partial_y\) is
+\[
+ B_xA_y-B_yA_x
+ =\binom{-3x}{-3y}. \tag{5}
+\]
+Let
+\[
+ V=\begin{pmatrix}0&-3\\3&0\end{pmatrix}.
+\]
+Then
+\[
+ B_xA_y-B_yA_x=VA. \tag{6}
+\]
+Thus (5) is an explicit homotopy boundary. More generally, for an arbitrary
+local bivector \(\pi\), the block is
+\[
+ -3\,\iota_\pi(dx\wedge dy)\,u,
+\]
+and (6) applies after multiplying \(V\) by
+\(\iota_\pi(dx\wedge dy)\). Bivectors with no \(x\wedge y\)
+component give zero directly. The factor \(1/2\) in the Atiyah
+exponential only rescales the homotopy.
+
+The ideal \(I\) has projective dimension one, so its local degree-two
+Atiyah block is vacuous. Hence every local bivector acts trivially on the
+split object (4). This is a genuine positive local model: the K-class of a
+complete-intersection branch has been represented by a complex whose local
+bivector Atiyah square vanishes.
+
+## 3. Exact global twist
+
+Let \(X\) be smooth, let \(s\in H^0(X,L_1)\) and
+\(t\in H^0(X,L_2)\) be a regular sequence, and let
+\(Z=V(s,t)\). Define
+\[
+ K=(L_1L_2)^{-1},\qquad
+ E=L_1^{-1}\oplus L_2^{-1},\qquad
+ F=L_1\oplus L_2,
+\]
+and
+\[
+ A=(-t,s):K\to E,qquad
+ B=\binom{s}{t}(s,t):E\to F. \tag{7}
+\]
+The types in (7) are exact:
+\(t\) maps \(K\to L_1^{-1}\), \(s\) maps
+\(K\to L_2^{-1}\), the row \((s,t)\) maps \(E\to\mathcal O_X\),
+and the column maps \(\mathcal O_X\to F\). Moreover \(BA=0\), and
+Koszul exactness gives
+\[
+ 0\longrightarrow K\xrightarrow A E\xrightarrow B F
+ \longrightarrow N\longrightarrow0. \tag{8}
+\]
+As locally, \(\operatorname{im}B=uI_Z\subset u\mathcal O_X\).
+The quotient by \(u\mathcal O_X\) is the standard Koszul presentation of
+\(I_ZL_1L_2\). Therefore
+\[
+ \boxed{0\longrightarrow\mathcal O_Z\longrightarrow N
+ \longrightarrow I_ZL_1L_2\longrightarrow0.} \tag{9}
+\]
+In particular
+\[
+ Q_Z=N\oplus(I_ZL_1L_2)[1],
+ \qquad [Q_Z]=[\mathcal O_Z]. \tag{10}
+\]
+For \(L_1=L_2=L\), the correct bundles are
+\[
+ 0\to L^{-2}\to2L^{-1}\to2L\to N\to0,
+ \qquad
+ 0\to\mathcal O_Z\to N\to I_ZL^2\to0. \tag{11}
+\]
+Earlier variants with an extra twist on the left term of (9) are false and
+are retracted.
+
+## 4. The transverse-crossing virtual class
+
+For two transverse branches with ideals \(I,J\), the selected
+partial-normalization stalk has K-class
+\[
+ [R]-[R/I]-[R/J]. \tag{12}
+\]
+Using one copy of (3) for each branch, the split object
+\[
+ R\oplus I\oplus J\oplus N_I[1]\oplus N_J[1] \tag{13}
+\]
+has exactly the class (12), because
+\[
+ [R]+[I]+[J]-[N_I]-[N_J]
+ =[R]-[R/I]-[R/J].
+\]
+Every summand in (13) has locally trivial bivector Atiyah square. Thus (13)
+removes the unit local obstruction of the separated-branch cone at the
+level of a split virtual object.
+
+## 5. Fatal scope: negative Ext and global gluing
+
+The positive conclusion above is local and K-theoretic. It does not produce
+an object to which the Markman/Perry deformation theorem applies.
+
+First, (4) is not gluable:
+\[
+ \operatorname{Ext}^{-1}(Q_I,Q_I)
+ \supset
+ \operatorname{Hom}(N,I)\ne0, \tag{14}
+\]
+where the nonzero map is the canonical quotient in (3). It is also visibly
+nonsimple because of its direct-sum idempotents. The crossing object (13)
+has still more negative Ext; for example, its unshifted and shifted summands
+give nonzero cross-Homs. Perry's semiregularity deformation theorem requires
+\(\operatorname{Ext}^{<0}=0\), so (4), (10), and (13) fail before any
+semiregularity calculation.
+
+Second, the homotopy (6) is a stalkwise statement. Local trivializations of
+\(L_1,L_2\) need not glue the homotopies globally; line-bundle Atiyah
+classes can leave a higher local-to-global component of the characteristic
+action. No global vanishing of
+\(\operatorname{HH}^2(X)\to\operatorname{Ext}^2(Q_Z,Q_Z)\) is claimed.
+
+Finally, turning on the canonical quotient as the differential in
+\[
+ [N\longrightarrow I_ZL_1L_2] \tag{15}
+\]
+makes (15) quasi-isomorphic to \(\mathcal O_Z\) by (9). This kills the
+obvious negative-Ext defect, but it also returns to the ordinary
+complete-intersection object and its nontrivial local
+\(ds\wedge dt\) Atiyah square. Any successful repair must find a
+different nonsplit differential or extension that simultaneously kills
+negative Ext, preserves the K-class, and retains the local nullhomotopy.
+
+## 6. Claim, critic, salvage
+
+**Claim that survives.** Equations (1)--(11) give an exact locally
+Atiyah-safe virtual representative of a complete-intersection branch, with
+all twists fixed.
+
+**Fatal critic.** The split representative is neither gluable nor simple,
+and stalkwise nullhomotopies do not prove global characteristic-action
+vanishing.
+
+**Best salvage.** Search the deformation space of nonsplit differentials on
+the same graded bundles, imposing
+\(\operatorname{Ext}^{<0}=0\) and simplicity before testing the global
+trace-free action. The canonical quotient is the boundary point that
+collapses back to \(\mathcal O_Z\).
+
+No exceptional Hodge class and no Millennium theorem is proved here.
