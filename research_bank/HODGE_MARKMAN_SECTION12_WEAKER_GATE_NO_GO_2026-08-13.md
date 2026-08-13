@@ -205,7 +205,73 @@ It also does not affect the earlier sixfold theorem in Sections 11.4--11.5,
 where Markman descends to a quotient and proves actual equivariant
 semiregularity by a different argument.
 
-## 6. Claim, local countercertificate, best salvage
+## 6. Conditional pure-translation equivariant salvage no-go
+
+This obstruction also closes one natural equivariant repair, under explicit
+descent hypotheses. The reference is Alexander Perry,
+[arXiv:2604.00511v2](https://arxiv.org/abs/2604.00511), Definition 2.6 and
+Remark 6.6 (version dated 2026-06-24). Definition 2.6 says that an object is
+weakly \(G\)-semiregular when some equivariant lift is semiregular in the
+invariant category. Remark 6.6 identifies, for a finite subgroup acting only
+by translations,
+\[
+ \operatorname{D}_{\mathrm{perf}}(X)^G
+ \simeq \operatorname{D}_{\mathrm{perf}}(X/G).
+ \tag{8}
+\]
+
+Let \(G\subset X\) be a finite translation subgroup, let
+\(p:X\to Y=X/G\) be the quotient isogeny, and assume all of the following:
+
+1. the Section 12 object \(E\) admits a \(G\)-linearization;
+2. the selected normalized crossings form a \(G\)-stable set, and the
+   partial-normalization data are equivariant;
+3. at least one selected crossing occurs (hence its free \(G\)-orbit
+   descends to a crossing of the same étale-local type on \(Y\)).
+
+For any chosen linearization, let \(\bar E\in
+\operatorname{D}_{\mathrm{perf}}(Y)\) be the descended object. The class
+\(\alpha\) from (3) is translation invariant. Since an isogeny of complex
+abelian varieties induces isomorphisms on the HKR summands, it has a unique
+preimage
+\[
+ p^*\bar\alpha=\alpha,\qquad
+ \bar\alpha\in\operatorname{HH}^2(Y). \tag{9}
+\]
+Naturality of the characteristic action gives
+\[
+ p^*\operatorname{ev}_{\bar E}(\bar\alpha)
+ =\operatorname{ev}_{E}(\alpha). \tag{10}
+\]
+The right side is nonzero by the unit local certificate (6). Equivalently,
+the free orbit of selected nodes becomes one node on \(Y\), and an étale
+chart has exactly the same separated-branch resolution (4). Pullback on
+Ext is injective: the normalized trace splits
+\(\mathcal O_Y\to p_*\mathcal O_X\). Thus
+\(\operatorname{ev}_{\bar E}(\bar\alpha)\ne0\).
+
+On the other hand,
+\[
+ p^*\bigl(\bar\alpha\cdot\operatorname{ch}(\bar E)\bigr)
+ =\alpha\cdot\operatorname{ch}(E)=0. \tag{11}
+\]
+Pullback on rational cohomology is injective, again by normalized trace, so
+the class inside parentheses vanishes. The characteristic
+action--semiregularity identity therefore shows that
+\(\sigma_{\bar E}\) kills the nonzero class
+\(\operatorname{ev}_{\bar E}(\bar\alpha)\). Hence \(\bar E\) is not
+semiregular, and \(E\) is not weakly \(G\)-semiregular for any compatible
+linearization.
+
+There is no cancellation from averaging the node orbit: the quotient is
+finite étale, translations have identity differential, and the orbit
+descends to a single copy of the same nonzero local unit. This theorem is
+conditional on a genuine pure-translation linearization and equivariant
+partial-normalization data. It does not cover translation--tensor actions,
+nonfree actions, or an abstract categorical action not realized by this
+quotient descent.
+
+## 7. Claim, local countercertificate, best salvage
 
 **Claim settled.** The Section 12 objects do not pass the proposed weaker
 semiregularity gate.
