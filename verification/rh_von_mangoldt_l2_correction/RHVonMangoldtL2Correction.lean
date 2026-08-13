@@ -15,8 +15,8 @@ theorem weighted_l2_add_le
     (s : Finset ι)
     (w f g : ι → ℝ)
     (hw : ∀ i ∈ s, 0 ≤ w i) :
-    (∑ i in s, w i * (f i + g i) ^ 2) ≤
-      ∑ i in s, (2 * w i * f i ^ 2 + 2 * w i * g i ^ 2) := by
+    (∑ i ∈ s, w i * (f i + g i) ^ 2) ≤
+      ∑ i ∈ s, (2 * w i * f i ^ 2 + 2 * w i * g i ^ 2) := by
   apply Finset.sum_le_sum
   intro i hi
   calc
@@ -34,16 +34,16 @@ theorem weighted_l2_perturbation
     (w principal correction completed : ι → ℝ)
     (hw : ∀ i ∈ s, 0 ≤ w i)
     (hdecomp : ∀ i ∈ s, completed i = principal i + correction i) :
-    (∑ i in s, w i * completed i ^ 2) ≤
-      ∑ i in s,
+    (∑ i ∈ s, w i * completed i ^ 2) ≤
+      ∑ i ∈ s,
         (2 * w i * principal i ^ 2 + 2 * w i * correction i ^ 2) := by
   calc
-    (∑ i in s, w i * completed i ^ 2) =
-        ∑ i in s, w i * (principal i + correction i) ^ 2 := by
+    (∑ i ∈ s, w i * completed i ^ 2) =
+        ∑ i ∈ s, w i * (principal i + correction i) ^ 2 := by
       apply Finset.sum_congr rfl
       intro i hi
       rw [hdecomp i hi]
-    _ ≤ ∑ i in s,
+    _ ≤ ∑ i ∈ s,
         (2 * w i * principal i ^ 2 + 2 * w i * correction i ^ 2) :=
       weighted_l2_add_le s w principal correction hw
 
