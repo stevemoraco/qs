@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-ritz-threshold-core/RHRitzThresholdCore.lean
-          EXPECTED=2899339ce8d8f4363ac9b7dcf3daf7659375f67ab2fd054b247d75ffc9e9718c
+          EXPECTED=bc7df0de0b7955dd6c44be4fc9cca2a69f503a6c37b2f5cff546287a0350e2d2
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
