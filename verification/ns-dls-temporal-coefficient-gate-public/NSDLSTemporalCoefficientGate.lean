@@ -70,9 +70,20 @@ theorem coefficient_derivative_algebraic_bound
     (hdgamma : |dgamma| ≤ D)
     (hqt : |qt| ≤ Lq) :
     |ht * gamma + h * dgamma * qt| ≤ Lh * G + |h| * D * Lq := by
+  have htri :
+      |ht * gamma + h * dgamma * qt| ≤
+        |ht * gamma| + |h * dgamma * qt| := by
+    apply (abs_le).2
+    constructor
+    · have hx := (abs_le).1 (le_refl |ht * gamma|)
+      have hy := (abs_le).1 (le_refl |h * dgamma * qt|)
+      linarith [hx.1, hy.1]
+    · have hx := (abs_le).1 (le_refl |ht * gamma|)
+      have hy := (abs_le).1 (le_refl |h * dgamma * qt|)
+      linarith [hx.2, hy.2]
   calc
     |ht * gamma + h * dgamma * qt| ≤
-        |ht * gamma| + |h * dgamma * qt| := abs_add _ _
+        |ht * gamma| + |h * dgamma * qt| := htri
     _ = |ht| * |gamma| + |h| * |dgamma| * |qt| := by
       simp [abs_mul, mul_assoc]
     _ ≤ Lh * G + |h| * D * Lq := by
