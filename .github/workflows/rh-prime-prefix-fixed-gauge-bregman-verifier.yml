@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_prime_prefix_fixed_gauge_bregman/RHPrimePrefixFixedGaugeBregman.lean
-          EXPECTED_BLOB=a4dfa9b6f9bfa9c9f958b53d243f4f3774bfb70c
+          EXPECTED_BLOB=aa5e52b1aa69d69c62c9bb0e20df258d1cf5a04f
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
