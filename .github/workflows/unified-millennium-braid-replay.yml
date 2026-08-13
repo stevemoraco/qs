@@ -1,0 +1,73 @@
+name: Unified Millennium Braid Public Replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/millennium-braid-unified/**'
+      - '.github/workflows/unified-millennium-braid-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical source bytes and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/millennium-braid-unified'
+          test "$(git hash-object "$dir/UnifiedBraid/RH_PNP.lean")" = 'eab87b344efc6babfab8ef6779963444946f67a2'
+          test "$(git hash-object "$dir/UnifiedBraid/BSD_Hodge.lean")" = '5d23e1aa30805efff74a0eb98773813877875f4f'
+          test "$(git hash-object "$dir/UnifiedBraid/NS.lean")" = '61cb03c3322c3c23c76070351d71a93e6b0ba27f'
+          test "$(git hash-object "$dir/UnifiedBraid/YM_Perelman.lean")" = '0548ef54ae926aa839136289c663c10bde0e9866'
+          test "$(git hash-object "$dir/UnifiedBraid/SeventhObject.lean")" = '235a949a9445cec07ec7d843bdcf500ceb9c7c89'
+          test "$(git hash-object "$dir/MillenniumBraidUnified.lean")" = '24faacb4368fae119e4b2d90c57098593709319a'
+          files=("$dir/MillenniumBraidUnified.lean" "$dir"/UnifiedBraid/*.lean)
+          git hash-object "${files[@]}" | tee "$dir/source-blobs.txt"
+          sha256sum "${files[@]}" | tee "$dir/source-sha256.txt"
+          if grep -RInE '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then exit 1; fi
+          if grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "${files[@]}"; then exit 1; fi
+          if grep -RInE '(native_decide|Lean\.ofReduceBool)' "${files[@]}"; then exit 1; fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Compile exact executable root
+        shell: bash
+        working-directory: verification/millennium-braid-unified
+        run: |
+          set -euo pipefail
+          lean --version | tee lean-version.txt
+          lake --version | tee -a lean-version.txt
+          lake update
+          lake exe cache get
+          lake env lean MillenniumBraidUnified.lean 2>&1 | tee lean-output.log
+          grep -q 'MillenniumBraidUnified.millennium_braid_bank' lean-output.log
+          grep -q 'MillenniumBraidUnified.route_wrappers_have_exact_goal_strength' lean-output.log
+          grep -q 'MillenniumBraidUnified.bank_to_all_goals_has_exact_goal_strength' lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+
+      - name: Upload exact replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-evidence
+          path: |
+            verification/millennium-braid-unified/MillenniumBraidUnified.lean
+            verification/millennium-braid-unified/UnifiedBraid/*.lean
+            verification/millennium-braid-unified/source-blobs.txt
+            verification/millennium-braid-unified/source-sha256.txt
+            verification/millennium-braid-unified/lean-version.txt
+            verification/millennium-braid-unified/lean-output.log
