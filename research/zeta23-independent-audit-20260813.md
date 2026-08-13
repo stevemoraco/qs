@@ -10,7 +10,7 @@ Anthropic released:
 - paper: [More Than Two Thirds of the Zeros of the Riemann Zeta Function Lie on the Critical Line](https://www-cdn.anthropic.com/564f962e60643842f5fcb4a17c9dbc8f608f1c37.pdf);
 - Lean repository: [anthropics/zeta-23-lean](https://github.com/anthropics/zeta-23-lean);
 - audited commit: `3635e74826a4c1fcece7d1cd2b6fa75e43a00510`;
-- audited tree: `724f95ba42747dcf66aaebb68efd1316df6debac`;
+- audited tree: `38d39bce788cfc7cf5a223282b2f6e168abd444f`;
 - toolchain: `leanprover/lean4:v4.33.0-rc2`;
 - pinned Mathlib: `51e6992efd06126df61a496bebf8f49482a4e129`.
 
