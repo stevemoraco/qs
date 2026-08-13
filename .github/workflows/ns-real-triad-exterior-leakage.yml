@@ -1,0 +1,41 @@
+name: NS real-triad exterior-leakage Lean replay
+
+on:
+  push:
+    branches:
+      - agent/ns-real-triad-exterior-leakage-verify-20260813
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and custom axioms
+        shell: bash
+        run: |
+          file='formal/millennium_audit/SixLaneAudit/NSRealTriadExteriorLeakage.lean'
+          test -f "$file"
+          ! grep -nE '\b(sorry|admit|sorryAx)\b' "$file"
+          ! grep -nE '^[[:space:]]*axiom[[:space:]]' "$file"
+
+      - name: Install pinned Lean/Mathlib toolchain
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal/millennium_audit
+          auto-config: false
+          use-mathlib-cache: true
+
+      - name: Replay exact theorem source
+        working-directory: formal/millennium_audit
+        shell: bash
+        run: |
+          lake update
+          lake env lean SixLaneAudit/NSRealTriadExteriorLeakage.lean
