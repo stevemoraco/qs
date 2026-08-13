@@ -10,6 +10,8 @@ Clay-problem blow-up solution.
 
 namespace NSSelectiveLerayAtom
 
+noncomputable section
+
 set_option linter.unreachableTactic false
 set_option linter.unusedTactic false
 set_option linter.unnecessarySeqFocus false
@@ -64,13 +66,13 @@ theorem high_symbol_parallel (A H : ℝ) :
   ext <;> simp [symSymbol, kHigh, add, smul, dot, p, q, u, v] <;> ring
 
 /-- Therefore the high-sum symbol is annihilated exactly by Leray projection. -/
-theorem high_leray_zero (A H : ℝ) (hH : H ≠ 0) :
+theorem high_leray_zero (A H : ℝ) :
     leray (kHigh A H) (symSymbol (kHigh A H) (u A H) (v A H)) = zero := by
   rw [high_symbol_parallel]
   unfold leray
   apply V3.ext <;>
-    simp [kHigh, add, sub, smul, dot, p, q, zero, hH] <;>
-    field_simp [hH] <;>
+    simp [kHigh, add, sub, smul, dot, p, q, zero] <;>
+    field_simp <;>
     ring
 
 /-- The low-difference symbol before projection. -/
@@ -80,14 +82,14 @@ theorem low_symbol_exact (A H : ℝ) :
   ext <;> simp [symSymbol, kLow, sub, add, smul, dot, p, q, u, v] <;> ring
 
 /-- The same atom retains a transverse derivative-scale low output. -/
-theorem low_leray_exact (A H : ℝ) (hA : A ≠ 0) :
+theorem low_leray_exact (A H : ℝ) :
     leray (kLow A H) (symSymbol (kLow A H) (u A H) (v A H)) =
       ⟨0, 4 * A * H ^ 2, 0⟩ := by
   rw [low_symbol_exact]
   unfold leray
   apply V3.ext <;>
-    simp [kLow, sub, smul, dot, p, q, hA] <;>
-    field_simp [hA] <;>
+    simp [kLow, sub, smul, dot, p, q] <;>
+    field_simp <;>
     ring
 
 /-- Exact normalized-coefficient defect identity; the correction is cubic in
