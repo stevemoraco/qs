@@ -104,7 +104,7 @@ theorem cubic_coefficient_ceiling
       cStar ^ 3 * cStar ≤
         (K * r ^ 2 * epsilon ^ 2 * nu * A) * cStar := by
     nlinarith
-  exact (mul_le_mul_right hcStar).mp hmul
+  exact (mul_le_mul_right₀ hcStar).mp hmul
 
 /-- BANKER: the full packet hypotheses imply the cubic ceiling directly. -/
 theorem full_uncancelled_route_cubic_ceiling
