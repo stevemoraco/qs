@@ -17,7 +17,6 @@ theorem contraction_inverse_bound
 /-- Finite geometric sums obey the same contraction budget. -/
 theorem finite_geometric_transfer
     {q source target : ℝ}
-    (hq1 : q < 1)
     (hineq : target ≤ source + q * target) :
     (1 - q) * target ≤ source := by
   nlinarith
@@ -32,13 +31,22 @@ theorem hardy_complete_square
     (hstep : 2 * s * u ^ 2 ≤ u * v) :
     4 * s ^ 2 * u ^ 2 ≤ v ^ 2 := by
   by_cases huz : u = 0
-  · simp [huz]
+  · subst u
+    simpa using sq_nonneg v
   · have hu_pos : 0 < u := lt_of_le_of_ne hu (Ne.symm huz)
     have hlinear : 2 * s * u ≤ v := by
-      have hmul : u * (2 * s * u) ≤ u * v := by
-        nlinarith
-      exact (mul_le_mul_left hu_pos).mp hmul
-    nlinarith [sq_nonneg (v - 2 * s * u)]
+      by_contra hnot
+      have hv : v < 2 * s * u := lt_of_not_ge hnot
+      have hpositive : 0 < u * (2 * s * u - v) :=
+        mul_pos hu_pos (sub_pos.mpr hv)
+      nlinarith
+    have hsu : 0 ≤ 2 * s * u := by positivity
+    have hv0 : 0 ≤ v := le_trans hsu hlinear
+    have hsum : 0 ≤ v + 2 * s * u := add_nonneg hv0 hsu
+    have hproduct :
+        0 ≤ (v - 2 * s * u) * (v + 2 * s * u) :=
+      mul_nonneg (sub_nonneg.mpr hlinear) hsum
+    nlinarith
 
 /-- Point sampling on a unit interval: `a=(a-t)+t` gives a trace bound before
 integration. -/
@@ -57,9 +65,9 @@ theorem unit_trace_constant :
 square average plus derivative square remains controlled after summing
 disjoint cells. -/
 theorem sample_square_split
-    {sample local derivative : ℝ}
-    (h : sample ^ 2 ≤ 2 * local + 2 * derivative) :
-    sample ^ 2 ≤ 2 * (local + derivative) := by
+    {sample localEnergy derivativeEnergy : ℝ}
+    (h : sample ^ 2 ≤ 2 * localEnergy + 2 * derivativeEnergy) :
+    sample ^ 2 ≤ 2 * (localEnergy + derivativeEnergy) := by
   nlinarith
 
 /-- Algebraic square-gap domination. If `E^2 <= C p^2` and the rationalized
@@ -73,13 +81,17 @@ theorem square_gap_energy_domination
   have hp2 : 0 < p ^ 2 := pow_pos hp 2
   have hmul : E ^ 2 * E ^ 2 ≤ C * p ^ 2 * E ^ 2 :=
     mul_le_mul_of_nonneg_right hE (sq_nonneg E)
-  apply (mul_le_mul_left hp2).mp
-  calc
-    p ^ 2 * (p * G ^ 2) = p ^ 3 * G ^ 2 := by ring
-    _ ≤ E ^ 4 := hgap
-    _ = E ^ 2 * E ^ 2 := by ring
-    _ ≤ C * p ^ 2 * E ^ 2 := hmul
-    _ = p ^ 2 * (C * E ^ 2) := by ring
+  have hchain : p ^ 3 * G ^ 2 ≤ C * p ^ 2 * E ^ 2 := by
+    calc
+      p ^ 3 * G ^ 2 ≤ E ^ 4 := hgap
+      _ = E ^ 2 * E ^ 2 := by ring
+      _ ≤ C * p ^ 2 * E ^ 2 := hmul
+  by_contra hnot
+  have hstrict : C * E ^ 2 < p * G ^ 2 := lt_of_not_ge hnot
+  have hscaled :
+      p ^ 2 * (C * E ^ 2) < p ^ 2 * (p * G ^ 2) :=
+    mul_lt_mul_of_pos_left hstrict hp2
+  nlinarith [hchain, hscaled]
 
 /-- Prime-power tails of square-root size are integrable on every strictly
 positive weighted line at the exponent level. -/
