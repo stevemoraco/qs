@@ -10,8 +10,6 @@ Clay-problem blow-up solution.
 
 namespace NSSelectiveLerayAtom
 
-noncomputable section
-
 set_option linter.unreachableTactic false
 set_option linter.unusedTactic false
 set_option linter.unnecessarySeqFocus false
@@ -38,7 +36,7 @@ def symSymbol (k u v : V3) : V3 :=
   add (smul (dot u k) v) (smul (dot v k) u)
 
 /-- Orthogonal projection onto the plane perpendicular to `k`. -/
-def leray (k s : V3) : V3 :=
+noncomputable def leray (k s : V3) : V3 :=
   sub s (smul (dot s k / dot k k) k)
 
 def p (A H : ℝ) : V3 := ⟨A, 0, H⟩
