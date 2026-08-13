@@ -29,7 +29,8 @@ theorem schur_lower_bound_of_residual_budget
     (hres : (D * y - B)^2 ≤ D * (δ * s)) :
     (A - 2 * B * y + D * y^2) - δ * s ≤ A - B^2 / D := by
   have hpen : (D * y - B)^2 / D ≤ δ * s := by
-    exact (div_le_iff₀ hD).2 (by simpa [mul_assoc] using hres)
+    exact (div_le_iff₀ hD).2
+      (by simpa [mul_comm, mul_left_comm, mul_assoc] using hres)
   rw [residual_squared_identity A B D y (ne_of_gt hD)]
   linarith
 
@@ -38,7 +39,7 @@ finite scalar bookkeeping used before the separate vanishing-defect theorem. -/
 theorem schur_defect_addition
     (A B D y η δ s : ℝ)
     (hD : 0 < D)
-    (hs : 0 ≤ s)
+    (_hs : 0 ≤ s)
     (happrox : -(η * s) ≤ A - 2 * B * y + D * y^2)
     (hres : (D * y - B)^2 ≤ D * (δ * s)) :
     -((η + δ) * s) ≤ A - B^2 / D := by
