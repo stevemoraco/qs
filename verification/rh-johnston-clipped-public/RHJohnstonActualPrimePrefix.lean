@@ -5,6 +5,10 @@ open scoped Nat.Prime
 
 namespace RHJohnstonActualPrimePrefix
 
+/-- Mathlib's real Chebyshev theta restricted to natural cutoffs.  Naming this
+wrapper prevents coercion normalization from obscuring exact integer updates. -/
+noncomputable def thetaNat (n : ℕ) : ℝ := Chebyshev.theta (n : ℝ)
+
 /-- The weighted prime prefix `W(n)=sum_{p≤n} p log p` appearing after
 eliminating Johnston's integral by summation by parts. -/
 noncomputable def weightedPrimeSum (n : ℕ) : ℝ :=
@@ -12,28 +16,30 @@ noncomputable def weightedPrimeSum (n : ℕ) : ℝ :=
 
 /-- The exact discrete Johnston energy at an integer cutoff. -/
 noncomputable def prefixEnergy (n : ℕ) : ℝ :=
-  weightedPrimeSum n - (Chebyshev.theta n) ^ 2 / 2 - 2
+  weightedPrimeSum n - (thetaNat n) ^ 2 / 2 - 2
 
 /-- The weighted prefix changes only when `n+1` is prime. -/
 theorem weightedPrimeSum_succ (n : ℕ) :
     weightedPrimeSum (n + 1) =
       if (n + 1).Prime then
-        weightedPrimeSum n + (n + 1 : ℕ) * log (n + 1 : ℕ)
+        weightedPrimeSum n + ((n + 1 : ℕ) : ℝ) * log ((n + 1 : ℕ) : ℝ)
       else weightedPrimeSum n := by
   unfold weightedPrimeSum
   rw [Nat.primesLE_succ]
   split_ifs with h
   · rw [sum_insert (Nat.notMem_primesLE n)]
-    norm_num
+    ac_rfl
   · rfl
 
 /-- Mathlib's Chebyshev theta has the same exact one-integer update law. -/
-theorem theta_succ (n : ℕ) :
-    Chebyshev.theta (n + 1) =
+theorem thetaNat_succ (n : ℕ) :
+    thetaNat (n + 1) =
       if (n + 1).Prime then
-        Chebyshev.theta n + log (n + 1 : ℕ)
-      else Chebyshev.theta n := by
-  rw [Chebyshev.theta_eq_sum_primesLE_log, Chebyshev.theta_eq_sum_primesLE_log]
+        thetaNat n + log ((n + 1 : ℕ) : ℝ)
+      else thetaNat n := by
+  unfold thetaNat
+  rw [Chebyshev.theta_eq_sum_primesLE_log (n + 1),
+      Chebyshev.theta_eq_sum_primesLE_log n]
   rw [Nat.primesLE_succ]
   split_ifs with h
   · rw [sum_insert (Nat.notMem_primesLE n)]
@@ -44,10 +50,11 @@ prefix energy obeys the abstract recurrence exactly. -/
 theorem prefixEnergy_succ_of_prime
     {n : ℕ} (hprime : (n + 1).Prime) :
     prefixEnergy (n + 1) - prefixEnergy n =
-      log (n + 1 : ℕ) * ((n + 1 : ℕ) - Chebyshev.theta n) -
-        (log (n + 1 : ℕ)) ^ 2 / 2 := by
-  rw [prefixEnergy, prefixEnergy]
-  rw [weightedPrimeSum_succ, theta_succ]
+      log (((n + 1 : ℕ) : ℝ)) *
+          (((n + 1 : ℕ) : ℝ) - thetaNat n) -
+        (log (((n + 1 : ℕ) : ℝ))) ^ 2 / 2 := by
+  unfold prefixEnergy
+  rw [weightedPrimeSum_succ, thetaNat_succ]
   simp only [if_pos hprime]
   ring
 
@@ -56,16 +63,17 @@ unchanged. -/
 theorem prefixEnergy_succ_of_not_prime
     {n : ℕ} (hcomp : ¬(n + 1).Prime) :
     prefixEnergy (n + 1) = prefixEnergy n := by
-  rw [prefixEnergy, prefixEnergy]
-  rw [weightedPrimeSum_succ, theta_succ]
+  unfold prefixEnergy
+  rw [weightedPrimeSum_succ, thetaNat_succ]
   simp [hcomp]
 
 /-- Exact dichotomy for every integer step. -/
 theorem prefixEnergy_succ (n : ℕ) :
     prefixEnergy (n + 1) - prefixEnergy n =
       if (n + 1).Prime then
-        log (n + 1 : ℕ) * ((n + 1 : ℕ) - Chebyshev.theta n) -
-          (log (n + 1 : ℕ)) ^ 2 / 2
+        log (((n + 1 : ℕ) : ℝ)) *
+            (((n + 1 : ℕ) : ℝ) - thetaNat n) -
+          (log (((n + 1 : ℕ) : ℝ))) ^ 2 / 2
       else 0 := by
   by_cases h : (n + 1).Prime
   · rw [if_pos h, prefixEnergy_succ_of_prime h]
@@ -73,7 +81,7 @@ theorem prefixEnergy_succ (n : ℕ) :
     ring
 
 #print axioms weightedPrimeSum_succ
-#print axioms theta_succ
+#print axioms thetaNat_succ
 #print axioms prefixEnergy_succ_of_prime
 #print axioms prefixEnergy_succ_of_not_prime
 #print axioms prefixEnergy_succ
