@@ -5,15 +5,15 @@ namespace NSNeutralAxisBogoliubovFinite
 /-- Squared coefficient of the retained circular/helical polarization when a
 real `2 × 2` matrix `[[a,b],[c,d]]` acts on `(1,i)/sqrt 2`.  This file
 formalizes only finite scalar algebra, not Kelvin waves or Navier--Stokes. -/
-def alphaSq (a b c d : ℝ) : ℝ :=
+noncomputable def alphaSq (a b c d : ℝ) : ℝ :=
   ((a + d) ^ 2 + (b - c) ^ 2) / 4
 
 /-- Squared coefficient of the opposite circular/helical polarization. -/
-def betaSq (a b c d : ℝ) : ℝ :=
+noncomputable def betaSq (a b c d : ℝ) : ℝ :=
   ((a - d) ^ 2 + (b + c) ^ 2) / 4
 
 /-- Total squared polarization gain. -/
-def gainSq (a b c d : ℝ) : ℝ :=
+noncomputable def gainSq (a b c d : ℝ) : ℝ :=
   alphaSq a b c d + betaSq a b c d
 
 /-- The indefinite circular-polarization norm is exactly the determinant. -/
@@ -92,7 +92,7 @@ theorem approximate_purity_caps_gain
 theorem diagonal_squeeze_det_one
     {r : ℝ} (hr : r ≠ 0) :
     r * (1 / r) - 0 * 0 = 1 := by
-  field_simp [hr]
+  simp [hr]
 
 /-- Exact opposite-helicity content of the diagonal squeeze. -/
 theorem diagonal_squeeze_betaSq (r : ℝ) :
