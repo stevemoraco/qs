@@ -134,4 +134,17 @@ theorem positive_gram_offDiagonal_indefinite :
   · refine ⟨(1, -1), ?_⟩
     norm_num [offDiagonalForm]
 
+/-- Nonnegativity of a physical gap does not imply the exponential estimate
+`exp (a * Δ) ≤ exp a`; the missing hypothesis is `Δ ≤ 1`. -/
+theorem nonnegative_gap_does_not_bound_exponential :
+    ¬ (∀ a Δ : ℝ, 0 ≤ a → 0 ≤ Δ →
+        Real.exp (a * Δ) ≤ Real.exp a) := by
+  intro h
+  have hbad := h 1 2 (by norm_num) (by norm_num)
+  have hbad' : Real.exp 2 ≤ Real.exp 1 := by
+    simpa using hbad
+  have hstrict : Real.exp 1 < Real.exp 2 :=
+    Real.exp_lt_exp.mpr (by norm_num)
+  exact (not_le_of_gt hstrict) hbad'
+
 end YMGapTransportFirewall
