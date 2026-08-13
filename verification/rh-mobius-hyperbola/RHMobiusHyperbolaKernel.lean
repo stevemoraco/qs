@@ -11,7 +11,8 @@ theorem bernoulli3_factor (t : ℝ) :
   ring
 
 theorem finiteKernelSum (N : ℕ) (y : ℝ) (hy : y ≠ 0) :
-    (∑ m in Finset.range N, (1 - (((m + 1 : ℕ) : ℝ) / y)) ^ 2) =
+    (Finset.range N).sum
+        (fun m => (1 - (((m + 1 : ℕ) : ℝ) / y)) ^ 2) =
       (N : ℝ) - (N : ℝ) * ((N : ℝ) + 1) / y
         + (N : ℝ) * ((N : ℝ) + 1) * (2 * (N : ℝ) + 1) /
           (6 * y ^ 2) := by
