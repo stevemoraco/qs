@@ -43,7 +43,7 @@ jobs:
           dir='verification/rh-parity-rank-one-countermodel'
           file="$dir/RHParityRankOneCountermodel.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='679f6a8a0b829c08692009b622d015b8baff253f'
+          expected_blob='ee86b20504ef3b1699df720824cec2031b337890'
           test "$actual_blob" = "$expected_blob"
           printf 'source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
