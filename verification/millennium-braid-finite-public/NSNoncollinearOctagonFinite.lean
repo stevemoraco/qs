@@ -26,67 +26,67 @@ def lrow (m n west east south north : R) : R :=
 
 theorem ledger_neg3_zero (lambda : R) :
     lrow (-3) 0 0 lambda 0 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_neg2_neg1 (lambda : R) :
     lrow (-2) (-1) 0 (2 * lambda) 0 lambda = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_neg2_pos1 (lambda : R) :
     lrow (-2) 1 0 (-2 * lambda) lambda 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_neg1_neg2 (lambda : R) :
     lrow (-1) (-2) 0 lambda 0 (2 * lambda) = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_neg1_zero (lambda : R) :
     lrow (-1) 0 lambda 0 (2 * lambda) (-2 * lambda) = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_neg1_pos2 (lambda : R) :
     lrow (-1) 2 0 lambda (-2 * lambda) 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_zero_neg3 (lambda : R) :
     lrow 0 (-3) 0 0 0 lambda = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_zero_neg1 (lambda : R) :
     lrow 0 (-1) (2 * lambda) (-2 * lambda) lambda 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_zero_pos1 (lambda : R) :
     lrow 0 1 (-2 * lambda) (2 * lambda) 0 lambda = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_zero_pos3 (lambda : R) :
     lrow 0 3 0 0 lambda 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos1_neg2 (lambda : R) :
     lrow 1 (-2) lambda 0 0 (-2 * lambda) = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos1_zero (lambda : R) :
     lrow 1 0 0 lambda (-2 * lambda) (2 * lambda) = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos1_pos2 (lambda : R) :
     lrow 1 2 lambda 0 (2 * lambda) 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos2_neg1 (lambda : R) :
     lrow 2 (-1) (-2 * lambda) 0 0 lambda = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos2_pos1 (lambda : R) :
     lrow 2 1 (2 * lambda) 0 lambda 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem ledger_pos3_zero (lambda : R) :
     lrow 3 0 lambda 0 0 0 = 0 := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 /-- Expanding the invariant square gives exactly the eight octagon
 coefficients once `xInv` and `yInv` are multiplicative inverses. -/
@@ -154,19 +154,19 @@ theorem differenceOutputVertical (K h c : R) :
 
 theorem eulerDefect_pos2_pos1 (Gamma : R) :
     lrow 2 1 Gamma 0 0 0 = -Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem eulerDefect_zero_pos1 (Gamma : R) :
     lrow 0 1 0 Gamma 0 0 = -Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem eulerDefect_pos1_pos2 (Gamma : R) :
     lrow 1 2 0 0 Gamma 0 = Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem eulerDefect_pos1_zero (Gamma : R) :
     lrow 1 0 0 0 0 Gamma = Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
 
 theorem eulerNotTangent (Gamma : R) (hGamma : Gamma ≠ 0) :
     lrow 2 1 Gamma 0 0 0 ≠ 0 := by
@@ -180,14 +180,16 @@ theorem viscousDefect_pos2_pos1
     lrow 2 1 (-8 * nu * h ^ 2 * lambda + Gamma) 0
         (-4 * nu * (K ^ 2 + h ^ 2) * lambda) 0 =
       -8 * nu * K ^ 2 * lambda - Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
+  ring
 
 theorem viscousDefect_zero_pos1
     (nu K h lambda Gamma : R) :
     lrow 0 1 (8 * nu * K ^ 2 * lambda)
         (-8 * nu * h ^ 2 * lambda + Gamma) 0 0 =
       8 * nu * (h ^ 2 - K ^ 2) * lambda - Gamma := by
-  simp [lrow] <;> ring
+  simp [lrow]
+  ring
 
 theorem viscousDefectDifference
     (nu K h lambda Gamma : R)

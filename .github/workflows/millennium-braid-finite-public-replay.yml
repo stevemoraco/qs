@@ -42,7 +42,7 @@ jobs:
             sha256sum "$dir/$file" | tee "$dir/$slug-source-sha256.txt"
           done <<'SOURCES'
           hodge-suspension|HodgePrimitiveSuspensionFinite.lean|331438dc006a3088749dfc9e52ad38681ead5b8a
-          ns-octagon|NSNoncollinearOctagonFinite.lean|1aaeb8d4eebc299bd1c7ab003b12c46aecb7d4b0
+          ns-octagon|NSNoncollinearOctagonFinite.lean|039323b80f1cb8fe89dece3a7380bf81d1b6bf1b
           ym-pure-electric|YMPureElectricDefectFinite.lean|0992240d7a6985d61cb02d0429656cd71462d1e5
           SOURCES
           exit "$status"
@@ -101,6 +101,10 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          # GitHub invokes bash with `-e` outside this script.  Disable inherited
+          # errexit so one failed source cannot suppress the other replay logs;
+          # `aggregate` below still makes the job fail after every source runs.
+          set +e
           export PATH="$HOME/.elan/bin:$PATH"
           dir='verification/millennium-braid-finite-public'
           cd "$dir"
