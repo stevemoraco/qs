@@ -1,0 +1,58 @@
+name: RH Dyadic Formula V2 Replay
+
+on:
+  push:
+    branches:
+      - verification/rh-dyadic-finite-v2-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-dyadic-formula-v2/**'
+      - '.github/workflows/rh-dyadic-formula-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-dyadic-formula-v2'
+          file="$dir/DyadicFormula.lean"
+          git hash-object "$file" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$GITHUB_WORKSPACE/verification/rh-dyadic-formula-v2"
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.30.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd formal/millennium_audit
+          lake update
+          lake exe cache get
+          lake env lean ../../verification/rh-dyadic-formula-v2/DyadicFormula.lean \
+            2>&1 | tee "$dir/lean-output.log"
+          grep -q 'DyadicFormulaV2.dyadic_formula' "$dir/lean-output.log"
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' "$dir/lean-output.log"; then exit 1; fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-dyadic-formula-v2-evidence
+          path: |
+            verification/rh-dyadic-formula-v2/source-blob.txt
+            verification/rh-dyadic-formula-v2/source-sha256.txt
+            verification/rh-dyadic-formula-v2/lean-version.txt
+            verification/rh-dyadic-formula-v2/lean-output.log
