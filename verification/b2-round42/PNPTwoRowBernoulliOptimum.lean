@@ -81,9 +81,9 @@ theorem two_row_density_lower_bound
   linarith
 
 /-- Exact biases for the near-optimal rational construction. -/
-def rationalA : ℝ := (277 : ℝ) / 500
+noncomputable def rationalA : ℝ := (277 : ℝ) / 500
 
-def rationalB : ℝ := -(71 : ℝ) / 500
+noncomputable def rationalB : ℝ := -(71 : ℝ) / 500
 
 /-- Exact worst raw miss at syndrome weight one. -/
 theorem rational_weight_one :
