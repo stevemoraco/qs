@@ -2,6 +2,18 @@ import Mathlib
 
 namespace RH.SelbergDiagonalTrace
 
+theorem path_square
+    (x0 x1 x2 x3 : ℝ) :
+    (x3 - x0) ^ 2 ≤
+      3 * ((x1 - x0) ^ 2 + (x2 - x1) ^ 2 + (x2 - x3) ^ 2) := by
+  have hid : x3 - x0 =
+      (x1 - x0) + (x2 - x1) - (x2 - x3) := by
+    ring
+  rw [hid]
+  nlinarith [sq_nonneg ((x1 - x0) - (x2 - x1)),
+    sq_nonneg ((x1 - x0) + (x2 - x3)),
+    sq_nonneg ((x2 - x1) + (x2 - x3))]
+
 def triangle (A j : ℕ) : ℕ := A - j
 
 @[simp] theorem triangle_at_zero (A : ℕ) : triangle A 0 = A := by
@@ -50,12 +62,14 @@ theorem normalized_square_identity (q : ℕ) :
   simp only [diagonalTotal, rowCount, triangleHeight]
   ring
 
+#check path_square
 #check triangle_unit_step
 #check triangle_square_sum_le_cube
 #check row_square_moment_bound
 #check diagonalTotal_eq
 #check normalized_square_identity
 
+#print axioms path_square
 #print axioms triangle_unit_step
 #print axioms triangle_square_sum_le_cube
 #print axioms row_square_moment_bound
