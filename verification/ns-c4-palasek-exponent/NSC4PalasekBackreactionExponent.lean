@@ -7,6 +7,15 @@ namespace NSC4PalasekBackreactionExponent
 def exponent (alpha b beta : ℝ) : ℝ :=
   alpha - 1 + b * (beta - alpha) - b
 
+/-- Exact strict parameter window used by the viscous Palasek/C4 lane. -/
+def palasekWindow (alpha b beta : ℝ) : Prop :=
+  2 < alpha ∧
+  alpha < 5 / 2 ∧
+  1 < b ∧
+  b < alpha / 2 ∧
+  2 * b < beta ∧
+  beta < alpha
+
 /-- Exact decomposition into two terms which are positive in the Palasek window. -/
 theorem exponent_decomposition (alpha b beta : ℝ) :
     exponent alpha b beta =
@@ -42,13 +51,9 @@ theorem exponent_pos_minimal
 /-- Exact Palasek viscous/C4 parameter window implies positive budget exponent. -/
 theorem palasek_window_forces_positive_exponent
     {alpha b beta : ℝ}
-    (halphaLow : 2 < alpha)
-    (halphaHigh : alpha < 5 / 2)
-    (hbLow : 1 < b)
-    (hbHigh : b < alpha / 2)
-    (hbetaLow : 2 * b < beta)
-    (hbetaHigh : beta < alpha) :
+    (hwindow : palasekWindow alpha b beta) :
     0 < exponent alpha b beta := by
+  rcases hwindow with ⟨_, halphaHigh, hbLow, _, hbetaLow, _⟩
   exact exponent_pos_minimal hbLow halphaHigh hbetaLow
 
 /-- The reciprocal separation ratio has the opposite, strictly negative exponent. -/
@@ -64,12 +69,8 @@ theorem required_separation_exponent_negative
 
 /-- A transparent rational point in the full Palasek parameter window. -/
 theorem sample_parameter_window :
-    (2 : ℝ) < 9 / 4 ∧
-    (1 : ℝ) < 11 / 10 ∧
-    (11 : ℝ) / 10 < ((9 : ℝ) / 4) / 2 ∧
-    2 * ((11 : ℝ) / 10) < (89 : ℝ) / 40 ∧
-    (89 : ℝ) / 40 < (9 : ℝ) / 4 := by
-  norm_num
+    palasekWindow ((9 : ℝ) / 4) ((11 : ℝ) / 10) ((89 : ℝ) / 40) := by
+  norm_num [palasekWindow]
 
 /-- The sample point has exact positive exponent `49/400`. -/
 theorem sample_exponent :
