@@ -29,18 +29,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p verification/pnp-pedigree-axiom-audit/evidence
           git clone https://github.com/TiruArt/Pedigree-Polytopes-Lean4.git upstream
           git -C upstream checkout --detach 3c9c90ed2e38dd3a679891029c8e7622b5801988
           test "$(git -C upstream rev-parse HEAD)" = "3c9c90ed2e38dd3a679891029c8e7622b5801988"
           cp formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean upstream/PedigreeAxiomReport.lean
-          cp upstream/lean-toolchain verification/pnp-pedigree-axiom-audit/evidence-upstream-lean-toolchain
-          cp upstream/lake-manifest.json verification/pnp-pedigree-axiom-audit/evidence-upstream-lake-manifest.json
+          cp upstream/lean-toolchain verification/pnp-pedigree-axiom-audit/evidence/upstream-lean-toolchain
+          cp upstream/lake-manifest.json verification/pnp-pedigree-axiom-audit/evidence/upstream-lake-manifest.json
 
       - name: Record custom axioms and placeholders in the claimed theorem file
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p verification/pnp-pedigree-axiom-audit/evidence
           target='upstream/MembershipProject/Core/N_PEqualsNP.lean'
           grep -nE '^axiom |:= Unit|: True|, True' "$target" \
             | tee verification/pnp-pedigree-axiom-audit/evidence/source-carriers.txt
@@ -105,8 +105,6 @@ jobs:
           path: |
             formal/pnp-pedigree-axiom-audit/PedigreeAxiomReport.lean
             verification/pnp-pedigree-axiom-audit/evidence/
-            verification/pnp-pedigree-axiom-audit/evidence-upstream-lean-toolchain
-            verification/pnp-pedigree-axiom-audit/evidence-upstream-lake-manifest.json
             upstream/MembershipProject/Core/N_PEqualsNP.lean
             upstream/lean-toolchain
             upstream/lake-manifest.json
