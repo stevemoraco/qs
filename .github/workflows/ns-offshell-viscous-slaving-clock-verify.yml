@@ -1,0 +1,124 @@
+name: NS off-shell viscous slaving clock verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-offshell-viscous-slaving-clock-public-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-offshell-viscous-slaving-clock/**'
+      - '.github/workflows/ns-offshell-viscous-slaving-clock-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-offshell-viscous-slaving-clock'
+          file="$dir/NSOffshellViscousSlavingClockFinite.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='c1d7876b227f51dfb6e20db7442a80f1062750e3'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-offshell-viscous-slaving-clock'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSOffshellViscousSlavingClockFinite.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+
+      - name: Enforce foundation-only axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-offshell-viscous-slaving-clock'
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path('verification/ns-offshell-viscous-slaving-clock/lean-output.log')
+          text = path.read_text()
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          expected = 12
+          found = len(with_axioms) + len(without_axioms)
+          if found != expected:
+              raise SystemExit(f'expected {expected} staged axiom reports, found {found}')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(f'{theorem} has non-foundation axioms: {sorted(extra)}')
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+          report = '\n'.join(sorted(rows)) + '\n'
+          pathlib.Path('verification/ns-offshell-viscous-slaving-clock/axiom-report.txt').write_text(report)
+          print(report, end='')
+          PY
+          echo 'VERIFIED NS off-shell viscous slaving clock finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-offshell-viscous-slaving-clock-evidence
+          path: |
+            verification/ns-offshell-viscous-slaving-clock/source-blob.txt
+            verification/ns-offshell-viscous-slaving-clock/source-sha256.txt
+            verification/ns-offshell-viscous-slaving-clock/lean-version.txt
+            verification/ns-offshell-viscous-slaving-clock/lean-output.log
+            verification/ns-offshell-viscous-slaving-clock/axiom-report.txt
