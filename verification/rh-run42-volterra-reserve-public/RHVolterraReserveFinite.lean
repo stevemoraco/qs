@@ -45,7 +45,6 @@ theorem negative_margin_positive_smoothing
     have hxne : x ≠ 0 := ne_of_gt hxpos
     have hid : 1 - 1 / x = (x - 1) / x := by
       field_simp [hxne]
-      ring
     rw [hid]
     exact div_nonneg (by linarith) (le_of_lt hxpos)
 
@@ -56,7 +55,7 @@ shown here and is negative. -/
 theorem positive_margin_negative_smoothing_ledger
     {q : ℝ}
     (hq : q ^ 2 = 2)
-    (hqpos : 0 < q) :
+    (_hqpos : 0 < q) :
     0 < (1 : ℝ) ∧
       (-71 / 11 + 25 * q / 22 : ℝ) < 0 := by
   constructor
