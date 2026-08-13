@@ -25,6 +25,8 @@ Navier--Stokes solution.
 
 namespace Millennium.NavierStokes.BeltramiSixCarrierFrame
 
+noncomputable section
+
 abbrev V3Z := Fin 3 → ℤ
 abbrev Sym6Z := Fin 6 → ℤ
 abbrev Sym6R := Fin 6 → ℝ
@@ -48,14 +50,13 @@ def normSq (v : V3Z) : ℤ := dot v v
 
 /-- Every carrier lies on the shell of squared radius `2`. -/
 theorem carrier_equal_shell (i : Fin 6) : normSq (carrier i) = 2 := by
-  fin_cases i <;> norm_num [normSq, dot, carrier]
+  fin_cases i <;> decide
 
 /-- Distinct listed carriers are neither equal nor antipodal. -/
 theorem distinct_not_equal_or_antipodal
     {i j : Fin 6} (hij : i ≠ j) :
     carrier i ≠ carrier j ∧ carrier i ≠ -carrier j := by
-  fin_cases i <;> fin_cases j <;>
-    norm_num [carrier] at hij ⊢
+  fin_cases i <;> fin_cases j <;> simp_all [carrier] <;> decide
 
 /-- Symmetric matrices use coordinate order `(xx, yy, zz, xy, xz, yz)`. -/
 def projectorStress (k : V3Z) : Sym6Z := ![
@@ -79,7 +80,7 @@ def qStress : Fin 6 → Sym6Z := ![
 
 theorem qStress_eq_projectorStress (i : Fin 6) :
     qStress i = projectorStress (carrier i) := by
-  fin_cases i <;> native_decide
+  fin_cases i <;> ext j <;> fin_cases j <;> decide
 
 /-- Equal positive amplitudes give an isotropic stress: the six generators sum
 to `8 I`. -/
@@ -88,7 +89,7 @@ def target8I : Sym6Z := ![8, 8, 8, 0, 0, 0]
 theorem isotropic_sum (j : Fin 6) :
     qStress 0 j + qStress 1 j + qStress 2 j + qStress 3 j
       + qStress 4 j + qStress 5 j = target8I j := by
-  fin_cases j <;> native_decide
+  fin_cases j <;> decide
 
 /-- Coordinates of a linear combination of the six projector generators. -/
 def coneCoordinates (a : Fin 6 → ℝ) : Sym6R := ![
@@ -131,7 +132,19 @@ def identityStress : Sym6R := ![1, 1, 1, 0, 0, 0]
 direction. -/
 theorem weight_identity (i : Fin 6) :
     weight identityStress i = (1 : ℝ) / 8 := by
-  fin_cases i <;> norm_num [weight, identityStress]
+  fin_cases i
+  · change ((-(1 : ℝ) - 1 + 3*1 - 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
+  · change ((-(1 : ℝ) - 1 + 3*1 + 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
+  · change ((-(1 : ℝ) + 3*1 - 1 - 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
+  · change ((-(1 : ℝ) + 3*1 - 1 + 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
+  · change (((3 : ℝ)*1 - 1 - 1 - 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
+  · change (((3 : ℝ)*1 - 1 - 1 + 4*0) / 8) = (1 : ℝ) / 8
+    norm_num
 
 /-- Coordinate box of radius `epsilon` around the identity. -/
 def InIdentityBox (epsilon : ℝ) (m : Sym6R) : Prop :=
@@ -192,5 +205,7 @@ theorem positive_decomposition_of_identity_box
 #print axioms weight_identity
 #print axioms weight_pos_of_identity_box
 #print axioms positive_decomposition_of_identity_box
+
+end
 
 end Millennium.NavierStokes.BeltramiSixCarrierFrame
