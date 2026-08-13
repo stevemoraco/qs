@@ -57,6 +57,50 @@ theorem firstSwap_injective (u v : α) :
     Function.Injective (firstSwap u v) :=
   (firstSwap_involutive u v).injective
 
+/-- A word together with the ordered pair selected for the first-occurrence swap. -/
+structure TaggedWord (α : Type*) where
+  word : List α
+  left : α
+  right : α
+deriving DecidableEq
+
+/-- Apply firstSwap while retaining its ordered pair as part of the output. -/
+def taggedFirstSwap (t : TaggedWord α) : TaggedWord α :=
+  { t with word := firstSwap t.left t.right t.word }
+
+theorem taggedFirstSwap_involutive :
+    Function.Involutive (taggedFirstSwap : TaggedWord α → TaggedWord α) := by
+  intro t
+  cases t with
+  | mk word left right =>
+      simp [taggedFirstSwap, firstSwap_involutive]
+
+theorem taggedFirstSwap_injective :
+    Function.Injective (taggedFirstSwap : TaggedWord α → TaggedWord α) :=
+  taggedFirstSwap_involutive.injective
+
+/--
+Smallest useful collision certificate for the tagless aggregate map: two distinct
+words using different selected pairs have the same swapped word.
+-/
+theorem tagless_collision_left :
+    firstSwap (1 : Fin 4) 2 [2, 1, 0] = [1, 1, 0] := by
+  rfl
+
+theorem tagless_collision_right :
+    firstSwap (1 : Fin 4) 3 [3, 1, 0] = [1, 1, 0] := by
+  rfl
+
+theorem tagless_collision_inputs_distinct :
+    ([2, 1, 0] : List (Fin 4)) ≠ [3, 1, 0] := by
+  simp
+
+#print axioms taggedFirstSwap_involutive
+#print axioms taggedFirstSwap_injective
+#print axioms tagless_collision_left
+#print axioms tagless_collision_right
+#print axioms tagless_collision_inputs_distinct
+
 /-- Whether a letter occurs an odd number of times in a word. -/
 def oddLetter (a : α) : List α → Bool
   | [] => false
