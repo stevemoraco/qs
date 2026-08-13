@@ -1,0 +1,14 @@
+import RHTrianglePrimeCore
+
+#print axioms Millennium.RH.TrianglePrimeCore.autocorrelation_value_match
+#print axioms Millennium.RH.TrianglePrimeCore.autocorrelation_slope_match
+#print axioms Millennium.RH.TrianglePrimeCore.prime_hinge_left
+#print axioms Millennium.RH.TrianglePrimeCore.prime_hinge_right
+#print axioms Millennium.RH.TrianglePrimeCore.kernel_left_derivative_identity
+#print axioms Millennium.RH.TrianglePrimeCore.kernel_right_derivative_identity
+#print axioms Millennium.RH.TrianglePrimeCore.kernel_left_nonneg
+#print axioms Millennium.RH.TrianglePrimeCore.kernel_right_nonneg
+#print axioms Millennium.RH.TrianglePrimeCore.kernel_total_mass_algebra
+#print axioms Millennium.RH.TrianglePrimeCore.residual_derivative_square
+#print axioms Millennium.RH.TrianglePrimeCore.rayleigh_nonneg_iff_average_le
+#print axioms Millennium.RH.TrianglePrimeCore.average_error_of_rayleigh_bound
