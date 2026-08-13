@@ -1,0 +1,118 @@
+name: RH von Mangoldt bounded-correction verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-von-mangoldt-bounded-correction-verifier-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rh-von-mangoldt-bounded-correction-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact verifier source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh_von_mangoldt_bounded_correction/RHVonMangoldtBoundedCorrection.lean
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh_von_mangoldt_bounded_correction/RHVonMangoldtBoundedCorrection.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'forbidden source token: {token}')
+          if text.count('#print axioms') != 7:
+              raise SystemExit('expected exactly seven staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/rh_von_mangoldt_bounded_correction
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source = pathlib.Path(
+              'verification/rh_von_mangoldt_bounded_correction/RHVonMangoldtBoundedCorrection.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+
+          out = pathlib.Path(
+              'evidence/rh_von_mangoldt_bounded_correction/axle-response.json'
+          )
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          warnings = result.get('lean_messages', {}).get('warnings', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed or warnings:
+              raise SystemExit('Lean/AXLE verification failed or emitted warnings')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED: warning-free source compiled under AXLE Lean 4.30')
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/rh_von_mangoldt_bounded_correction
+          SRC=verification/rh_von_mangoldt_bounded_correction/RHVonMangoldtBoundedCorrection.lean
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object "$SRC")"
+            echo "source_sha256=$(sha256sum "$SRC" | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > evidence/rh_von_mangoldt_bounded_correction/replay-metadata.txt
+
+      - name: Upload exact compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-von-mangoldt-bounded-correction-public-evidence
+          path: evidence/rh_von_mangoldt_bounded_correction/
+          if-no-files-found: error
