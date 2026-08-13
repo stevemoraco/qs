@@ -1,35 +1,56 @@
 import Mathlib
 
-namespace Millennium.Hodge.SecantSelfIntersection
+namespace Millennium.Hodge.KSTransfer
 
-variable {α : Type*}
+variable {HX HA ZX ZA : Type*}
 
-/-- BANKER: if a proposed secant locus contains the original locus, then
-intersecting the original locus with that secant locus returns the whole
-original locus. -/
-theorem banker_secant_containment_forces_self_intersection
-    {X Sec : Set α} (h : X ⊆ Sec) :
-    X ∩ Sec = X := by
-  exact Set.inter_eq_left.mpr h
+theorem banker_transfer_of_commuting_retraction
+    (ι : HX → HA) (ρ : HA → HX)
+    (clA : ZA → HA) (clX : ZX → HX) (push : ZA → ZX)
+    (hretract : ∀ h, ρ (ι h) = h)
+    (hcomm : ∀ z, clX (push z) = ρ (clA z))
+    {h : HX} {z : ZA} (hz : clA z = ι h) :
+    ∃ x : ZX, clX x = h := by
+  refine ⟨push z, ?_⟩
+  rw [hcomm, hz, hretract]
 
-/-- CRITIC: a nested intersection need not be proper; the one-point model
-already returns the entire left-hand locus. -/
-theorem critic_expected_proper_intersection_fails :
-    let X : Set (Fin 1) := Set.univ
-    let Sec : Set (Fin 1) := Set.univ
-    X ⊆ Sec ∧ X ∩ Sec = X ∧ X.Nonempty := by
-  simp
+def criticEmbed : Bool → Bool := id
 
-/-- CLEANER: an intersection with `X` differs from `X` exactly when `X` is
-not contained in the other locus.  Thus any genuine positive-codimension
-intersection argument must first prove noncontainment. -/
-theorem cleaner_nonwhole_intersection_iff_noncontainment
-    {X Sec : Set α} :
-    X ∩ Sec ≠ X ↔ ¬ X ⊆ Sec := by
-  exact not_congr Set.inter_eq_left
+def criticRetract : Bool → Bool := id
 
-#print axioms banker_secant_containment_forces_self_intersection
-#print axioms critic_expected_proper_intersection_fails
-#print axioms cleaner_nonwhole_intersection_iff_noncontainment
+def criticTargetClass : Bool → Bool := id
 
-end Millennium.Hodge.SecantSelfIntersection
+def criticSourceClass : PUnit → Bool := fun _ => false
+
+theorem critic_split_target_data_not_enough :
+    Function.LeftInverse criticRetract criticEmbed ∧
+      Function.Surjective criticTargetClass ∧
+      ¬ Function.Surjective criticSourceClass := by
+  constructor
+  · intro b
+    rfl
+  constructor
+  · intro b
+    exact ⟨b, rfl⟩
+  · intro hsurj
+    obtain ⟨x, hx⟩ := hsurj true
+    cases x
+    simp [criticSourceClass] at hx
+
+theorem cleaner_surjectivity_requires_cycle_map
+    (ι : HX → HA) (ρ : HA → HX)
+    (clA : ZA → HA) (clX : ZX → HX) (push : ZA → ZX)
+    (hretract : ∀ h, ρ (ι h) = h)
+    (hcomm : ∀ z, clX (push z) = ρ (clA z))
+    (hsurj : Function.Surjective clA) :
+    Function.Surjective clX := by
+  intro h
+  obtain ⟨z, hz⟩ := hsurj (ι h)
+  exact banker_transfer_of_commuting_retraction
+    ι ρ clA clX push hretract hcomm hz
+
+#print axioms banker_transfer_of_commuting_retraction
+#print axioms critic_split_target_data_not_enough
+#print axioms cleaner_surjectivity_requires_cycle_map
+
+end Millennium.Hodge.KSTransfer
