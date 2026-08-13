@@ -21,7 +21,6 @@ theorem square_increment_remainder
     t ^ 2 / (U * (u + U) ^ 2) = (u - U) ^ 2 / U := by
   rw [htu]
   field_simp [hU, huU]
-  ring
 
 /-- Exact two-root Bregman identity.  It is the finite algebra behind the
 fixed-gauge prime-prefix decomposition. -/
@@ -142,13 +141,22 @@ theorem fixed_weight_closed_form
     {r L : ℝ}
     (hr : r ≠ 0)
     (hL : L ≠ 0)
-    (hminus : r - L / (4 * r) ≠ 0)
-    (hplus : r + L / (4 * r) ≠ 0)
+    (hminus : 4 * r ^ 2 - L ≠ 0)
+    (hplus : 4 * r ^ 2 + L ≠ 0)
     (hden : 16 * r ^ 4 - L ^ 2 ≠ 0) :
     (1 / L) *
         (1 / (r - L / (4 * r)) - 1 / (r + L / (4 * r))) =
       8 * r / (16 * r ^ 4 - L ^ 2) := by
-  field_simp [hr, hL, hminus, hplus, hden]
+  have hminus_rewrite :
+      1 / (r - L / (4 * r)) = 4 * r / (4 * r ^ 2 - L) := by
+    field_simp [hr, hminus]
+    ring
+  have hplus_rewrite :
+      1 / (r + L / (4 * r)) = 4 * r / (4 * r ^ 2 + L) := by
+    field_simp [hr, hplus]
+    ring
+  rw [hminus_rewrite, hplus_rewrite]
+  field_simp [hL, hminus, hplus, hden]
   ring
 
 /-- The closed tangent weight is positive on the prime-like domain
