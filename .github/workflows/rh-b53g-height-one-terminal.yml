@@ -1,0 +1,54 @@
+name: RH B53G height-one terminal kernel replay
+
+on:
+  push:
+    branches:
+      - agent/rh-b53g-height-one-bober-mirror-20260813-gpt56
+    paths:
+      - "millennium/rh-b53g-height-one-terminal/**"
+      - ".github/workflows/rh-b53g-height-one-terminal.yml"
+  pull_request:
+    paths:
+      - "millennium/rh-b53g-height-one-terminal/**"
+      - ".github/workflows/rh-b53g-height-one-terminal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Resolve, build, replay, and audit
+        working-directory: millennium/rh-b53g-height-one-terminal
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+          lake build
+          lake env lean HeightOneBoberTerminal.lean 2>&1 | tee lean-output.txt
+
+          if grep -nE '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)|^[[:space:]]*(axiom|constant)[[:space:]]' HeightOneBoberTerminal.lean; then
+            echo 'forbidden source token detected'
+            exit 1
+          fi
+
+          if grep -Eq 'declaration uses .sorry.|declaration has metavariables|declaration uses sorry|unsolved goals|unknown constant|sorryAx' lean-output.txt; then
+            echo 'forbidden proof hole or unresolved declaration detected'
+            exit 1
+          fi
+
+          test "$(grep -c 'depends on axioms:' lean-output.txt)" -eq 11
+          grep -F 'depends on axioms:' lean-output.txt
