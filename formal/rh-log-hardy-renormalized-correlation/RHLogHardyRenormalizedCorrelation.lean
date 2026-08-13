@@ -1,4 +1,4 @@
-import Init
+import Init.Data.Int.Order
 
 namespace RHLogHardyRenormalizedCorrelation
 
@@ -23,10 +23,10 @@ theorem energy_upper_of_renormalized_cross_upper
     energy ≤ target + budget := by
   calc
     energy = diagonal + cross := hledger
-    _ ≤ (renormalizer + budget) + cross := add_le_add_right hdiag.2 cross
+    _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = (cross + renormalizer) + budget := by
-      simp [add_assoc, add_comm, add_left_comm]
-    _ ≤ target + budget := add_le_add_right hcross budget
+      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
+    _ ≤ target + budget := Int.add_le_add_right hcross budget
 
 /--
 Conversely, an upper bound for the physical energy controls the renormalized
@@ -40,11 +40,11 @@ theorem renormalized_cross_upper_of_energy_upper
     cross + renormalizer ≤ target + budget := by
   calc
     cross + renormalizer ≤ cross + (diagonal + budget) :=
-      add_le_add_left hdiag.1 cross
+      Int.add_le_add_left hdiag.1 cross
     _ = (diagonal + cross) + budget := by
-      simp [add_assoc, add_comm, add_left_comm]
+      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
     _ = energy + budget := by rw [← hledger]
-    _ ≤ target + budget := add_le_add_right henergy budget
+    _ ≤ target + budget := Int.add_le_add_right henergy budget
 
 /--
 Nonnegativity of the physical energy supplies the missing lower bound for the
@@ -60,9 +60,9 @@ theorem renormalized_cross_lower_of_nonnegative_energy
   calc
     0 ≤ energy := henergy
     _ = diagonal + cross := hledger
-    _ ≤ (renormalizer + budget) + cross := add_le_add_right hdiag.2 cross
+    _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = cross + renormalizer + budget := by
-      simp [add_assoc, add_comm, add_left_comm]
+      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
 
 /--
 A full `budget` of margin in the renormalized cross estimate pays the complete
@@ -76,9 +76,9 @@ theorem exact_energy_target_from_cross_margin
     energy ≤ target := by
   calc
     energy = diagonal + cross := hledger
-    _ ≤ (renormalizer + budget) + cross := add_le_add_right hdiag.2 cross
+    _ ≤ (renormalizer + budget) + cross := Int.add_le_add_right hdiag.2 cross
     _ = cross + renormalizer + budget := by
-      simp [add_assoc, add_comm, add_left_comm]
+      simp [Int.add_assoc, Int.add_comm, Int.add_left_comm]
     _ ≤ target := hcross
 
 /-- The diagonal part of the smallest two-coordinate quadratic model. -/
