@@ -25,7 +25,7 @@ jobs:
           dir='verification/ns-dls-temporal-coefficient-gate-public'
           file="$dir/NSDLSTemporalCoefficientGate.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='69442baab581377d5561ab961ac710ef72f58244'
+          expected_blob='6c38bb2d1d263ad543d40b2814ad668d304a0950'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_research_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
