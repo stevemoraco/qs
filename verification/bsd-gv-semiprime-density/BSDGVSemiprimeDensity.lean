@@ -15,6 +15,8 @@ Ghosh--Voutier's four rank-zero/trivial-2-primary-Sha cases for
 
 namespace BSDGVSemiprimeDensity
 
+set_option maxRecDepth 100000
+
 inductive OddResidue where
   | r1 | r3 | r5 | r7 | r9 | r11 | r13 | r15
   deriving DecidableEq, Repr, Fintype
