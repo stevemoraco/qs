@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-positive-excess-li-sharpness/RHPositiveExcessLISharpness.lean
-          EXPECTED=94c539dffa1ab9d1cbc857c13dc5d7da1232de5113b5209dc7302f0927a2cf5f
+          EXPECTED=3a03f1bf32e743355f90b7148ebb2804bd6f6ae5cdaecc6766f8fff2571fb609
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
@@ -76,7 +76,7 @@ jobs:
               result = {
                   'okay': False,
                   'request_exception': repr(exc),
-                  'lean_messages': {'errors': []},
+                  'lean_messages': {'errors': [], 'warnings': []},
                   'tool_messages': {'errors': []},
                   'failed_declarations': [],
               }
@@ -122,13 +122,14 @@ jobs:
               raise SystemExit('missing AXLE response evidence')
           result = json.loads(p.read_text())
           lean_errors = result.get('lean_messages', {}).get('errors', [])
+          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           failed = result.get('failed_declarations', [])
-          if not result.get('okay') or lean_errors or tool_errors or failed:
-              raise SystemExit('Lean/AXLE verification failed; inspect uploaded response artifact')
+          if not result.get('okay') or lean_errors or lean_warnings or tool_errors or failed:
+              raise SystemExit('Lean/AXLE verification failed or warned; inspect uploaded response artifact')
           rendered = json.dumps(result)
           for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
               if forbidden in rendered:
                   raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
-          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
+          print('VERIFIED WARNING-FREE: exact canonical source compiled under AXLE Lean 4.30')
           PY
