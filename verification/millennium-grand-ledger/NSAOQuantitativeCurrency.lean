@@ -1,17 +1,18 @@
 import Mathlib
 
 /-!
-# Quantitative AO retuning and summable intermittent currency
+# Conditional AO retuning and normalized intermittent scaling
 
 This file isolates two exact finite cores from the current Navier--Stokes
 Albritton--Ożański (AO) route.
 
-* The Batchelor double-critical equations have a strictly negative Jacobian
-  under the four source sign conditions.  Cramer's rule and Banach's fixed-point
-  theorem then give explicit algebraic/nonlinear retuning certificates.
-* A corrected dyadic window uses a small energy-decay tax.  Its pump energies
-  are summable while both viscosity and axial modulation remain one strict
-  dyadic power below the local AO growth scale.
+* The four sign assumptions extracted from the Batchelor double-critical
+  formulas imply a strictly negative Jacobian.  Cramer's rule and Banach's
+  fixed-point theorem then give explicit algebraic/nonlinear retuning
+  certificates.
+* A conditional normalized scaling ledger uses a small energy-decay tax.  Its
+  finite nominal partial sums are uniformly bounded while viscosity and axial
+  modulation have two and three powers of slack relative to nominal growth.
 
 Nothing here asserts persistence of the Euler eigenmode under windowing, an
 exact Navier--Stokes relay, infinite iteration, or blow-up.
@@ -27,7 +28,7 @@ open scoped BigOperators
 
 /-- The sign pattern in the AO Batchelor formulas forces the full two-variable
 Jacobian `-2 * beta * F1_r - F1_beta * g'` to be strictly negative. -/
-theorem batchelor_jacobian_negative
+theorem batchelor_jacobian_sign_implication
     {beta F1r F1beta gprime : ℝ}
     (hbeta : 0 < beta)
     (hF1r : 0 < F1r)
@@ -102,6 +103,19 @@ theorem axisymmetric_window_divergence_cancels
   rw [hradial, haxial]
   field_simp [hr] <;> ring
 
+/-- If a radial corrector has a nonzero limiting flux coefficient `flux`, its
+cylindrical energy density has the exact `flux^2 / r` tail.  The analytic fact
+that the integral of `1/r` diverges is deliberately not smuggled into this
+algebraic statement. -/
+def asymptoticRadialCorrector (flux r : ℝ) : ℝ := flux / r
+
+theorem flux_corrector_density
+    {flux r : ℝ} (hr : r ≠ 0) :
+    r * asymptoticRadialCorrector flux r ^ 2 = flux ^ 2 / r := by
+  unfold asymptoticRadialCorrector
+  field_simp [hr]
+  ring
+
 /-- The preconditioned fixed-point map used for nonlinear retuning. -/
 def preconditionedMap
     {X : Type*} [Sub X] (L F : X → X) (x : X) : X :=
@@ -148,20 +162,22 @@ theorem contraction_retunes_exactly
     exact ContractingWith.dist_fixedPoint_le hcontract x0
   exact ⟨x, hroot, hbound⟩
 
-/-! ## A summable dyadic finite-energy/supercritical currency -/
+/-! ## A bounded conditional dyadic scaling ledger -/
 
-/-- The shell variable is `2^j`.  The physical carrier is its fourth power,
-so every fractional scaling exponent below becomes an integer power. -/
-def shell (j : ℕ) : ℝ := (2 : ℝ) ^ j
+/-- The shell index starts at physical shell `2`, avoiding the degenerate
+`R = 1` scale where asymptotic margin ratios equal one. -/
+def shell (j : ℕ) : ℝ := (2 : ℝ) ^ (j + 1)
 
-def carrier (j : ℕ) : ℝ := shell j ^ 4
-def amplitude (j : ℕ) : ℝ := shell j ^ 5
-def axialLength (j : ℕ) : ℝ := 1 / shell j ^ 3
-def activeVolume (j : ℕ) : ℝ := 1 / shell j ^ 11
-def pumpEnergy (j : ℕ) : ℝ := amplitude j ^ 2 * activeVolume j
-def localGrowth (j : ℕ) : ℝ := amplitude j * carrier j
-def viscosityScale (j : ℕ) : ℝ := carrier j ^ 2
-def envelopeBandwidth (j : ℕ) : ℝ := shell j ^ 3
+/-- These are normalized scaling currencies, not norms of a constructed
+velocity field.  The PDE bridge must realize them with two-sided norm bounds. -/
+def carrier (j : ℕ) : ℝ := shell j ^ 8
+def amplitude (j : ℕ) : ℝ := shell j ^ 10
+def axialLength (j : ℕ) : ℝ := 1 / shell j ^ 5
+def nominalActiveVolume (j : ℕ) : ℝ := 1 / shell j ^ 21
+def nominalPumpEnergy (j : ℕ) : ℝ := amplitude j ^ 2 * nominalActiveVolume j
+def nominalLocalGrowth (j : ℕ) : ℝ := amplitude j * carrier j
+def nominalViscosityScale (j : ℕ) : ℝ := carrier j ^ 2
+def envelopeBandwidth (j : ℕ) : ℝ := shell j ^ 5
 
 /-- For general shell exponents, these are respectively the decay exponent of
 the pump energy, the growth-over-viscosity gap, and the carrier-over-modulation
@@ -171,8 +187,8 @@ def viscosityGapExponent (p s : ℝ) : ℝ := s - p
 def modulationGapExponent (p q : ℝ) : ℝ := p - q
 
 /-- Equalizing the three dyadic margins forces the unique balanced ray
-`(p,q,s) = (4m,3m,5m)`.  In particular `m=1` explains the integer exponents
-used below; they are not an arbitrary numerical guess. -/
+`(p,q,s) = (4m,3m,5m)`.  This does not say that equal margins are optimal; the
+chosen scaling below deliberately buys unequal extra PDE slack. -/
 theorem balanced_margin_ray
     {p q s m : ℝ}
     (henergy : energyDecayExponent p q s = m)
@@ -195,81 +211,90 @@ theorem balanced_margin_ray_converse (m : ℝ) :
   · ring
   constructor <;> ring
 
+/-- The chosen exponents retain energy decay one but buy two powers of viscous
+slack and three powers of modulation slack. -/
+theorem slack_margin_choice :
+    energyDecayExponent 8 5 10 = 1 ∧
+      viscosityGapExponent 8 10 = 2 ∧
+      modulationGapExponent 8 5 = 3 := by
+  norm_num [energyDecayExponent, viscosityGapExponent, modulationGapExponent]
+
 theorem shell_ne_zero (j : ℕ) : shell j ≠ 0 := by
   unfold shell
-  exact pow_ne_zero j (by norm_num)
+  exact pow_ne_zero (j + 1) (by norm_num)
 
-/-- The energy tax is exactly one inverse shell: `2^{-j}`. -/
-theorem pump_energy_identity (j : ℕ) :
-    pumpEnergy j = 1 / shell j := by
-  unfold pumpEnergy amplitude activeVolume
+/-- The nominal energy tax is exactly one inverse shell: `2^{-(j+1)}`. -/
+theorem nominal_pump_energy_identity (j : ℕ) :
+    nominalPumpEnergy j = 1 / shell j := by
+  unfold nominalPumpEnergy amplitude nominalActiveVolume
   field_simp [shell_ne_zero j]
 
-/-- The local instability clock has exponent `9/4` in the physical carrier. -/
-theorem local_growth_identity (j : ℕ) :
-    localGrowth j = shell j ^ 9 := by
-  unfold localGrowth amplitude carrier
+/-- The nominal local instability clock has exponent `18/8 = 9/4` in the
+physical carrier. -/
+theorem nominal_local_growth_identity (j : ℕ) :
+    nominalLocalGrowth j = shell j ^ 18 := by
+  unfold nominalLocalGrowth amplitude carrier
   ring
 
-/-- Carrier-scale viscosity is one inverse shell below local growth. -/
+/-- Carrier-scale viscosity is two inverse shells below nominal local growth. -/
 theorem viscosity_to_growth_identity (j : ℕ) :
-    viscosityScale j / localGrowth j = 1 / shell j := by
-  rw [local_growth_identity]
-  unfold viscosityScale carrier
+    nominalViscosityScale j / nominalLocalGrowth j = 1 / shell j ^ 2 := by
+  rw [nominal_local_growth_identity]
+  unfold nominalViscosityScale carrier
   field_simp [shell_ne_zero j]
 
-/-- Slow axial modulation has the same one-inverse-shell relative margin. -/
+/-- Slow axial modulation is three inverse shells below the carrier. -/
 theorem modulation_to_carrier_identity (j : ℕ) :
-    envelopeBandwidth j / carrier j = 1 / shell j := by
+    envelopeBandwidth j / carrier j = 1 / shell j ^ 3 := by
   unfold envelopeBandwidth carrier
   field_simp [shell_ne_zero j]
 
-theorem inverse_shell_eq_half_pow (j : ℕ) :
-    1 / shell j = (1 / 2 : ℝ) ^ j := by
+theorem inverse_shell_eq_half_pow_succ (j : ℕ) :
+    1 / shell j = (1 / 2 : ℝ) ^ (j + 1) := by
   simp [shell]
 
 /-- Exact finite geometric-energy ledger. -/
 theorem dyadic_energy_partial_sum (n : ℕ) :
-    (∑ j ∈ Finset.range n, (1 / 2 : ℝ) ^ j)
-      = 2 - 2 * (1 / 2 : ℝ) ^ n := by
+    (∑ j ∈ Finset.range n, (1 / 2 : ℝ) ^ (j + 1))
+      = 1 - (1 / 2 : ℝ) ^ n := by
   induction n with
   | zero => norm_num
   | succ n ih =>
       rw [Finset.sum_range_succ, ih, pow_succ]
       ring
 
-/-- All finite collections of preloaded dyadic pumps have total kinetic-energy
-currency at most `2`; hence the corrected scaling removes the earlier
-shellwise-`O(1)` non-summability defect. -/
-theorem dyadic_pump_energy_uniformly_bounded (n : ℕ) :
-    (∑ j ∈ Finset.range n, pumpEnergy j) ≤ 2 := by
-  simp_rw [pump_energy_identity, inverse_shell_eq_half_pow]
+/-- All finite collections have total normalized nominal pump currency at most
+`1`.  This is not an `L^2` theorem for a constructed velocity field. -/
+theorem dyadic_nominal_pump_energy_uniformly_bounded (n : ℕ) :
+    (∑ j ∈ Finset.range n, nominalPumpEnergy j) ≤ 1 := by
+  simp_rw [nominal_pump_energy_identity, inverse_shell_eq_half_pow_succ]
   rw [dyadic_energy_partial_sum]
   have hnonneg : 0 ≤ (1 / 2 : ℝ) ^ n := by positivity
   linarith
 
-structure DyadicAOCurrency : Prop where
-  energy : ∀ j, pumpEnergy j = (1 / 2 : ℝ) ^ j
-  finiteEnergy : ∀ n, (∑ j ∈ Finset.range n, pumpEnergy j) ≤ 2
-  growth : ∀ j, localGrowth j = shell j ^ 9
-  viscousMargin : ∀ j, viscosityScale j / localGrowth j = (1 / 2 : ℝ) ^ j
-  modulationMargin : ∀ j, envelopeBandwidth j / carrier j = (1 / 2 : ℝ) ^ j
+structure DyadicAOScalingLedger : Prop where
+  nominalEnergy : ∀ j, nominalPumpEnergy j = (1 / 2 : ℝ) ^ (j + 1)
+  boundedNominalEnergy : ∀ n,
+    (∑ j ∈ Finset.range n, nominalPumpEnergy j) ≤ 1
+  nominalGrowth : ∀ j, nominalLocalGrowth j = shell j ^ 18
+  viscousMargin : ∀ j,
+    nominalViscosityScale j / nominalLocalGrowth j = 1 / shell j ^ 2
+  modulationMargin : ∀ j,
+    envelopeBandwidth j / carrier j = 1 / shell j ^ 3
 
-/-- One kernel object packages the corrected finite-energy, growth, viscosity,
-and modulation arithmetic. -/
-theorem dyadic_ao_currency : DyadicAOCurrency where
-  energy := fun j => (pump_energy_identity j).trans (inverse_shell_eq_half_pow j)
-  finiteEnergy := dyadic_pump_energy_uniformly_bounded
-  growth := local_growth_identity
-  viscousMargin := fun j =>
-    (viscosity_to_growth_identity j).trans (inverse_shell_eq_half_pow j)
-  modulationMargin := fun j =>
-    (modulation_to_carrier_identity j).trans (inverse_shell_eq_half_pow j)
+/-- One kernel object packages the corrected conditional scaling arithmetic. -/
+theorem dyadic_ao_scaling_ledger : DyadicAOScalingLedger where
+  nominalEnergy := fun j =>
+    (nominal_pump_energy_identity j).trans (inverse_shell_eq_half_pow_succ j)
+  boundedNominalEnergy := dyadic_nominal_pump_energy_uniformly_bounded
+  nominalGrowth := nominal_local_growth_identity
+  viscousMargin := viscosity_to_growth_identity
+  modulationMargin := modulation_to_carrier_identity
 
 /-- The finite, theorem-bearing portion of the current AO gate.  The nonlinear
 contraction theorem above is kept separately because its profile space is
 polymorphic; the PDE work is precisely to instantiate it. -/
-structure AOQuantitativeCore : Prop where
+structure AOConditionalScalingCore : Prop where
   transversality : ∀ {beta F1r F1beta gprime : ℝ},
     0 < beta → 0 < F1r → F1beta < 0 → gprime < 0 →
       -2 * beta * F1r - F1beta * gprime < 0
@@ -290,32 +315,42 @@ structure AOQuantitativeCore : Prop where
     viscosityGapExponent p s = m →
     modulationGapExponent p q = m →
     p = 4 * m ∧ q = 3 * m ∧ s = 5 * m
-  currency : DyadicAOCurrency
+  slackMargins :
+    energyDecayExponent 8 5 10 = 1 ∧
+      viscosityGapExponent 8 10 = 2 ∧
+      modulationGapExponent 8 5 = 3
+  fluxTailDensity : ∀ {flux r : ℝ}, r ≠ 0 →
+    r * asymptoticRadialCorrector flux r ^ 2 = flux ^ 2 / r
+  scalingLedger : DyadicAOScalingLedger
 
-theorem ao_quantitative_core : AOQuantitativeCore where
+theorem ao_conditional_scaling_core : AOConditionalScalingCore where
   transversality := fun hbeta hF1r hF1beta hgprime =>
-    batchelor_jacobian_negative hbeta hF1r hF1beta hgprime
+    batchelor_jacobian_sign_implication hbeta hF1r hF1beta hgprime
   linearRetuning := fun hdet => cramer_retuning hdet
   marginStability := fun href herror => open_margin_survives href herror
   divergenceCancellation := fun hr hradial haxial =>
     axisymmetric_window_divergence_cancels hr hradial haxial
   balancedMargins := fun henergy hviscous hmodulation =>
     balanced_margin_ray henergy hviscous hmodulation
-  currency := dyadic_ao_currency
+  slackMargins := slack_margin_choice
+  fluxTailDensity := flux_corrector_density
+  scalingLedger := dyadic_ao_scaling_ledger
 
-#print axioms batchelor_jacobian_negative
+#print axioms batchelor_jacobian_sign_implication
 #print axioms cramer_retuning
 #print axioms open_margin_survives
 #print axioms axisymmetric_window_divergence_cancels
+#print axioms flux_corrector_density
 #print axioms fixed_point_preconditioned_iff_root
 #print axioms contraction_retunes_exactly
 #print axioms balanced_margin_ray
 #print axioms balanced_margin_ray_converse
-#print axioms pump_energy_identity
+#print axioms slack_margin_choice
+#print axioms nominal_pump_energy_identity
 #print axioms viscosity_to_growth_identity
-#print axioms dyadic_pump_energy_uniformly_bounded
-#print axioms dyadic_ao_currency
-#print axioms ao_quantitative_core
+#print axioms dyadic_nominal_pump_energy_uniformly_bounded
+#print axioms dyadic_ao_scaling_ledger
+#print axioms ao_conditional_scaling_core
 
 end
 
