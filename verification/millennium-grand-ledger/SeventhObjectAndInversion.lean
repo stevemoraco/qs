@@ -1,12 +1,13 @@
 import Mathlib
 
 /-!
-# Seventh-object and inversion firewalls
+# Seventh-object and inversion exactness firewall
 
-The current `PrizeRoute Goal` wrapper is propositionally equivalent to `Goal`.
-The scalar GL2 Haar-density audit verifies that inverse-point density times the
-inversion Jacobian returns the original density. Neither theorem proves an
-unsolved official Millennium statement.
+This module verifies three things:
+
+* finite scale propagation is ordinary induction;
+* the current route wrapper has exactly the logical strength of its goal;
+* the inversion density has one determinant weight, not two.
 -/
 
 namespace MillenniumGrandExactObject
@@ -64,9 +65,8 @@ theorem six_routes_iff_six_goals
 
 theorem route_mutual_exclusivity (Goal : Prop) :
     ¬ (Nonempty (PrizeRoute Goal) ∧ ¬ Goal) := by
-  rw [nonempty_prizeRoute_iff]
-  intro h
-  exact h.2 h.1
+  rintro ⟨⟨route⟩, hnot⟩
+  exact hnot route.solve
 
 noncomputable def haarDensity (d : ℝ) : ℝ := 1 / d ^ 2
 
@@ -81,7 +81,7 @@ theorem transformedDensity_eq_haarDensity
     {d : ℝ} (hd : d ≠ 0) :
     transformedDensity d = haarDensity d := by
   unfold transformedDensity inversePointDensity inversionJacobian haarDensity
-  field_simp [hd] <;> ring
+  field_simp [hd]
 
 theorem claimed_extra_weight_fails_at_two :
     transformedDensity 2 ≠ haarDensity 2 * haarDensity 2 := by
