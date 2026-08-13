@@ -54,12 +54,14 @@ theorem prunedDyadicEncoderCost_closed_add (r : ℕ) :
   induction r with
   | zero => norm_num [prunedDyadicEncoderCost]
   | succ r ih =>
-      simp only [prunedDyadicEncoderCost, Nat.succ_eq_add_one]
+      simp only [prunedDyadicEncoderCost]
       calc
         2 * prunedDyadicEncoderCost r + 2 * r + 2 * (r + 1) + 2 =
             2 * (prunedDyadicEncoderCost r + 2 * r + 2) := by ring
         _ = 2 * 2 ^ (r + 1) := by rw [ih]
-        _ = 2 ^ ((r + 1) + 1) := by rw [pow_succ]
+        _ = 2 ^ ((r + 1) + 1) := by
+            rw [pow_succ, pow_succ]
+            ring
 
 /-- The previously banked encoder expression exceeds the pruned expression
 by exactly r gates. This is scalar bookkeeping only. -/
