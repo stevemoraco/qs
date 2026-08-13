@@ -126,6 +126,26 @@ theorem oddLetter_firstSwap_other (a u v : α)
 def toggleEndpoint (A : α → Bool) (u v : α) (a : α) : Bool :=
   if a = u then !A a else if a = v then !A a else A a
 
+/-- Set the endpoint bits at u and v to false, leaving every other bit fixed. -/
+def erasePairEndpoint (A : α → Bool) (u v : α) (a : α) : Bool :=
+  if a = u ∨ a = v then false else A a
+
+/--
+When both selected endpoint bits are initially true, toggling them is exactly
+removing the pair. Without both hypotheses this statement is false.
+-/
+theorem toggleEndpoint_eq_erasePairEndpoint (A : α → Bool) (u v : α)
+    (huv : u ≠ v) (hAu : A u = true) (hAv : A v = true) :
+    toggleEndpoint A u v = erasePairEndpoint A u v := by
+  funext a
+  by_cases hau : a = u
+  · subst a
+    simp [toggleEndpoint, erasePairEndpoint, hAu]
+  · by_cases hav : a = v
+    · subst a
+      simp [toggleEndpoint, erasePairEndpoint, hAv, Ne.symm huv]
+    · simp [toggleEndpoint, erasePairEndpoint, hau, hav]
+
 /-- A word has endpoint A when every letter has the prescribed occurrence parity. -/
 def HasEndpoint (A : α → Bool) (xs : List α) : Prop :=
   ∀ a, oddLetter a xs = A a
@@ -241,6 +261,22 @@ theorem fullCube_endpointFiber_card_le [Fintype α]
 
 #print axioms mem_allWords
 #print axioms fullCube_endpointFiber_card_le
+
+/--
+RW1 in its exact remove-two form: if both distinct letters are odd, the full-cube
+endpoint fibre injects into the fibre with those two bits erased.
+-/
+theorem fullCube_removePair_card_le [Fintype α]
+    (k : Nat) (A : α → Bool) (u v : α)
+    (huv : u ≠ v) (hAu : A u = true) (hAv : A v = true) :
+    (endpointFiber (allWords (α := α) k) A).card ≤
+      (endpointFiber (allWords (α := α) k)
+        (erasePairEndpoint A u v)).card := by
+  rw [← toggleEndpoint_eq_erasePairEndpoint A u v huv hAu hAv]
+  exact fullCube_endpointFiber_card_le k A u v huv hAu
+
+#print axioms toggleEndpoint_eq_erasePairEndpoint
+#print axioms fullCube_removePair_card_le
 
 /-- The exact coefficient identity in the two-step radial estimate. -/
 theorem radialCoefficientIdentity (q : ℝ) :
