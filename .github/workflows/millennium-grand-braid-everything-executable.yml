@@ -1,0 +1,121 @@
+name: Millennium Grand Braid everything executable Lean firewall
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/millennium-grand-braid-everything/MillenniumGrandBraidEverythingExecutable.lean'
+      - '.github/workflows/millennium-grand-braid-everything-executable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Pin source and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/millennium-grand-braid-everything/MillenniumGrandBraidEverythingExecutable.lean
+          ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
+          EXPECTED=f3e705ccd78b08d7827455af4cf1861da5271577110e31832c2d56575c9971fa
+          test "$ACTUAL" = "$EXPECTED"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'Forbidden trust carrier found'
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 52
+          mkdir -p verification/millennium-grand-braid-everything/evidence
+          cp "$SRC" verification/millennium-grand-braid-everything/evidence/canonical-source.lean
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          root = pathlib.Path('verification/millennium-grand-braid-everything/evidence')
+          src = (root / 'canonical-source.lean').read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1800,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=1860) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+          (root / 'axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          OUT=verification/millennium-grand-braid-everything/evidence
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner=${RUNNER_NAME}"
+            echo "canonical_sha256=f3e705ccd78b08d7827455af4cf1861da5271577110e31832c2d56575c9971fa"
+            echo "environment=lean-4.30.0"
+            echo "print_axioms_count=52"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-grand-braid-everything-evidence
+          path: verification/millennium-grand-braid-everything/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path(
+              'verification/millennium-grand-braid-everything/evidence/axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing compiler evidence')
+          r = json.loads(p.read_text())
+          errs = r.get('lean_messages', {}).get('errors', [])
+          warns = r.get('lean_messages', {}).get('warnings', [])
+          terrs = r.get('tool_messages', {}).get('errors', [])
+          twarns = r.get('tool_messages', {}).get('warnings', [])
+          failed = r.get('failed_declarations', [])
+          if not r.get('okay') or errs or warns or terrs or twarns or failed:
+              raise SystemExit('Lean/AXLE failed or warned')
+          rendered = json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          print('VERIFIED WARNING-FREE')
+          PY
