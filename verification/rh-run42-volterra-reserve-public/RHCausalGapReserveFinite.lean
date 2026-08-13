@@ -7,11 +7,11 @@ Here `u = sqrt x` and the critical relation is
 `B - 4/3 = (2/3) u^3`. -/
 theorem interior_critical_value
     {u A B : ℝ}
-    (hu : u ≠ 0)
+    (_hu : u ≠ 0)
     (hcrit : B - 4 / 3 = (2 / 3) * u ^ 3) :
     (4 / 3) * u - A + (B - 4 / 3) / u ^ 2 = 2 * u - A := by
   rw [hcrit]
-  field_simp [hu]
+  field_simp [_hu]
   ring
 
 /-- Exact cubic arrival ledger.  The cubic coordinate moves from `v` to `u`,
@@ -28,8 +28,14 @@ theorem cubic_reserve_step
     calc
       (u - v) * (u ^ 2 + u * v + v ^ 2) = u ^ 3 - v ^ 3 := by ring
       _ = (3 / 2) * p * a := hcube
-  field_simp [hden]
-  nlinarith
+  have hdiff : u - v = ((3 / 2) * p * a) / (u ^ 2 + u * v + v ^ 2) := by
+    exact (eq_div_iff hden).2 hfactor
+  calc
+    (2 * u - (A₀ + a)) - (2 * v - A₀) = 2 * (u - v) - a := by ring
+    _ = 2 * (((3 / 2) * p * a) / (u ^ 2 + u * v + v ^ 2)) - a := by rw [hdiff]
+    _ = a * (3 * p / (u ^ 2 + u * v + v ^ 2) - 1) := by
+      field_simp [hden]
+      ring
 
 /-- A positive point and integral lower bound for the inverse Volterra
 expression produce an explicit scalar lower bound.  This is only the final
