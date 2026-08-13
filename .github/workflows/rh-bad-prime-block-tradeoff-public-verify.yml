@@ -39,6 +39,7 @@ jobs:
           RHBadPrimeMomentTradeoff.lean 301c90b3b52dd2a7840205c70acf01bb2a58f3b9
           RHRootPrefixBlockTransfer.lean 9f8b2f0c075505b788165e46d84ba71a8006983e
           RHRootPrefixHilbertEnergyFinite.lean 00494a772aa37c2bba5054da3a03a62192d3338f
+          RHDyadicRootHilbertTransferFinite.lean 430215f9ffa8668548b8dfbf791eae32598fceda
           EOF
 
       - name: Reject placeholders and custom trust escapes
@@ -53,6 +54,7 @@ jobs:
               root / 'RHBadPrimeMomentTradeoff.lean',
               root / 'RHRootPrefixBlockTransfer.lean',
               root / 'RHRootPrefixHilbertEnergyFinite.lean',
+              root / 'RHDyadicRootHilbertTransferFinite.lean',
           ]
           patterns = [
               r'^\s*(sorry|admit)\b',
@@ -94,13 +96,15 @@ jobs:
             RHBadPrimeMomentTradeoff.lean \
             RHRootPrefixBlockTransfer.lean \
             RHRootPrefixHilbertEnergyFinite.lean \
+            RHDyadicRootHilbertTransferFinite.lean \
             | tee source-sha256.log
           : > lean-output.log
           for file in \
             RHBadPrimeBlockTradeoff.lean \
             RHBadPrimeMomentTradeoff.lean \
             RHRootPrefixBlockTransfer.lean \
-            RHRootPrefixHilbertEnergyFinite.lean
+            RHRootPrefixHilbertEnergyFinite.lean \
+            RHDyadicRootHilbertTransferFinite.lean
           do
             echo "=== $file ===" | tee -a lean-output.log
             lake env lean "$file" 2>&1 | tee -a lean-output.log
@@ -164,6 +168,18 @@ jobs:
                   'hilbert_line_gap_positive',
                   'rh_all_positive_lines',
               ],
+              'RHDyadicRootHilbertTransferFinite': [
+                  'contraction_inverse_bound',
+                  'finite_geometric_transfer',
+                  'hardy_complete_square',
+                  'unit_trace_pointwise',
+                  'unit_trace_constant',
+                  'sample_square_split',
+                  'square_gap_energy_domination',
+                  'prime_power_tail_exponent',
+                  'dyadic_norm_exponent_identity',
+                  'dyadic_norm_exponent_negative',
+              ],
           }
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           for namespace, names in namespaces.items():
@@ -194,7 +210,7 @@ jobs:
           PY
           test -s source-sha256.log
           test -s mathlib-commit.log
-          echo 'VERIFIED RH bad-prime block, moment, root, and Hilbert finite cores.'
+          echo 'VERIFIED RH block, moment, root, Hilbert, and transfer finite cores.'
 
       - name: Upload replay evidence
         if: always()
