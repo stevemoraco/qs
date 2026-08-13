@@ -88,6 +88,20 @@ theorem open_margin_survives
   have hlower : -|error| ≤ error := neg_abs_le error
   linarith
 
+/-- Pointwise algebra behind the standard axisymmetric window corrector.  If
+the radial flux derivative is `-chiPrime * r * W` and the axial derivative is
+`chiPrime * W`, the cylindrical divergence cancels away from the axis.  A PDE
+construction must still prove these derivative identities and regularity at
+`r = 0`; neither is hidden in this scalar lemma. -/
+theorem axisymmetric_window_divergence_cancels
+    {r W chiPrime radialFluxDerivative axialDerivative : ℝ}
+    (hr : r ≠ 0)
+    (hradial : radialFluxDerivative = -chiPrime * r * W)
+    (haxial : axialDerivative = chiPrime * W) :
+    radialFluxDerivative / r + axialDerivative = 0 := by
+  rw [hradial, haxial]
+  field_simp [hr] <;> ring
+
 /-- The preconditioned fixed-point map used for nonlinear retuning. -/
 def preconditionedMap
     {X : Type*} [Sub X] (L F : X → X) (x : X) : X :=
@@ -148,6 +162,38 @@ def pumpEnergy (j : ℕ) : ℝ := amplitude j ^ 2 * activeVolume j
 def localGrowth (j : ℕ) : ℝ := amplitude j * carrier j
 def viscosityScale (j : ℕ) : ℝ := carrier j ^ 2
 def envelopeBandwidth (j : ℕ) : ℝ := shell j ^ 3
+
+/-- For general shell exponents, these are respectively the decay exponent of
+the pump energy, the growth-over-viscosity gap, and the carrier-over-modulation
+gap.  Positive values are the three strict currencies required by this route. -/
+def energyDecayExponent (p q s : ℝ) : ℝ := 2 * p + q - 2 * s
+def viscosityGapExponent (p s : ℝ) : ℝ := s - p
+def modulationGapExponent (p q : ℝ) : ℝ := p - q
+
+/-- Equalizing the three dyadic margins forces the unique balanced ray
+`(p,q,s) = (4m,3m,5m)`.  In particular `m=1` explains the integer exponents
+used below; they are not an arbitrary numerical guess. -/
+theorem balanced_margin_ray
+    {p q s m : ℝ}
+    (henergy : energyDecayExponent p q s = m)
+    (hviscous : viscosityGapExponent p s = m)
+    (hmodulation : modulationGapExponent p q = m) :
+    p = 4 * m ∧ q = 3 * m ∧ s = 5 * m := by
+  unfold energyDecayExponent viscosityGapExponent modulationGapExponent at *
+  constructor
+  · linarith
+  constructor <;> linarith
+
+/-- Conversely every point on the balanced ray has all three margins exactly
+`m`. -/
+theorem balanced_margin_ray_converse (m : ℝ) :
+    energyDecayExponent (4 * m) (3 * m) (5 * m) = m ∧
+      viscosityGapExponent (4 * m) (5 * m) = m ∧
+      modulationGapExponent (4 * m) (3 * m) = m := by
+  unfold energyDecayExponent viscosityGapExponent modulationGapExponent
+  constructor
+  · ring
+  constructor <;> ring
 
 theorem shell_ne_zero (j : ℕ) : shell j ≠ 0 := by
   unfold shell
@@ -234,6 +280,16 @@ structure AOQuantitativeCore : Prop where
   marginStability : ∀ {reference margin error : ℝ},
     2 * margin ≤ reference → |error| ≤ margin →
       margin ≤ reference + error
+  divergenceCancellation : ∀ {r W chiPrime radialFluxDerivative axialDerivative : ℝ},
+    r ≠ 0 →
+    radialFluxDerivative = -chiPrime * r * W →
+    axialDerivative = chiPrime * W →
+    radialFluxDerivative / r + axialDerivative = 0
+  balancedMargins : ∀ {p q s m : ℝ},
+    energyDecayExponent p q s = m →
+    viscosityGapExponent p s = m →
+    modulationGapExponent p q = m →
+    p = 4 * m ∧ q = 3 * m ∧ s = 5 * m
   currency : DyadicAOCurrency
 
 theorem ao_quantitative_core : AOQuantitativeCore where
@@ -241,13 +297,20 @@ theorem ao_quantitative_core : AOQuantitativeCore where
     batchelor_jacobian_negative hbeta hF1r hF1beta hgprime
   linearRetuning := fun hdet => cramer_retuning hdet
   marginStability := fun href herror => open_margin_survives href herror
+  divergenceCancellation := fun hr hradial haxial =>
+    axisymmetric_window_divergence_cancels hr hradial haxial
+  balancedMargins := fun henergy hviscous hmodulation =>
+    balanced_margin_ray henergy hviscous hmodulation
   currency := dyadic_ao_currency
 
 #print axioms batchelor_jacobian_negative
 #print axioms cramer_retuning
 #print axioms open_margin_survives
+#print axioms axisymmetric_window_divergence_cancels
 #print axioms fixed_point_preconditioned_iff_root
 #print axioms contraction_retunes_exactly
+#print axioms balanced_margin_ray
+#print axioms balanced_margin_ray_converse
 #print axioms pump_energy_identity
 #print axioms viscosity_to_growth_identity
 #print axioms dyadic_pump_energy_uniformly_bounded
