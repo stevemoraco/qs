@@ -40,15 +40,15 @@ theorem dirichlet_block_exponent_positive
     0 < delta - sigma - 2 * a - b := by
   linarith
 
-/-- Symmetric losses `a=b=epsilon/2` produce a near-linear window of exponent
-exactly `1-epsilon`. -/
+/-- Symmetric losses `a=b=epsilon/2` produce a constant-factor window of
+exponent exactly `1-epsilon`. -/
 theorem symmetric_window_identity
     (epsilon : ℝ) :
     1 - epsilon / 2 - epsilon / 2 = 1 - epsilon := by
   ring
 
-/-- The symmetric window remains above the current Guth--Maynard threshold
-whenever `epsilon<13/30`. -/
+/-- The symmetric constant-factor window remains above the current
+Guth--Maynard threshold whenever `epsilon<13/30`. -/
 theorem symmetric_window_guth_maynard
     {epsilon : ℝ}
     (hepsilon : epsilon < (13 : ℝ) / 30) :
@@ -56,7 +56,7 @@ theorem symmetric_window_guth_maynard
   linarith
 
 /-- The Johnston depth retained by the symmetric choice is stronger than the
-clean published threshold `delta-epsilon` whenever `epsilon>0`. -/
+clean threshold `delta-epsilon` whenever `epsilon>0`. -/
 theorem symmetric_depth_stronger
     {delta epsilon : ℝ}
     (hepsilon : 0 < epsilon) :
@@ -80,6 +80,47 @@ theorem symmetric_positive_choice
     0 < delta - sigma - 3 * epsilon / 2 := by
   linarith
 
+/-- Choosing `a=b=epsilon/3` creates a persistent interval whose exponent is
+strictly larger than the exact target subwindow exponent `1-epsilon`. This is
+the constant-factor repair needed for the fixed-length escape criterion. -/
+theorem exact_subwindow_fits
+    {epsilon : ℝ}
+    (hepsilon : 0 < epsilon) :
+    1 - epsilon < 1 - epsilon / 3 - epsilon / 3 := by
+  linarith
+
+/-- The exact unit-coefficient subwindow lies above the current pointwise
+prime-distribution threshold whenever `epsilon<13/30`. -/
+theorem exact_subwindow_guth_maynard
+    {epsilon : ℝ}
+    (hepsilon : epsilon < (13 : ℝ) / 30) :
+    (17 : ℝ) / 30 < 1 - epsilon := by
+  linarith
+
+/-- The depth retained with loss `epsilon/3` strictly dominates the clean
+reported depth `delta-epsilon`. -/
+theorem exact_subwindow_depth_stronger
+    {delta epsilon : ℝ}
+    (hepsilon : 0 < epsilon) :
+    delta - epsilon < delta - epsilon / 3 := by
+  linarith
+
+/-- The exact unit-length block, using the clean depth `delta-epsilon`, has
+weighted Dirichlet exponent `delta-sigma-2epsilon`. -/
+theorem exact_subwindow_dirichlet_exponent
+    (delta sigma epsilon : ℝ) :
+    (1 - epsilon) + (delta - epsilon) - (1 + sigma)
+      = delta - sigma - 2 * epsilon := by
+  ring
+
+/-- If the false-RH depth is more than twice the escape exponent, then every
+prime at clean depth `delta-epsilon` violates the floor `-p^epsilon`. -/
+theorem escape_depth_dominates
+    {delta epsilon : ℝ}
+    (h : 2 * epsilon < delta) :
+    epsilon < delta - epsilon := by
+  linarith
+
 /-- The logarithmic counting-dimension lower exponent `1-epsilon` is positive
 for every subunit loss. -/
 theorem counting_dimension_positive
@@ -98,6 +139,11 @@ theorem counting_dimension_positive
 #print axioms symmetric_depth_stronger
 #print axioms symmetric_dirichlet_exponent_identity
 #print axioms symmetric_positive_choice
+#print axioms exact_subwindow_fits
+#print axioms exact_subwindow_guth_maynard
+#print axioms exact_subwindow_depth_stronger
+#print axioms exact_subwindow_dirichlet_exponent
+#print axioms escape_depth_dominates
 #print axioms counting_dimension_positive
 
 end RHBadPrimeBlockTradeoff
