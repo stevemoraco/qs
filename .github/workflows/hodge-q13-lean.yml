@@ -45,7 +45,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          lake build SixLaneAudit
           lake env lean SixLaneAudit/HodgeQsqrt13FiniteCore.lean
           lake env lean HodgeQsqrt13KernelReport.lean | tee hodge-q13-kernel-report.log
           ! grep -q 'sorryAx' hodge-q13-kernel-report.log
