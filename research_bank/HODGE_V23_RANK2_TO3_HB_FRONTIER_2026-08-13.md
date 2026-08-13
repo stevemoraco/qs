@@ -131,7 +131,7 @@ varieties: moduli spaces and their tropicalization* (2026),
 
 But (10) gives
 \[
- \Delta(Q)\in\{12,23,16\}x^2,qquad
+ \Delta(Q)\in\{12,23,16\}x^2,\qquad
  \Delta(F)\in\{72,102,96\}x^2. \tag{11}
 \]
 Thus neither bundle in any surviving case can be semihomogeneous. In
