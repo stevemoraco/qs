@@ -1,0 +1,109 @@
+name: RH floor fiber finite-core verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-fiber-check-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact verifier source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh_floor_fiber/FloorFiber.lean
+          test "$(git hash-object "$SRC")" = eca87a73e5154b7d859db97a195082b74df5a38f
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = ef0302ff5d77a37abdaa74fbbc66462e38e60ecbc58c8dc1b74e7c8fbe01712c
+          python3 - <<'PY'
+          import pathlib, re
+          text = pathlib.Path('verification/rh_floor_fiber/FloorFiber.lean').read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'forbidden source token: {token}')
+          if text.count('#print axioms') != 5:
+              raise SystemExit('expected exactly five staged axiom reports')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/rh_floor_fiber
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/rh_floor_fiber/FloorFiber.lean').read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST')
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {'okay': False, 'request_exception': repr(exc),
+                        'lean_messages': {'errors': [], 'warnings': []},
+                        'tool_messages': {'errors': [], 'warnings': []},
+                        'failed_declarations': []}
+          out = pathlib.Path('evidence/rh_floor_fiber/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          errors = result.get('lean_messages', {}).get('errors', [])
+          warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          tool_warnings = result.get('tool_messages', {}).get('warnings', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or errors or warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('verification failed or emitted warnings')
+          rendered = json.dumps(result)
+          for token in ('sorryAx', 'Lean.ofReduceBool'):
+              if token in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {token}')
+          print('VERIFIED: exact warning-free source compiled')
+          PY
+
+      - name: Record replay metadata
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object verification/rh_floor_fiber/FloorFiber.lean)"
+            echo "source_sha256=$(sha256sum verification/rh_floor_fiber/FloorFiber.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > evidence/rh_floor_fiber/replay-metadata.txt
+
+      - name: Upload exact compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-floor-fiber-evidence
+          path: evidence/rh_floor_fiber/
+          if-no-files-found: error
