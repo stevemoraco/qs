@@ -234,7 +234,9 @@ theorem fullCube_endpointFiber_card_le [Fintype α]
   apply endpointFiber_card_le (allWords (α := α) k) A u v huv
   · intro xs hxs
     rw [mem_allWords] at hxs ⊢
-    simpa using length_firstSwap u v xs
+    calc
+      (firstSwap u v xs).length = xs.length := length_firstSwap u v xs
+      _ = k := hxs
   · exact hAu
 
 #print axioms mem_allWords
