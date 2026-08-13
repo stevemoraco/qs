@@ -23,8 +23,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/ns-six-color-highhigh-isolation/SixColorHighHighIsolationFinite.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
+          files=(
+            verification/ns-six-color-highhigh-isolation/SixColorHighHighIsolationFinite.lean
+            verification/ns-six-color-highhigh-isolation/OuterSidebandNoSlavingFinite.lean
+          )
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "${files[@]}"; then
             echo 'Forbidden proof placeholder or trust shortcut found.' >&2
             exit 1
           fi
@@ -39,12 +42,15 @@ jobs:
           cd verification/ns-six-color-highhigh-isolation
           lake update
           lake exe cache get
-          lake env lean -DmaxHeartbeats=2000000 SixColorHighHighIsolationFinite.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in SixColorHighHighIsolationFinite.lean OuterSidebandNoSlavingFinite.lean; do
+            lake env lean -DmaxHeartbeats=2000000 "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite six-color high-high isolation core.'
+          echo 'VERIFIED finite six-color high-high isolation and no-slaving cores.'
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
