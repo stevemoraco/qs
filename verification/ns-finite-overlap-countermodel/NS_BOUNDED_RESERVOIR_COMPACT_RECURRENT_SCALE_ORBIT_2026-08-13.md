@@ -166,7 +166,7 @@ u^{(k_j)}\otimes u^{(k_j)}\to U\otimes U
 and
 
 \[
-p^{(k_j)}u^{(k_j)}ightharpoonup PU
+p^{(k_j)}u^{(k_j)}\rightharpoonup PU
 \quad\text{in }L^1.
 \]
 
@@ -260,7 +260,7 @@ The adjacent-pair cubic theorem passes to the limit because the cubic functional
 }
 \]
 
-Every compact surjective dynamical system has a nonempty minimal closed invariant subset. Every point in such a minimal set is recurrent. Since no point and its successor can both have vanishing cubic norm, there is a recurrent nonzero state `X_*` and integers `n_j to infinity` such that
+Every compact surjective dynamical system has a nonempty minimal closed invariant subset. Every point in such a minimal set is recurrent. Since no point and its successor can both have vanishing cubic norm, there is a recurrent nonzero state `X_*` and integers `n_j\to\infty` such that
 
 \[
 T_\theta^{n_j}X_*\to X_*
