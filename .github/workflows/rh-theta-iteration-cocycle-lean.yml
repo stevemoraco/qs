@@ -30,7 +30,7 @@ jobs:
           declare -A expected
           expected[RHThetaIterationCocycleFinite.lean]='e9a61f6d157267c0d72b5c2a4fccd3ac646edc39'
           expected[RHThetaIterationPrimeIntervalFinite.lean]='6d22651b907d2b31452a63c2ab4b7c6930e65bce'
-          expected[RHThetaIterationTollLowerBoundFinite.lean]='710f901446f046c0475c0159c4c91069ff014134'
+          expected[RHThetaIterationTollLowerBoundFinite.lean]='3c42177cc52c14977699b37c9fe8dde7d9dc6913'
           : > source-identity.log
           for file in "${!expected[@]}"; do
             path="verification/rh-theta-iteration-cocycle/$file"
