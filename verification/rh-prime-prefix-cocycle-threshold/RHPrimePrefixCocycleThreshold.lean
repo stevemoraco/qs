@@ -31,9 +31,11 @@ theorem squared_defect_zero_iff
   constructor
   · intro hz
     have hcoef : 4 * q / L ≠ 0 := div_ne_zero (mul_ne_zero (by norm_num) hq) hL
-    have : h + L ^ 3 / (16 * q) = 0 := by
+    have hsum : h + L ^ 3 / (16 * q) = 0 := by
       exact (mul_eq_zero.mp hz).resolve_left hcoef
-    linarith
+    calc
+      h = (h + L ^ 3 / (16 * q)) - L ^ 3 / (16 * q) := by ring
+      _ = -(L ^ 3) / (16 * q) := by rw [hsum]; ring
   · intro hh
     rw [hh]
     field_simp [hq]
@@ -51,21 +53,15 @@ theorem squared_defect_pos_iff
       -(L ^ 3) / (16 * q) < h := by
   rw [squared_defect_factorization (ne_of_gt hq) (ne_of_gt hL) hm hd]
   have hc : 0 < 4 * q / L := div_pos (mul_pos (by norm_num) hq) hL
-  rw [mul_pos_iff]
   constructor
-  · intro hor
-    rcases hor with hor | hor
-    · have hs : 0 < h + L ^ 3 / (16 * q) := hor.2
-      have hq16 : 0 < 16 * q := mul_pos (by norm_num) hq
-      have heq : -(L ^ 3) / (16 * q) + L ^ 3 / (16 * q) = 0 := by ring
+  · intro hprod
+    rcases (mul_pos_iff.mp hprod) with hgood | hbad
+    · have hsum : 0 < h + L ^ 3 / (16 * q) := hgood.2
       linarith
-    · exact (not_lt_of_ge (le_of_lt hc) hor.1).elim
+    · exact (not_lt_of_ge (le_of_lt hc) hbad.1).elim
   · intro hh
-    left
-    refine ⟨hc, ?_⟩
-    have hq16 : 0 < 16 * q := mul_pos (by norm_num) hq
-    have heq : -(L ^ 3) / (16 * q) + L ^ 3 / (16 * q) = 0 := by ring
-    linarith
+    have hsum : 0 < h + L ^ 3 / (16 * q) := by linarith
+    exact mul_pos hc hsum
 
 /-- The corresponding negative-sign statement. -/
 theorem squared_defect_neg_iff
@@ -78,19 +74,15 @@ theorem squared_defect_neg_iff
       h < -(L ^ 3) / (16 * q) := by
   rw [squared_defect_factorization (ne_of_gt hq) (ne_of_gt hL) hm hd]
   have hc : 0 < 4 * q / L := div_pos (mul_pos (by norm_num) hq) hL
-  rw [mul_neg_iff]
   constructor
-  · intro hor
-    rcases hor with hor | hor
-    · have hs : h + L ^ 3 / (16 * q) < 0 := hor.2
-      have heq : -(L ^ 3) / (16 * q) + L ^ 3 / (16 * q) = 0 := by ring
+  · intro hprod
+    rcases (mul_neg_iff.mp hprod) with hgood | hbad
+    · have hsum : h + L ^ 3 / (16 * q) < 0 := hgood.2
       linarith
-    · exact (not_lt_of_ge (le_of_lt hc) hor.2).elim
+    · exact (not_lt_of_ge (le_of_lt hc) hbad.1).elim
   · intro hh
-    left
-    refine ⟨hc, ?_⟩
-    have heq : -(L ^ 3) / (16 * q) + L ^ 3 / (16 * q) = 0 := by ring
-    linarith
+    have hsum : h + L ^ 3 / (16 * q) < 0 := by linarith
+    exact mul_neg_of_pos_of_neg hc hsum
 
 #print axioms squared_defect_factorization
 #print axioms squared_defect_zero_iff
