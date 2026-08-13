@@ -23,7 +23,7 @@ def exceptionalWeight (_j : Fin 1) : Nat := 8
 /-- Reusing one label `N` times counts its weight `N` times. -/
 theorem repeated_shell_sum (N : Nat) :
     (∑ k : Fin N, exceptionalWeight (repeatedShell k)) = N * 8 := by
-  simp [exceptionalWeight, repeatedShell]
+  simp [exceptionalWeight]
 
 /-- Counting one distinct label instead of its four preimages undercounts the
 weighted sum by a factor four. -/
