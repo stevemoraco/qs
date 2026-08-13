@@ -1,0 +1,79 @@
+name: Verify Millennium Grand Atlas
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/millennium_grand_atlas/**"
+      - ".github/workflows/verify-millennium-grand-atlas.yml"
+  pull_request:
+    paths:
+      - "verification/millennium_grand_atlas/**"
+      - ".github/workflows/verify-millennium-grand-atlas.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/millennium_grand_atlas
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Decode exact source and verify digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d MillenniumGrandAtlasStandalone.lean.gz.b64 | gzip -d > MillenniumGrandAtlasStandalone.lean
+          echo "50d3ca7da423a3a460911fd45ae02d85de6e0f65b85ca7146db6f0fe49d72553  MillenniumGrandAtlasStandalone.lean" | sha256sum -c -
+
+      - name: Reject proof holes and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=MillenniumGrandAtlasStandalone.lean
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check standalone atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean MillenniumGrandAtlasStandalone.lean 2>&1 | tee grand-atlas-output.txt
+          if grep -q 'sorryAx' grand-atlas-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-grand-atlas-public-replay
+          path: |
+            verification/millennium_grand_atlas/MillenniumGrandAtlasStandalone.lean
+            verification/millennium_grand_atlas/grand-atlas-output.txt
+          if-no-files-found: warn
