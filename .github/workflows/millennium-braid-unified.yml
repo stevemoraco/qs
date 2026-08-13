@@ -1,0 +1,80 @@
+name: Millennium Braid Unified Replay
+
+on:
+  push:
+    branches:
+      - verification/millennium-braid-unified-20260813
+  pull_request:
+    paths:
+      - 'verification/millennium-braid-unified/**'
+      - '.github/workflows/millennium-braid-unified.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.30.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Hydrate pinned lane sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/millennium-braid-unified
+          mkdir -p external/BraidVerifier evidence
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/553cbb246a80fb7a9d7254d04cc866b52ab7b340/verification/rh-dyadic-formula-v2/DyadicFormula.lean -o external/DyadicFormulaV2.lean
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/9e2349972e8fa4468656b20562858b94887e6759/verification/pnp-indexed-decoder-localization-firewall/PNPIndexedDecoderFinite.lean -o external/PNPIndexedDecoderFinite.lean
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/6e0498dc061de2cef6c26e43381b7913ac5a2d79/verification/bsd_mazur_tate_spectral/BSDMazurTateSpectralExtractor.lean -o external/BSDMazurTateSpectralExtractor.lean
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/066f732aa0b26c025959e8eaf3568a69e57be3e3/verification/hodge_secant_self_intersection/HodgeSecantSelfIntersection.lean -o external/HodgeSecantSelfIntersection.lean
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/0fd9005d6c6cc61696ebb3d574c8cf2182b42055/verification/ns-real-triad-sharp-curve/NSRealTriadSharpCurve.lean -o external/NSRealTriadSharpCurve.lean
+          curl -fsSL https://raw.githubusercontent.com/stevemoraco/qs/4666aaac7c4e37e019a3164bfb403048387667a2/verification/ym-scale-core/YMScaleCore.lean -o external/YMScaleCore.lean
+          test "$(git hash-object external/DyadicFormulaV2.lean)" = 40c6fc9b6fa49304a2eed23a0008b7275211a0bd
+          test "$(git hash-object external/PNPIndexedDecoderFinite.lean)" = 2d164dc9338d9cf2164f6327e0ca087f1497cffa
+          test "$(git hash-object external/BSDMazurTateSpectralExtractor.lean)" = e91a8e129c7328b34ddeefbd3d525867f0b183c7
+          test "$(git hash-object external/HodgeSecantSelfIntersection.lean)" = 1a7983b45ce0d829f3d1e722bcd9a5b34ce2c2ee
+          test "$(git hash-object external/NSRealTriadSharpCurve.lean)" = 0fcf76a05c4d0930d243c6d24b813d8418261df5
+          test "$(git hash-object external/YMScaleCore.lean)" = 5550fc123784092b9fd0b343464310934b93adf5
+          sha256sum external/*.lean BraidVerifier/*.lean | tee evidence/source-sha256.txt
+      - name: Compile aggregate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/millennium-braid-unified
+          lean --version | tee evidence/lean-version.txt
+          lake --version | tee -a evidence/lean-version.txt
+          lake update
+          lake exe cache get
+          export LEAN_PATH="$PWD/external:${LEAN_PATH:-}"
+          lake env lean -o external/DyadicFormulaV2.olean external/DyadicFormulaV2.lean
+          lake env lean -o external/PNPIndexedDecoderFinite.olean external/PNPIndexedDecoderFinite.lean
+          lake env lean -o external/BSDMazurTateSpectralExtractor.olean external/BSDMazurTateSpectralExtractor.lean
+          lake env lean -o external/HodgeSecantSelfIntersection.olean external/HodgeSecantSelfIntersection.lean
+          lake env lean -o external/NSRealTriadSharpCurve.olean external/NSRealTriadSharpCurve.lean
+          lake env lean -o external/YMScaleCore.olean external/YMScaleCore.lean
+          lake env lean -o external/BraidVerifier/Stages.olean BraidVerifier/Stages.lean
+          lake env lean -o external/BraidVerifier/Bounds.olean BraidVerifier/Bounds.lean
+          lake env lean -o external/BraidVerifier/Unified.olean BraidVerifier/Unified.lean 2>&1 | tee evidence/lean-output.log
+          cat > external/Audit.lean <<'EOF'
+          import BraidVerifier.Unified
+          #print axioms BraidVerifier.Unified.certificate
+          #print axioms BraidVerifier.Unified.gigantic_statement
+          EOF
+          lake env lean external/Audit.lean 2>&1 | tee -a evidence/lean-output.log
+          grep -q 'BraidVerifier.Unified.certificate' evidence/lean-output.log
+          grep -q 'BraidVerifier.Unified.gigantic_statement' evidence/lean-output.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-braid-unified-evidence
+          path: verification/millennium-braid-unified/evidence/
