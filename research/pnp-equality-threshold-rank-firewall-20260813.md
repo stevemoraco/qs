@@ -82,7 +82,9 @@ This topology also exactly realizes the degree profile banked in `pnp-critical-p
 
 ## 3. The serial equality subclass is still semantically impossible
 
-The graph witness above is the `c_2=0` / pure-spine equality subclass: after the pivot `p`, the circuit is a one-bit sequential state machine. Each gate computes an arbitrary binary Boolean function of the current state bit and the input wired into its second pin. Other inputs may be read twice in any order; no restriction to formulas, DeMorgan gates, or a smaller basis is being made.
+The graph witness above is a **pure-spine equality subclass** (and in the Type-1/Type-2 bookkeeping it has `c_2=0`): after the pivot `p`, the circuit is a one-bit sequential state machine. Important scope correction: `c_2=0` by itself does **not** imply pure-spine form. A pathology-free equality DAG may have several nontrivial disjoint Type-1 critical paths connected by cross-wires even when there are no Type-2 nodes. Everything in this section applies only to the serial topology just described, or to another circuit for which the same one-bit sequential factorization has separately been proved.
+
+Each gate in the pure-spine subclass computes an arbitrary binary Boolean function of the current state bit and the input wired into its second pin. Other inputs may be read twice in any order; no restriction to formulas, DeMorgan gates, or a smaller basis is being made.
 
 Fix one non-pivot variable `v`. After fixing every other non-pivot variable, the suffix from `p` to the output is a composition of unary Boolean maps. At the two occurrences of `v`, the fixed circuit supplies branch-dependent unary maps
 
@@ -134,7 +136,7 @@ The pivot-pair argument is stronger for the actual pure-spine equality topology 
 
 ## 5. What survives for the `2n+S` target
 
-The result does not close the equality boundary in full. Type-2 gates and off-spine detours can carry additional one-bit state around the output-reaching critical path without spending scalar slack at exact equality. The surviving circuit must exploit that braid.
+The result does not close the equality boundary in full. A survivor can use nonserial cross-wires among multiple Type-1 critical paths, Type-2 gates, or both; those structures can carry state around the one-bit serial bottleneck without spending scalar slack at exact equality. The surviving circuit must exploit a genuine braid, but it need not contain a Type-2 node.
 
 This suggests a sharper invariant than raw gate count:
 
@@ -144,13 +146,13 @@ This suggests a sharper invariant than raw gate count:
 }
 \]
 
-At exact equality, the question becomes how many input pairs a Type-2 bypass component can protect from the rank firewall. At `2n+S`, the banked identity
+At exact equality, the question becomes how many input pairs a cross-path or Type-2 bypass component can protect from the rank firewall. At `2n+S`, the banked identity
 
 \[
 |G|-(2n-2)=(1-o)+\delta_1+\delta_2
 \]
 
-adds only `S+2` defect units. A high-leverage next theorem would charge each surviving low/high rank switch either to a baseline Type-2 bypass component or to one of these exact defect units, then prove an `O(log log n)` congestion bound after selecting a suitable sparse family of faces. That is much closer to the requested semantic-witness ledger than treating all `2n-2` equality DAGs as arbitrary.
+adds only `S+2` defect units. A high-leverage next theorem would charge each surviving low/high rank switch either to a baseline braid component or to one of these exact defect units, then prove an `O(log log n)` congestion bound after selecting a suitable sparse family of faces. That is much closer to the requested semantic-witness ledger than treating all `2n-2` equality DAGs as arbitrary.
 
 ## 6. Class and barrier audit
 
@@ -168,6 +170,6 @@ Primary sources checked directly on 2026-08-13:
 - Zhiyuan Fan, Jiatu Li, Tianqi Yang, *The Exact Complexity of Pseudorandom Functions and the Black-Box Natural Proof Barrier for Bootstrapping Results in Computational Complexity*, ECCC TR21-125 rev. 1, Lemmas 7.2--7.4 and Theorems 7.5--7.6, especially the equality transition on PDF pp. 40--41.
 - Lijie Chen, Jiatu Li, Tianqi Yang, *Extremely Efficient Constructions of Hash Functions, with Applications to Hardness Magnification and PRFs*, ECCC TR22-086 rev. 1, Definition 4.6, Lemmas 4.7--4.8, Corollaries 4.9--4.11, PDF pp. 31--32.
 
-Hostile conclusion: the strict critical-path lower-bound mechanism survives; the inclusive equality reduction to only the two published pathology classes does not. The pure-spine equality escape hatch is independently closed by the unary-rank theorem. Full pathology-free equality circuits with Type-2 braid structure remain unresolved.
+Hostile conclusion: the strict critical-path lower-bound mechanism survives; the inclusive equality reduction to only the two published pathology classes does not. The pure-spine equality escape hatch is independently closed by the unary-rank theorem. Full pathology-free equality circuits with nonserial Type-1 cross-braids and/or Type-2 braid structure remain unresolved.
 
 FIVE-ALARM: OFF.
