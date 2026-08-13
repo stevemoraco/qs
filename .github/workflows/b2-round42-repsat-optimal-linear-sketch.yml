@@ -1,4 +1,4 @@
-name: B2 Round 42 RepSAT and NS Finite Firewalls
+name: B2 Round 42 PNP and NS Finite Firewalls
 
 on:
   push:
@@ -31,6 +31,7 @@ jobs:
           files=(
             verification/b2-round42/PNPOptimalLinearSketchFirewall.lean
             verification/b2-round42/NSCompactGapExponentFirewall.lean
+            verification/b2-round42/NSCriticalScoreScalingFirewall.lean
           )
           for file in "${files[@]}"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
@@ -61,6 +62,7 @@ jobs:
           files=(
             PNPOptimalLinearSketchFirewall.lean
             NSCompactGapExponentFirewall.lean
+            NSCriticalScoreScalingFirewall.lean
           )
           for file in "${files[@]}"; do
             echo "===== $file =====" | tee -a lean-output.log
