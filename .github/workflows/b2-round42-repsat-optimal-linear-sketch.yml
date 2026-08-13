@@ -1,4 +1,4 @@
-name: B2 Round 42 PNP and NS Finite Firewalls
+name: B2 Round 42 Multi-Lane Finite Firewalls
 
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
             verification/b2-round42/NSCriticalScoreScalingFirewall.lean
             verification/b2-round42/NSAxisSourceScalingFirewall.lean
             verification/b2-round42/NSProjectedDilationFirewall.lean
+            verification/b2-round42/RHFirstWeylGermFirewall.lean
           )
           for file in "${files[@]}"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
@@ -69,6 +70,7 @@ jobs:
             NSCriticalScoreScalingFirewall.lean
             NSAxisSourceScalingFirewall.lean
             NSProjectedDilationFirewall.lean
+            RHFirstWeylGermFirewall.lean
           )
           for file in "${files[@]}"; do
             echo "===== $file =====" | tee -a lean-output.log
@@ -78,7 +80,7 @@ jobs:
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED round-42 PNP and NS finite firewalls.'
+          echo 'VERIFIED round-42 finite firewalls.'
 
       - name: Upload compiler evidence
         if: always()
