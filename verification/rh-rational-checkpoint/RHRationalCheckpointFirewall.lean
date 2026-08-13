@@ -48,8 +48,7 @@ theorem strict_on_dense_does_not_force_strict_everywhere :
       (∀ x ∈ ({x : ℝ | x ≠ 0}), 0 < x ^ 2) ∧
       ¬ (∀ x : ℝ, 0 < x ^ 2) := by
   constructor
-  · simpa only [Set.mem_setOf_eq] using
-      (dense_compl_singleton (x := (0 : ℝ)))
+  · simpa using (dense_compl_singleton (x := (0 : ℝ)))
   constructor
   · intro x hx
     exact sq_pos_of_ne_zero hx
