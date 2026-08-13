@@ -130,9 +130,21 @@ gap at the first high--high interaction level.
 unique sidebands above interact one generation later and return with a nonzero,
 minimally heat-detuned coefficient at the designated low frequency. Summing
 all ordered binary interaction trees for the square-free monomial
-(A_aA_bA_cA_{-c}) also leaves a nonzero transverse coefficient, so the
-displayed path is not canceled automatically by other quartic
-parenthesizations. Linear viscosity cannot modify this leading
+(A_aA_bA_cA_{-c}) also leaves the exact time-cubic coefficient
+
+[
+W=\left(
+-\frac{29709287450407586552369503382070768}{51741447392101},
+\frac{11805421958679668258158519494433904}{155224342176303},
+-\frac{54125708274780163979264993456244880}{155224342176303}
+\right).
+]
+
+It is nonzero and transverse to (2\ell_2), but its third coordinate is
+nonzero, so it is not contained in the intended (q_2=(1,-1,0)) target line.
+Thus the displayed path is not canceled automatically by other quartic
+parenthesizations; instead the full quartic term also contaminates the other
+transverse direction. Linear viscosity cannot modify this leading
 amplitude-degree-four, time-cubic coefficient, though it changes later time
 orders.
 
@@ -146,8 +158,12 @@ return polynomial's zero locus; that is the next finite falsification target.
 ## 5. Exact replay
 
 `tools/check_ns_six_color_quartic_return.py` uses exact integers and
-`fractions.Fraction`. The denominator-free Lean file proves the carrier
-geometry, transversality, heat detuning, both first Leray numerators, the
-nonzero return into (q_2), and the universal conjugate-pair rectangle.
+`fractions.Fraction`. It independently implements the coefficient recurrence
+(U_{n+1}=(n+1)^{-1}\sum_{p+q=n}Q(U_p,U_q)) through (U_3) and checks (W).
+The Lean file expands the same ordered-tree recurrence over rational vectors,
+proves the exact coefficient, its nonvanishing, transversality, and off-target
+component, and also proves the carrier geometry, heat detuning, first Leray
+numerators, universal conjugate-pair rectangle, and equal-shell detuning
+identity. It does not formalize Fourier-series convergence or the PDE.
 
 **SIX-ALARM: OFF.**
