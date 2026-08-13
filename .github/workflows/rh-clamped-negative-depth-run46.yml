@@ -1,0 +1,110 @@
+name: RH clamped negative-depth Run46 public verifier
+
+on:
+  push:
+    branches:
+      - verification/rh-clamped-negative-depth-run46-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-clamped-negative-depth-run46/**'
+      - '.github/workflows/rh-clamped-negative-depth-run46.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact canonical source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-clamped-negative-depth-run46'
+          file="$dir/RHClampedNegativeDepthLogicalCore.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='74ba5cd7c7093499f93496e11c003bb804f4f188'
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected_blob" "$actual_blob" \
+            | tee "$dir/source-blob.txt"
+          test "$actual_blob" = "$expected_blob"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-clamped-negative-depth-run46'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHClampedNegativeDepthLogicalCore.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          count="$(grep -c "^'RHClampedNegativeDepth\." lean-output.log)"
+          echo "axiom reports: $count"
+          test "$count" -eq 10
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('lean-output.log').read_text()
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          lines = [line for line in text.splitlines()
+                   if line.startswith("'RHClampedNegativeDepth.")]
+          assert len(lines) == 10, lines
+          for line in lines:
+              if 'does not depend on any axioms' in line:
+                  continue
+              m = re.search(r'\[(.*)\]', line)
+              assert m, line
+              axioms = {x.strip() for x in m.group(1).split(',') if x.strip()}
+              assert axioms <= allowed, (line, axioms - allowed)
+          print('AXIOM ALLOWLIST: PASS')
+          PY
+          echo 'VERIFIED RH clamped negative-depth finite core.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-clamped-negative-depth-run46-${{ github.sha }}
+          path: |
+            verification/rh-clamped-negative-depth-run46/RHClampedNegativeDepthLogicalCore.lean
+            verification/rh-clamped-negative-depth-run46/lakefile.toml
+            verification/rh-clamped-negative-depth-run46/lean-toolchain
+            verification/rh-clamped-negative-depth-run46/source-blob.txt
+            verification/rh-clamped-negative-depth-run46/source-sha256.txt
+            verification/rh-clamped-negative-depth-run46/lean-version.txt
+            verification/rh-clamped-negative-depth-run46/lean-output.log
+          if-no-files-found: warn
