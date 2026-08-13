@@ -45,8 +45,9 @@ jobs:
       - name: Build and replay exact sources
         working-directory: verification/ns-palasek-shorttime-slaving
         run: |
-          lake build NSPalasekShortTimeSlaving
+          lake build NSPalasekShortTimeSlaving NSDynamicSchurEnergy
           lake env lean NSPalasekShortTimeSlaving.lean
+          lake env lean NSDynamicSchurEnergy.lean
           lake env lean AxiomReport.lean | tee axiom-report.txt
       - name: Enforce foundation-only axiom allowlist
         working-directory: verification/ns-palasek-shorttime-slaving
