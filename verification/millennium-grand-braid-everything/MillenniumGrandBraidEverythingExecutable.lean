@@ -150,19 +150,22 @@ theorem gapMargin_critical_excess
 /-- The positive critical coordinate is the global minimum of the frozen-gap profile. -/
 theorem gapMargin_critical_minimum
     {s u theta A c : ℝ}
-    (hs : 0 < s) (hu : 0 < u) (htheta : theta = s ^ 2) :
+    (hu : 0 < u) (htheta : theta = s ^ 2) :
     gapMargin s theta A c ≤ gapMargin u theta A c := by
-  have hcrit : gapMargin s theta A c = 2 * s - c - A := by
-    rw [htheta]
-    unfold gapMargin
-    field_simp [ne_of_gt hs]
-    ring
-  have hexcess := gapMargin_critical_excess (A := A) (c := c)
-    (ne_of_gt hu) htheta
-  have hnonneg : 0 ≤ (u - s) ^ 2 / u :=
-    div_nonneg (sq_nonneg (u - s)) (le_of_lt hu)
-  rw [hcrit]
-  linarith
+  by_cases hs : s = 0
+  · subst s
+    simp [gapMargin, le_of_lt hu]
+  · have hcrit : gapMargin s theta A c = 2 * s - c - A := by
+      rw [htheta]
+      unfold gapMargin
+      field_simp [hs]
+      ring
+    have hexcess := gapMargin_critical_excess (A := A) (c := c)
+      (ne_of_gt hu) htheta
+    have hnonneg : 0 ≤ (u - s) ^ 2 / u :=
+      div_nonneg (sq_nonneg (u - s)) (le_of_lt hu)
+    rw [hcrit]
+    linarith
 
 /-- Exact two-sector Schur identity. -/
 theorem schur_twoSector_identity
@@ -487,7 +490,7 @@ theorem unifiedQuantitativeBank : QuantitativeBank := by
   · intro s theta A c atom hs
     exact gapMargin_arrival_continuity hs
   · intro s u theta A c hs hu htheta
-    exact gapMargin_critical_minimum hs hu htheta
+    exact gapMargin_critical_minimum hu htheta
   · intro alpha tau kappa x y htau hdet
     exact schur_twoSector_psd htau hdet
   · intro selmer rank sha target hdecomp hlower hupper
