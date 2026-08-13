@@ -19,8 +19,7 @@ theorem positive_threshold_failure :
   norm_num
 
 theorem range_not_surjective :
-    ¬ (∀ m : ℕ, m ∈ Finset.Icc 1 3 →
-          ∃ k : ℕ, k ∈ Finset.Icc 1 3 ∧ 3 / k = m) := by
+    ¬ (∀ m : ℕ, m ∈ Finset.Icc 1 3 → ∃ k : ℕ, k ∈ Finset.Icc 1 3 ∧ 3 / k = m) := by
   intro h
   obtain ⟨k, hk, hdiv⟩ := h 2 (by norm_num)
   rcases Finset.mem_Icc.mp hk with ⟨hk1, hk3⟩
@@ -35,7 +34,9 @@ theorem corrected_scale_has_witness (m : ℕ) (hm : 0 < m) :
     · calc
         m + 1 = 1 * (m + 1) := by simp
         _ ≤ m * (m + 1) := Nat.mul_le_mul_right (m + 1) hm
-  · exact Nat.mul_div_right m (show 0 < m + 1 by omega)
+  · calc
+      m * (m + 1) / (m + 1) = (m + 1) * m / (m + 1) := by rw [Nat.mul_comm m (m + 1)]
+      _ = m := Nat.mul_div_right m (show 0 < m + 1 by omega)
 
 #print axioms FloorFiber.three_two_empty
 #print axioms FloorFiber.three_two_weight_zero
