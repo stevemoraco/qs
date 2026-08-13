@@ -7,12 +7,13 @@ This file isolates the exact finite involution behind the full-cube parity endpo
 monotonicity used in the P versus NP negative-layer audit.
 
 For distinct letters u and v, firstSwap exchanges u and v at the first occurrence
-of either letter.  It is an involution.  On any word whose parity endpoint has u
-odd, it toggles exactly the u and v endpoint bits.  Restricting the involution to
+of either letter. It is an involution. On any word whose parity endpoint has u
+odd, it toggles exactly the u and v endpoint bits. Restricting the involution to
 an endpoint fibre therefore gives an injection into the toggled fibre.
 
-The result is deliberately finite and assumption-explicit.  It does not assert a
-circuit lower bound or P != NP.
+The map need not be onto the whole target fibre: a target word may contain neither
+u nor v. The result is deliberately finite and assumption-explicit. It does not
+assert a circuit lower bound or P != NP.
 -/
 
 namespace PNPParityWordInjection
@@ -35,10 +36,15 @@ def firstSwap (u v : α) : List α → List α
   induction xs with
   | nil => rfl
   | cons x xs ih =>
-      by_cases hxu : x = u <;> by_cases hxv : x = v <;>
-        simp [firstSwap, hxu, hxv, ih]
+      by_cases hxu : x = u
+      · subst x
+        simp [firstSwap]
+      · by_cases hxv : x = v
+        · subst x
+          simp [firstSwap, hxu]
+        · simp [firstSwap, hxu, hxv, ih]
 
-theorem firstSwap_involutive (u v : α) (huv : u ≠ v) :
+theorem firstSwap_involutive (u v : α) :
     Function.Involutive (firstSwap u v) := by
   intro xs
   induction xs with
@@ -47,9 +53,9 @@ theorem firstSwap_involutive (u v : α) (huv : u ≠ v) :
       by_cases hxu : x = u <;> by_cases hxv : x = v <;>
         simp_all [firstSwap]
 
-theorem firstSwap_injective (u v : α) (huv : u ≠ v) :
+theorem firstSwap_injective (u v : α) :
     Function.Injective (firstSwap u v) :=
-  (firstSwap_involutive u v huv).injective
+  (firstSwap_involutive u v).injective
 
 /-- Whether a letter occurs an odd number of times in a word. -/
 def oddLetter (a : α) : List α → Bool
@@ -77,10 +83,10 @@ theorem oddLetter_firstSwap_left (u v : α) (huv : u ≠ v) (xs : List α) :
       intro hmem
       by_cases hxu : x = u
       · subst x
-        simp [firstSwap, oddLetter, huv, Ne.symm huv]
+        simp [firstSwap, oddLetter, Ne.symm huv]
       · by_cases hxv : x = v
         · subst x
-          simp [firstSwap, oddLetter, huv, Ne.symm huv]
+          simp [firstSwap, oddLetter, Ne.symm huv]
         · have htail : u ∈ xs ∨ v ∈ xs := by
             simpa [hxu, hxv, Ne.symm hxu, Ne.symm hxv] using hmem
           simpa [firstSwap, oddLetter, hxu, hxv] using ih htail
@@ -94,7 +100,7 @@ theorem oddLetter_firstSwap_right (u v : α) (huv : u ≠ v) (xs : List α) :
       intro hmem
       by_cases hxu : x = u
       · subst x
-        simp [firstSwap, oddLetter, huv, Ne.symm huv]
+        simp [firstSwap, oddLetter, huv]
       · by_cases hxv : x = v
         · subst x
           simp [firstSwap, oddLetter, huv, Ne.symm huv]
@@ -110,10 +116,10 @@ theorem oddLetter_firstSwap_other (a u v : α)
   | cons x xs ih =>
       by_cases hxu : x = u
       · subst x
-        simp [firstSwap, oddLetter, hau, hav, Ne.symm hau, Ne.symm hav]
+        simp [firstSwap, oddLetter, Ne.symm hau, Ne.symm hav]
       · by_cases hxv : x = v
         · subst x
-          simp [firstSwap, oddLetter, hau, hav, Ne.symm hau, Ne.symm hav]
+          simp [firstSwap, oddLetter, hxu, Ne.symm hau, Ne.symm hav]
         · simp [firstSwap, oddLetter, hxu, hxv, ih]
 
 /-- Toggle exactly the endpoint bits indexed by u and v. -/
@@ -140,6 +146,12 @@ theorem firstSwap_hasEndpoint (A : α → Bool) (u v : α)
     · rw [oddLetter_firstSwap_other a u v hau hav xs, hEnd a]
       simp [toggleEndpoint, hau, hav]
 
+/-- The finite endpoint fibre of a finite word family. -/
+noncomputable def endpointFiber [Fintype α]
+    (S : Finset (List α)) (A : α → Bool) : Finset (List α) := by
+  classical
+  exact S.filter (HasEndpoint A)
+
 /--
 For every finite word family stable under firstSwap, the endpoint-A fibre injects
 into the fibre obtained by toggling u and v, provided A has u odd.
@@ -152,25 +164,30 @@ theorem endpointFiber_card_le [Fintype α]
     (huv : u ≠ v)
     (hstable : ∀ xs ∈ S, firstSwap u v xs ∈ S)
     (hAu : A u = true) :
-    (S.filter (HasEndpoint A)).card ≤
-      (S.filter (HasEndpoint (toggleEndpoint A u v))).card := by
+    (endpointFiber S A).card ≤
+      (endpointFiber S (toggleEndpoint A u v)).card := by
   classical
-  let Src := {xs // xs ∈ S.filter (HasEndpoint A)}
-  let Dst := {xs // xs ∈ S.filter (HasEndpoint (toggleEndpoint A u v))}
+  let Src := {xs // xs ∈ endpointFiber S A}
+  let Dst := {xs // xs ∈ endpointFiber S (toggleEndpoint A u v)}
   let f : Src → Dst := fun x => by
     refine ⟨firstSwap u v x.1, ?_⟩
-    have hxS : x.1 ∈ S := (Finset.mem_filter.mp x.2).1
-    have hxEnd : HasEndpoint A x.1 := (Finset.mem_filter.mp x.2).2
-    apply Finset.mem_filter.mpr
-    refine ⟨hstable x.1 hxS, ?_⟩
-    have huOdd : oddLetter u x.1 = true := by
-      rw [hxEnd u, hAu]
-    have huMem : u ∈ x.1 := oddLetter_true_mem huOdd
-    exact firstSwap_hasEndpoint A u v huv x.1 (Or.inl huMem) hxEnd
+    have hxFilt : x.1 ∈ S.filter (HasEndpoint A) := by
+      simpa [endpointFiber] using x.2
+    have hxS : x.1 ∈ S := (Finset.mem_filter.mp hxFilt).1
+    have hxEnd : HasEndpoint A x.1 := (Finset.mem_filter.mp hxFilt).2
+    have hImage : firstSwap u v x.1 ∈
+        S.filter (HasEndpoint (toggleEndpoint A u v)) := by
+      apply Finset.mem_filter.mpr
+      refine ⟨hstable x.1 hxS, ?_⟩
+      have huOdd : oddLetter u x.1 = true := by
+        rw [hxEnd u, hAu]
+      have huMem : u ∈ x.1 := oddLetter_true_mem huOdd
+      exact firstSwap_hasEndpoint A u v huv x.1 (Or.inl huMem) hxEnd
+    simpa [endpointFiber] using hImage
   have hf : Function.Injective f := by
     intro x y hxy
     apply Subtype.ext
-    exact firstSwap_injective u v huv (congrArg Subtype.val hxy)
+    exact firstSwap_injective u v (congrArg Subtype.val hxy)
   simpa [Src, Dst] using Fintype.card_le_of_injective f hf
 
 #print axioms length_firstSwap
