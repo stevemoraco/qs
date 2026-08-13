@@ -3,7 +3,7 @@ name: YM finite OS witness-cover verifier
 on:
   push:
     branches:
-      - agent/ym-finite-os-witness-cover-verifier-20260813
+      - agent/ym-finite-os-witness-cover-repair-20260813-gpt56
   workflow_dispatch:
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_finite_os_witness_cover/YMFiniteOSWitnessCover.lean
-          EXPECTED_BLOB=78da6cc50294abb79aa740c522d33e80bb15612b
+          EXPECTED_BLOB=3aa2f5f35925cead3234671e0607d1b82b165713
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
@@ -113,6 +113,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ym-finite-os-witness-cover-public-evidence
+          name: ym-finite-os-witness-cover-public-evidence-repaired
           path: evidence/ym_finite_os_witness_cover/
           if-no-files-found: error
