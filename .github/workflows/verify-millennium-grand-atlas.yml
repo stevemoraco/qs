@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           base64 -d MillenniumGrandAtlasStandalone.lean.gz.b64 | gzip -d > MillenniumGrandAtlasStandalone.lean
-          echo "50d3ca7da423a3a460911fd45ae02d85de6e0f65b85ca7146db6f0fe49d72553  MillenniumGrandAtlasStandalone.lean" | sha256sum -c -
+          echo "17ae1c2d1bc8af47199a51aba3b7ac0e9d4e9218fd851569f35960994d299954  MillenniumGrandAtlasStandalone.lean" | sha256sum -c -
 
       - name: Reject proof holes and custom trust escapes
         shell: bash
