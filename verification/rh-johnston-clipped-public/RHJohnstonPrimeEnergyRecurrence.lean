@@ -4,12 +4,12 @@ namespace RHJohnstonPrimeEnergyRecurrence
 
 /-- Negative Johnston integral deficit at an endpoint, normalized by removing
 the square distance from the frozen Chebyshev prefix. -/
-def energy (F p theta : ℝ) : ℝ :=
+noncomputable def energy (F p theta : ℝ) : ℝ :=
   -F - (p - theta)^2 / 2
 
 /-- Exact propagation of the Johnston integral across one prime gap when theta
 is frozen at `theta`. -/
-def propagateIntegral (F p q theta : ℝ) : ℝ :=
+noncomputable def propagateIntegral (F p q theta : ℝ) : ℝ :=
   F + theta * (q - p) - (q^2 - p^2) / 2
 
 /-- After reaching the next prime `q`, theta jumps by `ell = log q` while the
@@ -55,6 +55,37 @@ theorem energy_next_value
     (theta := theta) (ell := ell)
   linarith
 
+/-- In the left-clipped regime, add the endpoint square penalty. -/
+noncomputable def leftClippedEnergy (E p theta : ℝ) : ℝ :=
+  E + (p - theta)^2 / 2
+
+/-- Exact adjacent-gap algebra.  When both stages are genuinely left-clipped,
+this is exactly the increment of the clipped Johnston gap minimum; the
+logarithmic jump cancels completely. -/
+theorem left_clipped_increment_identity
+    {E p q theta ell : ℝ} :
+    leftClippedEnergy (E + ell * (q - theta) - ell^2 / 2) q (theta + ell) -
+      leftClippedEnergy E p theta
+      = (q - p) * (p + q - 2 * theta) / 2 := by
+  unfold leftClippedEnergy
+  ring
+
+/-- If `theta ≤ p < q` and the next prefix remains left of `q`, then the actual
+left-clipped scalar grows strictly.  The `theta+ell ≤ q` hypothesis records the
+regime boundary even though the final algebraic sign no longer depends on
+`ell`. -/
+theorem left_clipped_strict_growth
+    {E p q theta ell : ℝ}
+    (hpq : p < q) (htheta : theta ≤ p) (_hnext : theta + ell ≤ q) :
+    leftClippedEnergy E p theta <
+      leftClippedEnergy (E + ell * (q - theta) - ell^2 / 2) q (theta + ell) := by
+  have hgap : 0 < q - p := sub_pos.mpr hpq
+  have hmid : 0 < p + q - 2 * theta := by linarith
+  have hprod : 0 < (q - p) * (p + q - 2 * theta) / 2 := by positivity
+  have hid := left_clipped_increment_identity
+    (E := E) (p := p) (q := q) (theta := theta) (ell := ell)
+  linarith
+
 /-- Telescoping interface: any finite chain obeying the prime-energy update has
 terminal energy equal to initial energy plus the sum of its increments. -/
 theorem telescope_energy_updates
@@ -71,6 +102,8 @@ theorem telescope_energy_updates
 #print axioms energy_recurrence
 #print axioms energy_strictly_grows_iff
 #print axioms energy_next_value
+#print axioms left_clipped_increment_identity
+#print axioms left_clipped_strict_growth
 #print axioms telescope_energy_updates
 
 end RHJohnstonPrimeEnergyRecurrence
