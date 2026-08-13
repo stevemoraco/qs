@@ -383,4 +383,128 @@ theorem oddSliceStep {q pNext pOne pThree : ℝ}
 #print axioms radialCoefficientIdentity
 #print axioms oddSliceStep
 
+/-- The finite set of letters occurring an odd number of times. -/
+def oddSupport [Fintype α] (xs : List α) : Finset α :=
+  (Finset.univ : Finset α).filter (fun a => oddLetter a xs = true)
+
+@[simp] theorem mem_oddSupport [Fintype α] (a : α) (xs : List α) :
+    a ∈ oddSupport xs ↔ oddLetter a xs = true := by
+  simp [oddSupport]
+
+/-- Swapping the first u/v occurrence deletes two odd letters when both are odd. -/
+theorem oddSupport_firstSwap_of_mem [Fintype α]
+    (u v : α) (huv : u ≠ v) (xs : List α)
+    (hu : u ∈ oddSupport xs) (hv : v ∈ oddSupport xs) :
+    oddSupport (firstSwap u v xs) =
+      ((oddSupport xs).erase u).erase v := by
+  have huOdd : oddLetter u xs = true := (mem_oddSupport u xs).mp hu
+  have hvOdd : oddLetter v xs = true := (mem_oddSupport v xs).mp hv
+  have hmem : u ∈ xs ∨ v ∈ xs :=
+    Or.inl (oddLetter_true_mem huOdd)
+  ext a
+  simp only [mem_oddSupport, Finset.mem_erase]
+  by_cases hau : a = u
+  · subst a
+    rw [oddLetter_firstSwap_left u v huv xs hmem]
+    simp [huOdd]
+  · by_cases hav : a = v
+    · subst a
+      rw [oddLetter_firstSwap_right u v huv xs hmem]
+      simp [hvOdd]
+    · rw [oddLetter_firstSwap_other a u v hau hav xs]
+      simp [hau, hav]
+
+/-- Weight-three words tagged by an ordered pair of distinct odd letters. -/
+def WeightThreeTags [Fintype α] (S : Finset (List α)) : Type* :=
+  {t : {xs // xs ∈ S} × (α × α) //
+    (oddSupport t.1.1).card = 3 ∧
+    t.2.1 ∈ oddSupport t.1.1 ∧
+    t.2.2 ∈ oddSupport t.1.1 ∧
+    t.2.1 ≠ t.2.2}
+
+/-- Weight-one words tagged by an ordered distinct pair outside their odd support. -/
+def WeightOneComplementTags [Fintype α] (S : Finset (List α)) : Type* :=
+  {t : {xs // xs ∈ S} × (α × α) //
+    (oddSupport t.1.1).card = 1 ∧
+    t.2.1 ∉ oddSupport t.1.1 ∧
+    t.2.2 ∉ oddSupport t.1.1 ∧
+    t.2.1 ≠ t.2.2}
+
+/-- Retain the ordered tags and first-swap the word. -/
+def weightThreeTagMap [Fintype α]
+    (S : Finset (List α))
+    (hstable : ∀ xs ∈ S, ∀ u v : α, firstSwap u v xs ∈ S) :
+    WeightThreeTags S → WeightOneComplementTags S := fun t => by
+  let xs := t.1.1.1
+  let u := t.1.2.1
+  let v := t.1.2.2
+  have hxs : xs ∈ S := t.1.1.2
+  have hcard : (oddSupport xs).card = 3 := t.2.1
+  have hu : u ∈ oddSupport xs := t.2.2.1
+  have hv : v ∈ oddSupport xs := t.2.2.2.1
+  have huv : u ≠ v := t.2.2.2.2
+  have hsupp := oddSupport_firstSwap_of_mem u v huv xs hu hv
+  refine ⟨⟨⟨firstSwap u v xs, hstable xs hxs u v⟩, (u, v)⟩, ?_⟩
+  refine ⟨?_, ?_, ?_, huv⟩
+  · calc
+      (oddSupport (firstSwap u v xs)).card =
+          (((oddSupport xs).erase u).erase v).card :=
+        congrArg Finset.card hsupp
+      _ = ((oddSupport xs).erase u).card - 1 := by
+        apply Finset.card_erase_of_mem
+        exact Finset.mem_erase.mpr ⟨Ne.symm huv, hv⟩
+      _ = (oddSupport xs).card - 1 - 1 := by
+        rw [Finset.card_erase_of_mem hu]
+      _ = 1 := by omega
+  · rw [hsupp]
+    simp
+  · rw [hsupp]
+    simp
+
+/-- The ordered-tag map is injective; forgetting the tags would make this false. -/
+theorem weightThreeTagMap_injective [Fintype α]
+    (S : Finset (List α))
+    (hstable : ∀ xs ∈ S, ∀ u v : α, firstSwap u v xs ∈ S) :
+    Function.Injective (weightThreeTagMap S hstable) := by
+  intro x y hxy
+  rcases x with ⟨⟨⟨xs, hxs⟩, ⟨u, v⟩⟩, hx⟩
+  rcases y with ⟨⟨⟨ys, hys⟩, ⟨u', v'⟩⟩, hy⟩
+  have huEq : u = u' := by
+    simpa only [weightThreeTagMap] using
+      congrArg (fun z => z.1.2.1) hxy
+  have hvEq : v = v' := by
+    simpa only [weightThreeTagMap] using
+      congrArg (fun z => z.1.2.2) hxy
+  subst u'
+  subst v'
+  have hImage : firstSwap u v xs = firstSwap u v ys := by
+    simpa only [weightThreeTagMap] using
+      congrArg (fun z => z.1.1.1) hxy
+  have hWord : xs = ys := firstSwap_injective u v hImage
+  subst ys
+  rfl
+
+/-- Universal ordered-tag cardinality inequality. -/
+theorem weightThreeTags_card_le [Fintype α]
+    (S : Finset (List α))
+    (hstable : ∀ xs ∈ S, ∀ u v : α, firstSwap u v xs ∈ S) :
+    Fintype.card (WeightThreeTags S) ≤
+      Fintype.card (WeightOneComplementTags S) :=
+  Fintype.card_le_of_injective (weightThreeTagMap S hstable)
+    (weightThreeTagMap_injective S hstable)
+
+/-- The tagged inequality on the complete q-ary word cube of exact length k. -/
+theorem fullCube_weightThreeTags_card_le [Fintype α] (k : Nat) :
+    Fintype.card (WeightThreeTags (allWords (α := α) k)) ≤
+      Fintype.card (WeightOneComplementTags (allWords (α := α) k)) := by
+  apply weightThreeTags_card_le
+  intro xs hxs u v
+  rw [mem_allWords] at hxs ⊢
+  exact (length_firstSwap u v xs).trans hxs
+
+#print axioms oddSupport_firstSwap_of_mem
+#print axioms weightThreeTagMap_injective
+#print axioms weightThreeTags_card_le
+#print axioms fullCube_weightThreeTags_card_le
+
 end PNPParityWordInjection
