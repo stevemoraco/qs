@@ -28,14 +28,13 @@ theorem robin_loss_forces_johnston_loss
   have hwj : 0 ≤ weight * johnston := mul_nonneg (le_of_lt hweight) hjnonneg
   linarith
 
-/-- The magnitude of a negative Robin jump is bounded by the positively scaled
-magnitude of the corresponding negative Johnston jump. -/
+/-- The Robin loss is never larger than the scaled Johnston loss. Positivity
+of the weight and negativity of either jump are not needed for this signed
+inequality; those hypotheses enter only when interpreting both sides as losses. -/
 theorem robin_loss_ceiling
     (robin johnston weight slack : ℝ)
-    (hweight : 0 < weight)
     (hdecomp : robin = weight * johnston + slack)
-    (hslack : 0 ≤ slack)
-    (hrobin : robin < 0) :
+    (hslack : 0 ≤ slack) :
     -robin ≤ weight * (-johnston) := by
   have hdom : weight * johnston ≤ robin :=
     bregman_decomposition_domination robin johnston weight slack hdecomp hslack
