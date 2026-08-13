@@ -1,16 +1,18 @@
 import BSDGVDiscriminantHeight
 
 /-!
-# Positive-root-number spectrum for the BSD semiprime family
+# Positive-root-number and information spectra for the BSD semiprime family
 
-This module certifies the finite residue-state consequences of the external
+This module certifies finite residue-state consequences of the external
 corrected `j=1728` root-number formula. For odd squarefree `D`, that formula
 specializes to
 
 `W(y^2 = x^3 - D*x) = +1` exactly for
 `D = 1, 3, 11, 13 (mod 16)`.
 
-The local root-number theorem itself is not formalized here.
+It also measures the exact information loss when the Legendre-symbol bit is
+forgotten. The local root-number theorem and the arithmetic interpretation of
+the states are not formalized here.
 -/
 
 namespace BSDGVSemiprimeDensity
@@ -49,6 +51,21 @@ def expectedAcceptedProductResidueStateCount : OddResidue → Nat
   | .r11 => 8
   | .r13 => 8
   | .r15 => 0
+
+/-- Residue pairs above which at least one Legendre sign is certified. -/
+def acceptedResiduePairs : Finset ResiduePair :=
+  (Finset.univ : Finset ResiduePair).filter fun x =>
+    accepts x.1 x.2 .pos = true ∨ accepts x.1 x.2 .neg = true
+
+def acceptedResiduePairCount : Nat := acceptedResiduePairs.card
+
+/-- The residue-only perfect-recall envelope must restore both signs over every
+projected accepted residue pair. -/
+def residueEnvelopeStateCount : Nat := 2 * acceptedResiduePairCount
+
+/-- False positives forced by the residue-only perfect-recall envelope. -/
+def residueEnvelopeFalsePositiveCount : Nat :=
+  residueEnvelopeStateCount - acceptedStateCount
 
 /-- Exactly half of the 128 residue/Legendre states have positive global root
 number in the odd squarefree quartic-twist family. -/
@@ -146,6 +163,38 @@ theorem character_sensitive_certified_share :
     (24 / 28 : ℚ) = 6 / 7 := by
   norm_num
 
+/-- Forgetting the Legendre bit projects the 28 accepted states onto exactly
+26 residue pairs. -/
+theorem acceptedResiduePairCount_eq : acceptedResiduePairCount = 26 := by
+  decide
+
+/-- Restoring both signs over the projected residue pairs produces 52 states. -/
+theorem residueEnvelopeStateCount_eq : residueEnvelopeStateCount = 52 := by
+  decide
+
+/-- A residue-only perfect-recall envelope therefore has exactly 24 forced
+false positives at minimum. -/
+theorem residueEnvelopeFalsePositiveCount_eq :
+    residueEnvelopeFalsePositiveCount = 24 := by
+  decide
+
+/-- The best possible precision of a residue-only perfect-recall envelope is
+`28/52 = 7/13`. -/
+theorem residue_envelope_precision_certificate :
+    (28 / 52 : ℚ) = 7 / 13 := by
+  norm_num
+
+/-- The corresponding unsupported fraction is `24/52 = 6/13`. -/
+theorem residue_envelope_false_positive_share :
+    (24 / 52 : ℚ) = 6 / 13 := by
+  norm_num
+
+/-- A zero-false-positive residue-only selector retains only `4/28 = 1/7` of
+the certified states. -/
+theorem safe_residue_only_recall_certificate :
+    (4 / 28 : ℚ) = 1 / 7 := by
+  norm_num
+
 /-- Half of the total minimal-discriminant coefficient `3/4` is `3/8`. -/
 theorem positive_root_discriminant_family_coefficient :
     (1 / 2 : ℚ) * (3 / 4) = 3 / 8 := by
@@ -172,6 +221,12 @@ theorem positive_root_discriminant_relative_density :
 #print axioms character_bit_sevenfold_gain
 #print axioms character_sensitive_positive_root_fraction_certificate
 #print axioms character_sensitive_certified_share
+#print axioms acceptedResiduePairCount_eq
+#print axioms residueEnvelopeStateCount_eq
+#print axioms residueEnvelopeFalsePositiveCount_eq
+#print axioms residue_envelope_precision_certificate
+#print axioms residue_envelope_false_positive_share
+#print axioms safe_residue_only_recall_certificate
 #print axioms positive_root_discriminant_family_coefficient
 #print axioms positive_root_discriminant_relative_density
 
