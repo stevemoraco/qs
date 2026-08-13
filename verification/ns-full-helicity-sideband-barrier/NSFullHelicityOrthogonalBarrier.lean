@@ -67,7 +67,7 @@ theorem three_four_five_positive_eigenvalue :
 
 /-- Corrected high-child energy fraction in the normalized squared-leg ratio
 `x=ℓ²/m²`. -/
-def fullFraction (x : ℝ) : ℝ :=
+noncomputable def fullFraction (x : ℝ) : ℝ :=
   1 - x / 2 - x ^ 2 / 2
 
 /-- Equivalent factored form of the corrected fraction. -/
