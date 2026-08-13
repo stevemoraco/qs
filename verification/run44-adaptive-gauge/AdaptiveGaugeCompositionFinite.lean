@@ -28,42 +28,42 @@ namespace Run44AdaptiveGauge
 linear slopes exactly cancelled, the combined value equals its reference value
 minus the weighted defect. -/
 theorem slope_cancelled_bregman_identity
-    (H H₀ A A₀ L s e e₀ λ B : ℝ)
+    (H H₀ A A₀ L s e e₀ w B : ℝ)
     (hH : H = H₀ + L * (e - e₀))
     (hA : A = A₀ + s * (e - e₀) - B)
-    (hcancel : L + λ * s = 0) :
-    H + λ * A = H₀ + λ * A₀ - λ * B := by
+    (hcancel : L + w * s = 0) :
+    H + w * A = H₀ + w * A₀ - w * B := by
   rw [hH, hA]
   calc
-    H₀ + L * (e - e₀) + λ * (A₀ + s * (e - e₀) - B)
-        = H₀ + λ * A₀ + (L + λ * s) * (e - e₀) - λ * B := by
+    H₀ + L * (e - e₀) + w * (A₀ + s * (e - e₀) - B)
+        = H₀ + w * A₀ + (L + w * s) * (e - e₀) - w * B := by
             ring
-    _ = H₀ + λ * A₀ - λ * B := by
+    _ = H₀ + w * A₀ - w * B := by
           rw [hcancel]
           ring
 
 /-- Positive coefficient and positive Bregman defect turn slope cancellation
 into a strict drop from the reference value. -/
 theorem slope_cancelled_positive_defect_strict_drop
-    (H H₀ A A₀ L s e e₀ λ B : ℝ)
+    (H H₀ A A₀ L s e e₀ w B : ℝ)
     (hH : H = H₀ + L * (e - e₀))
     (hA : A = A₀ + s * (e - e₀) - B)
-    (hcancel : L + λ * s = 0)
-    (hλ : 0 < λ)
+    (hcancel : L + w * s = 0)
+    (hw : 0 < w)
     (hB : 0 < B) :
-    H + λ * A < H₀ + λ * A₀ := by
+    H + w * A < H₀ + w * A₀ := by
   have hid := slope_cancelled_bregman_identity
-    H H₀ A A₀ L s e e₀ λ B hH hA hcancel
+    H H₀ A A₀ L s e e₀ w B hH hA hcancel
   rw [hid]
   nlinarith
 
 /-- Two locally selected weights equal one fixed globally selected weight plus
 an exact adaptive-gauge debt. -/
 theorem two_step_adaptive_weight_debt
-    (h₁ h₂ a₁ a₂ λ₁ λ₂ λ : ℝ) :
-    (h₁ + λ₁ * a₁) + (h₂ + λ₂ * a₂)
-      = (h₁ + h₂) + λ * (a₁ + a₂)
-        + (λ₁ - λ) * a₁ + (λ₂ - λ) * a₂ := by
+    (h₁ h₂ a₁ a₂ w₁ w₂ w : ℝ) :
+    (h₁ + w₁ * a₁) + (h₂ + w₂ * a₂)
+      = (h₁ + h₂) + w * (a₁ + a₂)
+        + (w₁ - w) * a₁ + (w₂ - w) * a₂ := by
   ring
 
 /-- Both local terms in the minimal positive-weight counterexample vanish. -/
@@ -74,13 +74,13 @@ theorem positive_adaptive_weights_cancel_each_local_term :
 
 /-- The same two local data leave residual one for every single fixed global
 weight. -/
-theorem every_fixed_global_weight_leaves_residual_one (λ : ℝ) :
-    ((-1 : ℝ) + λ * 1) + (2 + λ * (-1)) = 1 := by
+theorem every_fixed_global_weight_leaves_residual_one (w : ℝ) :
+    ((-1 : ℝ) + w * 1) + (2 + w * (-1)) = 1 := by
   ring
 
 /-- In the minimal counterexample the exact adaptive-gauge debt is `-1`. -/
-theorem minimal_counterexample_gauge_debt (λ : ℝ) :
-    ((1 : ℝ) - λ) * 1 + (2 - λ) * (-1) = -1 := by
+theorem minimal_counterexample_gauge_debt (w : ℝ) :
+    ((1 : ℝ) - w) * 1 + (2 - w) * (-1) = -1 := by
   ring
 
 #print axioms slope_cancelled_bregman_identity
