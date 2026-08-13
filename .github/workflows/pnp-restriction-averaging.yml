@@ -23,15 +23,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/pnp-dualrail-tribes/PNPDualRailTribesFirewall.lean
-          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
-            echo 'Explicit proof hole found'
-            exit 1
-          fi
-          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
-            echo 'Forbidden escape hatch found'
-            exit 1
-          fi
+          for file in verification/pnp-dualrail-tribes/*.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+              echo "Explicit proof hole found in $file"
+              exit 1
+            fi
+            if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+              echo "Forbidden escape hatch found in $file"
+              exit 1
+            fi
+          done
 
       - name: Install pinned Lean
         shell: bash
@@ -55,7 +56,10 @@ jobs:
         working-directory: verification/pnp-dualrail-tribes
         run: |
           set -euo pipefail
-          lake env lean PNPDualRailTribesFirewall.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in PNPDualRailTribesFirewall.lean PNPSliceBlockEncodingFirewall.lean; do
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Placeholder dependency found'
             exit 1
