@@ -73,7 +73,7 @@ theorem corrected_entropy_increment
     (hF : dF = b * dH + sF) :
     dF - bNext * hNew + b * hPrev =
       sF + (b - bNext) * hNew := by
-  rw [hH, hF]
+  rw [hF, hH]
   ring
 
 /-- Positive slack, decreasing weight, and nonnegative current energy make the
