@@ -27,7 +27,7 @@ jobs:
           dir='verification/rh-triple-bregman-public'
           file="$dir/RHTripleBregmanNestingFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='6ed0092e62ea3ee2b8cd63ec37b7e6bdcb1bd101'
+          expected_blob='a963048cef7352c6b31f602f9ee9cbe0d678d671'
           printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected_blob" "$actual_blob" \
             | tee "$dir/source-blob.txt"
           test "$actual_blob" = "$expected_blob"
