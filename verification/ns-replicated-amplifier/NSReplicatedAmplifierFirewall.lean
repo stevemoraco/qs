@@ -11,7 +11,7 @@ field, Fourier packet, Navier–Stokes solution, invariant manifold, or blow-up.
 namespace NSReplicatedAmplifierFirewall
 
 /-- Mean amplitude of two replicated catalyst molecules. -/
-def mean (a b : ℝ) : ℝ := (a + b) / 2
+noncomputable def mean (a b : ℝ) : ℝ := (a + b) / 2
 
 /-- Replica defect transverse to the diagonal one-amplitude line. -/
 def defect (a b : ℝ) : ℝ := a - b
@@ -27,7 +27,7 @@ def synchronizedStep (g κ a b : ℝ) : ℝ × ℝ :=
 theorem replicated_mean (g a b : ℝ) :
     mean (replicatedStep g a b).1 (replicatedStep g a b).2 =
       g * mean a b := by
-  simp [mean, replicatedStep]
+  unfold mean replicatedStep
   ring
 
 /-- BANKER: the transverse replica defect receives exactly the same gain. -/
@@ -52,15 +52,14 @@ theorem zero_sync_cannot_give_strict_relative_contraction
     ¬ defect (replicatedStep g 1 (-1)).1
         (replicatedStep g 1 (-1)).2 ≤ q * (2 * g) := by
   intro h
-  have h' : 2 * g ≤ q * (2 * g) := by
-    simpa [defect, replicatedStep] using h
+  simp [defect, replicatedStep] at h
   nlinarith
 
 /-- CLEANER: synchronization preserves the mean multiplier exactly. -/
 theorem synchronized_mean (g κ a b : ℝ) :
     mean (synchronizedStep g κ a b).1
         (synchronizedStep g κ a b).2 = g * mean a b := by
-  simp [mean, synchronizedStep]
+  unfold mean synchronizedStep
   ring
 
 /-- CLEANER: synchronization changes only the replica-defect multiplier, from
@@ -110,7 +109,12 @@ theorem nonzero_defect_contraction_forces_window
   have hd0 : defect a b ≠ 0 := by
     simpa [defect] using sub_ne_zero.mpr hab
   have hd : 0 < |defect a b| := abs_pos.mpr hd0
-  exact (mul_le_mul_right hd).mp (by simpa [mul_assoc] using hcontract)
+  by_contra hnot
+  have hgt : q * g < |g - 2 * κ| := lt_of_not_ge hnot
+  have hmul :
+      q * g * |defect a b| < |g - 2 * κ| * |defect a b| :=
+    mul_lt_mul_of_pos_right hgt hd
+  exact (not_lt_of_ge hcontract) hmul
 
 /-- Midpoint synchronization kills the two-replica defect in one exact step. -/
 theorem half_gain_synchronization_kills_defect (g a b : ℝ) :
