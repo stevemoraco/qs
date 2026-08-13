@@ -1,0 +1,82 @@
+name: NS Real-Triad Sharp Curve Replay
+
+on:
+  push:
+    branches:
+      - verification/ns-real-triad-sharp-curve-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-real-triad-sharp-curve/**'
+      - '.github/workflows/ns-real-triad-sharp-curve.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject trust escapes and record source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-real-triad-sharp-curve'
+          file="$dir/NSRealTriadSharpCurve.lean"
+          git hash-object "$file" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden custom trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/verification/ns-real-triad-sharp-curve/lean-output.log"
+          version="$GITHUB_WORKSPACE/verification/ns-real-triad-sharp-curve/lean-version.txt"
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.30.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$version"
+          lake --version | tee -a "$version"
+          cd formal/millennium_audit
+          lake update
+          lake exe cache get
+          lake env lean ../../verification/ns-real-triad-sharp-curve/NSRealTriadSharpCurve.lean \
+            2>&1 | tee "$out"
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' "$out"; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          for theorem in \
+            squared_exterior_coordinates_equal \
+            squared_complementary_coordinates_equal \
+            exact_single_channel_curve \
+            exact_aggregate_tradeoff \
+            sharp_exterior_floors \
+            desired_square_le_one \
+            maximal_coupling_forces_half
+          do
+            grep -q "$theorem" "$out"
+          done
+          echo 'VERIFIED finite real-triad sharp curve.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-real-triad-sharp-curve-evidence
+          path: |
+            verification/ns-real-triad-sharp-curve/source-blob.txt
+            verification/ns-real-triad-sharp-curve/source-sha256.txt
+            verification/ns-real-triad-sharp-curve/lean-version.txt
+            verification/ns-real-triad-sharp-curve/lean-output.log
