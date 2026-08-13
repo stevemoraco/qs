@@ -2,6 +2,9 @@ import Mathlib
 
 namespace RHPrimePrefixCocycleThreshold
 
+/-- If `m = q - h/L` and `d=L/2`, the squared comparison defect for the
+prime-prefix arrival threshold factors exactly through
+`h + L^3/(16q)`. -/
 theorem squared_defect_factorization
     {q L h m d : ℝ}
     (hq : q ≠ 0)
@@ -14,6 +17,8 @@ theorem squared_defect_factorization
   field_simp [hq, hL]
   ring
 
+/-- The unique algebraic zero of the squared defect is the tiny negative
+Johnston-kick threshold `-L^3/(16q)`, provided `q,L` are nonzero. -/
 theorem squared_defect_zero_iff
     {q L h m d : ℝ}
     (hq : q ≠ 0)
@@ -34,6 +39,8 @@ theorem squared_defect_zero_iff
     field_simp [hq]
     ring
 
+/-- On the physical prime domain `q>0`, `L>0`, the sign of the squared
+comparison defect is exactly the sign of the shifted cocycle kick. -/
 theorem squared_defect_pos_iff
     {q L h m d : ℝ}
     (hq : 0 < q)
@@ -60,6 +67,7 @@ theorem squared_defect_pos_iff
     have heq : -(L ^ 3) / (16 * q) + L ^ 3 / (16 * q) = 0 := by ring
     linarith
 
+/-- The corresponding negative-sign statement. -/
 theorem squared_defect_neg_iff
     {q L h m d : ℝ}
     (hq : 0 < q)
