@@ -200,6 +200,46 @@ theorem endpointFiber_card_le [Fintype α]
 #print axioms firstSwap_hasEndpoint
 #print axioms endpointFiber_card_le
 
+/-- All words of an exact length over a finite alphabet. -/
+noncomputable def allWords [Fintype α] : Nat → Finset (List α)
+  | 0 => {[]}
+  | k + 1 => by
+      classical
+      exact (Finset.univ : Finset α).biUnion fun a =>
+        (allWords k).image (List.cons a)
+
+@[simp] theorem mem_allWords [Fintype α] (xs : List α) (k : Nat) :
+    xs ∈ allWords (α := α) k ↔ xs.length = k := by
+  classical
+  induction k generalizing xs with
+  | zero =>
+      simp [allWords]
+  | succ k ih =>
+      cases xs with
+      | nil =>
+          simp [allWords]
+      | cons x xs =>
+          simp [allWords, ih]
+
+/--
+The endpoint-fibre injection specialized to the complete q-ary word cube at an
+arbitrary exact length.
+-/
+theorem fullCube_endpointFiber_card_le [Fintype α]
+    (k : Nat) (A : α → Bool) (u v : α)
+    (huv : u ≠ v) (hAu : A u = true) :
+    (endpointFiber (allWords (α := α) k) A).card ≤
+      (endpointFiber (allWords (α := α) k)
+        (toggleEndpoint A u v)).card := by
+  apply endpointFiber_card_le (allWords (α := α) k) A u v huv
+  · intro xs hxs
+    rw [mem_allWords] at hxs ⊢
+    simpa using length_firstSwap u v xs
+  · exact hAu
+
+#print axioms mem_allWords
+#print axioms fullCube_endpointFiber_card_le
+
 /-- The exact coefficient identity in the two-step radial estimate. -/
 theorem radialCoefficientIdentity (q : ℝ) :
     (3 * q - 2) + (q - 1) * (q - 2) = q ^ 2 := by
