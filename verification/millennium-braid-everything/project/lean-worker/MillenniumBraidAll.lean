@@ -1,110 +1,36 @@
 import Mathlib
 
 -- BSD / arithmetic firewalls
-import BSDFittingComparisonBlindness
-import BSDToupinHaarInversionFirewall
 
 -- Hodge / algebraic-cycle firewalls
-import HodgeCorrespondenceDegreeFirewall
-import HodgeInteriorSurjectivityAudit
-import HodgeNeighborhoodBasisFirewall
-import HodgePicardRationalizationFirewall
 import HodgeRationalIntegralFirewall
 
 -- Navier--Stokes constructive bank and hostile audits
-import NSAlphaNineFourthsBackgroundMargin
-import NSAlphaNineFourthsBeltramiMargin
-import NSAlphaNineFourthsMasterPoint
-import NSBandlimitedStressWindow
-import NSBeltramiLinearizedMargin
-import NSBeltramiPolarization
-import NSBlobIntermittencyWindow
-import NSChildStressCapacity
-import NSChildStressTimeGap
-import NSChildStressTransportGap
-import NSDLSColorResonance
-import NSDirectEnvelopeWindow
-import NSDouEVMPConstantFlow
-import NSEnergyPairGate
-import NSFastTimePrincipalFirewall
-import NSFiveDCriticalConcentration
-import NSFixedCoefficientRescaling
-import NSHelicalHighBranchBarrier
-import NSHighFrequencyCoerciveMargin
-import NSHyperbolicCellScaling
-import NSIntermittentStressEnergyMatch
-import NSMicrocellHomogenizationBudget
-import NSNineDirectionStressAlgebra
-import NSNonlinearDepthContraction
-import NSPavesiFluxHomogeneityFirewall
-import NSPositiveStressLift
-import NSPressureCancelTriad
-import NSPressureCancelTriadSidebandFirewall
-import NSRecursiveMicrocellCapacity
-import NSRingDopplerAlgebra
-import NSRingHelicalFeedbackCancellation
-import NSShahmurovDivergenceMismatch
-import NSShahmurovSpectralGapFirewall
-import NSSparseTriadCapacity
-import NSStressStrainGadget
-import NSWKBDepthDiagonal
-import NavierStokesBank
-import NavierStokesClaimAudit
 import NSSelectiveLerayAtom
 
 -- P versus NP uniformity / direct-claim firewalls
-import PNPLeeCertificateObliviousAlignmentFirewall
-import PNPLeeCollapseConverseFirewall
-import PNPLeeGlobalConfigurationFirewall
-import PNPLeeSublemma3EdgeFirewall
-import PNPMcspUniformityAudit
-import PNPPedigreeSpecificationAudit
-import PNPUniformDiagonalExponentFirewall
 import PNPParityWordInjection
 
 -- Perelman completion benchmark / seventh-problem lane
-import PerelmanCompletionGap
 import PerelmanCompletionRouteEquivalenceFirewall
 
 -- Riemann-hypothesis arithmetic coordinates
-import RHDeficitConvexity
-import RHFarrellOperationalCancellationFirewall
-import RHJohnstonPrimeEnergyAlgebra
-import RHLocalDipBank
-import RHPerelmanNoncollapse
-import RHPrimeGapTrapezoidCocycle
-import RHPrimePrefixGapTax
-import RHPrimeRootReduction
-import RHPrimeStaircaseGreen
-import RHPrimeStaircaseTwoState
-import RHPrimorialLocalEntropyNoGo
-import RHSelbergWindowIndefinite
-import RHSuzukiScrewDyadic
-import RHSuzukiSquareRootDescent
-import RHTriangularConcavity
-import RHTriangularConcavityOctaveCollapse
-import RHTriangularSpline
-import RHWeightedChebyshevCancellation
-import RHWeightedDeficitImpulseResponse
 import RHPureSimpleZeroNoCoercivity
 
 -- Cross-problem seventh object
-import SeventhObjectBank
 import SeventhObjectRouteEquivalenceFirewall
-import SeventhObjectSixPrizeBridges
-import SeventhObjectSixPrizeFrontierRoutes
 
 -- Yang--Mills physical-sector / mass-gap firewalls
-import GlimmPetrilloLogCurvatureFirewall
-import YMFlagGaugeOrbitFirewall
-import YMLiuCarlemanDeterminantFirewall
-import YMPositivePotentialGapCounterexample
 import YMJacobsenActivityFirewall
 
 /-!
 # MillenniumBraidAll
 
-Single executable import spine for the current `lean-worker` formal bank.
+Single executable import spine for the fresh-replayed coherent core.
+
+The historical worker corpus is preserved separately and audited by an
+independent module-by-module replay matrix.  A module enters this root only
+after compiling on the pinned toolchain without `sorryAx`.
 
 Compiling this module forces Lean to elaborate every imported theorem module above.
 The declarations below then package the exact logical frontier for:
