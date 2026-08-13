@@ -42,7 +42,7 @@ jobs:
                           f'{p}: forbidden declaration or proof device: {m.group(0)!r}')
           PY
 
-      - name: Install pinned Lean and compile entrypoint
+      - name: Install pinned Lean and build unified library
         run: |
           set -euo pipefail
           curl --proto '=https' --tlsv1.2 -sSf \
@@ -54,7 +54,7 @@ jobs:
           cd verification/millennium-grand-ledger
           lake update
           lake exe cache get
-          lake env lean UnifiedEntrypoint.lean 2>&1 | tee lean-output.log
+          lake build GrandLedger 2>&1 | tee lean-output.log
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
