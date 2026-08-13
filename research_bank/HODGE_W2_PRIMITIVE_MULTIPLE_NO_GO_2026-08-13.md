@@ -138,7 +138,31 @@ target (1.4), for any \(k\ge1\).
 
 ### Proof
 
-Put \(l=c_1(L)\) and
+There is first a cheaper ambient-embedding contradiction. Because the
+primitive multiple scheme is embedded in \(A\), its associated line
+bundle is a quotient of the ambient conormal bundle:
+\[
+ N^*_{S/A}\twoheadrightarrow L. \tag{3.2}
+\]
+The kernel is a line bundle. Since
+\[
+ c_1(N^*)=-K_S,\qquad c_2(N^*)=6,
+\]
+we obtain
+\[
+ l(-K_S-l)=6. \tag{3.3}
+\]
+The degree-three target constraint below forces
+\(l=uD+\alpha\), with \(\alpha\in\operatorname{Pic}^0(S)\). Using
+\(D^2=-3\) and \(D K_S=-1\), equation (3.3) becomes
+\[
+ 3u^2+u=6. \tag{3.4}
+\]
+Its discriminant is \(1+72=73\), not a square. Thus no embedded
+primitive target exists already from the conormal quotient and the
+degree-three constraint.
+
+For an independent degree-four audit, put \(l=c_1(L)\) and
 \[
  A_m=\frac{m(m-1)}2,\qquad
  B_m=\frac{m(m-1)(2m-1)}6.
@@ -146,27 +170,27 @@ Put \(l=c_1(L)\) and
 Equation (3.1) gives
 \[
  c_1(E)=A_m l,\qquad
- \operatorname{ch}_2(E)=\frac{B_m}{2}l^2. \tag{3.2}
+ \operatorname{ch}_2(E)=\frac{B_m}{2}l^2. \tag{3.5}
 \]
 Because \(A_m\ne0\), (2.4), the torsion-free Neron--Severi lattice,
 and (1.3) imply
 \[
  l=uD+\alpha,\qquad u\in\mathbb Z,\quad
- \alpha\in\operatorname{Pic}^0(S). \tag{3.3}
+ \alpha\in\operatorname{Pic}^0(S). \tag{3.6}
 \]
 Using (1.2), the left side of (2.5) becomes
 \[
  \frac{B_m}{2}l^2-\frac{A_m}{2}lK_S
  =
- -\frac{m(m-1)}4\bigl((2m-1)u^2-u\bigr). \tag{3.4}
+ -\frac{m(m-1)}4\bigl((2m-1)u^2-u\bigr). \tag{3.7}
 \]
 The right side of (2.5) is
 \[
- m(1-m)=-m(m-1). \tag{3.5}
+ m(1-m)=-m(m-1). \tag{3.8}
 \]
 Cancelling the nonzero factor yields the exact Diophantine gate
 \[
- (2m-1)u^2-u=4. \tag{3.6}
+ (2m-1)u^2-u=4. \tag{3.9}
 \]
 
 Here \(m=24k\ge24\). If \(u=0\), the left side is zero. If \(u\ge1\),
@@ -204,7 +228,7 @@ supply the negative Euler characteristic while keeping the correct
 lower Chern terms.
 
 **Critic.** Primitive gluing does not alter the \(K\)-class geometric
-series (3.1). GRR reduces every such attempt to (3.6), which has no
+series (3.1). The conormal quotient gives the nonsquare discriminant (3.4), while GRR independently reduces every such attempt to (3.9), which has no
 integer solution at multiplicity \(24k\).
 
 **Rebuilder.** The remaining \(W_2\) lane is sharply localized:
