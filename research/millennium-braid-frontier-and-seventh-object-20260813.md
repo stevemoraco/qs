@@ -36,18 +36,18 @@ it identifies the first load-bearing arrow and makes that arrow falsifiable.
 ## 2. Clean finite kernel receipts
 
 The exact five-source verifier is `stevemoraco/qs` PR #310.  Canonical replay
-commit `2b4d9ae47588b54c09c9a72c8572339f771c0e59`, push run/job
-`31720503044/94515997035` and independent PR run/job
-`31720507111/94516010357`, succeeded under Lean 4.32.1 and Mathlib
-`520045ab14e26149ee970e2e617ca04b09bde5d6`.  All 39 requested axiom reports
+commit `81af348941b4872b76ccb914ef374cb456d4e59d`, push run/job
+`31732412037/94555799093` and independent PR run/job
+`31732415904/94555810341`, succeeded under Lean 4.32.1 and Mathlib
+`520045ab14e26149ee970e2e617ca04b09bde5d6`.  All 40 requested axiom reports
 use only `propext`, `Quot.sound`, and `Classical.choice`; no `sorryAx` occurs.
 The durable receipt is qs commit
-`a15c7a664d707797779faf880b721d7c22ef1518`.
+`1abee1c491de0614ed46774612911e121a760ba1`.
 
 | lane | exact finite core | kernel-output SHA-256 | formal boundary |
 |---|---|---|---|
 | RH | RH-Lean #992 head `5293b4f170a84db5aa7ff3a41167c3308842743e` | `0f28361ce6a36a1b0aad5af5f0c2618ca9da524ce79eda6bdbc7506f853bb2ab` | real-scalar Schur identity and residual bookkeeping only |
-| RH operator | RH-Lean #1086 head `aaf246a1732cd961e527f09ca25f2643cd2f6c82` | `782e2a9970680ac022efc849c294ec838ce0cbb72b1cd0e4614cedb626bd9efa` | symmetric real-inner-product-space residual identity only |
+| RH operator | RH-Lean #1086 head `9641a09ecd8da0ed608165078249fed1ab0cef02` | `c8130edd5cb4ad2aa9122d7fc525da9180f6b3d67ac2c83331d4d7e32678fa60` | symmetric residual identity and coercive residual penalty only |
 | Hodge | RH-Lean #928 head `31f5af6962198314c8d3afe5112ffdc4491d7495` | `668beec66131039858fb1919eb164a08edbcc720326d19d5da869b593c7eb31c` | finite coefficient recurrence only |
 | Navier--Stokes | RH-Lean #976 head `9a0b837a6455df07e22a6a89b011a9bc1cb0150e` | `45fd1bfe133030ce199541b446e44b0fbad8f9573e30c2e0d87a1eb28c6befb6` | finite scalar octagon ledger/tangent obstruction only |
 | Yang--Mills | RH-Lean #983 head `46455556507ee0878388c51ad6f048c3f6966674` | `e693c3d4999093cbb8f342619a743f36b49d730f1f81c87ff355b096c057fca8` | scalar consequences of assumed spectral budgets only |
@@ -81,6 +81,20 @@ Q(y)-Q(z) = <D(y-z),y-z> + 2 <Dz-b,y-z>.
 For symmetric `D`, an exact range witness `Dz=b` removes the last term; if
 `D` is nonnegative, `z` is a minimizer.  This assumes no completeness or
 coercivity, but it also proves no range, uniqueness, or residual stability.
+With the additional quantitative floor
+
+```text
+mu ||x||^2 <= <Dx,x>,   mu>0,
+```
+
+the verified operator core also proves the exact residual penalty
+
+```text
+Q(y)-Q(z) >= -||Dz-b||^2/mu.
+```
+
+This is the correct approximate-solve bridge; it still assumes the coercive
+floor rather than constructing it for the Weil operator.
 
 **Critic.**  Dropping the residual is false already for
 `A=1`, `B=sqrt(1+epsilon)`, `D=1`, `y=0`: the completed square is `1` while
@@ -109,11 +123,19 @@ normalization, but the current repository does not implement the map to
 `A_n,B_n,D_n`.  A hostile reconstruction shows that Suzuki Theorem 4.3 is
 effectivizable in principle: its low-frequency leakage is explicitly
 `O(1/N)`, and the remaining zeta, kernel and digamma constants can be bounded.
-No numerical extraction or typed identification with the odd primitive
-coordinates is implemented, and the bound may be impractically large.  The
-genuinely absent estimate is the infinite omitted-row residual tail.  A finite
-high-block eigenvalue and finitely many residual rows cannot substitute: an
-unseen row can reverse the Schur sign even when `D=I`.
+No numerical extraction of the coercive floor is implemented, and the bound
+may be impractically large.  The infinite omitted-row interface is now closed
+at fixed parameters by the independently audited human theorem
+
+```text
+|H_jl(a)| <= l K_l(a)/(a j),
+```
+
+with an explicit Frobenius/operator estimate for every row `j>M`.  This does
+not close the cofinal arrow: `K_l(a)=2 pi a l+O_a(1)`, so the resulting
+`M^(-1/2)` estimate need not vanish without a weighted decay theorem for the
+computed Schur rows `Y_l`.  A finite high-block eigenvalue and finitely many
+residual rows still cannot substitute for that theorem.
 The Connes/prolate lane has stronger numerical motivation but the same missing
 proof-grade continuum/complement certificate, together with strip-amplified
 approximation error.  It does not presently outrank this ticket.
