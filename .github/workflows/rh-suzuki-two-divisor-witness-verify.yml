@@ -1,0 +1,139 @@
+name: RH Suzuki two-divisor witness core verification
+
+on:
+  push:
+    branches:
+      - agent/rh-suzuki-two-divisor-witness-public-20260813
+    paths:
+      - 'verification/rh-suzuki-two-divisor-witness/**'
+      - '.github/workflows/rh-suzuki-two-divisor-witness-verify.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-suzuki-two-divisor-witness/**'
+      - '.github/workflows/rh-suzuki-two-divisor-witness-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Audit exact source blob and forbidden trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='verification/rh-suzuki-two-divisor-witness/RHSuzukiTwoDivisorWitnessCore.lean'
+          EXPECTED_BLOB='10d8483c0da9c57dd12088f9db468df7ac9b8aa3'
+          ACTUAL_BLOB="$(git hash-object "$SRC")"
+          printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          sha256sum "$SRC" | tee source-sha256.txt
+
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$SRC"; then
+            echo 'Forbidden proof hole detected.' >&2
+            exit 1
+          fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$SRC"; then
+            echo 'Forbidden custom trust declaration detected.' >&2
+            exit 1
+          fi
+          if grep -nE '\b(native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'Forbidden native/oracle shortcut detected.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.32.1
+          "$HOME/.elan/bin/lean" --version | tee lean-version.txt
+
+      - name: Fetch pinned Mathlib cache
+        shell: bash
+        working-directory: verification/rh-suzuki-two-divisor-witness
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile exact source and emit axiom reports
+        shell: bash
+        working-directory: verification/rh-suzuki-two-divisor-witness
+        run: |
+          set -euo pipefail
+          lake env lean RHSuzukiTwoDivisorWitnessCore.lean 2>&1 | tee lean-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables' lean-output.log; then
+            echo 'Lean compiler or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+
+      - name: Audit all requested axiom reports
+        shell: bash
+        working-directory: verification/rh-suzuki-two-divisor-witness
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('lean-output.log').read_text()
+          names = [
+              'RHSuzukiTwoDivisorWitnessCore.im_eq_zero_of_tendsto_real',
+              'RHSuzukiTwoDivisorWitnessCore.hasOnlyRealZeros_of_zeroWitnesses',
+              'RHSuzukiTwoDivisorWitnessCore.target_zeroFree_of_zeroFree_and_zeroWitnesses',
+              'RHSuzukiTwoDivisorWitnessCore.constant_one_cannot_transfer_zeros_to_identity',
+              'RHSuzukiTwoDivisorWitnessCore.hasOnlyRealDivisor_of_twoWitnesses',
+              'RHSuzukiTwoDivisorWitnessCore.spectralCoordinate_im',
+              'RHSuzukiTwoDivisorWitnessCore.criticalLine_of_real_spectralCoordinate',
+              'RHSuzukiTwoDivisorWitnessCore.criticalLine_of_zeroWitnesses',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          report = []
+          for name in names:
+              marker = f"'{name}' depends on axioms:"
+              start = text.find(marker)
+              if start < 0:
+                  raise SystemExit(f'missing #print axioms report for {name}')
+              tail = text[start + len(marker):]
+              next_marker = tail.find("'RHSuzukiTwoDivisorWitnessCore.")
+              block = tail if next_marker < 0 else tail[:next_marker]
+              deps = set(re.findall(r'\b(?:propext|Classical\.choice|Quot\.sound|[A-Za-z_][A-Za-z0-9_.]*Ax[A-Za-z0-9_.]*)\b', block))
+              forbidden = deps - allowed
+              if forbidden:
+                  raise SystemExit(f'forbidden axiom(s) for {name}: {sorted(forbidden)}')
+              report.append(f'{name}: {sorted(deps)}')
+          Path('axiom-report.txt').write_text('\n'.join(report) + '\n')
+          print('\n'.join(report))
+          PY
+
+      - name: Collect replay receipt
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          mkdir -p replay-receipt
+          cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
+          cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp lean-version.txt replay-receipt/ 2>/dev/null || true
+          cp verification/rh-suzuki-two-divisor-witness/lean-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/rh-suzuki-two-divisor-witness/axiom-report.txt replay-receipt/ 2>/dev/null || true
+          git rev-parse HEAD | tee replay-receipt/commit.txt
+          git status --porcelain=v1 | tee replay-receipt/git-status.txt
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-suzuki-two-divisor-witness-replay-${{ github.sha }}
+          path: replay-receipt
+          if-no-files-found: error
+          retention-days: 90
