@@ -31,7 +31,7 @@ jobs:
           dir='verification/ns-ri-frequency-multiplicity'
           file="$dir/NSRiFrequencyMultiplicity.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='e7ce618bec53aed736e266888847d9ef4c02f181'
+          expected_blob='aad34602f899293663aeffcda1ebdb6e15f4e652'
           test "$actual_blob" = "$expected_blob"
           printf 'source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
