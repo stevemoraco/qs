@@ -23,7 +23,8 @@ theorem both_divergence_laws_force_radial_zero
     (h3 : div3 drUr ur r dzUz = 0)
     (h5 : div5 drUr ur r dzUz = 0) :
     ur = 0 := by
-  unfold div3 div5 at h3 h5
+  unfold div3 at h3
+  unfold div5 at h5
   field_simp [hr] at h3 h5
   linarith
 
@@ -32,7 +33,8 @@ theorem five_divergence_gives_physical_defect
     (hr : r ≠ 0)
     (h5 : div5 drUr ur r dzUz = 0) :
     div3 drUr ur r dzUz = -2 * ur / r := by
-  unfold div3 div5 at *
+  unfold div5 at h5
+  unfold div3
   field_simp [hr] at h5 ⊢
   linarith
 
