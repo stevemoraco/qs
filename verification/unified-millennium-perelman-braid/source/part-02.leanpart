@@ -1,0 +1,91 @@
+      status := .finiteCoresOnly
+      finiteBank := "probe, Wilson, chirality, scale, and spectral firewalls"
+      missingBridge := "regulator-uniform OS reconstruction with a physical mass gap" }
+  , { prize := .poincarePerelman
+      status := .humanTheoremNotKernelImported
+      finiteBank := "slot reserved for the accepted Ricci-flow theorem"
+      missingBridge := "an end-to-end Lean formalization of Perelman's proof" } ]
+
+#eval currentLedger
+
+theorem currentLedger_length : currentLedger.length = 7 := by
+  rfl
+
+/-! ## The seventh object and its inversion -/
+
+structure ScaleObject where
+  good : Nat → Prop
+
+namespace ScaleObject
+
+def Seeded (C : ScaleObject) : Prop := C.good 0
+
+def Propagates (C : ScaleObject) : Prop :=
+  ∀ n : Nat, C.good n → C.good (n + 1)
+
+def AllScales (C : ScaleObject)) : Prop :=
+  ∀ n : Nat, C.good n
+
+theorem allScales_of_seed_and_propagates
+    (C : ScaleObject)
+    (hseed : C.Seeded)
+    (hstep : C.Propagates) :
+    C.AllScales := by
+  intro n
+  induction n with
+  | zero => exact hseed
+  | succ n ih =>
+      simpa [Nat.succ_eq_add_one] using hstep n ih
+
+/-- Contrapositive localization of a failed native target. -/
+theorem inversion
+    (C : ScaleObject)
+    (Goal : Prop)
+    (nativeBridge : C.AllScales → Goal)
+    (hGoal : ¬ Goal) :
+    ¬ C.Seeded ∨ ∃ n : Nat, C.good n ∧ ¬ C.good (n + 1) := by
+  classical
+  by_cases hseed : C.Seeded
+  · right
+    by_contra htransition
+    apply hGoal
+    apply nativeBridge
+    apply C.allScales_of_seed_and_propagates hseed
+    intro n hn
+    by_contra hnext
+    exact htransition ⟨n, hn, hnext⟩
+  · exact Or.inl hseed
+
+def constant (P : Prop) : ScaleObject where
+  good := fun _ => P
+
+theorem constant_seeded {P : Prop} (hP : P) :
+    (constant P).Seeded := hP
+
+theorem constant_propagates (P : Prop) :
+    (constant P).Propagates := by
+  intro n hn
+  exact hn
+
+theorem constant_allScales {P : Prop} (hP : P) :
+    (constant P).AllScales := by
+  intro n
+  exact hP
+
+theorem constant_nativeBridge (P : Prop) :
+    (constant P).AllScales → P := by
+  intro h
+  exact h 0
+
+end ScaleObject
+
+structure CandidateBraid where
+  goal : Prize → Prop
+  object : Prize → ScaleObject
+  nativeBridge : ∀ p : Prize, (object p).AllScales → goal p
+
+namespace CandidateBraid
+
+theorem prizeInversion
+    (B : CandidateBraid)
+    (p : Prize)
