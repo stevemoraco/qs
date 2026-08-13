@@ -167,22 +167,60 @@ give nonzero cross-Homs. Perry's semiregularity deformation theorem requires
 \(\operatorname{Ext}^{<0}=0\), so (4), (10), and (13) fail before any
 semiregularity calculation.
 
+There is also an exact firewall against coupling the two summands in the
+actual ample complete-intersection geometry. Put
+\[
+ J=I_ZL_1L_2
+\]
+and let \(q:N\twoheadrightarrow J\) be (9). Since \(X\) is normal and
+\(J\) is rank-one torsion-free with reflexive hull \(L_1L_2\),
+\[
+ \mathcal End(J)=\mathcal O_X.
+\]
+If \(f:J\to N\), the composite \(qf\) is a global regular scalar.
+The connecting map for (9) sends that scalar to the scalar multiple of the
+nonzero extension class. On a connected projective \(X\), it follows that
+\[
+ qf=0. \tag{15}
+\]
+Thus every such \(f\) factors through \(\mathcal O_Z\hookrightarrow N\);
+in particular it is generically zero. This factorization alone does not
+imply that global negative Ext survives: a generically rank-one negative
+Ext sheaf can have no global sections.
+
+For the theta complete intersections at issue here, however, the factor is
+zero. Regularity gives
+\[
+ I_Z/I_Z^2\simeq L_1^{-1}|_Z\oplus L_2^{-1}|_Z,
+\]
+hence
+\[
+ \operatorname{Hom}(J,\mathcal O_Z)
+ \simeq
+ H^0\!\left(Z,L_1^{-1}|_Z\oplus L_2^{-1}|_Z\right)=0 \tag{16}
+\]
+when \(L_1,L_2\) are ample and \(Z\) is a positive-dimensional reduced
+complete intersection. Therefore \(f=0\) in the actual theta setup:
+no internal differential \(J\to N\) can remove the split
+\(\operatorname{Ext}^{-1}\) class.
+
 Second, the homotopy (6) is a stalkwise statement. Local trivializations of
 \(L_1,L_2\) need not glue the homotopies globally; line-bundle Atiyah
 classes can leave a higher local-to-global component of the characteristic
 action. No global vanishing of
 \(\operatorname{HH}^2(X)\to\operatorname{Ext}^2(Q_Z,Q_Z)\) is claimed.
 
-Finally, turning on the canonical quotient as the differential in
+Finally, the opposite-orientation two-term complex
 \[
- [N\longrightarrow I_ZL_1L_2] \tag{15}
+ [N\xrightarrow{q} I_ZL_1L_2] \tag{17}
 \]
-makes (15) quasi-isomorphic to \(\mathcal O_Z\) by (9). This kills the
-obvious negative-Ext defect, but it also returns to the ordinary
-complete-intersection object and its nontrivial local
+is quasi-isomorphic to \(\mathcal O_Z\) by (9). It has the same K-class,
+but it is not an internal differential \(J\to N\) on the graded object
+(10). It kills the obvious negative-Ext defect only by returning to the
+ordinary complete-intersection object and its nontrivial local
 \(ds\wedge dt\) Atiyah square. Any successful repair must find a
-different nonsplit differential or extension that simultaneously kills
-negative Ext, preserves the K-class, and retains the local nullhomotopy.
+different nonsplit architecture that simultaneously kills negative Ext,
+preserves the K-class, and retains the local nullhomotopy.
 
 ## 6. Claim, critic, salvage
 
