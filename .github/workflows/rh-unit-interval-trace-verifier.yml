@@ -1,0 +1,135 @@
+name: Verify RH unit-interval sampling trace
+
+on:
+  push:
+    branches:
+      - agent/rh-unit-interval-trace-verifier-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/rh-unit-interval-trace/RHUnitIntervalTrace.lean
+          EXPECTED=49eded5d2bf7db29530d3d8aff3379576c7dfd4c30f5add777759cdcc07b3bd6
+          ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
+          test "$ACTUAL" = "$EXPECTED"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh-unit-interval-trace/RHUnitIntervalTrace.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          if 'Lean.ofReduceBool' in text or 'native_decide' in text:
+              raise SystemExit('forbidden source token')
+          if text.count('#print axioms') != 4:
+              raise SystemExit('expected exactly four staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30 and preserve raw response
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/rh-unit-interval-trace/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          out = pathlib.Path('verification/rh-unit-interval-trace/evidence/axle-response.json')
+          source = pathlib.Path(
+              'verification/rh-unit-interval-trace/RHUnitIntervalTrace.lean'
+          ).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': []},
+                  'failed_declarations': [],
+              }
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/rh-unit-interval-trace/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_sha256=$(sha256sum verification/rh-unit-interval-trace/RHUnitIntervalTrace.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact compiler evidence before verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-unit-interval-trace-evidence
+          path: verification/rh-unit-interval-trace/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler and postcompile trust verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          p = pathlib.Path('verification/rh-unit-interval-trace/evidence/axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response evidence')
+          result = json.loads(p.read_text())
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or lean_warnings or tool_errors or failed:
+              raise SystemExit('Lean/AXLE verification failed or warned; inspect uploaded response artifact')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED WARNING-FREE: exact RH unit-interval trace source compiled under AXLE Lean 4.30')
+          PY
