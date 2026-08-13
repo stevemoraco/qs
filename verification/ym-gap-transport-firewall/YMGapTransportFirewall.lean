@@ -52,9 +52,9 @@ theorem lower_order_does_not_imply_upper_order :
 /-- The correct transfer-gap arithmetic starts from upper domination of the
 excited transfer eigenvalue. -/
 theorem upper_order_gap_salvage
-    (λFine λCoarse ε : ℝ)
-    (hupper : λCoarse ≤ λFine + ε) :
-    1 - λFine - ε ≤ 1 - λCoarse := by
+    (fineEig coarseEig ε : ℝ)
+    (hupper : coarseEig ≤ fineEig + ε) :
+    1 - fineEig - ε ≤ 1 - coarseEig := by
   linarith
 
 /-- One finite defect can exhaust the whole initial gap while satisfying the
@@ -142,7 +142,7 @@ theorem nonnegative_gap_does_not_bound_exponential :
   intro h
   have hbad := h 1 2 (by norm_num) (by norm_num)
   have hbad' : Real.exp 2 ≤ Real.exp 1 := by
-    simpa using hbad
+    simpa only [one_mul] using hbad
   have hstrict : Real.exp 1 < Real.exp 2 :=
     Real.exp_lt_exp.mpr (by norm_num)
   exact (not_le_of_gt hstrict) hbad'
