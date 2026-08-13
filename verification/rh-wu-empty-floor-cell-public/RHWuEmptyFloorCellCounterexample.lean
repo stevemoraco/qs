@@ -8,7 +8,8 @@ used in Wu 2026 v4, Lemma 9. -/
 theorem floor_three_ne_two
     (k : ℕ) (hk1 : 1 ≤ k) (hk3 : k ≤ 3) :
     3 / k ≠ 2 := by
-  interval_cases k <;> norm_num at *
+  have hk : k = 1 ∨ k = 2 ∨ k = 3 := by omega
+  rcases hk with rfl | rfl | rfl <;> norm_num
 
 /-- The claimed positive lower bound for the N=3,m=2 floor cell reduces to
 `0 ≥ 1/4`, which is false. -/
@@ -22,7 +23,8 @@ theorem empty_fiber_cannot_fund_positive
     {α : Type*} [DecidableEq α]
     (w : α → ℚ) (c : ℚ) (hc : 0 < c) :
     ¬ (∑ x ∈ (∅ : Finset α), w x) ≥ c := by
-  simp [hc.not_le]
+  simp only [Finset.sum_empty]
+  exact not_le_of_gt hc
 
 #print axioms floor_three_ne_two
 #print axioms zero_not_ge_quarter
