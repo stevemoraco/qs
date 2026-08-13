@@ -34,28 +34,60 @@ Its quotient would have rank two. Hence the Chern classes
 \(c_3(E_{\mathrm{acc}})\) and \(c_4(E_{\mathrm{acc}})\) would vanish.
 Direct multiplication gives instead
 \[
- c_3(E_{\mathrm{acc}})=432x^3,qquad
+ c_3(E_{\mathrm{acc}})=432x^3,\qquad
  c_4(E_{\mathrm{acc}})=432x^4. \tag{4}
 \]
 Thus (2) cannot be a strict monad.
 
-This does not kill (2) as a derived architecture. A generic sheaf-injective
-\(\alpha\) has an expected rank-drop curve of Thom--Porteous class
+This does not kill (2) as a derived architecture, but the monad
+incidence changes the expected defect. Write
 \[
- c_3(E_{\mathrm{acc}})=432x^3. \tag{5}
+ \beta' : L^{-2}\oplus3L^2\longrightarrow L^4
 \]
-Meanwhile the extra component \(L^{-5}\to L^4\) can in
-principle make \(\beta\) surjective even where the restricted map
-\(L^{-2}\oplus3L^2\to L^4\) vanishes. However, \(\alpha\) and
-\(\beta\) cannot be chosen independently: the incidence equation
+for the restriction of \(\beta\). Since \(\alpha\) has zero
+\(L^{-5}\)-component, the equation
 \[
- \beta\alpha=0 \tag{5a}
+ \beta\alpha=0 \tag{5}
 \]
-forces the image of \(\alpha\) into the kernel of \(\beta\).
-No nonempty-incidence or simultaneous genericity theorem is asserted.
-Subject to this unresolved constraint, a rank-two reflexive cohomology
-sheaf, singular along a curve, remains a live possibility. Its existence,
-stability, simplicity, and Hochschild evaluation are not proved.
+is exactly \(\beta'\alpha=0\). On the open locus where \(\beta'\) is
+surjective, \(\alpha\) therefore factors through the rank-three bundle
+\[
+ K'=\ker\beta'.
+\]
+After tensoring by \(L^4\),
+\[
+ c(K'\otimes L^4)
+ =\frac{(1+2x)(1+6x)^3}{1+8x}
+ =1+12x+48x^2+48x^3+48x^4. \tag{6}
+\]
+Thus a generic map
+\[
+ \mathcal O_X^2\longrightarrow K'\otimes L^4
+\]
+has expected rank-one degeneracy in codimension two, with
+Thom--Porteous class
+\[
+ \boxed{48x^2}. \tag{7}
+\]
+The expected defect is a surface, not a curve.
+
+The map \(\beta'\) itself fails surjectivity where its four coefficient
+sections vanish. Its expected zero-cycle class is
+\[
+ c_4(L^6\oplus3L^2)=48x^4, \tag{8}
+\]
+which has length \(48\int_Xx^4=1152\) under the principal-polarization
+normalization. The additional component
+\(L^{-5}\to L^4\), a section of \(L^9\), can in principle make the
+full \(\beta\) surjective at those points.
+
+None of these separate genericity statements proves the simultaneous
+incidence locus is nonempty. Subject to \(\beta\alpha=0\), full
+surjectivity of \(\beta\), and the required grade and saturation
+conditions, the surviving object is expected to be a rank-two
+torsion-free cohomology sheaf with a codimension-two surface defect. It is
+not expected to be reflexive. Its existence, stability, simplicity, and
+Hochschild evaluation remain open.
 
 ## 2. Rank-three class
 
@@ -86,7 +118,7 @@ For \(c=4\), the accessible right map is
 A bundle surjection would have rank-three kernel and therefore force the
 degree-four Chern class of the virtual quotient to vanish. But
 \[
- c_4\!left(4L^5-(6L\oplus L^3)\right)=51x^4\ne0. \tag{7}
+ c_4\!\left(4L^5-(6L\oplus L^3)\right)=51x^4\ne0. \tag{7}
 \]
 
 For \(c=5\), a bundle surjection
@@ -95,7 +127,7 @@ For \(c=5\), a bundle surjection
 \]
 would have rank-two kernel. Yet
 \[
- c\!left((6L\oplus L^3)-5L^5\right)
+ c\!\left((6L\oplus L^3)-5L^5\right)
  =1-16x+183x^2-1760x^3+15200x^4, \tag{8}
 \]
 whose nonzero \(c_3\) already contradicts rank two.
@@ -111,12 +143,12 @@ complexes carrying extra cohomology, remain open.
 strict vector-bundle monad.
 
 **Critic.** The obstruction uses constant fiber rank. It does not rule out
-maps that are injective as sheaf morphisms but drop rank on a curve or
-finite locus.
+maps that are injective as sheaf morphisms but drop rank on a surface or a smaller locus.
 
-**Best salvage.** The rank-two identity naturally produces a
-curve-singular reflexive candidate with the correct K-class. Construct its
-maps explicitly, then test reflexivity, simplicity, and the full trace-free
-Hochschild action before attempting to pair it with a rank-three candidate.
+**Best salvage.** The rank-two identity points to a surface-defect torsion-free candidate
+with the correct K-class. Construct simultaneous maps satisfying
+\(\beta\alpha=0\), prove the expected grade and saturation, and then test
+simplicity and the full trace-free Hochschild action before attempting to
+pair it with a rank-three candidate.
 
 No exceptional Hodge class and no Millennium theorem is proved here.
