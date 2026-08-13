@@ -54,10 +54,10 @@ theorem cauchy_term_cross_monotone
 /-- Substituting a sharper nonnegative packing bound can only reduce the
 selector multiplier constant. -/
 theorem sharper_packing_reduces_selector_constant
-    (local sharp coarse : ℝ)
-    (hlocal : 0 ≤ local)
+    (localConstant sharp coarse : ℝ)
+    (hlocal : 0 ≤ localConstant)
     (hsharp : sharp ≤ coarse) :
-    local * sharp ≤ local * coarse := by
+    localConstant * sharp ≤ localConstant * coarse := by
   exact mul_le_mul_of_nonneg_left hsharp hlocal
 
 /-- A proved stronger lower floor automatically implies every weaker floor. -/
