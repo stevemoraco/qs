@@ -200,4 +200,36 @@ theorem endpointFiber_card_le [Fintype α]
 #print axioms firstSwap_hasEndpoint
 #print axioms endpointFiber_card_le
 
+/-- The exact coefficient identity in the two-step radial estimate. -/
+theorem radialCoefficientIdentity (q : ℝ) :
+    (3 * q - 2) + (q - 1) * (q - 2) = q ^ 2 := by
+  ring
+
+/--
+Cleared-denominator arithmetic firewall for the odd-slice step.
+
+The recurrence and radial estimate remain explicit hypotheses. This theorem proves
+that they imply monotonicity; it does not assume either combinatorial bridge.
+-/
+theorem oddSliceStep {q pNext pOne pThree : ℝ}
+    (hq : 0 < q)
+    (hrec :
+      q ^ 2 * pNext = (3 * q - 2) * pOne + 6 * pThree)
+    (hrad :
+      6 * pThree ≤ (q - 1) * (q - 2) * pOne) :
+    pNext ≤ pOne := by
+  have hq2 : 0 < q ^ 2 := pow_pos hq 2
+  have hbound : q ^ 2 * pNext ≤ q ^ 2 * pOne := by
+    rw [hrec]
+    calc
+      (3 * q - 2) * pOne + 6 * pThree
+          ≤ (3 * q - 2) * pOne +
+              (q - 1) * (q - 2) * pOne :=
+        add_le_add_left hrad _
+      _ = q ^ 2 * pOne := by ring
+  exact (mul_le_mul_left hq2).mp hbound
+
+#print axioms radialCoefficientIdentity
+#print axioms oddSliceStep
+
 end PNPParityWordInjection
