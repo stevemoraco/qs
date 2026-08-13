@@ -121,10 +121,10 @@ theorem increasing_weighted_toll_lower_bound
       Finset.sum_le_sum hpoint
 
 /-- A simple adverse state on the unbounded translation orbit. -/
-def adverseState (x : ℝ) : ℝ := -1 + 1 / (x + 2)
+noncomputable def adverseState (x : ℝ) : ℝ := -1 + 1 / (x + 2)
 
 /-- The exact positive step toll for `x ↦ x+1`. -/
-def adverseToll (x : ℝ) : ℝ := 1 / ((x + 2) * (x + 3))
+noncomputable def adverseToll (x : ℝ) : ℝ := 1 / ((x + 2) * (x + 3))
 
 /-- The adverse state satisfies an exact strict-toll recurrence. -/
 theorem adverse_step_identity
