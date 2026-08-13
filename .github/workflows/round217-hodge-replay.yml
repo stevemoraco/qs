@@ -3,10 +3,27 @@ name: Round217 Hodge replay
 on:
   push:
     branches: [agent/round217-hodge-replay]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/round217-hodge
+          auto-config: false
+          build: true
+          test: false
+          lint: false
+          leanchecker: true
+          nanoda: false
+          use-github-cache: false
+          use-mathlib-cache: true
