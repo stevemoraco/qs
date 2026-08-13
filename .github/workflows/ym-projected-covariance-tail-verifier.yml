@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_projected_covariance_tail/YMProjectedCovarianceTail.lean
-          EXPECTED_BLOB=82d1fa09624b1cefb33a9aaf56113224bc236bec
+          EXPECTED_BLOB=75414fed7fc4c1c745d8b902c53f07605d0e9acb
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'

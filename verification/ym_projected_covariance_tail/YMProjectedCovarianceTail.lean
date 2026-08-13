@@ -1,3 +1,4 @@
+-- Exact finite firewall; no Yang--Mills continuum claim.
 import Mathlib
 
 namespace YMProjectedCovarianceTail
