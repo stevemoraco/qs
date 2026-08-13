@@ -25,13 +25,13 @@ theorem halfTurn_preserves_sqNorm (v : ℝ × (ℝ × ℝ)) :
 theorem witness_not_fixed : halfTurn witness ≠ witness := by
   norm_num [halfTurn, witness]
 
-theorem witness_defect :
-    halfTurn witness - witness = ((-2 : ℝ), ((0 : ℝ), (0 : ℝ))) := by
+theorem witness_defect_first : (halfTurn witness - witness).1 = (-2 : ℝ) := by
   norm_num [halfTurn, witness]
 
 theorem constant_not_covariantly_constant : halfTurn witness - witness ≠ 0 := by
-  rw [witness_defect]
-  norm_num
+  intro h
+  have hfirst := congrArg Prod.fst h
+  norm_num [halfTurn, witness] at hfirst
 
 theorem constancy_does_not_force_kernel :
     ∃ (A : (ℝ × (ℝ × ℝ)) → (ℝ × (ℝ × ℝ))) (v : ℝ × (ℝ × ℝ)),
@@ -47,7 +47,7 @@ theorem constancy_does_not_force_kernel :
 #print axioms halfTurn_involutive
 #print axioms halfTurn_preserves_sqNorm
 #print axioms witness_not_fixed
-#print axioms witness_defect
+#print axioms witness_defect_first
 #print axioms constant_not_covariantly_constant
 #print axioms constancy_does_not_force_kernel
 
