@@ -1,151 +1,209 @@
 import Mathlib
 
 namespace Millennium
-namespace UnifiedPass3
+namespace UnifiedPass1
 
-namespace HodgeCore
+structure OpenTargets where
+  RH : Prop
+  PNeNP : Prop
+  BSD : Prop
+  Hodge : Prop
+  NavierStokes : Prop
+  YangMills : Prop
 
-theorem cycle_compatible_transfer
-    {ZX ZY HX HY : Type} (clX : ZX → HX) (clY : ZY → HY)
-    (includeH : HY → HX) (projectH : HX → HY) (projectZ : ZX → ZY)
-    (alpha : HY) (hsection : projectH (includeH alpha) = alpha)
-    (hcompat : ∀ z, projectH (clX z) = clY (projectZ z))
-    (hnon : alpha ∉ Set.range clY) : includeH alpha ∉ Set.range clX := by
-  rintro ⟨z, hz⟩
-  apply hnon
-  refine ⟨projectZ z, ?_⟩
-  calc
-    clY (projectZ z) = projectH (clX z) := (hcompat z).symm
-    _ = projectH (includeH alpha) := by rw [hz]
-    _ = alpha := hsection
+namespace OpenTargets
 
-theorem projector_exhaustion
-    {Z H : Type} (cl : Z → H) (pH : H → H) (pZ : Z → Z) (alpha : H)
-    (hfix : pH alpha = alpha) (hcompat : ∀ z, pH (cl z) = cl (pZ z))
-    (hAlg : alpha ∈ Set.range cl) :
-    alpha ∈ Set.range (fun z => cl (pZ z)) := by
-  rcases hAlg with ⟨z, hz⟩
-  refine ⟨z, ?_⟩
-  calc
-    cl (pZ z) = pH (cl z) := (hcompat z).symm
-    _ = pH alpha := by rw [hz]
-    _ = alpha := hfix
+def allSix (T : OpenTargets) : Prop :=
+  T.RH ∧ T.PNeNP ∧ T.BSD ∧ T.Hodge ∧ T.NavierStokes ∧ T.YangMills
+end OpenTargets
 
-theorem projector_algebraicity_iff
-    {Z H : Type} (cl : Z → H) (pH : H → H) (pZ : Z → Z) (alpha : H)
-    (hfix : pH alpha = alpha) (hcompat : ∀ z, pH (cl z) = cl (pZ z)) :
-    alpha ∈ Set.range cl ↔ alpha ∈ Set.range (fun z => cl (pZ z)) := by
-  constructor
-  · exact projector_exhaustion cl pH pZ alpha hfix hcompat
-  · rintro ⟨z, hz⟩
-    exact ⟨pZ z, hz⟩
-end HodgeCore
+structure SevenTargets extends OpenTargets where
+  Poincare : Prop
 
-namespace NSCore
+namespace SevenTargets
 
-theorem critical_scaling (L lambda r : ℝ) (hL : L ≠ 0) :
-    (L ^ 2 * lambda) * (r / L) ^ 2 = lambda * r ^ 2 := by
-  field_simp [hL]
+def allSeven (T : SevenTargets) : Prop := T.toOpenTargets.allSix ∧ T.Poincare
+end SevenTargets
 
-theorem twist_scaling (L q g v t : ℝ) (hL : L ≠ 0) :
-    (L ^ 2 * q) * (L ^ 2 * g) * (v / L ^ 3) * (t / L ^ 2) =
-      (q * g * v * t) / L := by
-  field_simp [hL]
+structure SeventhObject where
+  good : Nat → Prop
+  seed : good 0
+  step : ∀ n, good n → good (n + 1)
 
-theorem no_uniform_charge (J c : ℝ) (hJ : 0 < J) (hc : 0 < c) :
-    ∃ L : ℝ, 0 < L ∧ J / L < c := by
-  let L := J / c + 1
-  have hL : 0 < L := by dsimp [L]; positivity
-  refine ⟨L, hL, ?_⟩
-  rw [div_lt_iff₀ hL]
-  dsimp [L]
-  field_simp [ne_of_gt hc]
-  nlinarith
+namespace SeventhObject
 
-theorem helicity_reversal {ell m h : ℝ}
-    (he : 0 < ell) (hem : ell < m) (hmh : m < h) :
-    (m - ell) / (h - ell) < m / h ∧ m / h < (m + ell) / (h + ell) := by
-  have hh : 0 < h := lt_trans (lt_trans he hem) hmh
-  have hhe : 0 < h - ell := sub_pos.mpr (lt_trans hem hmh)
-  have hhp : 0 < h + ell := add_pos hh he
-  constructor
-  · apply (div_lt_div_iff₀ hhe hh).2
-    nlinarith [mul_pos he (sub_pos.mpr hmh)]
-  · apply (div_lt_div_iff₀ hh hhp).2
-    nlinarith [mul_pos he (sub_pos.mpr hmh)]
-end NSCore
-
-namespace YMCore
-
-theorem cumulative_budget (m d : ℕ → ℝ)
-    (hstep : ∀ k, m (k + 1) ≥ m k - d k) :
-    ∀ n, m n ≥ m 0 - ∑ k ∈ Finset.range n, d k := by
+theorem allScales (C : SeventhObject) : ∀ n, C.good n := by
   intro n
   induction n with
-  | zero => simp
-  | succ n ih =>
-      have hs := hstep n
-      rw [Finset.sum_range_succ]
-      linarith
+  | zero => exact C.seed
+  | succ n ih => exact C.step n ih
+end SeventhObject
 
-theorem gap_survives_margin (d0 d dN loss : ℝ)
-    (hp : d0 - loss ≤ dN) (hl : loss ≤ d0 - d) : d ≤ dN := by
-  linarith
+structure Route (Goal : Prop) where
+  object : SeventhObject
+  frontier : Prop
+  objectToFrontier : (∀ n, object.good n) → frontier
+  frontierToGoal : frontier → Goal
 
-theorem summable_defect_can_close_gap :
-    ∃ d0 loss d1 : ℝ, 0 < d0 ∧ 0 ≤ loss ∧ d0 - loss ≤ d1 ∧ ¬ 0 < d1 := by
-  refine ⟨1, 1, 0, ?_, ?_, ?_, ?_⟩ <;> norm_num
+namespace Route
 
-theorem fixed_time_contraction_implies_gap (Lambda c m tau : ℝ)
-    (ht : 0 < tau)
-    (hc : Real.exp (-m * tau) ≤ Real.exp (-(c * Lambda) * tau)) :
-    c * Lambda ≤ m := by
-  have hlin : -m * tau ≤ -(c * Lambda) * tau := (Real.exp_le_exp).mp hc
-  have hcoeff : -m ≤ -(c * Lambda) := (mul_le_mul_right ht).mp hlin
-  linarith
+theorem solve {Goal : Prop} (R : Route Goal) : Goal :=
+  R.frontierToGoal (R.objectToFrontier R.object.allScales)
+end Route
 
-theorem quadratic_margin_step (rho r q q' E : ℝ)
-    (hrho : 0 ≤ rho) (hr : 0 ≤ r) (hq : 0 ≤ q)
-    (hqb : q ≤ rho * r) (hp : q' ≤ q ^ 2 + E)
-    (hE : E ≤ (rho - rho ^ 2) * r ^ 2) : q' ≤ rho * r ^ 2 := by
-  have hrr : 0 ≤ rho * r := mul_nonneg hrho hr
-  have hsq : q ^ 2 ≤ (rho * r) ^ 2 := by nlinarith
-  calc
-    q' ≤ q ^ 2 + E := hp
-    _ ≤ (rho * r) ^ 2 + (rho - rho ^ 2) * r ^ 2 := add_le_add hsq hE
-    _ = rho * r ^ 2 := by ring
-end YMCore
+def trivialSeventhObject : SeventhObject where
+  good := fun _ => True
+  seed := trivial
+  step := fun _ _ => trivial
 
-structure ExactPass3 : Prop where
-  hodgeProjector : ∀ {Z H : Type} (cl : Z → H) (pH : H → H)
-    (pZ : Z → Z) (a : H), pH a = a →
-      (∀ z, pH (cl z) = cl (pZ z)) →
-      (a ∈ Set.range cl ↔ a ∈ Set.range (fun z => cl (pZ z)))
-  nsScaling : ∀ L lambda r : ℝ, L ≠ 0 →
-    (L ^ 2 * lambda) * (r / L) ^ 2 = lambda * r ^ 2
-  nsNoUniformCharge : ∀ J c : ℝ, 0 < J → 0 < c →
-    ∃ L : ℝ, 0 < L ∧ J / L < c
-  ymBudget : ∀ m d : ℕ → ℝ, (∀ k, m (k + 1) ≥ m k - d k) →
-    ∀ n, m n ≥ m 0 - ∑ k ∈ Finset.range n, d k
-  ymCounterexample : ∃ d0 loss d1 : ℝ,
-    0 < d0 ∧ 0 ≤ loss ∧ d0 - loss ≤ d1 ∧ ¬ 0 < d1
+def routeOfGoal {Goal : Prop} (h : Goal) : Route Goal where
+  object := trivialSeventhObject
+  frontier := Goal
+  objectToFrontier := fun _ => h
+  frontierToGoal := id
 
-theorem exactPass3 : ExactPass3 := {
-  hodgeProjector := HodgeCore.projector_algebraicity_iff
-  nsScaling := NSCore.critical_scaling
-  nsNoUniformCharge := NSCore.no_uniform_charge
-  ymBudget := YMCore.cumulative_budget
-  ymCounterexample := YMCore.summable_defect_can_close_gap }
+theorem route_nonempty_iff_goal (Goal : Prop) : Nonempty (Route Goal) ↔ Goal := by
+  constructor
+  · rintro ⟨R⟩
+    exact R.solve
+  · exact fun h => ⟨routeOfGoal h⟩
 
-#print axioms HodgeCore.cycle_compatible_transfer
-#print axioms HodgeCore.projector_algebraicity_iff
-#print axioms NSCore.critical_scaling
-#print axioms NSCore.no_uniform_charge
-#print axioms NSCore.helicity_reversal
-#print axioms YMCore.cumulative_budget
-#print axioms YMCore.fixed_time_contraction_implies_gap
-#print axioms YMCore.quadratic_margin_step
-#print axioms exactPass3
+structure NativeBraid (T : OpenTargets) where
+  carrier : Prop
+  rhF : Prop
+  pnpF : Prop
+  bsdF : Prop
+  hodgeF : Prop
+  nsF : Prop
+  ymF : Prop
+  carrierToRH : carrier → rhF
+  carrierToPNP : carrier → pnpF
+  carrierToBSD : carrier → bsdF
+  carrierToHodge : carrier → hodgeF
+  carrierToNS : carrier → nsF
+  carrierToYM : carrier → ymF
+  rhBridge : rhF → T.RH
+  pnpBridge : pnpF → T.PNeNP
+  bsdBridge : bsdF → T.BSD
+  hodgeBridge : hodgeF → T.Hodge
+  nsBridge : nsF → T.NavierStokes
+  ymBridge : ymF → T.YangMills
 
-end UnifiedPass3
+namespace NativeBraid
+
+theorem solveAll {T : OpenTargets} (B : NativeBraid T) (h : B.carrier) :
+    T.allSix := by
+  exact ⟨B.rhBridge (B.carrierToRH h), B.pnpBridge (B.carrierToPNP h),
+    B.bsdBridge (B.carrierToBSD h), B.hodgeBridge (B.carrierToHodge h),
+    B.nsBridge (B.carrierToNS h), B.ymBridge (B.carrierToYM h)⟩
+end NativeBraid
+
+structure NativePackage (T : OpenTargets) where
+  braid : NativeBraid T
+  witness : braid.carrier
+
+theorem nativePackage_nonempty_iff_allSix (T : OpenTargets) :
+    Nonempty (NativePackage T) ↔ T.allSix := by
+  constructor
+  · rintro ⟨P⟩
+    exact P.braid.solveAll P.witness
+  · rintro ⟨hRH, hPNP, hBSD, hHodge, hNS, hYM⟩
+    let B : NativeBraid T := {
+      carrier := True
+      rhF := T.RH
+      pnpF := T.PNeNP
+      bsdF := T.BSD
+      hodgeF := T.Hodge
+      nsF := T.NavierStokes
+      ymF := T.YangMills
+      carrierToRH := fun _ => hRH
+      carrierToPNP := fun _ => hPNP
+      carrierToBSD := fun _ => hBSD
+      carrierToHodge := fun _ => hHodge
+      carrierToNS := fun _ => hNS
+      carrierToYM := fun _ => hYM
+      rhBridge := id
+      pnpBridge := id
+      bsdBridge := id
+      hodgeBridge := id
+      nsBridge := id
+      ymBridge := id }
+    exact ⟨{ braid := B, witness := trivial }⟩
+
+universe u
+
+structure Involution (α : Type u) where
+  inv : α → α
+  inv_inv : ∀ x, inv (inv x) = x
+
+structure InversionAudit (α : Type u) (P : Prop) where
+  I : Involution α
+  cert : α → Prop
+  positiveSound : ∀ x, cert x → P
+  invertedSound : ∀ x, cert (I.inv x) → ¬ P
+
+namespace InversionAudit
+
+theorem noDual {α : Type u} {P : Prop} (A : InversionAudit α P) (x : α) :
+    ¬ (A.cert x ∧ A.cert (A.I.inv x)) := by
+  rintro ⟨hx, hi⟩
+  exact A.invertedSound x hi (A.positiveSound x hx)
+
+theorem noCertifiedFixedPoint {α : Type u} {P : Prop}
+    (A : InversionAudit α P) (x : α) (hfix : A.I.inv x = x) :
+    ¬ A.cert x := by
+  intro hx
+  have hi : A.cert (A.I.inv x) := by rw [hfix]; exact hx
+  exact A.invertedSound x hi (A.positiveSound x hx)
+end InversionAudit
+
+def emptyAudit (P : Prop) : InversionAudit Unit P where
+  I := { inv := id, inv_inv := by intro x; rfl }
+  cert := fun _ => False
+  positiveSound := fun _ h => False.elim h
+  invertedSound := fun _ h => False.elim h
+
+theorem inversion_not_exhaustive (P : Prop) : ∀ x : Unit, ¬ (emptyAudit P).cert x := by
+  intro x h
+  exact h
+
+structure PerelmanRoute (Goal : Prop) where proof : Goal
+
+theorem perelmanRoute_nonempty_iff_goal (Goal : Prop) :
+    Nonempty (PerelmanRoute Goal) ↔ Goal := by
+  constructor
+  · rintro ⟨R⟩
+    exact R.proof
+  · exact fun h => ⟨⟨h⟩⟩
+
+structure ExactInterfaceBank : Prop where
+  routeNoFreeLunch : ∀ Goal : Prop, Nonempty (Route Goal) ↔ Goal
+  nativeNoFreeLunch : ∀ T : OpenTargets, Nonempty (NativePackage T) ↔ T.allSix
+  inversionVacuity : ∀ P : Prop, ∀ x : Unit, ¬ (emptyAudit P).cert x
+  perelmanWrapper : ∀ Goal : Prop, Nonempty (PerelmanRoute Goal) ↔ Goal
+
+theorem exactInterfaceBank : ExactInterfaceBank := {
+  routeNoFreeLunch := route_nonempty_iff_goal
+  nativeNoFreeLunch := nativePackage_nonempty_iff_allSix
+  inversionVacuity := inversion_not_exhaustive
+  perelmanWrapper := perelmanRoute_nonempty_iff_goal }
+
+theorem unifiedMillenniumBraidExecutable
+    (T : SevenTargets) (B : NativeBraid T.toOpenTargets)
+    (hCarrier : B.carrier) (hPerelman : T.Poincare) :
+    T.allSeven ∧ ExactInterfaceBank ∧
+      (Nonempty (NativePackage T.toOpenTargets) ↔ T.toOpenTargets.allSix) ∧
+      (∀ Goal : Prop, Nonempty (Route Goal) ↔ Goal) := by
+  exact ⟨⟨B.solveAll hCarrier, hPerelman⟩, exactInterfaceBank,
+    nativePackage_nonempty_iff_allSix T.toOpenTargets, route_nonempty_iff_goal⟩
+
+#print axioms route_nonempty_iff_goal
+#print axioms nativePackage_nonempty_iff_allSix
+#print axioms InversionAudit.noDual
+#print axioms InversionAudit.noCertifiedFixedPoint
+#print axioms inversion_not_exhaustive
+#print axioms exactInterfaceBank
+#print axioms unifiedMillenniumBraidExecutable
+
+end UnifiedPass1
 end Millennium
