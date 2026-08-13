@@ -1,0 +1,109 @@
+name: RH triple Bregman public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-triple-bregman-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-triple-bregman-public/**'
+      - '.github/workflows/rh-triple-bregman-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact canonical source and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-triple-bregman-public'
+          file="$dir/RHTripleBregmanNestingFinite.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='6ed0092e62ea3ee2b8cd63ec37b7e6bdcb1bd101'
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected_blob" "$actual_blob" \
+            | tee "$dir/source-blob.txt"
+          test "$actual_blob" = "$expected_blob"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-triple-bregman-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHTripleBregmanNestingFinite.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          count="$(grep -c "^'RHTripleBregmanNesting\." lean-output.log)"
+          echo "axiom reports: $count"
+          test "$count" -eq 7
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('lean-output.log').read_text()
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          lines = [line for line in text.splitlines() if line.startswith("'RHTripleBregmanNesting.")]
+          assert len(lines) == 7, lines
+          for line in lines:
+              if 'does not depend on any axioms' in line:
+                  continue
+              m = re.search(r'\[(.*)\]', line)
+              assert m, line
+              axioms = {x.strip() for x in m.group(1).split(',') if x.strip()}
+              assert axioms <= allowed, (line, axioms - allowed)
+          print('AXIOM ALLOWLIST: PASS')
+          PY
+          echo 'VERIFIED RH triple Bregman finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-triple-bregman-public-evidence-${{ github.sha }}
+          path: |
+            verification/rh-triple-bregman-public/RHTripleBregmanNestingFinite.lean
+            verification/rh-triple-bregman-public/lakefile.toml
+            verification/rh-triple-bregman-public/lean-toolchain
+            verification/rh-triple-bregman-public/source-blob.txt
+            verification/rh-triple-bregman-public/source-sha256.txt
+            verification/rh-triple-bregman-public/lean-version.txt
+            verification/rh-triple-bregman-public/lean-output.log
+          if-no-files-found: warn
