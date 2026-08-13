@@ -198,7 +198,37 @@ require_eq(dot(add(iso_q, iso_k), iso_r), Q(0),
 require(cross(iso_n, iso_a) != vec(0, 0, 0),
         "isosceles reciprocal not in selected polarization")
 
-# F. Scalable shear cancellation: many potential labels, zero Euler symbol.
+# F. Minimal noncoplanar three-plane braid and unique exterior fiber.
+e1, e2, e3 = vec(1, 0, 0), vec(0, 1, 0), vec(0, 0, 1)
+k12, k13, k23 = vec(-1, -1, 0), vec(-1, 0, -1), vec(0, -1, 1)
+a12, b12, n12 = vec(0, 1, -1), vec(-1, 0, 1), e3
+a13, b13, n13 = vec(0, -1, -1), vec(1, 1, 0), e2
+require_eq(dot(e1, a13), Q(0), "braid second shared carrier transverse")
+require_eq(dot(e3, b13), Q(0), "braid second pump transverse")
+require_eq(dot(k13, n13), Q(0), "braid second target transverse")
+require(cross(a12, a13) != vec(0, 0, 0),
+        "braid shared polarizations span the transverse plane")
+require_eq(leray(sub(e2, e3), sym_symbol(sub(e2, e3), b12, b13)),
+           vec(-2, 0, 0), "braid cross-plane active relay")
+require_eq(leray(add(e2, e3), sym_symbol(add(e2, e3), b12, b13)),
+           vec(0, 0, 0), "braid cross-plane conjugate killed")
+ext_k = vec(1, 2, 0)
+require_eq(leray(ext_k, sym_symbol(ext_k, b12, n12)),
+           vec(0, 0, -1), "braid exterior pollution")
+braid_positive = [e1, e2, e3, scale(-1, k12), scale(-1, k13), scale(-1, k23)]
+braid_modes = set(braid_positive + [scale(-1, x) for x in braid_positive])
+require_eq(len(braid_modes), 12, "braid real support size")
+decompositions = []
+braid_ordered = sorted(braid_modes)
+for i, x in enumerate(braid_ordered):
+    for y in braid_ordered[i:]:
+        if add(x, y) == ext_k:
+            decompositions.append((x, y))
+require_eq(len(decompositions), 1, "braid exterior unordered fiber unique")
+require_eq(set(decompositions[0]), {e2, scale(-1, k12)},
+           "braid exterior unique decomposition")
+
+# G. Scalable shear cancellation: many potential labels, zero Euler symbol.
 shear_modes = [vec(n, 0, 0) for n in range(-4, 5) if n]
 for x in shear_modes:
     for y in shear_modes:
@@ -207,7 +237,7 @@ for x in shear_modes:
 differences = {sub(x, y) for x in shear_modes for y in shear_modes}
 require(len(differences) > len(shear_modes), "shear has a large difference set")
 
-# G. Exact finite multiplicity firewalls.
+# H. Exact finite multiplicity firewalls.
 circle = [(x, y) for x in range(-5, 6) for y in range(-5, 6)
           if x * x + y * y == 25]
 require_eq(len(circle), 12, "radius-five oriented circle")
@@ -236,7 +266,7 @@ require_eq(sum_counts[vec(2, 1, 1)], 1, "positive singleton fiber")
 require_eq(sum_counts[vec(2, -1, -1)], 1, "negative singleton fiber")
 require_eq(sum_counts[vec(0, 1, 1)], 4, "zero-axial repair multiplicity")
 
-# H. Sharp finite leakage inequality, checked on an exact witness family.
+# I. Sharp finite leakage inequality, checked on an exact witness family.
 amplitudes = {i: vec(i - 3, 2 - i, i % 2) for i in range(7)}
 target = {0, 3}
 threshold = Q(2)
@@ -245,7 +275,7 @@ outside_energy = sum((norm2(z) for i, z in amplitudes.items() if i not in target
 rhs = threshold * threshold * max(len(good) - len(target), 0)
 require(outside_energy >= rhs, "sharp conditional leakage inequality")
 
-# I. Exact rational exterior/Picard parameter ledgers (finite algebra only).
+# J. Exact rational exterior/Picard parameter ledgers (finite algebra only).
 nu, d2, a2, coupling, N = Q(3, 2), Q(4), Q(5), Q(7), 4
 mu = nu * (d2 + a2 * Q(2 * N - 1, 2) ** 2) - 2 * coupling
 require(mu > 0, "Jacobi exterior coercive parameter gate")
