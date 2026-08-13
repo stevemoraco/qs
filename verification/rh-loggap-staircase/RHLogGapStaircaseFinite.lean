@@ -15,8 +15,9 @@ namespace Millennium
 namespace RHLogGapStaircase
 
 /-- The accumulated logarithmic event weight through index `n`. -/
-def prefixMass (weight : ℕ → ℝ) (n : ℕ) : ℝ :=
-  Finset.sum (Finset.range (n + 1)) weight
+def prefixMass (weight : ℕ → ℝ) : ℕ → ℝ
+  | 0 => weight 0
+  | n + 1 => prefixMass weight n + weight (n + 1)
 
 /-- Event location minus accumulated logarithmic weight. -/
 def prefixDefect (location weight : ℕ → ℝ) (n : ℕ) : ℝ :=
@@ -30,11 +31,7 @@ theorem prefixDefect_step
       weight (n + 1) - delta n) :
     prefixDefect location weight (n + 1) =
       prefixDefect location weight n - delta n := by
-  have hmass :
-      prefixMass weight (n + 1) =
-        prefixMass weight n + weight (n + 1) := by
-    simp [prefixMass, Nat.add_assoc]
-  rw [prefixDefect, prefixDefect, hmass]
+  simp only [prefixDefect, prefixMass]
   linarith
 
 /-- Abstract scalar form of the same one-step defect identity. -/
