@@ -66,31 +66,39 @@ theorem typedZeroDoesNotImplyExternalZero :
   · rfl
   · norm_num [externalZero]
 
-/-- A two-scale score record.  `largerScore` is the score on the larger
-packet and `smallerScore` is the score on a strict descendant. -/
-structure TwoScaleScore where
-  largerScore : ℕ
-  smallerScore : ℕ
+/-- Three consecutive score levels: a larger ancestor, the packet declared
+first-threshold, and one strict descendant of that crossing packet. -/
+structure ThreeScaleScore where
+  ancestorScore : ℕ
+  crossingScore : ℕ
+  descendantScore : ℕ
   threshold : ℕ
   deriving DecidableEq
 
-/-- The orientation printed in the first-threshold definitions: the larger
-packet crosses while every strict descendant lies below threshold. -/
-def highLargerLowDescendant (S : TwoScaleScore) : Prop :=
-  S.threshold ≤ S.largerScore ∧ S.smallerScore < S.threshold
+/-- The displayed first-threshold definition controls the crossing packet
+and its strict descendants.  It does not mention the larger ancestor. -/
+def printedFirstThreshold (S : ThreeScaleScore) : Prop :=
+  S.threshold ≤ S.crossingScore ∧ S.descendantScore < S.threshold
 
-/-- The opposite orientation used by a later phrase "small parent, first
-crossing child". -/
-def lowLargerHighDescendant (S : TwoScaleScore) : Prop :=
-  S.largerScore < S.threshold ∧ S.threshold ≤ S.smallerScore
+/-- The later energy-seeding prose additionally needs a low larger parent
+immediately before the crossing packet. -/
+def lowAncestorHighCrossing (S : ThreeScaleScore) : Prop :=
+  S.ancestorScore < S.threshold ∧ S.threshold ≤ S.crossingScore
 
-/-- The two threshold orientations are not interchangeable by logic alone. -/
-theorem firstThresholdOrientationCountermodel :
-    ∃ S : TwoScaleScore,
-      highLargerLowDescendant S ∧ ¬ lowLargerHighDescendant S := by
-  refine ⟨{ largerScore := 2, smallerScore := 0, threshold := 1 }, ?_, ?_⟩
-  · norm_num [highLargerLowDescendant]
-  · norm_num [lowLargerHighDescendant]
+/-- The displayed first-threshold condition alone does not imply the
+additional low-ancestor premise.  A separate adjacency/continuity theorem
+is required to pass from one formulation to the other. -/
+theorem firstThresholdDoesNotSupplyLowAncestor :
+    ∃ S : ThreeScaleScore,
+      printedFirstThreshold S ∧ ¬ lowAncestorHighCrossing S := by
+  refine ⟨{
+    ancestorScore := 2,
+    crossingScore := 2,
+    descendantScore := 0,
+    threshold := 1
+  }, ?_, ?_⟩
+  · norm_num [printedFirstThreshold]
+  · norm_num [lowAncestorHighCrossing]
 
 /-- Score and spacetime mass are distinct currencies unless an inequality
 relating them is assumed. -/
@@ -108,10 +116,53 @@ theorem subthresholdScoreDoesNotImplySmallMass :
       S.score < S.threshold ∧ S.threshold ≤ S.spacetimeMass := by
   exact ⟨{ score := 0, spacetimeMass := 2, threshold := 1 }, by norm_num⟩
 
+/-- The atom carrying the whole ledger mass in the finite cross-scale
+countermodel. -/
+def atomPoint (N : ℕ) : Fin (N + 1) :=
+  ⟨N, Nat.lt_succ_self N⟩
+
+/-- One packet at each labelled scale.  As the scale index grows, these
+sets are nested decreasing, and every one contains the terminal atom. -/
+def packetAtScale (N : ℕ) (k : Fin N) : Set (Fin (N + 1)) :=
+  {x | k.val ≤ x.val}
+
+/-- Unit point mass at `atomPoint N`. -/
+def atomMass (N : ℕ) (A : Set (Fin (N + 1))) : ℕ :=
+  if atomPoint N ∈ A then 1 else 0
+
+lemma packetAtScaleContainsAtom (N : ℕ) (k : Fin N) :
+    atomPoint N ∈ packetAtScale N k := by
+  change k.val ≤ N
+  exact Nat.le_of_lt k.isLt
+
+lemma packetAtScaleAntitone (N : ℕ) {i j : Fin N} (hij : i ≤ j) :
+    packetAtScale N j ⊆ packetAtScale N i := by
+  intro x hx
+  change i.val ≤ x.val
+  exact le_trans hij hx
+
+lemma everyPacketHasFullAtomMass (N : ℕ) (k : Fin N) :
+    atomMass N (packetAtScale N k) = 1 := by
+  simp [atomMass, packetAtScaleContainsAtom]
+
+/-- For every finite number `N` of distinct scale labels, one unit of
+atomic ledger mass funds all `N` nested packets, with only one packet at
+each scale.  Consequently fixed-scale overlap one plus finite total measure
+does not by itself bound cross-scale packet count. -/
+theorem atomicLedgerFundsArbitrarilyManyNestedScales (N : ℕ) :
+    ∃ totalMass : ℕ,
+      totalMass = 1 ∧
+      (Finset.univ : Finset (Fin N)).card = N ∧
+      ∀ k : Fin N, atomMass N (packetAtScale N k) = totalMass := by
+  refine ⟨1, rfl, by simp, ?_⟩
+  intro k
+  exact everyPacketHasFullAtomMass N k
+
 #print axioms equalCellTotal
 #print axioms noUniformSingleCellFraction
 #print axioms typedZeroDoesNotImplyExternalZero
-#print axioms firstThresholdOrientationCountermodel
+#print axioms firstThresholdDoesNotSupplyLowAncestor
 #print axioms subthresholdScoreDoesNotImplySmallMass
+#print axioms atomicLedgerFundsArbitrarilyManyNestedScales
 
 end NavierStokesCoveringCountermodel
