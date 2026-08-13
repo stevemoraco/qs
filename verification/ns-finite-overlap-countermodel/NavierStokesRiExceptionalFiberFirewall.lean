@@ -68,6 +68,32 @@ theorem criticalFiberRetentionAndSpikeAverageIncompatible
     mul_lt_mul_of_pos_left hlarge hN
   nlinarith
 
+/-- Long consecutive spike blocks rule out every nonnegative reweighting that
+retains an equivalent critical superposition.
+
+`total` is the target critical prefix mass scale.  `oldMass` is the corrected
+weight before the long spike block and `spikeMass` is the corrected weight
+inside it.  If the old part has become negligible, critical equivalence forces
+at least half of the required mass into the spike block.  A spike coefficient
+`B` with `B*c > 2*C` then contradicts the claimed nonlinear prefix budget. -/
+theorem longSpikeBlockReweightingNoGo
+    (total oldMass spikeMass c C B : ℝ)
+    (htotal : 0 < total)
+    (hB : 0 ≤ B)
+    (hold : oldMass ≤ (c / 2) * total)
+    (hcritical : c * total ≤ oldMass + spikeMass)
+    (hlarge : 2 * C < B * c)
+    (hnonlinear : B * spikeMass ≤ C * total) :
+    False := by
+  have hspike : (c / 2) * total ≤ spikeMass := by
+    linarith
+  have hpay : B * ((c / 2) * total) ≤ B * spikeMass :=
+    mul_le_mul_of_nonneg_left hspike hB
+  have hover : C * total < B * ((c / 2) * total) := by
+    have hscaled := mul_lt_mul_of_pos_right hlarge htotal
+    nlinarith
+  linarith
+
 /-- If an exceptional dyadic block occupies half of all thresholds up to `n`
 and every threshold in that block has weight at least eight, then the
 exceptional block alone contributes more than `3n`.
@@ -124,6 +150,7 @@ theorem fourToOneExceptionalImageCountermodel :
 #print axioms halfFiberLinearBoundForcesWeightBound
 #print axioms spikeGrowthIncompatibleWithUniformLinearAverage
 #print axioms criticalFiberRetentionAndSpikeAverageIncompatible
+#print axioms longSpikeBlockReweightingNoGo
 #print axioms weightEightHalfBlockExceedsThreeTotal
 #print axioms exceptionalBlockOverrunsClaimedLinearBound
 #print axioms fourToOneExceptionalImageCountermodel
