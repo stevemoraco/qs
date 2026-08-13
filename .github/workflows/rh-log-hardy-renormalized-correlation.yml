@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           file='formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean'
-          expected='0a9fd94d3743bd5b64ddba1dbd52de8b23d3869d'
+          expected='d1aef751474d6bf4bb3944cf032400fb856433c8'
           actual="$(git hash-object "$file")"
           printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
           test "$actual" = "$expected"
@@ -65,9 +65,16 @@ jobs:
             echo 'Rejected: kernel output contains sorryAx.'
             exit 1
           fi
-          count="$(grep -c 'does not depend on any axioms' "$output")"
-          echo "foundation-only axiom reports: $count"
+          count="$(grep -Ec 'depends on axioms:|does not depend on any axioms' "$output")"
+          echo "foundation axiom reports: $count"
           test "$count" -eq 5
+          unexpected="$({ grep 'depends on axioms:' "$output" || true; } \
+            | grep -vE 'depends on axioms: \[propext\]$' || true)"
+          if test -n "$unexpected"; then
+            echo 'Rejected: theorem depends on an axiom outside the accepted foundation set.'
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
 
       - name: Preserve replay evidence
         if: always()
