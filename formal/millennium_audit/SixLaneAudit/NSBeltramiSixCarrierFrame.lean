@@ -15,7 +15,7 @@ phase-averaged stress generators are, up to a positive scalar,
 Unlike the nine-carrier family isolated in
 `NSBeltramiCarrierConeObstruction.lean`, these six `Q_k` form a basis of the
 six-dimensional symmetric-matrix space, represent the identity with strictly
-positive coefficients, and admit an explicit positive inverse on a box of
+positive coefficients, and have an explicit positive inverse on a box of
 radius `< 1/9` around the identity.
 
 This is an exact finite geometric lemma.  It does not construct localized
