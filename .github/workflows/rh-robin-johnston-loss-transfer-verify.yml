@@ -1,0 +1,168 @@
+name: RH Robin-Johnston loss transfer verification
+
+on:
+  push:
+    branches:
+      - agent/rh-robin-johnston-loss-transfer-public-20260813
+    paths:
+      - 'verification/rh-robin-johnston-loss-transfer/**'
+      - '.github/workflows/rh-robin-johnston-loss-transfer-verify.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-robin-johnston-loss-transfer/**'
+      - '.github/workflows/rh-robin-johnston-loss-transfer-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rh-robin-johnston-loss-transfer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Audit exact source blob and forbidden trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/rh-robin-johnston-loss-transfer'
+          SRC="$ROOT/RHRobinJohnstonLossTransfer.lean"
+          EXPECTED_BLOB='c434e998c2a28f2d7323aca3a95bd67cb5610aa5'
+
+          CHECKOUT_STATUS="$(git status --porcelain=v1)"
+          printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
+          test -z "$CHECKOUT_STATUS"
+
+          ACTUAL_BLOB="$(git hash-object "$SRC")"
+          printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$EXPECTED_BLOB" "$ACTUAL_BLOB" | tee source-blob-report.txt
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          sha256sum "$SRC" | tee source-sha256.txt
+
+          if grep -RInE '\b(sorry|admit|sorryAx)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden proof hole detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden custom trust declaration detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '\b(native_decide|Lean\.ofReduceBool)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden native/oracle shortcut detected.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/elan" default leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/lean" --version | tee lean-version.txt
+
+      - name: Fetch pinned Mathlib cache
+        shell: bash
+        working-directory: verification/rh-robin-johnston-loss-transfer
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile exact source directly
+        shell: bash
+        working-directory: verification/rh-robin-johnston-loss-transfer
+        run: |
+          set -euo pipefail
+          lake env lean RHRobinJohnstonLossTransfer.lean 2>&1 | tee lean-source-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables' lean-source-output.log; then
+            echo 'Lean compiler or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+
+      - name: Emit and audit exact axiom reports
+        shell: bash
+        working-directory: verification/rh-robin-johnston-loss-transfer
+        run: |
+          set -euo pipefail
+          lake env lean AxiomReport.lean 2>&1 | tee lean-axiom-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-axiom-output.log; then
+            echo 'Axiom-report compilation or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('lean-axiom-output.log').read_text()
+          names = [
+              'RHRobinJohnstonLossTransfer.negPart_le_of_lower_bound',
+              'RHRobinJohnstonLossTransfer.buffered_loss_transfer',
+              'RHRobinJohnstonLossTransfer.robin_loss_le_johnston_loss',
+              'RHRobinJohnstonLossTransfer.robin_negative_forces_budget_exhaustion',
+              'RHRobinJohnstonLossTransfer.negPart_mul_of_nonneg',
+              'RHRobinJohnstonLossTransfer.cocycle_weight_identity',
+              'RHRobinJohnstonLossTransfer.robin_loss_le_centered_deficit',
+              'RHRobinJohnstonLossTransfer.sum_buffered_lower_bound',
+              'RHRobinJohnstonLossTransfer.cumulative_positive_of_block_budget',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          report = []
+          for name in names:
+              marker = f"'{name}' depends on axioms:"
+              no_axiom_marker = f"'{name}' does not depend on any axioms"
+              start = text.find(marker)
+              if start < 0:
+                  if no_axiom_marker in text:
+                      report.append(f'{name}: []')
+                      continue
+                  raise SystemExit(f'missing #print axioms report for {name}')
+              tail = text[start + len(marker):]
+              next_candidates = [
+                  pos for pos in (
+                      tail.find("'RHRobinJohnstonLossTransfer."),
+                      tail.find('does not depend on any axioms'),
+                  ) if pos >= 0
+              ]
+              block = tail if not next_candidates else tail[:min(next_candidates)]
+              deps = set(re.findall(r'\b(?:propext|Classical\.choice|Quot\.sound|[A-Za-z_][A-Za-z0-9_.]*Ax[A-Za-z0-9_.]*)\b', block))
+              forbidden = deps - allowed
+              if forbidden:
+                  raise SystemExit(f'forbidden axiom(s) for {name}: {sorted(forbidden)}')
+              report.append(f'{name}: {sorted(deps)}')
+          Path('axiom-report.txt').write_text('\n'.join(report) + '\n')
+          print('\n'.join(report))
+          PY
+
+      - name: Collect replay receipt
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          mkdir -p replay-receipt
+          cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
+          cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp "$RUNNER_TEMP/checkout-status.txt" replay-receipt/ 2>/dev/null || true
+          cp lean-version.txt replay-receipt/ 2>/dev/null || true
+          cp verification/rh-robin-johnston-loss-transfer/lake-manifest.json replay-receipt/ 2>/dev/null || true
+          cp verification/rh-robin-johnston-loss-transfer/lean-source-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/rh-robin-johnston-loss-transfer/lean-axiom-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/rh-robin-johnston-loss-transfer/axiom-report.txt replay-receipt/ 2>/dev/null || true
+          git rev-parse HEAD | tee replay-receipt/commit.txt
+          git status --porcelain=v1 | tee replay-receipt/post-run-git-status.txt
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-robin-johnston-loss-transfer-replay-${{ github.sha }}
+          path: replay-receipt
+          if-no-files-found: error
+          retention-days: 90
