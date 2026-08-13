@@ -1,0 +1,50 @@
+name: Navier-Stokes finite packing foundation replay
+
+on:
+  push:
+    branches:
+      - automation/ns-packing-foundation-replay-20260813
+    paths:
+      - 'formal/ns-packing-audit/**'
+      - '.github/workflows/ns-packing-foundation-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/ns-packing-audit/**'
+      - '.github/workflows/ns-packing-foundation-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-packing-audit/NavierStokesPackingAudit.lean'
+          if grep -nE '\b(sorry|admit|axiom)\b' "$file"; then
+            echo 'Rejected: explicit proof hole or custom axiom declaration found.'
+            exit 1
+          fi
+
+      - name: Build and independently check the Lean declarations
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal/ns-packing-audit
+          auto-config: false
+          build: true
+          leanchecker: true
+          nanoda: true
+          nanoda-allow-sorry: false
+          use-mathlib-cache: false
+
+      - name: Fresh Lean kernel replay with axiom report
+        working-directory: formal/ns-packing-audit
+        run: lake env lean NavierStokesPackingAudit.lean
