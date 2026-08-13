@@ -1,0 +1,108 @@
+name: Verify RH log-Hardy endpoint quantifier core
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/rh-log-hardy-endpoint-quantifier-core/**'
+      - '.github/workflows/rh-log-hardy-endpoint-quantifier-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Source firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='formal/rh-log-hardy-endpoint-quantifier-core/RHLogHardyEndpointQuantifierCore.lean'
+          test -f "$SRC"
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|implemented_by)\b|Lean\.ofReduceBool' "$SRC"; then
+            echo 'forbidden proof carrier found'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          lake-package-directory: formal/rh-log-hardy-endpoint-quantifier-core
+          use-github-cache: false
+
+      - name: Verify exact toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean --version | tee lean-version.txt
+          grep -F 'version 4.33.0' lean-version.txt
+          grep -F 'd8b18978322de05a8f3dba51ef03cf5461676c17' lean-version.txt
+
+      - name: Verify exact source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='formal/rh-log-hardy-endpoint-quantifier-core/RHLogHardyEndpointQuantifierCore.lean'
+          ACTUAL=$(git hash-object "$SRC")
+          EXPECTED='de1143806141fe03ca1acba6656fc1585659d88b'
+          echo "actual=$ACTUAL"
+          echo "expected=$EXPECTED"
+          test "$ACTUAL" = "$EXPECTED"
+
+      - name: Compile with warnings as errors
+        working-directory: formal/rh-log-hardy-endpoint-quantifier-core
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean -DwarningAsError=true -o RHLogHardyEndpointQuantifierCore.olean RHLogHardyEndpointQuantifierCore.lean 2>&1 | tee ../../lean-output.log
+          test -f RHLogHardyEndpointQuantifierCore.olean
+
+      - name: Fresh direct replay
+        working-directory: formal/rh-log-hardy-endpoint-quantifier-core
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f RHLogHardyEndpointQuantifierCore.olean
+          lean -DwarningAsError=true RHLogHardyEndpointQuantifierCore.lean 2>&1 | tee ../../axiom-output.log
+
+      - name: Reject unsound compiler output
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -E 'declaration has metavariables|declaration uses .sorry.|unknown constant|error:|warning:' lean-output.log axiom-output.log
+          ! grep -F 'sorryAx' axiom-output.log
+
+      - name: Foundation-only axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          for decl in \
+            vanishing_excludes_positive_floor \
+            positive_floor_forces_not_vanishing \
+            doubled_square_le_mixed_square \
+            doubled_tail_budget_transfer
+          do
+            grep -F "RHLogHardyEndpointQuantifierCore.$decl" axiom-output.log
+          done
+          if grep -F 'depends on axioms:' axiom-output.log; then
+            echo 'unexpected axiom dependency'
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-log-hardy-endpoint-quantifier-core-replay
+          path: |
+            lean-version.txt
+            lean-output.log
+            axiom-output.log
+          if-no-files-found: warn
