@@ -1,0 +1,69 @@
+name: PNP high-girth finite AXLE replay
+
+on:
+  push:
+    branches: [agent/pnp-high-girth-axle-replay-20260813-gpt56]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Source identity and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+          source = Path('verification/pnp-restriction-averaging/PNPLowBallHighGirth.lean')
+          raw = source.read_bytes()
+          expected = 'bb973c2451020d2d5261ec2fde38402cf223e9580b5c773ccd6dffaa4801bc09'
+          assert hashlib.sha256(raw).hexdigest() == expected
+          text = raw.decode()
+          forbidden = re.compile(r'(?<![A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)(?![A-Za-z0-9_])|Lean\.ofReduceBool')
+          assert forbidden.search(text) is None
+          assert len(re.findall(r'(?m)^theorem\s+', text)) == 4
+          assert text.count('#print axioms') == 4
+          PY
+      - name: Fresh AXLE Lean kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, urllib.request
+          source = Path('verification/pnp-restriction-averaging/PNPLowBallHighGirth.lean')
+          evidence = Path('verification/pnp-restriction-averaging/pnp-high-girth-evidence')
+          evidence.mkdir(parents=True, exist_ok=True)
+          nonce = 'pnp-high-girth-20260813-gpt56'
+          submitted = source.read_text() + f'\n-- fresh-replay nonce: {nonce}\n'
+          payload = json.dumps({'content': submitted, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          (evidence / 'axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          assert result.get('okay') is True
+          assert result.get('failed_declarations', []) == []
+          assert result.get('lean_messages', {}).get('errors', []) == []
+          assert result.get('lean_messages', {}).get('warnings', []) == []
+          assert result.get('tool_messages', {}).get('errors', []) == []
+          assert result.get('tool_messages', {}).get('warnings', []) == []
+          assert result.get('info', {}).get('cached_response') is False
+          (evidence / 'submitted-sha256.txt').write_text(hashlib.sha256(submitted.encode()).hexdigest() + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pnp-high-girth-axle-evidence
+          path: verification/pnp-restriction-averaging/pnp-high-girth-evidence/
+          if-no-files-found: error
