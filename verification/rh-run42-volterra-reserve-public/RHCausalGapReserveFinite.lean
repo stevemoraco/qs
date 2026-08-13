@@ -35,7 +35,6 @@ theorem cubic_reserve_step
     _ = 2 * (((3 / 2) * p * a) / (u ^ 2 + u * v + v ^ 2)) - a := by rw [hdiff]
     _ = a * (3 * p / (u ^ 2 + u * v + v ^ 2) - 1) := by
       field_simp [hden]
-      ring
 
 /-- A positive point and integral lower bound for the inverse Volterra
 expression produce an explicit scalar lower bound.  This is only the final
