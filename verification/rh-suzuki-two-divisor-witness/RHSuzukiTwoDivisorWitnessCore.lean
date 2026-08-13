@@ -126,7 +126,7 @@ theorem hasOnlyRealDivisor_of_twoWitnesses
 
 /-- The zeta spectral coordinate corresponding to `s = rho` under
 `s = 1/2 - i z`. -/
-def spectralCoordinate (rho : ℂ) : ℂ :=
+noncomputable def spectralCoordinate (rho : ℂ) : ℂ :=
   Complex.I * (rho - (1 : ℂ) / 2)
 
 /-- Its imaginary part is exactly the horizontal displacement from the

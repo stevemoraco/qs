@@ -6,8 +6,9 @@ Canonical private Lean source:
 
 - repository: `stevemoraco/RH-Lean`
 - branch: `agent/rh-suzuki-two-divisor-witness-core-20260813`
-- commit: `2488f0ffd5a1f662ac9949d8230a4fc6af451149`
+- commit: `3e8f32871c351ed5f786b2bc96619d8d88dcf006`
 - path: `lean-worker/RHSuzukiTwoDivisorWitnessCore.lean`
+- exact Git blob: `537236bf05bab7af172349b433a9b4ba2d088586`
 
 Human theorem and hostile audit:
 

@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: rh-suzuki-two-divisor-witness-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -29,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC='verification/rh-suzuki-two-divisor-witness/RHSuzukiTwoDivisorWitnessCore.lean'
-          EXPECTED_BLOB='10d8483c0da9c57dd12088f9db468df7ac9b8aa3'
+          EXPECTED_BLOB='537236bf05bab7af172349b433a9b4ba2d088586'
 
           CHECKOUT_STATUS="$(git status --porcelain=v1)"
           printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
