@@ -1,0 +1,167 @@
+name: PNP Mintpath end-to-end theorem audit
+
+on:
+  push:
+    branches:
+      - verify/pnp-mintpath-end-to-end-audit-20260813
+  pull_request:
+    paths:
+      - 'verification/pnp-mintpath-audit/**'
+      - '.github/workflows/pnp-mintpath-end-to-end-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject holes in the independent audit source
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/pnp-mintpath-audit/MintpathAudit.lean'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder in audit source.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden custom trust declaration in audit source.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and resolve pinned external source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-mintpath-audit'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.28.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          actual="$(git -C .lake/packages/p_ne_np rev-parse HEAD)"
+          expected='f46d48e5b127f18245429d18b74aef8f030f773a'
+          test "$actual" = "$expected"
+          printf 'Mintpath/p-neq-np-lean=%s\n' "$actual" | tee dependency-commit.txt
+          lake exe cache get
+
+      - name: Compile theorem audit and print kernel dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-mintpath-audit'
+          cd "$dir"
+          lake env lean MintpathAudit.lean > lean-output.log 2>&1
+          cat lean-output.log
+
+      - name: Enforce exact audit findings
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-mintpath-audit'
+          log="$dir/lean-output.log"
+
+          grep -q 'general_circuit_lower_bound_unconditional' "$log"
+          grep -q 'formulaLowerBound_exponential' "$log"
+
+          # The general theorem must expose the public custom circuit-to-width axiom.
+          grep -q 'lambda_le_sum_leafWidth_of_circuit' "$log"
+
+          # The formula theorem must expose the private AUY gate-value axiom.
+          grep -q 'auyDirectRectangles_gateValue_ax' "$log"
+
+          # The independent finite quantifier firewalls must not inherit either custom axiom.
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          text = pathlib.Path(
+              'verification/pnp-mintpath-audit/lean-output.log'
+          ).read_text()
+
+          expected = {
+              'MintpathAudit.exported_exponent_shape_iff_two_le',
+              'MintpathAudit.constant_two_satisfies_exported_family_shape',
+              'MintpathAudit.constant_two_has_no_exponent_two',
+          }
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          reports = {}
+          for name, payload in re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]", text, flags=re.S
+          ):
+              reports[name] = {x.strip() for x in payload.split(',') if x.strip()}
+          for name in re.findall(r"'([^']+)' does not depend on any axioms", text):
+              reports[name] = set()
+
+          missing = expected - reports.keys()
+          if missing:
+              raise SystemExit(f'missing finite axiom reports: {sorted(missing)}')
+          for name in expected:
+              extra = reports[name] - allowed
+              if extra:
+                  raise SystemExit(f'{name} has unexpected axioms: {sorted(extra)}')
+
+          general = next(
+              (deps for name, deps in reports.items()
+               if name.endswith('general_circuit_lower_bound_unconditional')),
+              None,
+          )
+          formula = next(
+              (deps for name, deps in reports.items()
+               if name.endswith('formulaLowerBound_exponential')),
+              None,
+          )
+          if general is None or not any(
+              'lambda_le_sum_leafWidth_of_circuit' in dep for dep in general
+          ):
+              raise SystemExit('general theorem custom axiom was not exposed')
+          if formula is None or not any(
+              'auyDirectRectangles_gateValue_ax' in dep for dep in formula
+          ):
+              raise SystemExit('formula theorem private AUY axiom was not exposed')
+
+          rows = []
+          for name in sorted(reports):
+              if (name in expected or
+                  name.endswith('general_circuit_lower_bound_unconditional') or
+                  name.endswith('formulaLowerBound_exponential')):
+                  rows.append(f'{name}: {sorted(reports[name])}')
+          report = '\n'.join(rows) + '\n'
+          pathlib.Path(
+              'verification/pnp-mintpath-audit/axiom-audit.txt'
+          ).write_text(report)
+          print(report, end='')
+          PY
+
+          echo 'AUDIT VERIFIED: both advertised theorem paths expose custom axioms; exported exponent shape is constant-strength.'
+
+      - name: Preserve source and evidence hashes
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/pnp-mintpath-audit'
+          sha256sum "$dir/MintpathAudit.lean" > "$dir/source-sha256.txt"
+          if [ -d "$dir/.lake/packages/p_ne_np" ]; then
+            git -C "$dir/.lake/packages/p_ne_np" rev-parse HEAD > "$dir/external-head.txt"
+          fi
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-mintpath-end-to-end-audit-evidence
+          path: |
+            verification/pnp-mintpath-audit/dependency-commit.txt
+            verification/pnp-mintpath-audit/external-head.txt
+            verification/pnp-mintpath-audit/lean-version.txt
+            verification/pnp-mintpath-audit/lean-output.log
+            verification/pnp-mintpath-audit/axiom-audit.txt
+            verification/pnp-mintpath-audit/source-sha256.txt
