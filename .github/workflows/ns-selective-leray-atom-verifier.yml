@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-selective-leray-atom/NSSelectiveLerayAtom.lean
-          EXPECTED_GIT_BLOB=fc99664e7f0c193876732baabda58c9e6c5f7b37
+          EXPECTED_GIT_BLOB=94229ec6c70a86f6fefa9811cdaba8bc2eefc655
           ACTUAL_GIT_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_GIT_BLOB" = "$EXPECTED_GIT_BLOB"
           python3 - <<'PY'
@@ -39,8 +39,8 @@ jobs:
               raise SystemExit(f'forbidden source token: {match.group(2)}')
           if 'Lean.ofReduceBool' in text or 'native_decide' in text:
               raise SystemExit('forbidden source token')
-          if text.count('#print axioms') != 34:
-              raise SystemExit('expected exactly thirty-four staged #print axioms commands')
+          if text.count('#print axioms') != 39:
+              raise SystemExit('expected exactly thirty-nine staged #print axioms commands')
           print('source trust preflight: clean')
           PY
 
