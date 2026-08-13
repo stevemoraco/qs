@@ -13,8 +13,11 @@ theorem rh_pointwise_tail_does_not_imply_cofinal_tail :
   · intro l
     refine ⟨l + 1, ?_⟩
     intro M hM
-    have hne : M = l -> False := by omega
-    simp [rhDiagonalSpike, hne]
+    unfold rhDiagonalSpike
+    split
+    · rename_i hEq
+      omega
+    · rfl
   · intro M
     simp [rhDiagonalSpike]
 
