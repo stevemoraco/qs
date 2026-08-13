@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/unified-millennium-braid/UnifiedSevenFireCorpus.lean
-          EXPECTED=6169ae7e14f32b7e8e1c5246a7d8d13497a241b834171f97d0db5b0a00cbb14d
+          EXPECTED=6c6ad767cb6a05fca207e3e1118974b8a0439497cf7e80d9d7f4b8cc319e0129
           test "$(sha256sum "$SRC" | awk '{print $1}')" = "$EXPECTED"
           if grep -nE '^[[:space:]]*(sorry|admit|axiom|constant|opaque|unsafe|native_decide)\b|\b(sorryAx|Lean\.ofReduceBool|implemented_by|extern)\b' "$SRC"; then
             echo 'Forbidden trust carrier'
