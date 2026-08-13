@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/unified-millennium-braid/UnifiedSevenFireCorpus.lean
-          EXPECTED=eea483fc1abfaa22ca7cbc9e5e3fe4b53448de1b61321063ed6cade79f5ddedc
+          EXPECTED=6169ae7e14f32b7e8e1c5246a7d8d13497a241b834171f97d0db5b0a00cbb14d
           test "$(sha256sum "$SRC" | awk '{print $1}')" = "$EXPECTED"
           if grep -nE '^[[:space:]]*(sorry|admit|axiom|constant|opaque|unsafe|native_decide)\b|\b(sorryAx|Lean\.ofReduceBool|implemented_by|extern)\b' "$SRC"; then
             echo 'Forbidden trust carrier'
@@ -74,6 +74,7 @@ jobs:
               "no_common_local_witness",
               "no_global_prefix_witness",
               "exclusivity_does_not_prove_target",
+              "survivor_from_exhaustiveness",
               "one_lane_does_not_close_bundle",
               "unified_millennium_braid_executable",
           ]
@@ -88,7 +89,7 @@ jobs:
               flags=re.S,
           )
           if len(reports) != len(expected):
-              raise SystemExit(f"expected 9 complete axiom reports, got {len(reports)}")
+              raise SystemExit(f"expected 10 complete axiom reports, got {len(reports)}")
           allowed = {"propext", "Classical.choice", "Quot.sound"}
           for report in reports:
               match = re.search(r"depends on axioms:\s*\[([^\]]*)\]", report, re.S)
@@ -99,7 +100,7 @@ jobs:
           forbidden = ("sorryAx", "Lean.ofReduceBool", "declaration uses 'sorry'")
           if any(token in log for token in forbidden):
               raise SystemExit("forbidden postcompile dependency")
-          print("AXIOM AUDIT PASS: 9 reports; standard foundations only")
+          print("AXIOM AUDIT PASS: 10 reports; standard foundations only")
           PY
 
       - name: Preserve exact replay
