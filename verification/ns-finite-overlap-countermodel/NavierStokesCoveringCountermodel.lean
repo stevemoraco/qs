@@ -176,6 +176,7 @@ theorem finiteSelectedIntervalDepletion
   have htel :
       budget n + c * Finset.sum (Finset.range n) activity ≤
         budget 0 + Finset.sum (Finset.range n) error := by
+    clear hterminal
     induction n with
     | zero => simp
     | succ n ih =>
