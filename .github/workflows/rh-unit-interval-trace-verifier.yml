@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-unit-interval-trace/RHUnitIntervalTrace.lean
-          EXPECTED=49eded5d2bf7db29530d3d8aff3379576c7dfd4c30f5add777759cdcc07b3bd6
+          EXPECTED=c194e2bfd41b3c22bc9477619ccc6822513339626f45b96464a3f7c3f385392c
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
