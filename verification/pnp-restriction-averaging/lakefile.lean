@@ -9,9 +9,8 @@ require mathlib from git
 
 /-!
 The public replay workflow already runs `lake update` in this package. This
-hook reuses that existing trusted runner to compile the additive cross-problem
-scalar firewall without changing the workflow file or the pre-existing PNP
-proof source.
+hook reuses that existing trusted runner to compile additive finite firewalls
+without changing the pre-existing PNP proof source.
 -/
 post_update _pkg do
   let rootPkg ← getRootPackage
@@ -22,9 +21,14 @@ post_update _pkg do
     if cacheExit ≠ 0 then
       error "failed to fetch the pinned Mathlib cache"
     let lean ← getLean
-    let source := rootPkg.dir / "SummableRelativeDefect.lean"
-    let leanExit ← env lean.toString #[source.toString]
-    if leanExit ≠ 0 then
-      error "SummableRelativeDefect.lean failed kernel elaboration"
+    let sources := #[
+      "SummableRelativeDefect.lean",
+      "PNPDistributionalDictionaryFinite.lean"
+    ]
+    for sourceName in sources do
+      let source := rootPkg.dir / sourceName
+      let leanExit ← env lean.toString #[source.toString]
+      if leanExit ≠ 0 then
+        error s!"{sourceName} failed kernel elaboration"
   finally
     IO.Process.setCurrentDir cwd
