@@ -17,17 +17,24 @@ theorem acceptedFractionAtMostInvSquare
     (hQ : n ^ 4 / 192 ≤ Q) :
     12 * n / Q ≤ 1 / n ^ 2 := by
   have hnpos : 0 < n := by linarith
+  have hnnonneg : 0 ≤ n := le_of_lt hnpos
   have hbase : 0 < n ^ 4 / 192 := by positivity
   have hQpos : 0 < Q := lt_of_lt_of_le hbase hQ
   have hmul : 2304 * n ^ 3 ≤ n * n ^ 3 := by
-    exact mul_le_mul_of_nonneg_right hn (pow_nonneg n 3)
+    exact mul_le_mul_of_nonneg_right hn (pow_nonneg hnnonneg 3)
   have hscale : 12 * n ^ 3 ≤ n ^ 4 / 192 := by
-    nlinarith
-  have h12 : 12 * n ^ 3 ≤ Q := hscale.trans hQ
-  apply (div_le_iff₀ hQpos).2
-  rw [one_div, inv_mul_eq_div]
-  apply (le_div_iff₀ (pow_pos hnpos 2)).2
-  convert h12 using 1 <;> ring
+    calc
+      12 * n ^ 3 = (2304 * n ^ 3) / 192 := by ring
+      _ ≤ (n * n ^ 3) / 192 :=
+        div_le_div_of_nonneg_right hmul (by norm_num)
+      _ = n ^ 4 / 192 := by ring
+  have htarget : 12 * n * n ^ 2 ≤ Q := by
+    calc
+      12 * n * n ^ 2 = 12 * n ^ 3 := by ring
+      _ ≤ n ^ 4 / 192 := hscale
+      _ ≤ Q := hQ
+  apply (div_le_div_iff₀ hQpos (pow_pos hnpos 2)).2
+  simpa using htarget
 
 theorem falsePositiveFloor
     (n Q : ℚ)
