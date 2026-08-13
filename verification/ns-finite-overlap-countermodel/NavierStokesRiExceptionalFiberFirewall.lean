@@ -21,6 +21,31 @@ theorem imageCardinalityDoesNotBoundRepeatedFiber
     exact_mod_cast hN
   nlinarith
 
+/-- A linear prefix bound on a block occupying half of the prefix forces the
+block weight itself to be uniformly bounded.  The fiber multiplicity cancels
+only after it has first been included. -/
+theorem halfFiberLinearBoundForcesWeightBound
+    (N : ℕ) (B C : ℝ)
+    (hN : 0 < N)
+    (haverage : (N : ℝ) * B ≤ C * (2 * (N : ℝ))) :
+    B ≤ 2 * C := by
+  have hNreal : 0 < (N : ℝ) := by
+    exact_mod_cast hN
+  nlinarith
+
+/-- If the exponentially weighted average has spike floor `A/2`, while the
+corresponding dyadic fiber occupies half of a prefix with linear-average
+constant `C`, then necessarily `A ≤ 4C`.  Thus unbounded scaling spikes and a
+uniform linear threshold average are structurally incompatible. -/
+theorem spikeGrowthIncompatibleWithUniformLinearAverage
+    (N : ℕ) (A B C : ℝ)
+    (hN : 0 < N)
+    (hspike : A / 2 ≤ B)
+    (haverage : (N : ℝ) * B ≤ C * (2 * (N : ℝ))) :
+    A ≤ 4 * C := by
+  have hB := halfFiberLinearBoundForcesWeightBound N B C hN haverage
+  linarith
+
 /-- If an exceptional dyadic block occupies half of all thresholds up to `n`
 and every threshold in that block has weight at least eight, then the
 exceptional block alone contributes more than `3n`.
@@ -74,6 +99,8 @@ theorem fourToOneExceptionalImageCountermodel :
 
 #print axioms repeatedFiberWeightSum
 #print axioms imageCardinalityDoesNotBoundRepeatedFiber
+#print axioms halfFiberLinearBoundForcesWeightBound
+#print axioms spikeGrowthIncompatibleWithUniformLinearAverage
 #print axioms weightEightHalfBlockExceedsThreeTotal
 #print axioms exceptionalBlockOverrunsClaimedLinearBound
 #print axioms fourToOneExceptionalImageCountermodel
