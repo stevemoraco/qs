@@ -1,0 +1,55 @@
+name: NS Six-Color Quartic Return Firewall
+
+on:
+  push:
+    branches: [agent/ns-six-color-quartic-return-firewall-20260813]
+  pull_request:
+    paths:
+      - 'verification/ns-six-color-highhigh-isolation/NSQuarticReturnFinite.lean'
+      - 'tools/check_ns_six_color_quartic_return.py'
+      - '.github/workflows/ns-six-color-quartic-return-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/ns-six-color-highhigh-isolation/NSQuarticReturnFinite.lean'
+          git hash-object "$file" | tee quartic-source-blob.txt
+          sha256sum "$file" tools/check_ns_six_color_quartic_return.py | tee quartic-source-sha256.txt
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Run exact rational replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/check_ns_six_color_quartic_return.py 2>&1 | tee quartic-python.log
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/ns-six-color-highhigh-isolation
+          lake update
+          lake exe cache get
+          lake env lean -DmaxHeartbeats=2000000 NSQuarticReturnFinite.lean 2>&1 | tee ns-quartic-lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' ns-quartic-lean-output.log; then exit 1; fi
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-six-color-quartic-return-evidence
+          path: |
+            quartic-source-blob.txt
+            quartic-source-sha256.txt
+            quartic-python.log
+            verification/ns-six-color-highhigh-isolation/ns-quartic-lean-output.log
