@@ -7,11 +7,6 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @
     "c44e0c8ee63ca166450922a373c7409c5d26b00b"
 
-/-!
-The public replay workflow already runs `lake update` in this package. This
-hook reuses that existing trusted runner to compile additive finite firewalls
-without changing the pre-existing PNP proof source.
--/
 post_update _pkg do
   let rootPkg ← getRootPackage
   let cwd ← IO.Process.getCurrentDir
@@ -23,7 +18,8 @@ post_update _pkg do
     let lean ← getLean
     let sources := #[
       "SummableRelativeDefect.lean",
-      "PNPDistributionalDictionaryFinite.lean"
+      "PNPDistributionalDictionaryFinite.lean",
+      "PNPLowBallHighGirth.lean"
     ]
     for sourceName in sources do
       let source := rootPkg.dir / sourceName
