@@ -73,7 +73,11 @@ theorem taggedFirstSwap_involutive :
   intro t
   cases t with
   | mk word left right =>
-      simp [taggedFirstSwap, firstSwap_involutive]
+      change TaggedWord.mk
+        (firstSwap left right (firstSwap left right word)) left right =
+          TaggedWord.mk word left right
+      exact congrArg (fun w => TaggedWord.mk w left right)
+        (firstSwap_involutive left right word)
 
 theorem taggedFirstSwap_injective :
     Function.Injective (taggedFirstSwap : TaggedWord α → TaggedWord α) :=
