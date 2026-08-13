@@ -68,6 +68,10 @@ jobs:
         working-directory: verification/bsd-gv-semiprime-density
         run: lake env lean BSDGVRootNumberSpectrum.lean
 
+      - name: Replay information-frontier source
+        working-directory: verification/bsd-gv-semiprime-density
+        run: lake env lean BSDGVInformationFrontier.lean
+
       - name: Print axiom report
         working-directory: verification/bsd-gv-semiprime-density
         run: lake env lean AxiomReport.lean | tee axiom-report.txt
