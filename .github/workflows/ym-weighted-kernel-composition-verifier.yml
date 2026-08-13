@@ -1,0 +1,86 @@
+name: YM weighted-kernel composition verifier
+
+on:
+  push:
+    branches:
+      - agent/ym-weighted-kernel-composition-verifier-20260813
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym_weighted_kernel_composition/YMWeightedKernelComposition.lean
+          EXPECTED_BLOB=133cbdae99d318ceb5f35a641c59376286da0dcc
+          test "$(git hash-object "$SRC")" = "$EXPECTED_BLOB"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ym_weighted_kernel_composition/YMWeightedKernelComposition.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(text)
+          if m:
+              raise SystemExit(f'forbidden token: {m.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'forbidden token: {token}')
+          if text.count('#print axioms') != 2:
+              raise SystemExit('expected two axiom reports')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Compile with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/ym_weighted_kernel_composition
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/ym_weighted_kernel_composition/YMWeightedKernelComposition.lean').read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('evidence/ym_weighted_kernel_composition/axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          errors = result.get('lean_messages', {}).get('errors', [])
+          warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or errors or warnings or tool_errors or failed:
+              raise SystemExit('verification failed')
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden dependency in compiler output')
+          print('VERIFIED: warning-free finite weighted-kernel source')
+          PY
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-weighted-kernel-composition-evidence
+          path: evidence/ym_weighted_kernel_composition/
+          if-no-files-found: error
