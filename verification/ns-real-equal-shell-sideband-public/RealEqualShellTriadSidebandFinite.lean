@@ -7,10 +7,7 @@ Finite coordinate algebra for
 `research/navier-stokes/NS_REAL_EQUAL_SHELL_TRIAD_EXACT_HIGHHIGH_SIDEBAND_CANCELLATION_2026-08-13.md`.
 
 This file does not formalize Fourier analysis, Leray projection, localization,
-Navier--Stokes, or blowup.  In particular, the theorem called
-`differenceCoefficient_parallel` proves coordinate parallelism only; the
-analytic statement that Leray projection kills a frequency-parallel vector is
-external.
+Navier--Stokes, or blowup.
 -/
 
 namespace NSBraid
@@ -93,6 +90,32 @@ theorem singleLowCannotKillBothOuter
           (mul_ne_zero (by norm_num) hh) hA) hB) hZ
   exact hne hzero
 
+theorem symmetricOuterPolynomialLower
+    (r A z C Z : ℝ) (hz : z^2 ≤ 1) :
+    4 * A^2 * z^2 * Z^2 * (r^2 + 9) ≤
+      A^2 * C^2 * (r^2 - 3)^2 +
+        (r^2 + 9) * (4 * A^2 * Z^2 + C^2 * z^2) := by
+  have h1mz : 0 ≤ 1 - z^2 := by linarith
+  have hterm1 : 0 ≤ A^2 * C^2 * (r^2 - 3)^2 := by positivity
+  have hbr1 : 0 ≤ 4 * A^2 * Z^2 * (1 - z^2) := by positivity
+  have hbr2 : 0 ≤ C^2 * z^2 := by positivity
+  have hsum : 0 ≤ 4 * A^2 * Z^2 * (1 - z^2) + C^2 * z^2 :=
+    add_nonneg hbr1 hbr2
+  have hr9 : 0 ≤ r^2 + 9 := by positivity
+  have hterm2 :
+      0 ≤ (r^2 + 9) *
+        (4 * A^2 * Z^2 * (1 - z^2) + C^2 * z^2) :=
+    mul_nonneg hr9 hsum
+  have hdecomp :
+      (A^2 * C^2 * (r^2 - 3)^2 +
+          (r^2 + 9) * (4 * A^2 * Z^2 + C^2 * z^2)) -
+        4 * A^2 * z^2 * Z^2 * (r^2 + 9) =
+      A^2 * C^2 * (r^2 - 3)^2 +
+        (r^2 + 9) *
+          (4 * A^2 * Z^2 * (1 - z^2) + C^2 * z^2) := by
+    ring
+  nlinarith [hterm1, hterm2, hdecomp]
+
 theorem localizationSeparationExponent (alpha : ℝ) :
     1 - 2 * (alpha - 1) / 3 = (5 - 2 * alpha) / 3 := by
   ring
@@ -114,6 +137,7 @@ theorem localizationSeparationPositive (alpha : ℝ)
 #print axioms firstSelfZero
 #print axioms secondSelfZero
 #print axioms singleLowCannotKillBothOuter
+#print axioms symmetricOuterPolynomialLower
 #print axioms localizationSeparationExponent
 #print axioms localizationSeparationPositive
 
