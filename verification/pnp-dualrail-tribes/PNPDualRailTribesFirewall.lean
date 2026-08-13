@@ -1,13 +1,5 @@
 import Mathlib
 
-/-!
-# P versus NP: dual-rail and tribes bottleneck firewalls
-
-This file formalizes only finite Boolean/combinatorial cores.
-It does not define Boolean circuits, MCSP, Gap-MCSP, Sokolov games,
-P, NP, or P versus NP.
--/
-
 namespace PNP
 namespace DualRailTribesFirewall
 
@@ -43,7 +35,7 @@ theorem dualRail_oriented_witness
     ((dualRail a).2 = true ∧ (dualRail b).2 = false) := by
   cases a <;> cases b <;> simp [dualRail] at hab ⊢
 
-variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+variable {ι : Type*}
 
 def agreesOutside
     (base word : ι → Bool) (patch : Finset ι) : Prop :=
@@ -102,24 +94,25 @@ def blockCoordinates
 
 @[simp] theorem blockCoordinates_card
     {blocks width : ℕ} (j : Fin blocks) :
-    (blockCoordinates j).card = width := by
+    (blockCoordinates (width := width) j).card = width := by
   simp [blockCoordinates]
 
 @[simp] theorem mem_blockCoordinates
     {blocks width : ℕ} (j : Fin blocks) (i : Fin width) :
-    (j, i) ∈ blockCoordinates j := by
-  simp [blockCoordinates]
+    (j, i) ∈ blockCoordinates (width := width) j := by
+  rw [blockCoordinates]
+  exact Finset.mem_map.mpr ⟨i, Finset.mem_univ i, rfl⟩
 
 theorem zeroBlock_certificate
     {blocks width : ℕ}
     {word : Word blocks width} {j : Fin blocks}
     (hzero : zeroBlock word j) :
-    Hits (blockCoordinates j) word tribes := by
+    Hits (blockCoordinates (width := width) j) word tribes := by
   intro other hother
   obtain ⟨i, hi⟩ := hother j
   refine ⟨(j, i), mem_blockCoordinates j i, ?_⟩
   have hz := hzero i
-  simp [hi, hz]
+  simpa [hz, hi]
 
 def clearBlock
     {blocks width : ℕ}
@@ -138,7 +131,7 @@ theorem clearBlock_bad
     tribesBad (clearBlock word j) := by
   refine ⟨j, ?_⟩
   intro i
-  simp [zeroBlock, clearBlock]
+  simp [clearBlock]
 
 theorem clearBlock_agrees_of_first_ne
     {blocks width : ℕ}
@@ -169,15 +162,19 @@ theorem exists_missed_block
     ∃ j : Fin blocks, ∀ q ∈ coordinates, q.1 ≠ j := by
   classical
   let used : Finset (Fin blocks) := coordinates.image Prod.fst
-  have hused_le : used.card ≤ coordinates.card := by
-    exact Finset.card_image_le
-  have hused_lt : used.card < Fintype.card (Fin blocks) := by
-    simpa using lt_of_le_of_lt hused_le hcard
-  obtain ⟨j, hj⟩ := Finset.exists_not_mem_of_card_lt_card hused_lt
-  refine ⟨j, ?_⟩
-  intro q hq hqj
-  apply hj
-  simp [used, hq, hqj]
+  have hused_le : used.card ≤ coordinates.card := Finset.card_image_le
+  by_contra hnone
+  push_neg at hnone
+  have huniv_subset : (Finset.univ : Finset (Fin blocks)) ⊆ used := by
+    intro j hj
+    obtain ⟨q, hq, hqj⟩ := hnone j
+    have hqjeq : q.1 = j := not_ne.mp hqj
+    simp [used, hq, hqjeq]
+  have hcard_all : Fintype.card (Fin blocks) ≤ used.card := by
+    simpa using Finset.card_le_card huniv_subset
+  have : blocks ≤ coordinates.card := by
+    simpa using le_trans hcard_all hused_le
+  omega
 
 theorem tribes_width_lower
     {blocks width : ℕ}
@@ -209,10 +206,11 @@ theorem tribes_width_upper
   · intro other hbad
     obtain ⟨j, hj⟩ := hbad
     refine ⟨(j, chosen j), ?_, ?_⟩
-    · simp [coordinates, embedding]
+    · rw [show (j, chosen j) = embedding j by rfl]
+      exact Finset.mem_map.mpr ⟨j, Finset.mem_univ j, rfl⟩
     · have hone := hchosen j
       have hzero := hj (chosen j)
-      simp [hone, hzero]
+      simpa [hone, hzero]
 
 theorem tribes_not_bad
     {blocks width : ℕ}
@@ -222,7 +220,7 @@ theorem tribes_not_bad
   rintro ⟨j, hj⟩
   obtain ⟨i, hi⟩ := htribes j
   have hz := hj i
-  simp [hi, hz]
+  exact Bool.false_ne_true (hz.symm.trans hi)
 
 #print axioms positiveRail_valid
 #print axioms negativeRail_valid
