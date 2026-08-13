@@ -170,6 +170,27 @@ theorem oddLetter_firstSwap_other (a u v : α)
           simp [firstSwap, oddLetter, hxu, Ne.symm hau, Ne.symm hav]
         · simp [firstSwap, oddLetter, hxu, hxv, ih]
 
+theorem oddLetter_firstSwap_selected_false (u v : α) (huv : u ≠ v)
+    (xs : List α) (hu : oddLetter u xs = true)
+    (hv : oddLetter v xs = true) :
+    oddLetter u (firstSwap u v xs) = false ∧
+      oddLetter v (firstSwap u v xs) = false := by
+  have huMem : u ∈ xs := oddLetter_true_mem hu
+  constructor
+  · rw [oddLetter_firstSwap_left u v huv xs (Or.inl huMem), hu]
+    rfl
+  · rw [oddLetter_firstSwap_right u v huv xs (Or.inl huMem), hv]
+    rfl
+
+theorem oddLetter_firstSwap_unselected_false (a u v : α)
+    (hau : a ≠ u) (hav : a ≠ v) (xs : List α)
+    (ha : oddLetter a xs = false) :
+    oddLetter a (firstSwap u v xs) = false := by
+  rw [oddLetter_firstSwap_other a u v hau hav xs, ha]
+
+#print axioms oddLetter_firstSwap_selected_false
+#print axioms oddLetter_firstSwap_unselected_false
+
 /-- Toggle exactly the endpoint bits indexed by u and v. -/
 def toggleEndpoint (A : α → Bool) (u v : α) (a : α) : Bool :=
   if a = u then !A a else if a = v then !A a else A a
