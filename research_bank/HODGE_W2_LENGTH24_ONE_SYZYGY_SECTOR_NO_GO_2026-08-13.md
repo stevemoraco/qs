@@ -167,15 +167,23 @@ canonical additive identities leave a genuine numerical family. Writing
 \(c_1(E)=tD\), the remaining target equation is
 \[
 \begin{aligned}
-0={}&3t^2+(111-6u-18w)t-252u^2-24uw-36w^2\\
+0={}&3t^2+(111-6u+18w)t-252u^2-24uw+36w^2\\
    &\qquad +6888u+328w-59826.
 \end{aligned}
 \tag{4.4}
 \]
-For example \((u,w,t)=(6,-6,74)\) is an exact integral solution (the
-other root is \(-135\)). This is only a Chern-data countermodel, not an
-actual algebra, but it proves that NS integrality plus GRR cannot eliminate
-this type.
+For example \((u,w,t)=(-7,12,139)\) is an exact integral solution (the
+other root is \(-262\)); its discriminant is \(1203^2\). This small
+point is only a Chern-data countermodel and violates the separate first-
+generator slope bound. Even after imposing that slope bound and the two
+resultant-effectivity intersections, the exact integral point
+\[
+(u,w,t)=(-194,30,-2215)
+\]
+remains numerically admissible. Neither point asserts existence of an
+actual algebra, but together they prove that NS integrality, GRR, and the
+currently available elementary positivity tests cannot eliminate this
+type.
 
 ## 5. Additive obstructions that survive
 
