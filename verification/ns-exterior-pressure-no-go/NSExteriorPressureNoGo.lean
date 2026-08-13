@@ -70,7 +70,7 @@ theorem desired_det_nonzero_forces_exterior_leakage
     E * B - 2 * A * F * v ≠ 0 ∨
       2 * C * F * v - E * D ≠ 0 := by
   by_contra hnone
-  push_neg at hnone
+  push Not at hnone
   apply hdet
   apply exterior_z_cancel_forces_desired_det_zero hv htarget
   · linarith [hnone.1]
