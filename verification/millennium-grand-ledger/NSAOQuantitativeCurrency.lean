@@ -47,13 +47,33 @@ theorem cramer_retuning
     let y := (c * u - a * v) / (a * d - b * c)
     a * x + b * y + u = 0 ∧ c * x + d * y + v = 0 := by
   dsimp
-  have hdet' : -(c * b) + d * a ≠ 0 := by
-    intro hzero
-    apply hdet
-    calc
-      a * d - b * c = -(c * b) + d * a := by ring
-      _ = 0 := hzero
-  constructor <;> field_simp [hdet, hdet'] <;> ring
+  constructor
+  · calc
+      a * ((b * v - d * u) / (a * d - b * c)) +
+          b * ((c * u - a * v) / (a * d - b * c)) + u =
+          (a * (b * v - d * u) + b * (c * u - a * v) +
+            u * (a * d - b * c)) / (a * d - b * c) := by
+              field_simp [hdet]
+              ring
+      _ = 0 := by
+        have hnum :
+            a * (b * v - d * u) + b * (c * u - a * v) +
+              u * (a * d - b * c) = 0 := by ring
+        rw [hnum]
+        simp
+  · calc
+      c * ((b * v - d * u) / (a * d - b * c)) +
+          d * ((c * u - a * v) / (a * d - b * c)) + v =
+          (c * (b * v - d * u) + d * (c * u - a * v) +
+            v * (a * d - b * c)) / (a * d - b * c) := by
+              field_simp [hdet]
+              ring
+      _ = 0 := by
+        have hnum :
+            c * (b * v - d * u) + d * (c * u - a * v) +
+              v * (a * d - b * c) = 0 := by ring
+        rw [hnum]
+        simp
 
 /-- A strict reference margin survives an additive perturbation bounded by half
 the recorded reference value. -/
@@ -161,7 +181,7 @@ theorem inverse_shell_eq_half_pow (j : ℕ) :
 
 /-- Exact finite geometric-energy ledger. -/
 theorem dyadic_energy_partial_sum (n : ℕ) :
-    (∑ j in Finset.range n, (1 / 2 : ℝ) ^ j)
+    (∑ j ∈ Finset.range n, (1 / 2 : ℝ) ^ j)
       = 2 - 2 * (1 / 2 : ℝ) ^ n := by
   induction n with
   | zero => norm_num
@@ -173,7 +193,7 @@ theorem dyadic_energy_partial_sum (n : ℕ) :
 currency at most `2`; hence the corrected scaling removes the earlier
 shellwise-`O(1)` non-summability defect. -/
 theorem dyadic_pump_energy_uniformly_bounded (n : ℕ) :
-    (∑ j in Finset.range n, pumpEnergy j) ≤ 2 := by
+    (∑ j ∈ Finset.range n, pumpEnergy j) ≤ 2 := by
   simp_rw [pump_energy_identity, inverse_shell_eq_half_pow]
   rw [dyadic_energy_partial_sum]
   have hnonneg : 0 ≤ (1 / 2 : ℝ) ^ n := by positivity
@@ -181,7 +201,7 @@ theorem dyadic_pump_energy_uniformly_bounded (n : ℕ) :
 
 structure DyadicAOCurrency : Prop where
   energy : ∀ j, pumpEnergy j = (1 / 2 : ℝ) ^ j
-  finiteEnergy : ∀ n, (∑ j in Finset.range n, pumpEnergy j) ≤ 2
+  finiteEnergy : ∀ n, (∑ j ∈ Finset.range n, pumpEnergy j) ≤ 2
   growth : ∀ j, localGrowth j = shell j ^ 9
   viscousMargin : ∀ j, viscosityScale j / localGrowth j = (1 / 2 : ℝ) ^ j
   modulationMargin : ∀ j, envelopeBandwidth j / carrier j = (1 / 2 : ℝ) ^ j
@@ -230,5 +250,7 @@ theorem ao_quantitative_core : AOQuantitativeCore where
 #print axioms dyadic_pump_energy_uniformly_bounded
 #print axioms dyadic_ao_currency
 #print axioms ao_quantitative_core
+
+end
 
 end NSAOQuantitativeCurrency
