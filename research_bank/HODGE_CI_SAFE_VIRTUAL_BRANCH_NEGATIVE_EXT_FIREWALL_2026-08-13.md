@@ -222,7 +222,62 @@ ordinary complete-intersection object and its nontrivial local
 different nonsplit architecture that simultaneously kills negative Ext,
 preserves the K-class, and retains the local nullhomotopy.
 
-## 6. Claim, critic, salvage
+## 6. A connective local boundary point that is safe but divisorial
+
+The failure of split gluing does not mean every nonzero local coupling
+restores the Atiyah-square obstruction. There is an exact positive boundary
+example.
+
+Return to \(I=(x,y)\) and (1). Let \(J_0=\left(\begin{smallmatrix}
+0&-1\\1&0
+\end{smallmatrix}\right)\). Multiplication by \(x^2\) on \(I\) lifts
+to a map \(f:I\to N\) using
+\[
+ C=x^2J_0:R^2\to R^2,qquad H=\binom{-x}{0}:R\to R^2.
+\]
+The identities
+\[
+ (-y,x)C=x^2(x,y),qquad CA=BH
+\]
+verify the chain map. Since \(qf=x^2\operatorname{id}_I\), the map
+\(f\) is injective. Its mapping cone is already minimal:
+\[
+ 0\to R^2\xrightarrow{D_2}R^4\xrightarrow{D_1}R^2
+ \to\operatorname{coker}f\to0, \tag{18}
+\]
+with
+\[
+ D_2=\begin{pmatrix}
+ -y&-x\\x&0\\0&y\\0&-x
+ \end{pmatrix},qquad
+ D_1=\begin{pmatrix}
+ x^2&xy&0&-x^2\\
+ xy&y^2&x^2&0
+ \end{pmatrix}. \tag{19}
+\]
+For \(\pi=\partial_x\wedge\partial_y\), the raw Atiyah-square block is
+\[
+ (D_1)_x(D_2)_y-(D_1)_y(D_2)_x
+ =
+ \begin{pmatrix}-3x&0\\-3y&3x\end{pmatrix}
+ =V D_2, \tag{20}
+\]
+where
+\[
+ V=\begin{pmatrix}
+ 0&-3&0&0\\3&0&0&-6
+ \end{pmatrix}.
+\]
+All bivectors involving the other smooth parameters give zero. Hence every
+local bivector block is nullhomotopic: this nonsplit connective object is
+locally Atiyah-square safe.
+
+It is not a selected-point repair. Because \(qf=x^2\operatorname{id}_I\),
+its cokernel is supported along the divisor \(x=0\), not only at the
+crossing point. Thus the example proves that connectivity and local safety
+are compatible, but only after changing the punctured support geometry.
+
+## 7. Claim, critic, salvage
 
 **Claim that survives.** Equations (1)--(11) give an exact locally
 Atiyah-safe virtual representative of a complete-intersection branch, with
