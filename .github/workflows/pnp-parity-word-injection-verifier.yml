@@ -26,7 +26,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/pnp-parity-word-injection/PNPParityWordInjection.lean
-          EXPECTED_GIT_BLOB=ccc9b9800f10cb1f2d6caa0c8e3f7039c7691583
+          EXPECTED_GIT_BLOB=0e5db9c684c5cc3a84c4c86d74a06ca45fa7dbcc
           ACTUAL_GIT_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_GIT_BLOB" = "$EXPECTED_GIT_BLOB"
           python3 - <<'PY'
@@ -39,8 +39,8 @@ jobs:
               raise SystemExit(f'forbidden source token: {match.group(2)}')
           if 'Lean.ofReduceBool' in source or 'native_decide' in source:
               raise SystemExit('forbidden source token')
-          if source.count('#print axioms') != 11:
-              raise SystemExit('expected exactly eleven staged #print axioms commands')
+          if source.count('#print axioms') != 13:
+              raise SystemExit('expected exactly thirteen staged #print axioms commands')
           print('source trust preflight: clean')
           PY
 
