@@ -28,11 +28,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/b2-round42/PNPTwoRowBernoulliOptimum.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
-            echo 'Forbidden proof placeholder or custom proof carrier found.' >&2
-            exit 1
-          fi
+          files=(
+            verification/b2-round42/PNPTwoRowBernoulliOptimum.lean
+            verification/b2-round42/PNPRepSATAntiMagnification.lean
+          )
+          for file in "${files[@]}"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
+              echo "Forbidden proof placeholder or custom proof carrier found in $file" >&2
+              exit 1
+            fi
+          done
 
       - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
         shell: bash
@@ -45,12 +50,16 @@ jobs:
           cd verification/b2-round42
           lake update
           lake exe cache get
-          lake env lean PNPTwoRowBernoulliOptimum.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for file in PNPTwoRowBernoulliOptimum.lean PNPRepSATAntiMagnification.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite round-42 PNP two-row optimum cores.'
+          echo 'VERIFIED finite round-42 PNP optimum and anti-magnification cores.'
 
       - name: Upload compiler evidence
         if: always()
