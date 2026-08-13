@@ -33,7 +33,7 @@ jobs:
           assert not m, m.group(2) if m else ''
           assert 'native_decide' not in source
           assert 'Lean.ofReduceBool' not in source
-          assert source.count('#print axioms') == 5
+          assert source.count('#print axioms') == 6
           payload = json.dumps({
               'content': source,
               'environment': 'lean-4.30.0',
@@ -56,5 +56,5 @@ jobs:
           assert not lean.get('errors', []) and not lean.get('warnings', [])
           assert not tool.get('errors', []) and not tool.get('warnings', [])
           assert 'sorryAx' not in json.dumps(result)
-          print('VERIFIED: exact YM flag gauge-invariance firewall compiled under AXLE Lean 4.30')
+          print('VERIFIED: strengthened YM flag gauge-invariance firewall compiled under AXLE Lean 4.30')
           PY
