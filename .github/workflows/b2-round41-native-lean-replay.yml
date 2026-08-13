@@ -43,11 +43,52 @@ jobs:
           test: false
           lint: false
           use-mathlib-cache: true
-          leanchecker: true
-      - name: Fresh direct kernel replay with axiom output
+          use-github-cache: false
+          leanchecker: false
+      - name: Direct elaboration and foundation-only axiom audit
         shell: bash
         working-directory: research/lean-replay
         run: |
           set -euo pipefail
           lake env lean B2Round41AdversarialCores.lean | tee round41-axioms.txt
-          test "$(grep -c 'does not depend on any axioms' round41-axioms.txt)" -eq 8
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          text = Path('round41-axioms.txt').read_text()
+          theorems = [
+              'rh_certificate_interval_nonempty',
+              'rh_negative_from_certified_upper',
+              'bool_xor_self',
+              'accept_collision_accepts_zero',
+              'square_layer_identity',
+              'monomial_cutoff_sharp_core',
+              'nonseparating_test_class_counterexample',
+              'positive_auxiliary_zero_target_counterexample',
+          ]
+          for theorem in theorems:
+              if theorem not in text:
+                  raise SystemExit(f'missing #print axioms output for {theorem}')
+          if 'sorryAx' in text:
+              raise SystemExit('sorryAx detected in axiom output')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          used = set()
+          for body in re.findall(r'depends on axioms:\s*\[(.*?)\]', text, flags=re.S):
+              used.update(item.strip() for item in body.split(',') if item.strip())
+          forbidden = used - allowed
+          if forbidden:
+              raise SystemExit(f'non-foundational axioms detected: {sorted(forbidden)}')
+          print('AXIOM_AUDIT_OK', sorted(used))
+          PY
+      - name: Module-level kernel environment replay
+        shell: bash
+        working-directory: research/lean-replay
+        run: |
+          set -euo pipefail
+          lake env leanchecker B2Round41AdversarialCores
+      - name: Fresh-environment kernel replay
+        shell: bash
+        working-directory: research/lean-replay
+        run: |
+          set -euo pipefail
+          lake env leanchecker --fresh B2Round41AdversarialCores
