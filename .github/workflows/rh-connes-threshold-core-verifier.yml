@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-connes-threshold-core/RHConnesThresholdCore.lean
-          EXPECTED=2762d92eccffa19b5908315567952afa678fb49fa393c4ddb585e34be95674a1
+          EXPECTED=6b6ade5ac2d5104137d7a0646d0cf05d61d48716fcb9486df77526af9780ef81
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
