@@ -149,15 +149,13 @@ theorem fixed_weight_closed_form
       8 * r / (16 * r ^ 4 - L ^ 2) := by
   have hminus_rewrite :
       1 / (r - L / (4 * r)) = 4 * r / (4 * r ^ 2 - L) := by
-    field_simp [hr, hminus]
-    ring
+    field_simp [hr, hminus] <;> ring
   have hplus_rewrite :
       1 / (r + L / (4 * r)) = 4 * r / (4 * r ^ 2 + L) := by
-    field_simp [hr, hplus]
-    ring
+    field_simp [hr, hplus] <;> ring
   rw [hminus_rewrite, hplus_rewrite]
-  field_simp [hL, hminus, hplus, hden]
-  ring
+  apply (eq_div_iff hden).2
+  field_simp [hL, hminus, hplus] <;> ring
 
 /-- The closed tangent weight is positive on the prime-like domain
 `r>0`, `0<L<4r^2`. -/
