@@ -2,7 +2,9 @@ name: PNP restriction averaging Lean replay
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - b2/pnp-restriction-replay-20260813
     paths:
       - 'verification/pnp-restriction-averaging/**'
       - '.github/workflows/pnp-restriction-averaging.yml'
