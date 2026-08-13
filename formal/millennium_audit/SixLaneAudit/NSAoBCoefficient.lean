@@ -2,7 +2,7 @@ import Mathlib
 
 namespace SixLaneAudit.NSAOBCoefficient
 
-def simpleB (β r Γ dΓ dW : ℝ) : ℝ :=
+noncomputable def simpleB (β r Γ dΓ dW : ℝ) : ℝ :=
   -2 * β * Γ * (dW + β * dΓ) / (r * (1 + β ^ 2 * r ^ 2))
 
 theorem ao_b_simplification
