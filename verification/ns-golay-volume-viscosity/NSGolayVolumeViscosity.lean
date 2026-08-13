@@ -100,11 +100,13 @@ theorem cubic_coefficient_ceiling
       _ ≤ (r ^ 2 * epsilon ^ 2 * nu * A) * (K * cStar) :=
         hupperScaled
       _ = K * r ^ 2 * epsilon ^ 2 * nu * A * cStar := by ring
-  have hmul :
-      cStar ^ 3 * cStar ≤
-        (K * r ^ 2 * epsilon ^ 2 * nu * A) * cStar := by
-    nlinarith
-  exact (mul_le_mul_right₀ hcStar).mp hmul
+  by_contra hnot
+  have hlt : K * r ^ 2 * epsilon ^ 2 * nu * A < cStar ^ 3 :=
+    lt_of_not_ge hnot
+  have hpos :
+      0 < (cStar ^ 3 - K * r ^ 2 * epsilon ^ 2 * nu * A) * cStar :=
+    mul_pos (sub_pos.mpr hlt) hcStar
+  nlinarith [hfourth]
 
 /-- BANKER: the full packet hypotheses imply the cubic ceiling directly. -/
 theorem full_uncancelled_route_cubic_ceiling
