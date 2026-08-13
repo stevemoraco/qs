@@ -10,5 +10,6 @@ lean_lib BSDGVSemiprimeDensity where
   roots := #[
     `BSDGVSemiprimeDensity,
     `BSDGVAsymptoticAggregation,
-    `BSDGVDiscriminantHeight
+    `BSDGVDiscriminantHeight,
+    `BSDGVRootNumberSpectrum
   ]
