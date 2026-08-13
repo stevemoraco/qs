@@ -1,0 +1,73 @@
+name: Verify BSD Mazur-Tate spectral core
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_mazur_tate_spectral/**"
+      - ".github/workflows/verify-bsd-mazur-tate-spectral.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_mazur_tate_spectral/**"
+      - ".github/workflows/verify-bsd-mazur-tate-spectral.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_mazur_tate_spectral
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source and trust gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=BSDMazurTateSpectralExtractor.lean
+          test "$(git hash-object "$file")" = "7985e5a36e6e4769499629158b83ce1689610447"
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean BSDMazurTateSpectralExtractor.lean 2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-mazur-tate-spectral-replay
+          path: |
+            verification/bsd_mazur_tate_spectral/BSDMazurTateSpectralExtractor.lean
+            verification/bsd_mazur_tate_spectral/lean-output.txt
+          if-no-files-found: warn
