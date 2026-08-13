@@ -2,6 +2,9 @@ import Mathlib
 
 namespace NSOnePumpSidebandFirewall
 
+noncomputable section
+set_option linter.unusedSimpArgs false
+
 /-!
 Finite vector algebra for the real monochromatic pump at carriers `q` and `-q`.
 It proves that a perturbation at `p` forces both sidebands `p+q` and `p-q`
@@ -74,7 +77,7 @@ theorem plus_output_formula (a b : ℂ) :
     plusOutput a b = ⟨0, 0, a + Complex.I * b⟩ := by
   ext <;>
     simp [plusOutput, projectPlus, plusPreprojection, add, scale, dot,
-      pumpPlus, p, q, seed] <;>
+      pumpPlus, p, q, seed, Complex.I_mul_I] <;>
     ring
 
 /-- The reality-conjugate pump forces the left sideband with the same coefficient. -/
@@ -82,7 +85,7 @@ theorem minus_output_formula (a b : ℂ) :
     minusOutput a b = ⟨0, 0, a + Complex.I * b⟩ := by
   ext <;>
     simp [minusOutput, projectMinus, minusPreprojection, add, scale, dot,
-      pumpMinus, p, negQ, seed] <;>
+      pumpMinus, p, negQ, seed, Complex.I_mul_I] <;>
     ring
 
 /-- Both first-generation sidebands are forced at exactly the same linear order. -/
@@ -122,4 +125,5 @@ theorem one_sided_two_frequency_truncation_not_closed :
 #print axioms unit_minus_output_nonzero
 #print axioms one_sided_two_frequency_truncation_not_closed
 
+end
 end NSOnePumpSidebandFirewall
