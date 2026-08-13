@@ -155,10 +155,10 @@ theorem weight_pos_of_identity_box
       h3lo, h3hi, h4lo, h4hi, h5lo, h5hi⟩
   intro i
   fin_cases i
-  · simp only [weight, Matrix.cons_val_zero]
+  · change 0 < (-m 0 - m 1 + 3*m 2 - 4*m 3) / 8
     have hnum : 0 < -m 0 - m 1 + 3*m 2 - 4*m 3 := by linarith
     positivity
-  · simp only [weight, Matrix.cons_val_one, Matrix.cons_val_zero]
+  · change 0 < (-m 0 - m 1 + 3*m 2 + 4*m 3) / 8
     have hnum : 0 < -m 0 - m 1 + 3*m 2 + 4*m 3 := by linarith
     positivity
   · change 0 < (-m 0 + 3*m 1 - m 2 - 4*m 4) / 8
