@@ -218,6 +218,53 @@ theorem finiteDepletionOverrunImpossible
     finiteSelectedIntervalDepletion n budget activity error c hstep hterminal
   linarith
 
+/-- The scalar parabolic balance for one frequency `N`: a spatial-gradient
+cost `N^2` acting for a time `N^{-2}` has order-one total action. -/
+theorem parabolicFrequencyAction (N : ℕ) (hN : 0 < N) :
+    ((N : ℝ) ^ 2) * (1 / ((N : ℝ) ^ 2)) = 1 := by
+  have hNneNat : N ≠ 0 := Nat.ne_of_gt hN
+  have hNne : (N : ℝ) ≠ 0 := by exact_mod_cast hNneNat
+  field_simp [hNne]
+
+/-- An order-minus-one time-trace cost for the same parabolic packet scales
+like `N * N^{-2} = N^{-1}`. -/
+theorem parabolicFrequencyWeakTrace (N : ℕ) (hN : 0 < N) :
+    (N : ℝ) * (1 / ((N : ℝ) ^ 2)) = 1 / (N : ℝ) := by
+  have hNneNat : N ≠ 0 := Nat.ne_of_gt hN
+  have hNne : (N : ℝ) ≠ 0 := by exact_mod_cast hNneNat
+  field_simp [hNne]
+
+/-- For every fixed frequency cutoff and every positive trace tolerance,
+there is a frequency above the cutoff whose parabolic gradient action is
+exactly one while its order-minus-one `L^1_t` trace cost is below the
+tolerance.  This is the finite scaling firewall behind the exact decaying
+shear-flow initial-layer counterexample. -/
+theorem arbitrarilyHighFrequencyCriticalActionWeakTrace
+    (M : ℕ) (ε : ℝ) (hε : 0 < ε) :
+    ∃ N : ℕ,
+      M < N ∧
+      0 < N ∧
+      ((N : ℝ) ^ 2) * (1 / ((N : ℝ) ^ 2)) = 1 ∧
+      (N : ℝ) * (1 / ((N : ℝ) ^ 2)) < ε := by
+  obtain ⟨N, hN⟩ := exists_nat_gt (max (M : ℝ) (1 / ε))
+  have hMNreal : (M : ℝ) < (N : ℝ) :=
+    lt_of_le_of_lt (le_max_left _ _) hN
+  have hMN : M < N := by exact_mod_cast hMNreal
+  have hNpos : 0 < N := lt_of_le_of_lt (Nat.zero_le M) hMN
+  have hInvN : (1 / ε : ℝ) < (N : ℝ) :=
+    lt_of_le_of_lt (le_max_right _ _) hN
+  have hNposR : 0 < (N : ℝ) := by exact_mod_cast hNpos
+  have hmul : 1 < (N : ℝ) * ε := (div_lt_iff₀ hε).mp hInvN
+  have hmul' : 1 < ε * (N : ℝ) := by
+    simpa [mul_comm] using hmul
+  have hsmallInv : 1 / (N : ℝ) < ε :=
+    (div_lt_iff₀ hNposR).2 hmul'
+  refine ⟨N, hMN, hNpos, parabolicFrequencyAction N hNpos, ?_⟩
+  calc
+    (N : ℝ) * (1 / ((N : ℝ) ^ 2)) = 1 / (N : ℝ) :=
+      parabolicFrequencyWeakTrace N hNpos
+    _ < ε := hsmallInv
+
 #print axioms equalCellTotal
 #print axioms noUniformSingleCellFraction
 #print axioms typedZeroDoesNotImplyExternalZero
@@ -226,5 +273,8 @@ theorem finiteDepletionOverrunImpossible
 #print axioms atomicLedgerFundsArbitrarilyManyNestedScales
 #print axioms finiteSelectedIntervalDepletion
 #print axioms finiteDepletionOverrunImpossible
+#print axioms parabolicFrequencyAction
+#print axioms parabolicFrequencyWeakTrace
+#print axioms arbitrarilyHighFrequencyCriticalActionWeakTrace
 
 end NavierStokesCoveringCountermodel
