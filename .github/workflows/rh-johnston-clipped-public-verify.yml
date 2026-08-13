@@ -24,11 +24,13 @@ jobs:
           dir='verification/rh-johnston-clipped-public'
           clipped="$dir/RHJohnstonClippedPrimePrefix.lean"
           recurrence="$dir/RHJohnstonPrimeEnergyRecurrence.lean"
+          actual="$dir/RHJohnstonActualPrimePrefix.lean"
           test "$(git hash-object "$clipped")" = '38766cb794fac3d5d934a670d8c92466fd82f9e3'
           test "$(git hash-object "$recurrence")" = 'b2eb28fc85c94a450329d77d16cb4fdc0a7cdaae'
-          { git hash-object "$clipped"; git hash-object "$recurrence"; } | tee "$dir/source-blobs.txt"
-          sha256sum "$clipped" "$recurrence" | tee "$dir/source-sha256.txt"
-          for file in "$clipped" "$recurrence"; do
+          test "$(git hash-object "$actual")" = '8714fb11c5408a10ed8b6059c6a85708c69a2de2'
+          { git hash-object "$clipped"; git hash-object "$recurrence"; git hash-object "$actual"; } | tee "$dir/source-blobs.txt"
+          sha256sum "$clipped" "$recurrence" "$actual" | tee "$dir/source-sha256.txt"
+          for file in "$clipped" "$recurrence" "$actual"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
             if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
             if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
@@ -50,12 +52,15 @@ jobs:
           s1=$?
           lake env lean RHJohnstonPrimeEnergyRecurrence.lean > recurrence-output.log 2>&1
           s2=$?
+          lake env lean RHJohnstonActualPrimePrefix.lean > actual-output.log 2>&1
+          s3=$?
           set -e
-          cat clipped-output.log recurrence-output.log | tee lean-output.log
+          cat clipped-output.log recurrence-output.log actual-output.log | tee lean-output.log
           if [ "$s1" -ne 0 ]; then exit "$s1"; fi
           if [ "$s2" -ne 0 ]; then exit "$s2"; fi
+          if [ "$s3" -ne 0 ]; then exit "$s3"; fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
-          echo 'VERIFIED RH Johnston clipped reduction and prime-energy recurrence.'
+          echo 'VERIFIED RH Johnston clipped reduction, recurrence, and actual mathlib prime prefix.'
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
