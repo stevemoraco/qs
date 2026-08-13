@@ -4,9 +4,9 @@ namespace SixLaneAudit.RHPositiveSquareEnergy
 
 def positivePart (x : Real) : Real := max x 0
 
-def positiveEnergy (x : Real) : Real := positivePart x ^ 2 / 2
+noncomputable def positiveEnergy (x : Real) : Real := positivePart x ^ 2 / 2
 
-def residual (a b : Real) : Real :=
+noncomputable def residual (a b : Real) : Real :=
   positivePart b * (b - a) - (positiveEnergy b - positiveEnergy a)
 
 theorem positiveEnergy_nonneg (x : Real) : 0 <= positiveEnergy x := by
@@ -28,7 +28,7 @@ theorem residual_nonneg (a b : Real) : 0 <= residual a b := by
     rw [max_eq_right hb']
     by_cases ha : 0 <= a
     · rw [max_eq_left ha]
-      positivity
+      nlinarith [sq_nonneg a]
     · have ha' : a <= 0 := le_of_not_ge ha
       rw [max_eq_right ha']
       norm_num
@@ -45,7 +45,7 @@ theorem positiveEnergy_mono {a b : Real} (hab : a <= b) :
       nlinarith [mul_nonneg hdiff hsum]
     · have ha' : a <= 0 := le_of_not_ge ha
       rw [max_eq_right ha']
-      positivity
+      nlinarith [sq_nonneg b]
   · have hb' : b <= 0 := le_of_not_ge hb
     have ha' : a <= 0 := hab.trans hb'
     rw [max_eq_right ha', max_eq_right hb']
