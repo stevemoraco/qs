@@ -72,7 +72,17 @@ theorem six_routes_iff_six_goals
 choose the truth value of the goal. -/
 theorem route_mutual_exclusivity (Goal : Prop) :
     ¬ (Nonempty (PrizeRoute Goal) ∧ ¬ Goal) := by
-  simpa only [nonempty_prizeRoute_iff]
+  rintro ⟨⟨route⟩, hnot⟩
+  exact hnot route.solve
+
+/-- Even a uniform proof that every proposition is exclusive from its negation
+cannot be converted into a uniform positive-side chooser. -/
+theorem mutual_exclusivity_is_not_a_positive_chooser :
+    ¬ (∀ Goal : Prop, (¬ (Goal ∧ ¬ Goal)) → Goal) := by
+  intro choosePositive
+  exact choosePositive False (by simp)
+
+noncomputable section
 
 /-- Scalar density functions from the repository's Haar-inversion audit. -/
 def haarDensity (d : ℝ) : ℝ := d⁻¹ ^ 2
@@ -88,9 +98,11 @@ def transformedDensity (d : ℝ) : ℝ :=
 theorem transformedDensity_eq_haarDensity
     {d : ℝ} (hd : d ≠ 0) :
     transformedDensity d = haarDensity d := by
-  field_simp [transformedDensity, inversePointDensity,
-    inversionJacobian, haarDensity, hd]
-  ring
+  simp only [transformedDensity, inversePointDensity,
+    inversionJacobian, haarDensity]
+  calc
+    d ^ 2 * d⁻¹ ^ 4 = (d * d⁻¹) ^ 2 * d⁻¹ ^ 2 := by ring
+    _ = d⁻¹ ^ 2 := by simp [hd]
 
 /-- Exact determinant-two witness against a spurious extra Haar-density factor. -/
 theorem claimed_extra_weight_fails_at_two :
@@ -110,6 +122,8 @@ structure ExactObjectFirewall : Prop where
     (A ∧ B ∧ C ∧ D ∧ E ∧ F)
   routeConsistent : ∀ Goal : Prop,
     ¬ (Nonempty (PrizeRoute Goal) ∧ ¬ Goal)
+  noPositiveChooser :
+    ¬ (∀ Goal : Prop, (¬ (Goal ∧ ¬ Goal)) → Goal)
   haarInversionExact : ∀ {d : ℝ}, d ≠ 0 →
     transformedDensity d = haarDensity d
   extraWeightRefuted :
@@ -119,6 +133,7 @@ theorem exact_object_firewall : ExactObjectFirewall where
   routeExact := nonempty_prizeRoute_iff
   sixRouteExact := six_routes_iff_six_goals
   routeConsistent := route_mutual_exclusivity
+  noPositiveChooser := mutual_exclusivity_is_not_a_positive_chooser
   haarInversionExact := transformedDensity_eq_haarDensity
   extraWeightRefuted := claimed_extra_weight_fails_at_two
 
@@ -127,8 +142,11 @@ theorem exact_object_firewall : ExactObjectFirewall where
 #print axioms nonempty_prizeRoute_iff
 #print axioms six_routes_iff_six_goals
 #print axioms route_mutual_exclusivity
+#print axioms mutual_exclusivity_is_not_a_positive_chooser
 #print axioms transformedDensity_eq_haarDensity
 #print axioms claimed_extra_weight_fails_at_two
 #print axioms exact_object_firewall
+
+end
 
 end MillenniumGrandExactObject
