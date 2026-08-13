@@ -1,0 +1,154 @@
+name: Unified Braid Public Replay
+
+on:
+  push:
+    branches:
+      - verification/unified-braid-inversion-audit-20260813
+    paths:
+      - 'verification/unified_braid/**'
+      - '.github/workflows/unified-braid-public-replay.yml'
+  pull_request:
+    paths:
+      - 'verification/unified_braid/**'
+      - '.github/workflows/unified-braid-public-replay.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch immutable sources and verify Git blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/unified_braid/exact_sources
+
+          curl --fail --location --retry 8 --retry-all-errors \
+            'https://raw.githubusercontent.com/stevemoraco/RH-Lean/2d86000b4782b147c2443b6f2244db25e75ede6c/Millennium/GrandBraid/UnifiedSevenProblemBraid.lean' \
+            -o verification/unified_braid/exact_sources/UnifiedSevenProblemBraid.lean
+
+          curl --fail --location --retry 8 --retry-all-errors \
+            'https://raw.githubusercontent.com/stevemoraco/RH-Lean/99a0d103251d29fcd370fc23ca358cffefd2beb1/Millennium/GrandBraid/MutualExclusivityAudit.lean' \
+            -o verification/unified_braid/exact_sources/MutualExclusivityAudit.lean
+
+          test "$(git hash-object verification/unified_braid/exact_sources/UnifiedSevenProblemBraid.lean)" \
+            = 'c335b15902470af581f4b5cc4c7ec00e254aee6d'
+          test "$(git hash-object verification/unified_braid/exact_sources/MutualExclusivityAudit.lean)" \
+            = 'f84674b364ac5ddacef3482316b940c3567b7235'
+
+          sha256sum verification/unified_braid/exact_sources/*.lean \
+            | tee verification/unified_braid/source-sha256.txt
+
+      - name: Static honesty firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in verification/unified_braid/exact_sources/*.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx)\b|^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              echo "forbidden proof carrier in $file" >&2
+              exit 1
+            fi
+            if grep -nE '\bnative_decide\b|\bLean\.ofReduceBool\b' "$file"; then
+              echo "disallowed proof shortcut in $file" >&2
+              exit 1
+            fi
+          done
+
+      - name: Submit exact sources to Lean honesty firewall
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          SOURCE_DIR = pathlib.Path('verification/unified_braid/exact_sources')
+          SOURCES = [
+              SOURCE_DIR / 'UnifiedSevenProblemBraid.lean',
+              SOURCE_DIR / 'MutualExclusivityAudit.lean',
+          ]
+
+          def request_json(request_or_url, attempts=15, timeout=120):
+              last = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=timeout) as response:
+                          return json.load(response)
+                  except (
+                      TimeoutError,
+                      urllib.error.URLError,
+                      urllib.error.HTTPError,
+                      OSError,
+                  ) as error:
+                      last = error
+                      delay = min(5 * attempt, 60)
+                      print(
+                          f'network attempt {attempt}/{attempts} failed: '
+                          f'{type(error).__name__}: {error}; sleeping {delay}s',
+                          flush=True,
+                      )
+                      time.sleep(delay)
+              raise RuntimeError(f'retry budget exhausted: {last}')
+
+          results = []
+          for source_path in SOURCES:
+              request = urllib.request.Request(
+                  f'{API}/compile',
+                  data=json.dumps({
+                      'name': f'public-unified-braid-{source_path.stem}',
+                      'lean_source': source_path.read_text(),
+                  }).encode(),
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              job = request_json(request)
+              job_id = job['id']
+              print(f'{source_path}: submitted job {job_id}', flush=True)
+
+              for poll in range(240):
+                  time.sleep(20)
+                  try:
+                      job = request_json(
+                          f'{API}/jobs/{job_id}', attempts=4, timeout=120
+                      )
+                  except RuntimeError as error:
+                      print(f'{source_path}: transient poll error: {error}', flush=True)
+                      continue
+                  print(
+                      f'{source_path}: poll {poll}: '
+                      f"status={job.get('status')} verdict={job.get('verdict')}",
+                      flush=True,
+                  )
+                  if job.get('status') in ('done', 'failed'):
+                      break
+              else:
+                  raise SystemExit(f'{source_path}: no verdict before timeout')
+
+              print(json.dumps(job, indent=2), flush=True)
+              results.append(job)
+              if job.get('verdict') != 'VERIFIED':
+                  raise SystemExit(f'{source_path}: verdict is not VERIFIED')
+              if job.get('sorry_count') != 0:
+                  raise SystemExit(f'{source_path}: sorry_count is not zero')
+
+          pathlib.Path('verification/unified_braid/verdicts.json').write_text(
+              json.dumps(results, indent=2)
+          )
+          PY
+
+      - name: Upload exact evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-braid-public-replay
+          path: |
+            verification/unified_braid/exact_sources/*.lean
+            verification/unified_braid/source-sha256.txt
+            verification/unified_braid/verdicts.json
+          if-no-files-found: error
