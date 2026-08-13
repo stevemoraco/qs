@@ -98,13 +98,13 @@ jobs:
 
           text = Path('lean-source-output.log').read_text()
           names = [
-              'NSTerminalSupportCounterexample.residual_future_supported',
-              'NSTerminalSupportCounterexample.residual_tail_zero',
-              'NSTerminalSupportCounterexample.residual_partial_sum_eq_one',
-              'NSTerminalSupportCounterexample.constant_one_not_leftLimitZero',
-              'NSTerminalSupportCounterexample.future_support_zero_tail_not_terminal_zero',
-              'NSTerminalSupportCounterexample.terminallyAbsent_leftLimitZero',
-              'NSTerminalSupportCounterexample.leftLimitZero_of_finitePart_remainder',
+              'residual_future_supported',
+              'residual_tail_zero',
+              'residual_partial_sum_eq_one',
+              'constant_one_not_leftLimitZero',
+              'future_support_zero_tail_not_terminal_zero',
+              'terminallyAbsent_leftLimitZero',
+              'leftLimitZero_of_finitePart_remainder',
           ]
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
           report = []
