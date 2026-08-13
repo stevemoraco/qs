@@ -2,7 +2,9 @@ name: PNP restriction averaging Lean replay
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - automation/b1-pnp-positive-mass-suffices-20260813
     paths:
       - 'verification/pnp-restriction-averaging/**'
       - '.github/workflows/pnp-restriction-averaging.yml'
@@ -22,15 +24,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/pnp-restriction-averaging/PNPRestrictionAveraging.lean
-          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
-            echo 'Explicit proof hole found'
-            exit 1
-          fi
-          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
-            echo 'Forbidden escape hatch found'
-            exit 1
-          fi
+          for file in \
+            verification/pnp-restriction-averaging/PNPRestrictionAveraging.lean \
+            verification/pnp-restriction-averaging/PNPPathologyMassFinite.lean \
+            verification/pnp-restriction-averaging/PNPPathologyCatalogueFinite.lean \
+            verification/pnp-restriction-averaging/PNPConditioningFinite.lean
+          do
+            if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+              echo "Explicit proof hole found in $file"
+              exit 1
+            fi
+            if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+              echo "Forbidden escape hatch found in $file"
+              exit 1
+            fi
+          done
 
       - name: Install Lean
         shell: bash
@@ -52,5 +60,13 @@ jobs:
         working-directory: verification/pnp-restriction-averaging
         run: |
           set -euo pipefail
-          lake env lean PNPRestrictionAveraging.lean | tee lean-replay.log
+          : > lean-replay.log
+          for file in \
+            PNPRestrictionAveraging.lean \
+            PNPPathologyMassFinite.lean \
+            PNPPathologyCatalogueFinite.lean \
+            PNPConditioningFinite.lean
+          do
+            lake env lean "$file" | tee -a lean-replay.log
+          done
           test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
