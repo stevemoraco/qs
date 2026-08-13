@@ -84,7 +84,7 @@ theorem descending_weighted_toll_lower_bound
   calc
     (a ^ 2 - b ^ 2) ^ 2 / (a * (a + b) ^ 2) =
         ∑ i ∈ s, w i * c := by
-          rw [Finset.sum_mul, hmass]
+          rw [← Finset.sum_mul, hmass]
           simp only [c]
           ring
     _ ≤ ∑ i ∈ s, w i * (2 / (a + b) - r i) :=
@@ -114,7 +114,7 @@ theorem increasing_weighted_toll_lower_bound
   calc
     (b ^ 2 - a ^ 2) ^ 2 / (a * (a + b) ^ 2) =
         ∑ i ∈ s, w i * c := by
-          rw [Finset.sum_mul, hmass]
+          rw [← Finset.sum_mul, hmass]
           simp only [c]
           ring
     _ ≤ ∑ i ∈ s, w i * (r i - 2 / (a + b)) :=
