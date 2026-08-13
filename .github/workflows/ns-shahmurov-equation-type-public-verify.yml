@@ -24,7 +24,7 @@ jobs:
           dir='verification/ns-shahmurov-equation-type-public'
           file="$dir/NSShahmurovEquationTypeFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='71c6c9907aa721d3003715f39a97b6be551a5c73'
+          expected_blob='de8628436755eb9a23bc205c8c1bb4f7602c6883'
           test "$actual_blob" = "$expected_blob"
           printf 'public_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
