@@ -35,6 +35,7 @@ jobs:
             verification/b2-round42/BSDBoundedDepthShaFirewall.lean
             verification/b2-round42/HodgeClaimTypeFirewalls.lean
             verification/b2-round42/YMCarlemanDeterminantFirewall.lean
+            verification/b2-round42/UniformTypedLeftInverseFirewall.lean
           )
           for file in "${files[@]}"; do
             if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "$file"; then
@@ -69,6 +70,7 @@ jobs:
             BSDBoundedDepthShaFirewall.lean
             HodgeClaimTypeFirewalls.lean
             YMCarlemanDeterminantFirewall.lean
+            UniformTypedLeftInverseFirewall.lean
           )
           for file in "${files[@]}"; do
             echo "===== $file =====" | tee -a lean-output.log
@@ -78,7 +80,7 @@ jobs:
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED all six finite round-42 lane firewalls.'
+          echo 'VERIFIED all six finite round-42 lane firewalls and the uniform left-inverse core.'
 
       - name: Upload compiler evidence
         if: always()
