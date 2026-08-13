@@ -145,6 +145,14 @@ jobs:
           lake env lean lean-worker/MillenniumBraidAll.lean 2>&1 | tee unified-axioms.txt
           ! grep -q 'sorryAx' unified-axioms.txt
 
+      - name: Replay 138-module expanded candidate
+        working-directory: verification/millennium-braid-everything/project
+        run: |
+          set -euo pipefail
+          lake build MillenniumExpandedCandidate 2>&1 | tee expanded-build.txt
+          lake env lean lean-worker/MillenniumExpandedCandidate.lean 2>&1 | tee expanded-axioms.txt
+          ! grep -q 'sorryAx' expanded-axioms.txt
+
       - name: Generate SHA and declaration manifest
         working-directory: verification/millennium-braid-everything/project
         run: |
@@ -216,4 +224,6 @@ jobs:
             verification/millennium-braid-everything/project/unified-manifest.json
             verification/millennium-braid-everything/project/module-replay.tsv
             verification/millennium-braid-everything/project/module-logs/
+            verification/millennium-braid-everything/project/expanded-build.txt
+            verification/millennium-braid-everything/project/expanded-axioms.txt
           if-no-files-found: warn
