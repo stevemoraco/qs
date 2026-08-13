@@ -23,15 +23,18 @@ theorem range_not_surjective :
           ∃ k : ℕ, k ∈ Finset.Icc 1 3 ∧ 3 / k = m) := by
   intro h
   obtain ⟨k, hk, hdiv⟩ := h 2 (by norm_num)
-  interval_cases k <;> norm_num at hk hdiv
+  rcases Finset.mem_Icc.mp hk with ⟨hk1, hk3⟩
+  interval_cases k <;> norm_num at hdiv
 
 theorem corrected_scale_has_witness (m : ℕ) (hm : 0 < m) :
     m + 1 ∈ fiber (m * (m + 1)) m := by
   simp only [fiber, Finset.mem_filter, Finset.mem_Icc]
   constructor
-  · omega
-  constructor
-  · nlinarith
+  · constructor
+    · omega
+    · calc
+        m + 1 = 1 * (m + 1) := by simp
+        _ ≤ m * (m + 1) := Nat.mul_le_mul_right (m + 1) hm
   · exact Nat.mul_div_right m (m + 1)
 
 #print axioms FloorFiber.three_two_empty
