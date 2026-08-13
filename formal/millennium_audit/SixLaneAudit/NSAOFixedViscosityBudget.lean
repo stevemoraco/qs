@@ -55,7 +55,6 @@ theorem curvature_viscous_clock_cancellation
       a ^ 2 / (ν * β ^ 2) := by
   unfold curvatureRate viscousLifetime
   field_simp [hν, hβ, hs]
-  ring
 
 /-- The conditional `b` drift pays one residual inverse square-root-frequency
 factor over the same viscous lifetime. -/
@@ -66,7 +65,6 @@ theorem b_drift_viscous_clock_suppression
       a ^ 2 / (ν * β ^ 2 * s) := by
   unfold bDriftRate viscousLifetime
   field_simp [hν, hβ, hs]
-  ring
 
 /-- A nonzero amplitude deposits a strictly positive curvature budget when
 viscosity is positive and the fixed axial ratio is nonzero. -/
