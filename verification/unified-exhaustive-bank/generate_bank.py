@@ -493,29 +493,29 @@ elab_rules : command
       let outName := (← getCurrNamespace) ++ out.getId
       Command.liftTermElabM do
         let env ← getEnv
-        let mut seen : NameSet := {}
+        let mut seen : NameSet := {{}}
         let mut leaves : Array (Expr × Expr) := #[]
         for id in ids do
           let n ← resolveGlobalConstNoOverload id
           if seen.contains n then
-            throwErrorAt id m!"duplicate theorem in manifest: {n}"
+            throwErrorAt id m!"duplicate theorem in manifest: {{n}}"
           seen := seen.insert n
           let some info := env.find? n
-            | throwErrorAt id m!"unknown theorem: {n}"
+            | throwErrorAt id m!"unknown theorem: {{n}}"
           match info with
           | .thmInfo _ => pure ()
-          | _ => throwErrorAt id m!"accepted entry is not a theorem declaration: {n}"
+          | _ => throwErrorAt id m!"accepted entry is not a theorem declaration: {{n}}"
           let levels := List.replicate info.levelParams.length Level.zero
           let proof := mkConst n levels
           let type ← inferType proof
           unless (← isProp type) do
-            throwErrorAt id m!"theorem did not instantiate to Prop: {n}"
+            throwErrorAt id m!"theorem did not instantiate to Prop: {{n}}"
           leaves := leaves.push (type, proof)
         let (type, value) ← mkBalancedAndBundle leaves
         addDecl <| Declaration.thmDecl {{
           name := outName, levelParams := [], type, value
         }}
-        logInfoAt out m!"bundled {leaves.size} theorem constants into {outName}"
+        logInfoAt out m!"bundled {{leaves.size}} theorem constants into {{outName}}"
 
 #bundle_theorems acceptedCorpusKernelBundle from [
   {theorem_manifest}
