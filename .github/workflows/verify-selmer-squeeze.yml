@@ -1,0 +1,56 @@
+name: Verify Selmer squeeze
+
+on:
+  push:
+    paths:
+      - "verification/bsd_selmer_spectral_squeeze/**"
+      - ".github/workflows/verify-selmer-squeeze.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_selmer_spectral_squeeze/**"
+      - ".github/workflows/verify-selmer-squeeze.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: verification/bsd_selmer_spectral_squeeze
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject proof holes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom ' SelmerCorankSpectralSqueeze.lean; then exit 1; fi
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Fetch cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+      - name: Kernel-check
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean SelmerCorankSpectralSqueeze.lean 2>&1 | tee verification-output.txt
+          if grep -q 'sorryAx' verification-output.txt; then exit 1; fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selmer-squeeze-replay
+          path: |
+            verification/bsd_selmer_spectral_squeeze/SelmerCorankSpectralSqueeze.lean
+            verification/bsd_selmer_spectral_squeeze/verification-output.txt
+          if-no-files-found: warn
