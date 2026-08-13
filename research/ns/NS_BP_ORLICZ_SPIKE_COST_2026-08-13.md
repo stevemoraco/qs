@@ -200,7 +200,7 @@ The iterated logarithm is slowly varying, so
 L\!\left(\frac{M_B(u_A)}E\right)\asymp L(A).
 \]
 
-Substituting `(4.2)` into the right side of `(2.1)` gives a quantity comparable to `(4.1)`. Hence the powers `E^{-1}`, `M^{4/3}`, and `L^{4theta/3}` cannot be improved using only one-slice energy and Sobolev information.
+Substituting `(4.2)` into the right side of `(2.1)` gives a quantity comparable to `(4.1)`. Hence the powers `E^{-1}`, `M^{4/3}`, and `L^{4\theta/3}` cannot be improved using only one-slice energy and Sobolev information.
 
 The parabolic diffusion time of the packet is
 
