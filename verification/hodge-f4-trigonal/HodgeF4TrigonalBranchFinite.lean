@@ -68,7 +68,9 @@ theorem common_factor_of_two_degree_three_maps
     (h₂ : e * b = 3)
     (hne : e ≠ 1) :
     e = 3 ∧ a = 1 ∧ b = 1 := by
-  omega
+  have hd : e ∣ 3 := ⟨a, h₁.symm⟩
+  have he3 : e ≤ 3 := Nat.le_of_dvd (by norm_num) hd
+  interval_cases e <;> omega
 
 /-- The terminal set-theoretic collision: an injective degree-one fibre map
 cannot identify two distinct branch points. -/
