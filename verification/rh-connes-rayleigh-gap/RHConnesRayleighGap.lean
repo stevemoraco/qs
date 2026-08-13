@@ -7,10 +7,10 @@ Scalar core of the Rayleigh--Ritz ground-state overlap estimate.  The variable
 `t` represents the squared overlap with the normalized ground state.
 -/
 theorem rayleigh_gap_overlap
-    (λ0 λ1 μ t : ℝ)
-    (hgap : λ0 < λ1)
-    (hmix : λ0 * t + λ1 * (1 - t) ≤ μ) :
-    1 - t ≤ (μ - λ0) / (λ1 - λ0) := by
+    (lam0 lam1 mu t : ℝ)
+    (hgap : lam0 < lam1)
+    (hmix : lam0 * t + lam1 * (1 - t) ≤ mu) :
+    1 - t ≤ (mu - lam0) / (lam1 - lam0) := by
   apply (le_div_iff₀ (sub_pos.mpr hgap)).2
   nlinarith
 
@@ -19,26 +19,26 @@ Certified lower/upper spectral enclosures compose with the Rayleigh mixture
 bound.  This is the finite scalar core of the interval certificate in the note.
 -/
 theorem interval_rayleigh_certificate
-    (e0m e0p e1m mplus λ0 λ1 μ t : ℝ)
+    (e0m e0p e1m mplus lam0 lam1 mu t : ℝ)
     (ht : t ≤ 1)
     (hcertGap : e0p < e1m)
-    (hλ0lower : e0m ≤ λ0)
-    (hλ0upper : λ0 ≤ e0p)
-    (hλ1lower : e1m ≤ λ1)
-    (hμupper : μ ≤ mplus)
-    (hmix : λ0 * t + λ1 * (1 - t) ≤ μ) :
+    (hLam0Lower : e0m ≤ lam0)
+    (hLam0Upper : lam0 ≤ e0p)
+    (hLam1Lower : e1m ≤ lam1)
+    (hMuUpper : mu ≤ mplus)
+    (hmix : lam0 * t + lam1 * (1 - t) ≤ mu) :
     1 - t ≤ (mplus - e0m) / (e1m - e0p) := by
   have hscale : 0 ≤ 1 - t := sub_nonneg.mpr ht
-  have hgapCompare : e1m - e0p ≤ λ1 - λ0 := by
+  have hgapCompare : e1m - e0p ≤ lam1 - lam0 := by
     linarith
-  have hmix' : (λ1 - λ0) * (1 - t) ≤ μ - λ0 := by
+  have hmix' : (lam1 - lam0) * (1 - t) ≤ mu - lam0 := by
     nlinarith
   have hcert : (e1m - e0p) * (1 - t) ≤ mplus - e0m := by
     calc
       (e1m - e0p) * (1 - t)
-          ≤ (λ1 - λ0) * (1 - t) :=
+          ≤ (lam1 - lam0) * (1 - t) :=
             mul_le_mul_of_nonneg_right hgapCompare hscale
-      _ ≤ μ - λ0 := hmix'
+      _ ≤ mu - lam0 := hmix'
       _ ≤ mplus - e0m := by linarith
   apply (le_div_iff₀ (sub_pos.mpr hcertGap)).2
   simpa [mul_comm] using hcert
@@ -65,8 +65,8 @@ theorem zero_rayleigh_can_miss_ground :
 Even for a positive operator, an arbitrarily small exact excited eigenvalue can
 remain orthogonal to the ground state when the first gap collapses.
 -/
-theorem positive_small_rayleigh_can_miss_ground (ε : ℝ) :
-    0 * 0 + ε * (1 - 0) = ε ∧ (1 - 0 = 1) := by
+theorem positive_small_rayleigh_can_miss_ground (eps : ℝ) :
+    0 * 0 + eps * (1 - 0) = eps ∧ (1 - 0 = 1) := by
   constructor <;> ring
 
 #print axioms RHConnesRayleighGap.rayleigh_gap_overlap
