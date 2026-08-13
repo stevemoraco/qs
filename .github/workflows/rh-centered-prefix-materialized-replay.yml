@@ -1,0 +1,106 @@
+name: RH centered prefix materialized Lean replay
+
+on:
+  push:
+    branches:
+      - verification/rh-bad-prime-block-tradeoff-public-replay-20260813
+    paths:
+      - '.github/workflows/rh-centered-prefix-materialized-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/rh-centered-prefix-materialized-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize exact canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='verification/rh-centered-prefix-materialized'
+          mkdir -p "$root"
+          cat <<'EOF' | base64 --decode > "$root/RHCenteredPrefixCriterionFinite.lean"
+          aW1wb3J0IE1hdGhsaWIKCm5hbWVzcGFjZSBSSENlbnRlcmVkUHJlZml4Q3JpdGVyaW9uRmluaXRlCgpub25jb21wdXRhYmxlIGRlZiBjZW50ZXJlZFJvb3QgKFIgTCA6IOKEnSkgOiDihJ0gOj0gUiAtIEwgLyAyCgp0aGVvcmVtIGNlbnRlcmVkX25lZ2F0aXZlX2RvbWluYXRlcwogICAge1IgTCBkZXB0aCA6IOKEnX0KICAgIChoUiA6IFIg4omkIC1kZXB0aCkKICAgIChoTCA6IDAg4omkIEwpIDoKICAgIGNlbnRlcmVkUm9vdCBSIEwg4omkIC1kZXB0aCA6PSBieQogIHVuZm9sZCBjZW50ZXJlZFJvb3QKICBsaW5hcml0aAoKdGhlb3JlbSBjZW50ZXJlZF9zcXVhcmVfbG93ZXIKICAgIHtSIEwgZGVwdGggOiDihJ19CiAgICAoaGRlcHRoIDogMCDiiaQgZGVwdGgpCiAgICAoaFIgOiBSIOKJpCAtZGVwdGgpCiAgICAoaEwgOiAwIOKJpCBMKSA6CiAgICBkZXB0aCBeIDIg4omkIChjZW50ZXJlZFJvb3QgUiBMKSBeIDIgOj0gYnkKICBoYXZlIGhjZW50ZXIgOj0gY2VudGVyZWRfbmVnYXRpdmVfZG9taW5hdGVzIGhSIGhMCiAgaGF2ZSBobm9ucG9zIDogY2VudGVyZWRSb290IFIgTCDiiaQgMCA6PSBieSBsaW5hcml0aAogIG5saW5hcml0aAoKdGhlb3JlbSBub3JtYWxpemVkX2NlbnRlcmVkX2lkZW50aXR5CiAgICB7UiBMIFEgc3FydFRoZXRhIDog4oSdfQogICAgKGhzcXJ0IDogc3FydFRoZXRhIOKJoCAwKQogICAgKGhyb290IDogMSAtIFEgPSBSIC8gKDIgKiBzcXJ0VGhldGEpKSA6CiAgICAxIC0gUSAtIEwgLyAoNCAqIHNxcnRUaGV0YSkgPQogICAgICBjZW50ZXJlZFJvb3QgUiBMIC8gKDIgKiBzcXJ0VGhldGEpIDo9IGJ5CiAgdW5mb2xkIGNlbnRlcmVkUm9vdAogIHJ3IFtocm9vdF0KICBmaWVsZF9zaW1wIFtoc3FydF0KICByaW5nCgp0aGVvcmVtIG5vcm1hbGl6ZWRfY2VudGVyZWRfc3F1YXJlX2lkZW50aXR5CiAgICB7UiBMIFEgc3FydFRoZXRhIHRoZXRhIDog4oSdfQogICAgKGhzcXJ0IDogc3FydFRoZXRhIOKJoCAwKQogICAgKGhzcSA6IHNxcnRUaGV0YSBeIDIgPSB0aGV0YSkKICAgIChocm9vdCA6IDEgLSBRID0gUiAvICgyICogc3FydFRoZXRhKSkgOgogICAgKGNlbnRlcmVkUm9vdCBSIEwpIF4gMiA9CiAgICAgIDQgKiB0aGV0YSAqICgxIC0gUSAtIEwgLyAoNCAqIHNxcnRUaGV0YSkpIF4gMiA6PSBieQogIGhhdmUgaGlkIDoKICAgICAgMSAtIFEgLSBMIC8gKDQgKiBzcXJ0VGhldGEpID0KICAgICAgICBjZW50ZXJlZFJvb3QgUiBMIC8gKDIgKiBzcXJ0VGhldGEpIDo9CiAgICBub3JtYWxpemVkX2NlbnRlcmVkX2lkZW50aXR5CiAgICAgIChSIDo9IFIpIChMIDo9IEwpIChRIDo9IFEpIChzcXJ0VGhldGEgOj0gc3FydFRoZXRhKQogICAgICBoc3FydCBocm9vdAogIHJ3IFtoaWQsIOKGkCBoc3FdCiAgZmllbGRfc2ltcCBbaHNxcnRdCgp0aGVvcmVtIGNlbnRlcmVkX2xvZ190aHJlc2hvbGRfcG9zaXRpdmUKICAgIHthbHBoYSA6IOKEnX0KICAgIChoIDogMCA8IGFscGhhKSA6CiAgICAwIDwgYWxwaGEgOj0gaAoKdGhlb3JlbSBjZW50ZXJlZF9mYWxzZV9ibG9ja19leHBvbmVudAogICAgKGRlbHRhIGVwc2lsb24gOiDihJ0pIDoKICAgICgxIC0gZXBzaWxvbikgKyAoMiAqIGRlbHRhIC0gMiAqIGVwc2lsb24pIC0gMQogICAgICA9IDIgKiBkZWx0YSAtIDMgKiBlcHNpbG9uIDo9IGJ5CiAgcmluZwoKdGhlb3JlbSBjZW50ZXJlZF9mYWxzZV9ibG9ja19tYXJnaW4KICAgIHtkZWx0YSBlcHNpbG9uIDog4oSdfQogICAgKGggOiAzICogZXBzaWxvbiA8IDIgKiBkZWx0YSkgOgogICAgMCA8IDIgKiBkZWx0YSAtIDMgKiBlcHNpbG9uIDo9IGJ5CiAgbGluYXJpdGgKCnRoZW9yZW0gY2VudGVyZWRfc2VyaWVzX2NyaXRlcmlvbgogICAge1AgZmluaXRlQ2VudGVyZWRTZXJpZXMgOiBQcm9wfQogICAgKGhmb3J3YXJkIDogUCDihpIgZmluaXRlQ2VudGVyZWRTZXJpZXMpCiAgICAoaGZhbHNlIDogwqwgUCDihpIgwqwgZmluaXRlQ2VudGVyZWRTZXJpZXMpIDoKICAgIFAg4oaUIGZpbml0ZUNlbnRlcmVkU2VyaWVzIDo9IGJ5CiAgY29uc3RydWN0b3IKICDCtyBleGFjdCBoZm9yd2FyZAogIMK3IGludHJvIGhmaW5pdGUKICAgIGJ5X2NvbnRyYSBoUAogICAgZXhhY3QgaGZhbHNlIGhQIGhmaW5pdGUKCiNwcmludCBheGlvbXMgY2VudGVyZWRfbmVnYXRpdmVfZG9taW5hdGVzCiNwcmludCBheGlvbXMgY2VudGVyZWRfc3F1YXJlX2xvd2VyCiNwcmludCBheGlvbXMgbm9ybWFsaXplZF9jZW50ZXJlZF9pZGVudGl0eQojcHJpbnQgYXhpb21zIG5vcm1hbGl6ZWRfY2VudGVyZWRfc3F1YXJlX2lkZW50aXR5CiNwcmludCBheGlvbXMgY2VudGVyZWRfbG9nX3RocmVzaG9sZF9wb3NpdGl2ZQojcHJpbnQgYXhpb21zIGNlbnRlcmVkX2ZhbHNlX2Jsb2NrX2V4cG9uZW50CiNwcmludCBheGlvbXMgY2VudGVyZWRfZmFsc2VfYmxvY2tfbWFyZ2luCiNwcmludCBheGlvbXMgY2VudGVyZWRfc2VyaWVzX2NyaXRlcmlvbgoKZW5kIFJIQ2VudGVyZWRQcmVmaXhDcml0ZXJpb25GaW5pdGUK
+          EOF
+          echo 'd2467392a6765012c366dd150d18711a9222ce21e3f5b9214b95c7cc7c69cde1  verification/rh-centered-prefix-materialized/RHCenteredPrefixCriterionFinite.lean' | sha256sum -c -
+
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/rh-centered-prefix-materialized/RHCenteredPrefixCriterionFinite.lean'
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then exit 1; fi
+
+      - name: Install Lean and Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root='verification/rh-centered-prefix-materialized'
+          lean --version | tee "$root/toolchain.log"
+          cat > "$root/lean-toolchain" <<'EOF'
+          leanprover/lean4:v4.32.1
+          EOF
+          cat > "$root/lakefile.toml" <<'EOF'
+          name = "rh-centered-prefix-materialized"
+          version = "0.1.0"
+          defaultTargets = []
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.1"
+          EOF
+          cd "$root"
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.log
+
+      - name: Compile and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/rh-centered-prefix-materialized
+          lake env lean RHCenteredPrefixCriterionFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          python3 - <<'PY'
+          import pathlib, re
+          out = pathlib.Path('lean-output.log').read_text()
+          names = [
+            'centered_negative_dominates', 'centered_square_lower',
+            'normalized_centered_identity', 'normalized_centered_square_identity',
+            'centered_log_threshold_positive', 'centered_false_block_exponent',
+            'centered_false_block_margin', 'centered_series_criterion'
+          ]
+          allowed={'propext','Classical.choice','Quot.sound'}
+          for name in names:
+            m=re.search(rf"RHCenteredPrefixCriterionFinite\.{name}' depends on axioms: \[([^\]]*)\]",out)
+            if not m: raise SystemExit(f'missing axiom report: {name}')
+            actual={x.strip() for x in m.group(1).split(',') if x.strip()}
+            if actual-allowed: raise SystemExit(f'unexpected axioms: {name} {actual-allowed}')
+            print(name, sorted(actual))
+          PY
+          echo 'VERIFIED centered prefix materialized finite core.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-centered-prefix-materialized-evidence
+          path: |
+            verification/rh-centered-prefix-materialized/RHCenteredPrefixCriterionFinite.lean
+            verification/rh-centered-prefix-materialized/lean-output.log
+            verification/rh-centered-prefix-materialized/toolchain.log
+            verification/rh-centered-prefix-materialized/mathlib-commit.log
+          if-no-files-found: warn
