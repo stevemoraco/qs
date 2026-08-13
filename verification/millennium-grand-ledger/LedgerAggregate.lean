@@ -35,6 +35,21 @@ theorem mutual_exclusivity_only
     (T : TargetPropositions) : NoContradictorySides T := by
   simp [NoContradictorySides]
 
+/-- Mutual exclusivity is true for every proposition, but no function can turn
+that tautology into a proof of the positive side for every proposition.  The
+counterinstance is `False`. -/
+theorem mutual_exclusivity_cannot_choose_positive :
+    ¬ (∀ P : Prop, (¬ (P ∧ ¬ P)) → P) := by
+  intro choosePositive
+  exact choosePositive False (by simp)
+
+/-- Even adding classical exhaustivity (`P ∨ ¬P`) does not uniformly select the
+positive branch.  A selector of that form would again prove `False`. -/
+theorem dichotomy_cannot_choose_positive :
+    ¬ (∀ P : Prop, (P ∨ ¬ P) → P) := by
+  intro choosePositive
+  exact choosePositive False (by simp)
+
 structure CompiledLedger : Prop where
   rhCore : ∀ (a r : ℚ) (m n : ℕ),
     MillenniumGrandRH.forwardDiff (fun k => a * r ^ k) m n =
@@ -56,6 +71,10 @@ structure CompiledLedger : Prop where
     ((p.2, p.1).2, (p.2, p.1).1) = p
   exactObjectFirewall : ExactObjectFirewall
   exclusivityFirewall : ∀ T : TargetPropositions, NoContradictorySides T
+  noExclusivityChooser :
+    ¬ (∀ P : Prop, (¬ (P ∧ ¬ P)) → P)
+  noDichotomyChooser :
+    ¬ (∀ P : Prop, (P ∨ ¬ P) → P)
   ledgerExact : TargetLedgerExact
   noAlarm : NoFiveAlarm
   bankNonempty : discoveryBank ≠ []
@@ -81,11 +100,15 @@ theorem compiled_ledger : CompiledLedger where
     rfl
   exactObjectFirewall := exact_object_firewall
   exclusivityFirewall := mutual_exclusivity_only
+  noExclusivityChooser := mutual_exclusivity_cannot_choose_positive
+  noDichotomyChooser := dichotomy_cannot_choose_positive
   ledgerExact := target_ledger_exact
   noAlarm := no_five_alarm
   bankNonempty := by simp [discoveryBank]
 
 #print axioms mutual_exclusivity_only
+#print axioms mutual_exclusivity_cannot_choose_positive
+#print axioms dichotomy_cannot_choose_positive
 #print axioms compiled_ledger
 
 end MillenniumGrandAggregate
