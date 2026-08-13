@@ -11,5 +11,6 @@ lean_lib BSDGVSemiprimeDensity where
     `BSDGVSemiprimeDensity,
     `BSDGVAsymptoticAggregation,
     `BSDGVDiscriminantHeight,
-    `BSDGVRootNumberSpectrum
+    `BSDGVRootNumberSpectrum,
+    `BSDGVInformationFrontier
   ]
