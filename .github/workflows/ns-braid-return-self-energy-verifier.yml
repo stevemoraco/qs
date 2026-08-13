@@ -134,6 +134,17 @@ jobs:
           warnings = result.get("lean_messages", {}).get("warnings", [])
           tool_errors = result.get("tool_messages", {}).get("errors", [])
           failed = result.get("failed_declarations", [])
+          request_exception = result.get("request_exception")
+          if request_exception:
+              print(f"::error title=AXLE request exception::{request_exception}")
+          for item in errors:
+              print(f"::error title=Lean error::{json.dumps(item, sort_keys=True)}")
+          for item in warnings:
+              print(f"::warning title=Lean warning::{json.dumps(item, sort_keys=True)}")
+          for item in tool_errors:
+              print(f"::error title=AXLE tool error::{json.dumps(item, sort_keys=True)}")
+          for item in failed:
+              print(f"::error title=Failed declaration::{json.dumps(item, sort_keys=True)}")
           if not result.get("okay") or errors or warnings or tool_errors or failed:
               raise SystemExit("Lean replay failed or warned")
           rendered = json.dumps(result)
