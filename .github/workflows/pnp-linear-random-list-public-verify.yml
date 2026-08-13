@@ -1,0 +1,82 @@
+name: PNP linear random-list finite core Lean and exact regression
+
+on:
+  push:
+    branches:
+      - agent/pnp-linear-random-list-public-verifier-20260813
+    paths:
+      - 'verification/pnp-linear-random-list/**'
+      - '.github/workflows/pnp-linear-random-list-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-linear-random-list/**'
+      - '.github/workflows/pnp-linear-random-list-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit Lean placeholders and result carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-linear-random-list/PNPLinearRandomListFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or result carrier found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/pnp-linear-random-list
+          lake update
+          lake exe cache get
+          sha256sum PNPLinearRandomListFinite.lean | tee source-sha256.log
+          lake env lean PNPLinearRandomListFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder axiom or reduction carrier found in compiler output.' >&2
+            exit 1
+          fi
+          test -s lean-output.log
+          test -s source-sha256.log
+          echo 'VERIFIED finite PNP linear random-list arithmetic.'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile and run exact finite regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile verification/pnp-linear-random-list/verify.py
+          python -u verification/pnp-linear-random-list/verify.py \
+            > verification/pnp-linear-random-list/regression-output.log
+          test -s verification/pnp-linear-random-list/regression-output.log
+          test -s verification/pnp-linear-random-list/results.json
+          cat verification/pnp-linear-random-list/regression-output.log
+
+      - name: Upload compiler and regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-linear-random-list-public-verification-evidence
+          path: |
+            verification/pnp-linear-random-list/lean-output.log
+            verification/pnp-linear-random-list/source-sha256.log
+            verification/pnp-linear-random-list/regression-output.log
+            verification/pnp-linear-random-list/results.json
+          if-no-files-found: error
