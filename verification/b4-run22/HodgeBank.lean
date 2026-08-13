@@ -1,33 +1,36 @@
 import Mathlib
 
-namespace Millennium.Hodge.IsogenyDegreeExponent
+namespace Millennium.Hodge.RationalScalarLattice
 
-/-- BANKER: the standard multiplication-map degree exponent `2g` becomes
-`4n` when the abelian variety has dimension `g = 2n`. -/
-theorem banker_integer_scalar_degree_in_weil_dimension
-    (m g n : ℕ) (hg : g = 2 * n) :
-    m ^ (2 * g) = m ^ (4 * n) := by
-  subst g
-  apply congrArg (fun e : ℕ => m ^ e)
-  omega
+def PreservesIntegerLattice (q : ℚ) : Prop :=
+  ∀ z : ℤ, ∃ w : ℤ, q * (z : ℚ) = (w : ℚ)
 
-/-- CRITIC: in dimension four (`n = 2`), the integer scalar `2` has the
-standard degree `2^8 = 256`, not the quadratic norm value `2^2 = 4`. -/
-theorem critic_quadratic_norm_is_not_isogeny_degree_in_dimension_four :
-    (2 : ℕ) ^ 8 ≠ 2 ^ 2 := by
+theorem banker_integral_scalar_preserves_integer_lattice
+    (k : ℤ) : PreservesIntegerLattice (k : ℚ) := by
+  intro z
+  refine ⟨k * z, ?_⟩
   norm_num
 
-/-- CLEANER: for an integer inside an imaginary quadratic field, whose field
-norm is `m^2`, the corrected dimension-sensitive degree is its `2n`-th power. -/
-theorem cleaner_norm_power_recovers_integer_scalar_degree
-    (m n : ℕ) :
-    (m ^ 2) ^ (2 * n) = m ^ (4 * n) := by
-  rw [← pow_mul]
-  apply congrArg (fun e : ℕ => m ^ e)
+theorem critic_half_scalar_does_not_preserve_integer_lattice :
+    ¬ PreservesIntegerLattice (1 / 2 : ℚ) := by
+  intro h
+  obtain ⟨w, hw⟩ := h 1
+  have hw' : (2 : ℚ) * (w : ℚ) = 1 := by
+    norm_num at hw ⊢
+    linarith
+  have hw'' : 2 * w = 1 := by
+    exact_mod_cast hw'
   omega
 
-#print axioms banker_integer_scalar_degree_in_weil_dimension
-#print axioms critic_quadratic_norm_is_not_isogeny_degree_in_dimension_four
-#print axioms cleaner_norm_power_recovers_integer_scalar_degree
+theorem cleaner_lattice_preservation_forces_integral_scalar
+    (q : ℚ) (h : PreservesIntegerLattice q) :
+    ∃ k : ℤ, q = (k : ℚ) := by
+  obtain ⟨k, hk⟩ := h 1
+  refine ⟨k, ?_⟩
+  simpa using hk
 
-end Millennium.Hodge.IsogenyDegreeExponent
+#print axioms banker_integral_scalar_preserves_integer_lattice
+#print axioms critic_half_scalar_does_not_preserve_integer_lattice
+#print axioms cleaner_lattice_preservation_forces_integral_scalar
+
+end Millennium.Hodge.RationalScalarLattice
