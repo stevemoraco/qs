@@ -9,7 +9,7 @@ coplanar helical-basis calculation in the accompanying note:
 * the exact sum of the two helicity-channel return coefficients;
 * its equal-radius reduction;
 * the uniform lower bound on the acute-angle interval; and
-* the final positive-minus-negative budget used for the near-equal-shell bound.
+* the final lower- and upper-budget assemblies used for near-equal shells.
 
 It does not formalize complex helical vectors, the Euler/Navier--Stokes
 bilinear operator, localized packets, normal forms, shadowing, or blow-up.
@@ -85,7 +85,7 @@ theorem equal_radius_aggregate_has_parent_scale_floor
   rw [equal_radius_aggregate_formula N Q sdelta x hQ0 hsin hcos]
   exact equal_radius_polynomial_has_parent_scale_floor N x hN hx
 
-/-- The exact arithmetic assembly behind the near-equal-shell estimate:
+/-- The exact arithmetic assembly behind the near-equal-shell lower estimate:
 `3d/10` of positive contribution minus at most `7d/32` of negative
 contribution leaves `13d/160`. -/
 theorem near_equal_shell_budget_floor
@@ -94,6 +94,18 @@ theorem near_equal_shell_budget_floor
     (hnegative : negativePart ≤ 7 * d / 32)
     (htotal : total = positivePart - negativePart) :
     13 * d / 160 ≤ total := by
+  nlinarith
+
+/-- The exact arithmetic assembly behind the complementary upper estimate:
+`d/16 + 81d/64 = 85d/64`, and subtracting a nonnegative term only lowers
+the total. -/
+theorem near_equal_shell_budget_ceiling
+    (d basePart squarePart negativePart total : ℝ)
+    (hbase : basePart ≤ d / 16)
+    (hsquare : squarePart ≤ 81 * d / 64)
+    (hnegative : 0 ≤ negativePart)
+    (htotal : total = basePart + squarePart - negativePart) :
+    total ≤ 85 * d / 64 := by
   nlinarith
 
 /-- CRITIC countermodel to a proposed angular gain: at `N=1` and
@@ -109,6 +121,7 @@ theorem endpoint_parent_scale_is_nonzero :
 #print axioms equal_radius_polynomial_has_parent_scale_floor
 #print axioms equal_radius_aggregate_has_parent_scale_floor
 #print axioms near_equal_shell_budget_floor
+#print axioms near_equal_shell_budget_ceiling
 #print axioms endpoint_parent_scale_is_nonzero
 
 end
