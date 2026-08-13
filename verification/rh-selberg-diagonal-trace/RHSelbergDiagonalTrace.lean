@@ -1,7 +1,5 @@
 import Mathlib
 
-open scoped BigOperators
-
 namespace RH.SelbergDiagonalTrace
 
 def triangle (A j : ℕ) : ℕ := A - j
@@ -16,10 +14,10 @@ theorem triangle_unit_step (A j : ℕ) :
   constructor <;> omega
 
 theorem triangle_square_sum_le_cube (A : ℕ) :
-    ∑ j in Finset.range A, triangle A j ^ 2 ≤ A ^ 3 := by
+    Finset.sum (Finset.range A) (fun j => triangle A j ^ 2) ≤ A ^ 3 := by
   calc
-    ∑ j in Finset.range A, triangle A j ^ 2
-        ≤ ∑ _j in Finset.range A, A ^ 2 := by
+    Finset.sum (Finset.range A) (fun j => triangle A j ^ 2)
+        ≤ Finset.sum (Finset.range A) (fun _j => A ^ 2) := by
           apply Finset.sum_le_sum
           intro j hj
           exact Nat.pow_le_pow_left (Nat.sub_le A j) 2
@@ -34,11 +32,11 @@ def triangleHeight (q : ℕ) : ℕ := q ^ 4
 def diagonalTrace (q : ℕ) : ℕ := rowCount q * triangleHeight q
 
 theorem row_square_moment_le_rh_scale (q : ℕ) :
-    ∑ j in Finset.range (triangleHeight q),
-        triangle (triangleHeight q) j ^ 2 ≤ rowCount q ^ 2 := by
+    Finset.sum (Finset.range (triangleHeight q))
+      (fun j => triangle (triangleHeight q) j ^ 2) ≤ rowCount q ^ 2 := by
   calc
-    ∑ j in Finset.range (triangleHeight q),
-        triangle (triangleHeight q) j ^ 2
+    Finset.sum (Finset.range (triangleHeight q))
+        (fun j => triangle (triangleHeight q) j ^ 2)
         ≤ triangleHeight q ^ 3 := triangle_square_sum_le_cube (triangleHeight q)
     _ = rowCount q ^ 2 := by
       simp only [triangleHeight, rowCount]
