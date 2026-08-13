@@ -24,7 +24,7 @@ namespace Millennium.Hodge.MarkmanScalarCount
 Oddness is retained to match the intended application, although the
 inequality itself only needs the lower bound. -/
 theorem selected_count_positive {d : ℤ}
-    (hd : 3 ≤ d) (hodd : Odd d) :
+    (hd : 3 ≤ d) (_hodd : Odd d) :
     0 < (d + 9) * (2 * d - 1) := by
   have hleft : 0 < d + 9 := by omega
   have hright : 0 < 2 * d - 1 := by omega
