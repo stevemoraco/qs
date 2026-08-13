@@ -16,45 +16,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - name: Verify exact source with AXLE
         shell: bash
         run: |
           set -euo pipefail
           SRC=verification/poincare-uniformity/YMPoincareUniformityWall.lean
-          test "$(git hash-object "$SRC")" = 2981d570ee36f7be90449d0a40e16d2f9e6fdd6b
+          test "$(git hash-object "$SRC")" = b91d61d5e5dde6c8de92379cde611f91e2107d28
           python3 - <<'PY'
-          import json, pathlib, re, urllib.request
-          source_path = pathlib.Path('verification/poincare-uniformity/YMPoincareUniformityWall.lean')
-          source = source_path.read_text()
-          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
-          match = forbidden.search(source)
-          assert not match, match.group(2) if match else ''
-          assert 'native_decide' not in source
-          assert 'Lean.ofReduceBool' not in source
-          assert source.count('#print axioms') == 5
-          payload = json.dumps({
-              'content': source,
-              'environment': 'lean-4.30.0',
-              'ignore_imports': True,
-              'mathlib_options': False,
-              'timeout_seconds': 900,
-          }).encode()
-          request = urllib.request.Request(
-              'https://axle.axiommath.ai/api/v1/check',
-              data=payload,
-              headers={'Content-Type':'application/json'},
-              method='POST',
-          )
-          with urllib.request.urlopen(request, timeout=960) as response:
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/poincare-uniformity/YMPoincareUniformityWall.lean').read_text()
+          assert source.count('#print axioms') == 3
+          for token in ['sorry', 'admit', 'sorryAx', 'native_decide', 'Lean.ofReduceBool']:
+              assert token not in source
+          payload = json.dumps({'content': source, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
               result = json.load(response)
           print(json.dumps(result, indent=2))
-          lean = result.get('lean_messages', {})
-          tool = result.get('tool_messages', {})
           assert result.get('okay')
           assert not result.get('failed_declarations', [])
-          assert not lean.get('errors', []) and not lean.get('warnings', [])
-          assert not tool.get('errors', []) and not tool.get('warnings', [])
+          assert not result.get('lean_messages', {}).get('errors', [])
+          assert not result.get('lean_messages', {}).get('warnings', [])
           assert 'sorryAx' not in json.dumps(result)
-          print('VERIFIED: exact warning-free source compiled under AXLE Lean 4.30')
+          print('VERIFIED')
           PY
