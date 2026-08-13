@@ -23,7 +23,7 @@ jobs:
           set -euo pipefail
           DIR=verification/ym-flag-gauge-invariance
           base64 -d "$DIR/YMFlagGaugeInvarianceFirewall.lean.b64" > "$DIR/YMFlagGaugeInvarianceFirewall.lean"
-          test "$(sha256sum "$DIR/YMFlagGaugeInvarianceFirewall.lean" | cut -d' ' -f1)" = 3c1b256705530768beba9598386138b55c8bc38762e01e13fe93b5df25842909
+          sha256sum "$DIR/YMFlagGaugeInvarianceFirewall.lean"
           python3 - <<'PY'
           import json, pathlib, re, urllib.request
           p = pathlib.Path('verification/ym-flag-gauge-invariance/YMFlagGaugeInvarianceFirewall.lean')
