@@ -56,12 +56,10 @@ theorem normalized_identric_log_gap_le
       dsimp [p, n]
       ring
     convert! hraw using 1
-    · funext y
-      rfl
-    · rw [hlog]
-      dsimp [p, n]
-      field_simp [hp, hn]
-      ring
+    rw [hlog]
+    dsimp [p, n]
+    field_simp [hp, hn]
+    ring
   have hcont : ContinuousOn G (Icc 0 t) := by
     intro x hx
     exact (hderiv x ⟨by linarith [hx.1], by linarith [hx.2]⟩).continuousAt.continuousWithinAt
