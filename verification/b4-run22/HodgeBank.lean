@@ -23,7 +23,7 @@ open Polynomial
 
 /-- The polynomial whose coefficients are the audited Hilbert function
 `(1, 2, 3, 4, 5, 6, 2, 1)`. -/
-def hilbertFunctionPolynomial : Polynomial ℤ :=
+noncomputable def hilbertFunctionPolynomial : Polynomial ℤ :=
   1 + 2 * X + 3 * X ^ 2 + 4 * X ^ 3 + 5 * X ^ 4 +
     6 * X ^ 5 + 2 * X ^ 6 + X ^ 7
 
