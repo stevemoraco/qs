@@ -1,4 +1,4 @@
-# Length-24 filtered Hilbert–Burch obstructions on \(W_2(C)\)
+# Length-24 Tor–\(K\)-theoretic Hilbert–Burch obstructions on \(W_2(C)\)
 
 **Date:** 2026-08-13  
 **Status:** GREEN for the additive filtered-\(K\)-theory conclusions under the
@@ -61,47 +61,56 @@ eliminate all length-24 types.
 
 ## 3. The descent firewall
 
-Let \(R=\operatorname{Sym}_S V\), \(A=R/I\), and define the canonical
-coefficient sheaves
+Let \(R=\operatorname{Sym}_S V\), let \(A=R/I\) be the finite locally
+free graded quotient, and define the canonical degreewise Tor sheaves
 \[
 B_{i,d}=\operatorname{Tor}^{R}_i(A,\mathcal O_S)_d.
 \]
-Constant fiber Betti ranks make these sheaves locally free and compatible
-with base change, degree by degree. Local minimal graded resolutions need
-not glue as direct sums: changes of local lifts may contain positive-degree
-polynomial off-diagonal entries. Their free terms instead have intrinsic
-degree filtrations whose associated graded pieces are
+They are the homology sheaves of the degree-\(d\) Koszul complex
+\(A\otimes\Lambda^\bullet V\). On a constant-Betti stratum they are
+locally free and compatible with base change. In relative dimension two put
+\(G_d=B_{1,d}\) and \(Q_d=B_{2,d}\). The exact canonical identity is
 \[
-R(-d)\otimes B_{i,d}.
-\]
-After sheafification on
-\(\pi:\mathbf P(V)\to S\), with
-\[
-\pi_*\mathcal O(d)=\operatorname{Sym}^dV,\qquad
-\xi^2-v\xi+c_2(V)=0,
-\]
-one still has the additive \(K\)-theory identities
-\[
-[F_i]=\sum_d[\pi^*B_{i,d}\otimes\mathcal O(-d)].
+ A(z)\bigl(1-[V]z+[\det V]z^2\bigr)
+ =1-\sum_d[G_d]z^d+\sum_d[Q_d]z^d
+ \quad\text{in }K_0(S)[z].
 \tag{3.1}
 \]
-Consequently all additive Chern-character eliminations below survive.
-Statements requiring an individual later generator bundle to inject into
-\(\operatorname{Sym}^dV\) do **not** follow from constant Betti data.
+Under
+\([F]z^d\mapsto[\pi^*F\otimes\mathcal O_{\mathbf P(V)}(-d)]\),
+the projective-bundle relation sends (3.1) to
+\[
+1-\sum_d[\pi^*G_d\otimes\mathcal O(-d)]
+ +\sum_d[\pi^*Q_d\otimes\mathcal O(-d)]=0
+ \quad\text{in }K_0(\mathbf P(V)).
+\tag{3.2}
+\]
+These identities, rather than a globally split minimal resolution, justify
+all additive Chern-character eliminations below.
+
+Constant Betti data do **not** imply that the local minimal resolutions glue
+as a direct sum, or that a later generator bundle injects into
+\(\operatorname{Sym}^dV\). A small counterexample is supplied by the Euler
+sequence on \(S=\mathbf P^1\),
+\[
+0\to R_1=\mathcal O(-1)\to\mathcal O^2\to W=\mathcal O(1)\to0.
+\]
+The square-zero graded algebra \(\mathcal O\oplus W\), with \(W\) in
+degree one, has constant fiber \(k[t]/(t^2)\) and Tor bundles
+\[
+G_1=R_1,\qquad G_2=W^2=\mathcal O(2),\qquad
+Q_3=R_1W^2=\mathcal O(1).
+\]
+But \(\operatorname{Hom}(\mathcal O(2),\operatorname{Sym}^2\mathcal
+O^2)=0\), so the later generator cannot lift to the symmetric power even
+though (3.1) holds.
 
 ### Buried overclaim
 
-The earlier draft asserted that every later generator coefficient bundle
-was a subbundle of the corresponding symmetric power and used this to
-eliminate the three-generator type
-\((1,2,3,4,5,5,4)\). This inference is false: on overlaps a degree-\(b\)
-generator may change by polynomial multiples of earlier degree-\(a\)
-generators. Equivalently, a free term can be a nonsplit filtered extension
-\[
-0\to R(-b)L\to F\to R(-a)G\to0.
-\]
-The additive \(K\)-class survives, but the separate subbundle slope bound
-does not. The three-generator type is therefore **open in this note**.
+An earlier draft used precisely that invalid later-generator injection to
+eliminate the three-generator type \((1,2,3,4,5,5,4)\). The separate
+slope bound does not follow. Only the canonical Tor–\(K\)-theory
+identities (3.1)–(3.2) are retained.
 
 ## 4. Finite one-syzygy classification with at most two generator degrees
 
@@ -149,10 +158,24 @@ enumeration in (4.2).
 
 There is one further one-syzygy-degree Hilbert function,
 \[
-(1,2,3,4,5,5,4),
+(1,2,3,4,5,5,4),\qquad
+1-z^5-z^6-3z^7+4z^8,
 \]
-with three generator degrees. It is not eliminated here because of the
-descent issue in Section 3.
+with three generator degrees. It is not eliminated here. Indeed the
+canonical additive identities leave a genuine numerical family. Writing
+\(c_1(A)=a=uX+wH\) for the degree-five generator and imposing
+\(c_1(E)=tD\), the remaining target equation is
+\[
+\begin{aligned}
+0={}&3t^2+(111-6u-18w)t-252u^2-24uw-36w^2\\
+   &\qquad +6888u+328w-59826.
+\end{aligned}
+\tag{4.4}
+\]
+For example \((u,w,t)=(6,-6,74)\) is an exact integral solution (the
+other root is \(-135\)). This is only a Chern-data countermodel, not an
+actual algebra, but it proves that NS integrality plus GRR cannot eliminate
+this type.
 
 ## 5. Additive obstructions that survive
 
@@ -220,8 +243,10 @@ and its filtered projective Hilbert–Burch calculation gives
 Thus every one-generator-degree type is eliminated.
 
 The result does not cover the remaining one-syzygy type with three
-generator degrees, Betti jumping, non-normally-flat thickenings, or the
-remaining length-24 types having at least two syzygy degrees. It also does
+generator degrees; equation (4.4) shows that additive arithmetic alone
+cannot cover it. Nor does it cover Betti jumping, non-normally-flat
+thickenings, or the remaining length-24 types having at least two syzygy
+degrees. It also does
 not verify the independent 16-class semiregularity gate.
 
 ## Provenance
