@@ -35,8 +35,12 @@ theorem autocorrelation_endpoints_are_squares (x y : ℝ) :
 theorem autocorrelation_endpoints_nonnegative (x y : ℝ) :
     0 ≤ lagZero x y + lagOne x y ∧
       0 ≤ lagZero x y - lagOne x y := by
-  rw [autocorrelation_endpoints_are_squares]
-  exact ⟨sq_nonneg _, sq_nonneg _⟩
+  have h := autocorrelation_endpoints_are_squares x y
+  constructor
+  · rw [h.1]
+    exact sq_nonneg _
+  · rw [h.2]
+    exact sq_nonneg _
 
 /-- Equivalently, the nonzero lag cannot exceed the zero lag in magnitude. -/
 theorem autocorrelation_lag_bound (x y : ℝ) :
