@@ -1,0 +1,23 @@
+name: NS polarization rotation finite core
+
+on:
+  push:
+    branches:
+      - research/ns-polarization-rotation-public-verifier-20260813
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/ns-polarization-rotation
