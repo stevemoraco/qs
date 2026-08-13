@@ -72,24 +72,33 @@ jobs:
             echo 'Forbidden dependency found in compiler report.' >&2
             exit 1
           fi
-          count="$(grep -c "^'NSSingleTriadUniversalCore\." lean-output.log)"
-          echo "axiom reports: $count"
-          test "$count" -eq 5
           python3 - <<'PY'
           from pathlib import Path
           import re
+
           text = Path('lean-output.log').read_text()
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
-          lines = [line for line in text.splitlines()
-                   if line.startswith("'NSSingleTriadUniversalCore.")]
-          assert len(lines) == 5, lines
-          for line in lines:
-              if 'does not depend on any axioms' in line:
+          names = [
+              'NSSingleTriadUniversalCore.sidebands_force_equilateral',
+              'NSSingleTriadUniversalCore.collinear_normalization',
+              'NSSingleTriadUniversalCore.desired_sum_is_pressure_coordinate',
+              'NSSingleTriadUniversalCore.desired_sum_is_pressure',
+              'NSSingleTriadUniversalCore.exists_pressure_scalar',
+          ]
+          for name in names:
+              no_axioms = f"'{name}' does not depend on any axioms"
+              if no_axioms in text:
                   continue
-              m = re.search(r'\[(.*)\]', line)
-              assert m, line
-              axioms = {x.strip() for x in m.group(1).split(',') if x.strip()}
-              assert axioms <= allowed, (line, axioms - allowed)
+              pattern = re.escape(f"'{name}' depends on axioms: [") + r'(.*?)\]'
+              match = re.search(pattern, text, flags=re.S)
+              assert match, (name, text)
+              axioms = {
+                  item.strip()
+                  for item in match.group(1).replace('\n', ' ').split(',')
+                  if item.strip()
+              }
+              assert axioms <= allowed, (name, axioms - allowed)
+          print(f'AXIOM REPORTS: {len(names)}')
           print('AXIOM ALLOWLIST: PASS')
           PY
           echo 'VERIFIED NS single-triad universal finite core.'
