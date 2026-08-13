@@ -4,6 +4,7 @@ on:
   push:
     branches: [agent/ns-beltrami-carrier-public-replay-20260813]
     paths:
+      - 'formal/millennium_audit/SixLaneAudit.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
       - 'formal/millennium_audit/lakefile.lean'
@@ -12,6 +13,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'formal/millennium_audit/SixLaneAudit.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
       - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
       - 'formal/millennium_audit/lakefile.lean'
@@ -37,10 +39,12 @@ jobs:
         run: |
           set -euxo pipefail
           sha256sum \
+            SixLaneAudit.lean \
             SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
             SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
             lean-toolchain lakefile.lean
           if grep -nE '\b(sorry|admit|sorryAx)\b' \
+            SixLaneAudit.lean \
             SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
             SixLaneAudit/NSBeltramiSixCarrierFrame.lean; then
             echo 'Explicit proof hole found'
