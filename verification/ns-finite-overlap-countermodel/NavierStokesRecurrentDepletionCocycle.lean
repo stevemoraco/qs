@@ -17,6 +17,7 @@ theorem finiteReturnDepletion
   have htel :
       budget n + Finset.sum (Finset.range n) (fun _ => c * δ) ≤
         budget 0 + Finset.sum (Finset.range n) error := by
+    clear hterminal
     induction n with
     | zero => simp
     | succ n ih =>
