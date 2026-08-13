@@ -8,8 +8,9 @@ Independent audit of the exact theorem types exported by
 Mintpath/p-neq-np-lean at the pinned external commit.
 
 This file does not formalize P, NP, Hamiltonian-cycle completeness, or any
-circuit lower bound.  It checks theorem signatures and proves only the finite
-quantifier firewall for the advertised general conclusion.
+circuit lower bound. It checks theorem signatures, proves the finite quantifier
+firewall, and constructs the exact one-bit counterexample permitted by the
+source definitions.
 -/
 
 #check PNeNp.general_circuit_lower_bound_unconditional
@@ -50,8 +51,56 @@ theorem constant_two_has_no_exponent_two :
     exact hmono
   omega
 
+/-- The source's general interface allows the graph-to-input map to contain
+the answer bit itself. -/
+noncomputable def answerBitInput {n : ℕ}
+    (G : Finset (PNeNp.Edge n)) : Fin 1 → Bool :=
+  fun _ => if PNeNp.IsHamCycle n G then true else false
+
+/-- One input wire, no gates, and that input wire selected as output. -/
+def answerWireCircuit : PNeNp.BooleanCircuit 1 where
+  gates := []
+  outputGate := 0
+
+@[simp] theorem answerWireCircuit_size : answerWireCircuit.size = 1 := by
+  rfl
+
+/-- By the repository's own definitions, the one-wire circuit decides HAM
+relative to the unrestricted `toInput` map above. -/
+theorem answerWireCircuit_decidesHAM (n : ℕ) :
+    PNeNp.CircuitDecidesHAM answerWireCircuit
+      (answerBitInput (n := n)) := by
+  intro G
+  simp [answerWireCircuit, answerBitInput, PNeNp.BooleanCircuit.eval]
+
+/-- Consequently the exported general theorem contradicts the source's own
+circuit and encoding definitions at every input length satisfying its numeric
+side conditions. The contradiction depends on the package's custom axiom. -/
+theorem external_general_theorem_contradiction
+    (n : ℕ) (hn : n ≥ 4)
+    (hnLarge : n ≥ 4 * (Nat.log 2 n) ^ 2 + 1) : False := by
+  obtain ⟨c, hc, hsize⟩ :=
+    PNeNp.general_circuit_lower_bound_unconditional
+      (n := n) hn answerWireCircuit (answerBitInput (n := n))
+      (answerWireCircuit_decidesHAM n) hnLarge
+  have htwo : 2 ≤ answerWireCircuit.size :=
+    (exported_exponent_shape_iff_two_le answerWireCircuit.size).1
+      ⟨c, hc, hsize⟩
+  simpa using htwo
+
+/-- `n=512` satisfies the numerical side condition, so importing the external
+general theorem and its custom axiom derives `False` outright. -/
+theorem pinned_package_derives_false : False := by
+  apply external_general_theorem_contradiction 512
+  · norm_num
+  · norm_num [Nat.log]
+
 #print axioms exported_exponent_shape_iff_two_le
 #print axioms constant_two_satisfies_exported_family_shape
 #print axioms constant_two_has_no_exponent_two
+#print axioms answerWireCircuit_size
+#print axioms answerWireCircuit_decidesHAM
+#print axioms external_general_theorem_contradiction
+#print axioms pinned_package_derives_false
 
 end MintpathAudit
