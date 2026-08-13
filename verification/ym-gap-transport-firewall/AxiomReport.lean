@@ -11,3 +11,4 @@ import YMGapTransportFirewall
 #print axioms YMGapTransportFirewall.positive_gap_of_strict_finite_budget
 #print axioms YMGapTransportFirewall.positive_subtraction_norm_countermodel
 #print axioms YMGapTransportFirewall.positive_gram_offDiagonal_indefinite
+#print axioms YMGapTransportFirewall.nonnegative_gap_does_not_bound_exponential
