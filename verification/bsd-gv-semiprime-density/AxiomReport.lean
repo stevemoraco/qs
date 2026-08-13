@@ -3,11 +3,17 @@ import BSDGVAsymptoticAggregation
 #print axioms BSDGVSemiprimeDensity.totalStateCount_eq
 #print axioms BSDGVSemiprimeDensity.acceptedStateCount_eq
 #print axioms BSDGVSemiprimeDensity.rowStateCount_eq
+#print axioms BSDGVSemiprimeDensity.acceptedPosCount_eq
+#print axioms BSDGVSemiprimeDensity.acceptedNegCount_eq
+#print axioms BSDGVSemiprimeDensity.bothSignPairCount_eq
+#print axioms BSDGVSemiprimeDensity.both_sign_pairs_classification
 #print axioms BSDGVSemiprimeDensity.three_eleven_all_signs
 #print axioms BSDGVSemiprimeDensity.eleven_three_all_signs
 #print axioms BSDGVSemiprimeDensity.accepts_swap_with_reciprocity
 #print axioms BSDGVSemiprimeDensity.ordered_density_fraction_certificate
 #print axioms BSDGVSemiprimeDensity.unordered_coefficient_fraction_certificate
+#print axioms BSDGVSemiprimeDensity.positive_sign_fraction_certificate
+#print axioms BSDGVSemiprimeDensity.negative_sign_fraction_certificate
 #print axioms BSDGVSemiprimeDensity.acceptedStates_card_eq
 #print axioms BSDGVSemiprimeDensity.accepted_uniform_mass
 #print axioms BSDGVSemiprimeDensity.accepted_mass_tendsto
