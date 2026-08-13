@@ -7,4 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: test -f verification/pnp-low-ball-syndrome/PNPLowBallSyndromeSeparator.lean
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/pnp-low-ball-syndrome
+          auto-config: false
+      - run: lake env lean PNPLowBallSyndromeSeparator.lean
+        working-directory: verification/pnp-low-ball-syndrome
