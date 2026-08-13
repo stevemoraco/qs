@@ -26,6 +26,7 @@ jobs:
           files=(
             verification/ns-six-color-highhigh-isolation/SixColorHighHighIsolationFinite.lean
             verification/ns-six-color-highhigh-isolation/OuterSidebandNoSlavingFinite.lean
+            verification/ns-six-color-highhigh-isolation/TwoCellOuterCancellerFinite.lean
           )
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)|Lean\.ofReduceBool' "${files[@]}"; then
             echo 'Forbidden proof placeholder or trust shortcut found.' >&2
@@ -43,14 +44,17 @@ jobs:
           lake update
           lake exe cache get
           : > lean-output.log
-          for file in SixColorHighHighIsolationFinite.lean OuterSidebandNoSlavingFinite.lean; do
+          for file in \
+            SixColorHighHighIsolationFinite.lean \
+            OuterSidebandNoSlavingFinite.lean \
+            TwoCellOuterCancellerFinite.lean; do
             lake env lean -DmaxHeartbeats=2000000 "$file" 2>&1 | tee -a lean-output.log
           done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED finite six-color high-high isolation and no-slaving cores.'
+          echo 'VERIFIED finite six-color, no-slaving, and two-cell cores.'
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
