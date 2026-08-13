@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-chebyshev-area-prime-finite'
           file="$dir/ChebyshevAreaPrimeFinite.lean"
           actual="$(git hash-object "$file")"
-          test "$actual" = '9d0e9a83a7dbf6992273e37a9e06c9f2d4a3d593'
+          test "$actual" = '20440a4c94e7bc957a9433616495e027aac350d1'
           printf 'source_blob=%s\n' "$actual" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
