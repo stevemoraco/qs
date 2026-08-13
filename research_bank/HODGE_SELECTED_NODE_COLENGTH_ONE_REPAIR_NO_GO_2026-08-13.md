@@ -55,7 +55,62 @@ For the rank-two representative with
  M_\lambda=(uz,vw,uw-vz). \tag{5}
 \]
 
-## 2. A chain map that controls both orbits
+## 2. Exhaustion among rank-one torsion-free single sheaves
+
+The preceding construction is not merely a convenient family. It exhausts
+the rank-one torsion-free single-sheaf repairs, provided the point correction
+is interpreted in K-theory with support.
+
+Let \(U=\operatorname{Spec}R\setminus\{\mathfrak m\}\), and suppose
+\(M\) is a rank-one torsion-free \(R\)-module equipped with an isomorphism
+\[
+ M|_U\simeq N|_U, \tag{6}
+\]
+whose relative class in \(K_0^{\mathfrak m}(R)\) is
+\[
+ [M]-[N]=-[k]. \tag{7}
+\]
+Equivalently, after the punctured identification below, the correction has
+point length one.
+
+Because \(R\) is a regular local UFD, every rank-one reflexive module is
+free. Moreover \(N^{**}=R\): at every height-one prime, both \(I\) and
+\(J\) become the unit ideal. After identifying the two reflexive hulls
+with \(R\), the isomorphism (6) is multiplication by an element
+\(f\in\operatorname{Frac}(R)^*\). At every height-one prime it carries
+one copy of \(R_p\) isomorphically to the other, so every valuation of
+\(f\) is zero. Normality gives \(f,f^{-1}\in R\); hence \(f\) is a
+unit. Rescaling by that unit makes \(M\) and \(N\) literally equal on
+\(U\).
+
+It remains to identify the saturation. The exact sequence
+\[
+ 0\to R/IJ\to R/I\oplus R/J\to k\to0
+\]
+gives \(\operatorname{depth}(R/IJ)=1\), and
+\[
+ 0\to N\to R\to R/IJ\to0
+\]
+then gives \(\operatorname{depth}N=2\). Therefore
+\[
+ H^0_{\mathfrak m}(N)=H^1_{\mathfrak m}(N)=0,
+ \qquad
+ N=\Gamma(U,\widetilde N). \tag{8}
+\]
+Since \(M|_U=N|_U\), (8) embeds \(M\subset N\), with finite-length
+quotient. Dévissage in \(K_0^{\mathfrak m}(R)\simeq\mathbf Z[k]\)
+and (7) give
+\[
+ \operatorname{length}(N/M)=1. \tag{9}
+\]
+Thus \(M=M_\lambda\) for a nonzero functional as in (3), and the two
+matrix-rank orbits listed above are exhaustive.
+
+The support qualifier in (7) is essential. In ordinary local \(K_0(R)\),
+the class of \(k\) is zero by its Koszul resolution, so an unqualified
+ordinary-K-theory equality would not determine the correction length.
+
+## 3. A chain map that controls both orbits
 
 Order the generators of \(N\) as
 \[
@@ -136,7 +191,7 @@ Both give the required Hilbert numerator
 The degree-three pair in the rank-one table is real minimal data, not a
 license to delete the common K-polynomial terms.
 
-## 3. The rank-five Atiyah-square certificate
+## 4. The rank-five Atiyah-square certificate
 
 Choose a volume form
 \[
@@ -176,7 +231,7 @@ used at the selected node. Neither orbit can make the bivector
 characteristic action vanish identically, so neither repairs the weaker
 semiregularity gate.
 
-## 4. Claim, retracted counterclaim, and salvage
+## 5. Claim, retracted counterclaim, and salvage
 
 **Claim.** Both colength-one subideal orbits preserve the separated-node
 K-class but retain a rank-five nonzero local Atiyah-square action.
