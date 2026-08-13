@@ -21,7 +21,7 @@ jobs:
           dir='verification/rh-wu-empty-floor-cell-public'
           file="$dir/RHWuEmptyFloorCellCounterexample.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='2c27b7bd0c77e050f892e94680ea2bca6703d943'
+          expected_blob='bcad73931c47c18f7d25bb90bff907fba918abca'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob"
           sha256sum "$file"
@@ -40,7 +40,11 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
+          set +e
           lake env lean RHWuEmptyFloorCellCounterexample.lean > lean-output.log 2>&1
+          status=$?
+          set -e
           cat lean-output.log
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
           echo 'VERIFIED RH Wu empty-floor-cell counterexample.'
