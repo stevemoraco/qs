@@ -30,7 +30,8 @@ def swapFirst (u v : α) : List α → List α
       by_cases hxu : x = u
       · simp [swapFirst, hxu]
       · by_cases hxv : x = v
-        · simp [swapFirst, hxu, hxv]
+        · subst x
+          simp [swapFirst, hxu]
         · simp [swapFirst, hxu, hxv, ih]
 
 /-- The first-occurrence swap is an involution when the symbols differ. -/
@@ -81,8 +82,10 @@ theorem parity_swapFirst_left {u v : α} (huv : u ≠ v) :
       · by_cases hxv : x = v
         · subst x
           simp [swapFirst, parity, huv.symm]
-        · have htail : u ∈ xs ∨ v ∈ xs := by
-            simpa [hxu, hxu.symm, hxv, hxv.symm] using hex
+        · have hux : u ≠ x := Ne.symm hxu
+          have hvx : v ≠ x := Ne.symm hxv
+          have htail : u ∈ xs ∨ v ∈ xs := by
+            simpa [hxu, hux, hxv, hvx] using hex
           simp [swapFirst, parity, hxu, hxv, ih htail]
 
 /-- Swapping the first `u`/`v` occurrence toggles the `v` parity. -/
@@ -100,8 +103,10 @@ theorem parity_swapFirst_right {u v : α} (huv : u ≠ v) :
       · by_cases hxv : x = v
         · subst x
           simp [swapFirst, parity, huv, huv.symm]
-        · have htail : u ∈ xs ∨ v ∈ xs := by
-            simpa [hxu, hxu.symm, hxv, hxv.symm] using hex
+        · have hux : u ≠ x := Ne.symm hxu
+          have hvx : v ≠ x := Ne.symm hxv
+          have htail : u ∈ xs ∨ v ∈ xs := by
+            simpa [hxu, hux, hxv, hvx] using hex
           simp [swapFirst, parity, hxu, hxv, ih htail]
 
 /-- Every other parity coordinate is unchanged. -/
