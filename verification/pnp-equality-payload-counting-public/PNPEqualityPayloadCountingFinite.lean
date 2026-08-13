@@ -16,11 +16,11 @@ logarithms, or `P` versus `NP`.
 -/
 
 /-- An overcounted gate slot: one basis label and two wire labels. -/
-def GateChoice (basis wires : ℕ) : Type :=
+abbrev GateChoice (basis wires : ℕ) : Type :=
   Fin basis × Fin wires × Fin wires
 
 /-- A padded `gates`-slot description together with one output-wire label. -/
-def CircuitDescription (basis wires gates : ℕ) : Type :=
+abbrev CircuitDescription (basis wires gates : ℕ) : Type :=
   (Fin gates → GateChoice basis wires) × Fin wires
 
 /-- Exact cardinality of one overcounted gate slot. -/
