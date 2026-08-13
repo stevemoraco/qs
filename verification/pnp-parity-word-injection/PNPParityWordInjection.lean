@@ -172,7 +172,7 @@ theorem endpointFiber_card_le [Fintype α]
   let f : Src → Dst := fun x => by
     refine ⟨firstSwap u v x.1, ?_⟩
     have hxFilt : x.1 ∈ S.filter (HasEndpoint A) := by
-      simpa [endpointFiber] using x.2
+      exact x.2
     have hxS : x.1 ∈ S := (Finset.mem_filter.mp hxFilt).1
     have hxEnd : HasEndpoint A x.1 := (Finset.mem_filter.mp hxFilt).2
     have hImage : firstSwap u v x.1 ∈
