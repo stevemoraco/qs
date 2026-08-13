@@ -6,6 +6,7 @@ def add(x,y): return tuple(a+b for a,b in zip(x,y))
 def sub(x,y): return tuple(a-b for a,b in zip(x,y))
 def scale(c,x): return tuple(c*a for a in x)
 def dot(x,y): return sum(a*b for a,b in zip(x,y))
+def cross(x,y): return (x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0])
 def leray(k,x): return sub(x,scale(F(dot(k,x),dot(k,k)),k))
 def leray_num(k,x): return sub(scale(dot(k,k),x),scale(dot(k,x),k))
 def bilinear(k,uk,l,ul):
@@ -76,7 +77,65 @@ assert dot(q2,W)==F(
 q2_cross_ell2=(-10,-10,-14)
 assert dot(q2_cross_ell2,W)==F(
     510328106590784403233069938301737440,51741447392101)
+
+
+# Full six-color polynomial under the standard restricted schedule: one real
+# amplitude t_i is shared by both branches and both conjugate modes of color i.
+# Keying the Picard recurrence by the exponent vector of (t_0,...,t_5)
+# extracts every quartic monomial exactly.
+qs=((1,1,0),(1,-1,0),(1,0,1),(1,0,-1),(0,1,1),(0,1,-1))
+ells=((-1,1,14),(-7,-7,10),(1,14,-1),(-7,10,-7),(-14,1,-1),(-14,-1,-1))
+full_u0=defaultdict(lambda: zero)
+for i,(qi,elli) in enumerate(zip(qs,ells)):
+    hi=scale(2,cross(qi,elli))
+    gi=cross(elli,hi)
+    ai=add(elli,hi)
+    bi=sub(elli,hi)
+    uai=add(sub(scale(198,hi),scale(1584,elli)),gi)
+    ubi=sub(add(scale(198,hi),scale(1584,elli)),gi)
+    monomial=tuple(1 if i==j else 0 for j in range(6))
+    for reality in (1,-1):
+        full_u0[(scale(reality,ai),monomial)]=tuple(map(F,uai))
+        full_u0[(scale(reality,bi),monomial)]=tuple(map(F,ubi))
+
+full_picard=[full_u0]
+for n in range(3):
+    nxt=defaultdict(lambda: zero)
+    for p in range(n+1):
+        q=n-p
+        for (k,mk),uk in full_picard[p].items():
+            for (l,ml),ul in full_picard[q].items():
+                monomial=tuple(x+y for x,y in zip(mk,ml))
+                key=(add(k,l),monomial)
+                nxt[key]=add(nxt[key],scale(F(1,n+1),ordered_q(k,uk,l,ul)))
+    full_picard.append(nxt)
+
+target5=scale(2,ells[5])
+off5=cross(qs[5],ells[5])
+color5_terms={
+    monomial: dot(off5,coefficient)
+    for (frequency,monomial),coefficient in full_picard[3].items()
+    if frequency==target5 and coefficient != zero
+}
+expected_color5_monomials={
+    (0,0,0,0,0,4),
+    (0,0,0,0,2,2),
+    (0,0,0,2,0,2),
+    (0,0,2,0,0,2),
+    (0,2,0,0,0,2),
+    (1,1,0,0,1,1),
+    (2,0,0,0,0,2),
+}
+assert set(color5_terms)==expected_color5_monomials
+assert color5_terms[(0,0,0,0,0,4)]==0
+assert all(value < 0 for monomial,value in color5_terms.items()
+           if monomial != (0,0,0,0,0,4))
+# Therefore the off-target component is strictly negative whenever every
+# shared real color amplitude t_i is positive.  This sign conclusion is
+# restricted to this six-parameter schedule; independent branch phases are
+# not covered.
 print('s',s,'normSq',dot(s,s),'B_s',Bs)
 print('r',r,'normSq',dot(r,r),'B_r',Br)
 print('return',add(s,r),'B_sr',Bsr)
 print('all ordered quartic Picard trees',W)
+print('color-5 off-target quartic signs',color5_terms)
