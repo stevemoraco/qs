@@ -2,6 +2,8 @@ import Mathlib
 
 namespace BSDToupinHaarInversionFirewall
 
+noncomputable section
+
 /-!
 # Scalar density firewall for the claimed `GL₂` Haar inversion law
 
@@ -31,13 +33,19 @@ def transformedDensity (d : ℝ) : ℝ :=
 def claimedWeightedDensity (d : ℝ) : ℝ :=
   haarDensity d * haarDensity d
 
+/-- Abstract exponent identity: inverse-point density `d²` cancels half of the
+four-coordinate Jacobian `d⁻⁴`, leaving the original `d⁻²` density. -/
+theorem exponent_cancellation
+    {d : ℝ} (hd : d ≠ 0) :
+    d ^ 2 * d⁻¹ ^ 4 = d⁻¹ ^ 2 := by
+  field_simp [hd]
+
 /-- For nonzero determinant magnitude, inversion preserves the Haar density. -/
 theorem transformedDensity_eq_haarDensity
     {d : ℝ} (hd : d ≠ 0) :
     transformedDensity d = haarDensity d := by
-  field_simp [transformedDensity, inversePointDensity,
-    inversionJacobian, haarDensity, hd]
-  ring
+  simpa [transformedDensity, inversePointDensity,
+    inversionJacobian, haarDensity] using exponent_cancellation hd
 
 /-- Exact determinant-two diagnostic: original and transformed density are
 `1/4`. -/
@@ -60,18 +68,12 @@ theorem claimed_inversion_weight_fails_at_determinant_two :
   norm_num [transformedDensity, inversePointDensity,
     inversionJacobian, claimedWeightedDensity, haarDensity]
 
-/-- Abstract exponent identity: inverse-point density `d²` cancels half of the
-four-coordinate Jacobian `d⁻⁴`, leaving the original `d⁻²` density. -/
-theorem exponent_cancellation
-    {d : ℝ} (hd : d ≠ 0) :
-    d ^ 2 * d⁻¹ ^ 4 = d⁻¹ ^ 2 := by
-  field_simp [hd]
-  ring
-
 #print axioms transformedDensity_eq_haarDensity
 #print axioms determinant_two_correct_density
 #print axioms determinant_two_claimed_density
 #print axioms claimed_inversion_weight_fails_at_determinant_two
 #print axioms exponent_cancellation
+
+end
 
 end BSDToupinHaarInversionFirewall
