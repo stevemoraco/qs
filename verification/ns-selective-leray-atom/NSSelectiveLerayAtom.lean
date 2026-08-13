@@ -285,6 +285,67 @@ theorem isosceles_reciprocal_not_in_selected_polarization :
   norm_num [isoN, smul, isoA] at hy hz
   linarith
 
+/-! A minimal three-plane braid absorbs the complementary polarization
+locally and closes its first cross-plane interaction into a third relay.  It is
+still not Fourier-closed: an exact square-root-five exterior fiber survives. -/
+
+def braidR : V3 := ⟨0, 0, 1⟩
+def braidK13 : V3 := ⟨-1, 0, -1⟩
+def braidA13 : V3 := ⟨0, -1, -1⟩
+def braidB13 : V3 := ⟨1, 1, 0⟩
+def braidN13 : V3 := ⟨0, 1, 0⟩
+def braidK23 : V3 := ⟨0, -1, 1⟩
+def braidExt : V3 := ⟨1, 2, 0⟩
+def braidMinusK12 : V3 := ⟨1, 1, 0⟩
+
+theorem braid_second_relay_transverse :
+    dot isoP braidA13 = 0 ∧ dot braidR braidB13 = 0 ∧
+    dot braidK13 braidN13 = 0 := by
+  norm_num [dot, isoP, braidR, braidK13, braidA13, braidB13, braidN13]
+
+theorem braid_shared_polarizations_independent (x y : ℝ)
+    (h : add (smul x isoA) (smul y braidA13) = zero) :
+    x = 0 ∧ y = 0 := by
+  have hy := congrArg V3.y h
+  have hz := congrArg V3.z h
+  norm_num [add, smul, isoA, braidA13, zero] at hy hz
+  constructor <;> linarith
+
+theorem braid_cross_active_relay :
+    leray (sub isoQ braidR)
+      (symSymbol (sub isoQ braidR) isoB braidB13) =
+      ⟨-2, 0, 0⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoQ, braidR, isoB, braidB13]
+
+theorem braid_cross_conjugate_killed :
+    leray (add isoQ braidR)
+      (symSymbol (add isoQ braidR) isoB braidB13) =
+      zero := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoQ, braidR, isoB, braidB13, zero]
+
+theorem braid_exterior_pollution :
+    leray braidExt (symSymbol braidExt isoB isoN) =
+      ⟨0, 0, -1⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, braidExt, isoB, isoN]
+
+theorem braid_exterior_carrier_relation :
+    add isoQ braidMinusK12 = braidExt := by
+  apply V3.ext <;>
+    norm_num [add, isoQ, braidMinusK12, braidExt]
+
+theorem braid_exterior_pollution_ne_zero :
+    leray braidExt (symSymbol braidExt isoB isoN) ≠ zero := by
+  rw [braid_exterior_pollution]
+  intro h
+  have hz := congrArg V3.z h
+  norm_num [zero] at hz
+
 #print axioms carrier_transverse
 #print axioms equal_shell_and_norm
 #print axioms high_symbol_parallel
@@ -312,5 +373,12 @@ theorem isosceles_reciprocal_not_in_selected_polarization :
 #print axioms isosceles_reciprocal_decomposition
 #print axioms isosceles_orthogonal_leakage
 #print axioms isosceles_reciprocal_not_in_selected_polarization
+#print axioms braid_second_relay_transverse
+#print axioms braid_shared_polarizations_independent
+#print axioms braid_cross_active_relay
+#print axioms braid_cross_conjugate_killed
+#print axioms braid_exterior_pollution
+#print axioms braid_exterior_carrier_relation
+#print axioms braid_exterior_pollution_ne_zero
 
 end NSSelectiveLerayAtom
