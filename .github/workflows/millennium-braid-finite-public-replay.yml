@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   verify:
-    name: verify-four-finite-cores
+    name: verify-five-finite-cores
     runs-on: ubuntu-24.04
     timeout-minutes: 90
 
@@ -45,6 +45,7 @@ jobs:
           ns-octagon|NSNoncollinearOctagonFinite.lean|039323b80f1cb8fe89dece3a7380bf81d1b6bf1b
           ym-pure-electric|YMPureElectricDefectFinite.lean|030b4c18fc859434c220caaa3ed01519d229a9fe
           rh-schur-residual|RHOddWeilSchurResidualSquaredCore.lean|162ff3a480da4a58717eb2fd84da9be0f5a4a213
+          rh-hilbert-square|RHHilbertCompletedSquare.lean|5861e720d6af11343d49e6eb210d58780147d369
           SOURCES
           exit "$status"
 
@@ -58,6 +59,7 @@ jobs:
             "$dir/NSNoncollinearOctagonFinite.lean"
             "$dir/YMPureElectricDefectFinite.lean"
             "$dir/RHOddWeilSchurResidualSquaredCore.lean"
+            "$dir/RHHilbertCompletedSquare.lean"
           )
           if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then
             echo 'Forbidden proof placeholder found.' >&2
@@ -167,6 +169,7 @@ jobs:
           ns-octagon|NSNoncollinearOctagonFinite.lean|15
           ym-pure-electric|YMPureElectricDefectFinite.lean|7
           rh-schur-residual|RHOddWeilSchurResidualSquaredCore.lean|4
+          rh-hilbert-square|RHHilbertCompletedSquare.lean|2
           SOURCES
           exit "$aggregate"
 
@@ -174,12 +177,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: millennium-braid-four-core-replay-${{ github.sha }}
+          name: millennium-braid-five-core-replay-${{ github.sha }}
           path: |
             verification/millennium-braid-finite-public/HodgePrimitiveSuspensionFinite.lean
             verification/millennium-braid-finite-public/NSNoncollinearOctagonFinite.lean
             verification/millennium-braid-finite-public/YMPureElectricDefectFinite.lean
             verification/millennium-braid-finite-public/RHOddWeilSchurResidualSquaredCore.lean
+            verification/millennium-braid-finite-public/RHHilbertCompletedSquare.lean
             verification/millennium-braid-finite-public/lakefile.toml
             verification/millennium-braid-finite-public/lean-toolchain
             verification/millennium-braid-finite-public/lake-manifest.json
