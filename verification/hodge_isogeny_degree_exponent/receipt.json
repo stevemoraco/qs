@@ -1,0 +1,72 @@
+{
+  "date": "2026-08-13",
+  "status": ["PROVED_FINITE", "LEAN_SOURCE", "LEAN_VERIFIED", "REFUTED_DEGREE_CLAIM", "EIGENCHARACTER_NOT_DECIDED"],
+  "source": {
+    "path": "verification/hodge_isogeny_degree_exponent/HodgeIsogenyDegreeExponent.lean",
+    "commit": "2a6453d917132895cfe3448371a6ed2088fcc2ee",
+    "blob": "fafdba98b3551fbba2eea300db20ece3fbc88868",
+    "sha256": "5341ab3c9c334fc579fcde1167b922041d2c1e69d6bd4fc295d52d525727e578"
+  },
+  "theorems": [
+    {
+      "name": "banker_integer_scalar_degree_in_weil_dimension",
+      "assumptions": "natural m,g,n and g=2n",
+      "result": "m^(2g)=m^(4n)"
+    },
+    {
+      "name": "critic_quadratic_norm_is_not_isogeny_degree_in_dimension_four",
+      "assumptions": "closed case m=2,n=2",
+      "result": "2^8 is not 2^2"
+    },
+    {
+      "name": "cleaner_norm_power_recovers_integer_scalar_degree",
+      "assumptions": "natural m,n; quadratic norm of integer m represented by m^2",
+      "result": "(m^2)^(2n)=m^(4n)"
+    }
+  ],
+  "provenance": {
+    "manuscript": "Relative Secant Cycles and Hodge Classes",
+    "identifier": "202602.0462",
+    "version": 5,
+    "location": "Lemma 1, lines 451 and 464",
+    "claimed_statement": "degree of the CM scalar is N_K/Q(tau)",
+    "standard_input": "Stacks Project Lemma 39.9.8: degree of multiplication by m on dimension g is m^(2g)"
+  },
+  "verdict": "The manuscript degree assertion fails already for the integral scalar 2 on an abelian fourfold: claimed degree 4, standard degree 256. This does not by itself disprove the desired Norm^n cohomological eigencharacter, which may require a different proof using the polarization action.",
+  "compile": {
+    "pr": 328,
+    "phase": 3,
+    "head": "db0e6b3c390aab70ef719b24264e5e726a6584bd",
+    "checked_merge": "36991ff058da3a4cc74aec85c90539b03722f4cb",
+    "run": 31700717294,
+    "job": 94448911192,
+    "runner": "GitHub Actions 1000021360",
+    "environment": "lean-4.30.0",
+    "request": "81e08316-3b18-4c0d-be62-224f3a2cfacb",
+    "cached": false,
+    "artifact": 9181109498,
+    "artifact_digest": "sha256:a9240016697910044d9e23750e6a08f4eaf6e1d9b47cca2665b8a37cf7251db8",
+    "okay": true,
+    "errors": 0,
+    "warnings": 0
+  },
+  "dependencies": [
+    ["propext", "Quot.sound"],
+    ["propext"],
+    ["propext", "Quot.sound"]
+  ],
+  "source_audit": {
+    "theorems": 3,
+    "dependency_reports": 3,
+    "sorry": 0,
+    "admit": 0,
+    "sorryAx": 0,
+    "custom_axiom": 0,
+    "opaque": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "remaining_gap": "prove the actual CM pullback and cohomological eigencharacter without confusing line-bundle scaling with isogeny degree",
+  "six_alarm": false
+}
