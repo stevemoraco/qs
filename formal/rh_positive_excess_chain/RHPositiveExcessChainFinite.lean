@@ -110,7 +110,6 @@ theorem weighted_telescope
           (Finset.sum_range_succ
             (fun k => (w k - w (k + 1)) * phi (k + 1)) n)
       rw [hSourceSplit, ih, hVariationSplit]
-      simp only [Nat.succ_eq_add_one]
       ring
 
 /-- Exact finite four-ledger decomposition: terminal energy, weight variation,
