@@ -24,8 +24,8 @@ jobs:
           dir='verification/rh-johnston-clipped-public'
           clipped="$dir/RHJohnstonClippedPrimePrefix.lean"
           recurrence="$dir/RHJohnstonPrimeEnergyRecurrence.lean"
-          test "$(git hash-object "$clipped")" = '287589cefc562805b0a68868b1945f800ac8a74a'
-          test "$(git hash-object "$recurrence")" = '1796e83a8742864f763577e3de435b8e1a8c3742'
+          test "$(git hash-object "$clipped")" = '38766cb794fac3d5d934a670d8c92466fd82f9e3'
+          test "$(git hash-object "$recurrence")" = 'b2eb28fc85c94a450329d77d16cb4fdc0a7cdaae'
           { git hash-object "$clipped"; git hash-object "$recurrence"; } | tee "$dir/source-blobs.txt"
           sha256sum "$clipped" "$recurrence" | tee "$dir/source-sha256.txt"
           for file in "$clipped" "$recurrence"; do
