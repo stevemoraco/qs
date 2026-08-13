@@ -45,6 +45,20 @@ theorem hodge_irrational_generator_not_in_rational_span
   obtain ⟨q, hq⟩ := hodge_rational_span_of_isometric_loops I c u hu
   exact hs q (hsum.symm.trans hq)
 
+/-- The actual real number `sqrt(13)` is not a rational linear combination of
+square-one real elements. -/
+theorem hodge_real_sqrt13_not_in_rational_span
+    {ι : Type*} [DecidableEq ι]
+    (I : Finset ι) (c : ι → ℚ) (u : ι → ℝ)
+    (hu : ∀ i ∈ I, u i ^ 2 = 1) :
+    Finset.sum I (fun i => algebraMap ℚ ℝ (c i) * u i) ≠ Real.sqrt 13 := by
+  apply hodge_irrational_generator_not_in_rational_span
+  · intro q
+    have hsqrt13 : Irrational (Real.sqrt 13) :=
+      (by norm_num : Nat.Prime 13).irrational_sqrt
+    simpa using hsqrt13.ne_rat q
+  · exact hu
+
 theorem hodge_index_sandwich_base_one
     (j m : ℕ) (hlower : 13 ^ j ∣ m) (hupper : m ∣ 13 * 13 ^ j) :
     m = 13 ^ j ∨ m = 13 ^ (j + 1) := by
