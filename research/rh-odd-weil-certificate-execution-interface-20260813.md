@@ -12,9 +12,11 @@ replayed, including its residual-visible operator analogue.  This note locates
 the first bridge needed to turn that algebra into a certified computation.
 
 The correction is important: finite localized odd-Weil matrix entries are
-explicitly definable.  The present non-effectivity begins at the infinite
-high-block coercivity theorem and the infinite residual tail, not at the
-formal definition of an entry.
+rigorously computable integrals after the basis and normalization are fixed.
+Suzuki's coercivity proof does not print a numerical cutoff, but its constants
+are effectivizable in principle.  The bank currently implements neither that
+constant extraction nor the required typed primitive-coordinate comparison.
+The genuinely absent analytic object is the full infinite residual tail.
 
 ## 2. Exact finite matrix
 
@@ -45,7 +47,8 @@ C_jk(x) = integral_{max(-a,-a-x)}^{min(a,a-x)}
 
 This reduces every entry to one interval integral over `[-2a,2a]`.  Suzuki's
 explicit formula for `Psi(|x|)` contains every prime-power term up to
-`exp(|x|)` and an archimedean Hurwitz--Lerch term.  Splitting near zero and
+`exp(|x|)`--hence through `exp(2a)` for this support--and an archimedean
+Hurwitz--Lerch term.  Splitting near zero and
 using its convergent local expansion gives a direct route to outward-rounded
 entry enclosures without an infinite digamma integral.
 
@@ -78,7 +81,9 @@ Fhat = A - B_M^*Y - Y^*B_M + Y^*D_M Y,
 R_j  = sum_{N<l<=M} H_jl Y_l - H_{j,low},  j>N.
 ```
 
-A valid infinite certificate requires explicit numbers
+A valid infinite certificate requires explicit numbers, after proving that
+the chosen odd high-sector matrix coordinates represent the primitive norm
+controlled by Suzuki's theorem,
 
 ```text
 D >= mu_L I,       Fhat >= -eta I,
@@ -100,21 +105,42 @@ inequalities.  They cannot supply `mu_L` or `tau` by themselves.
 
 ### Claimant
 
-An effective Yoshida theorem giving `N=N(a0,mu)` uniformly for `0<a<=a0`,
-together with an explicit infinite-row residual tail, would make the first
-honest `Delta` experiment certificate-executable.  A cofinal family with
+Suzuki's proof of Theorem 4.3 is effectivizable.  For `N>=1`, its displayed
+low-frequency leakage estimate yields, with a fixed Fourier normalization,
+
+```text
+integral_{|z|<=t0}|hat(psi)(z)|^2 / integral_R|hat(psi)(z)|^2
+  <= 4 a0 t0 (1+a0 t0)^2 / (pi^3 N).
+```
+
+The remaining constants can be bounded using the absolutely convergent
+Dirichlet series for `zeta'/zeta`, the explicit shifted-kernel bound, and a
+certified search for the monotone digamma threshold `t0`.  This can produce an
+effective `N=N(a0,mu)` uniformly for every `0<a<=a0`, although the resulting
+bound may be enormous.  Extracting those constants, typing the primitive
+coordinates, and adding an explicit infinite-row residual tail would make the
+first honest `Delta` experiment certificate-executable.  A cofinal family with
 `Delta_n->0`, plus the separately stated odd-Weil/RH equivalence and all
 operator-domain bridges, is the live target.
 
 ### Critic
 
-The quoted Yoshida statement is existential: for every `a0,mu>0`, some `N`
-works, but no computable `N(a0,mu)` is supplied.  A positive finite `D_M`
-eigenvalue does not lower-bound the infinite high block.  Likewise, checking
-only rows through `M` does not bound `R`.  Hidden complement states and
-coupling countermodels already show that both substitutions are invalid.
+No numerical `N(a0,mu)` is stated or implemented, and the effectivized bound
+may grow too quickly to support a useful cofinal computation.  Moreover,
+Suzuki controls a primitive norm involving `I_0^(a) phi`, not automatically
+the ordinary `L2` norm of the displayed coefficient vector.  One must prove
+that the odd high sector equals the relevant `K_{N,0}(a)` restriction and
+preserve the zero-mean projection, derivative scaling, full-to-half factor,
+and Fourier convention.  A positive finite `D_M` eigenvalue does not
+lower-bound the infinite high block.  Likewise, checking only rows through
+`M` does not bound `R`.
 
-The smallest bad certificate is therefore:
+The smallest omitted-row counterexample is exact.  Take high space `l2`,
+`D=I`, a one-dimensional low space, `A=1`, and
+`B x=sqrt(1+epsilon) x e_(M+1)`.  Every truncation through row `M` sees
+`B_M=0` and reports `1`, while the exact Schur value is `-epsilon`.
+
+Thus the smallest bad certificate is:
 
 ```text
 claim: finite D_M positivity and finite residual imply Delta control;
@@ -129,9 +155,11 @@ The smallest durable next package is:
 
 1. an interval `H_jk(a)` generator using the one-dimensional `Psi*C_jk`
    integral, with exact prime-power enumeration and explicit series tails;
-2. a constructive Yoshida lemma returning `N(a0,mu)` and a proof of the
-   infinite high-block lower bound;
-3. an explicit square-summable bound for every residual row `j>M`;
+2. proof-grade constant extraction from Suzuki Theorem 4.3, together with the
+   exact primitive-coordinate and odd-sector identification;
+3. an explicit bound for
+   `||(I-P_M)B||+||(I-P_M)D P_M Y_M||`, or an equivalent all-row residual
+   estimate;
 4. only then, a small `a,N,M` interval solve reporting `eta,rho,mu_L,Delta`.
 
 Without items 2 and 3, a pilot table is correctly labeled heuristic and is
@@ -145,7 +173,8 @@ not a durable RH certificate.
   use different bases or non-interval assumptions; none instantiates this
   `A/B/D` interface.
 - Existing Lean cores formalize finite algebra, not the Weil distribution,
-  Suzuki's screw function, constructive Yoshida coercivity, operator closure,
+  Suzuki's screw function, effectivized coercivity, primitive-coordinate
+  comparison, operator closure,
   or the infinite Schur bridge.
 - Broughan's older matrix-element treatment and `a=log(sqrt 2)` example
   confirm that finite formulas are classical; the public GRHpack page exposes
@@ -153,8 +182,11 @@ not a durable RH certificate.
 
 Primary sources:
 
-- Masatoshi Suzuki, arXiv:2206.03682v4:
-  https://arxiv.org/pdf/2206.03682
+- Masatoshi Suzuki, Theorem 4.3 and (4.11)--(4.13), arXiv:2206.03682v4:
+  https://arxiv.org/html/2206.03682v4
+- Masatoshi Suzuki, explicit screw-kernel/operator formula,
+  arXiv:2606.09096v1:
+  https://arxiv.org/html/2606.09096v1
 - Hiroyuki Yoshida, *Weil's explicit formula and the Riemann hypothesis*:
   https://projecteuclid.org/journals/advanced-studies-in-pure-mathematics/volume-21/issue-none/Weils-explicit-formula-and-the-Riemann-hypothesis/10.2969/aspm/02110281.pdf
 - Kevin Broughan's public GRHpack inventory:
