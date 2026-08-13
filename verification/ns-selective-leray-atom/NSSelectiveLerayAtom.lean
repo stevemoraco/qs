@@ -177,6 +177,48 @@ theorem real_two_chord_no_go (t s : ℝ) (h₁ : t = s) (h₂ : t = -s) :
     t = 0 ∧ s = 0 := by
   constructor <;> linarith
 
+/-! The same atom in coordinates adapted to its invariant plane.  The first
+two coordinates form a planar incompressible velocity; the third coordinate
+is passive.  The retained low output is purely in that passive direction. -/
+
+def p3 (a H : ℝ) : V3 := ⟨a, H, 0⟩
+def q3 (a H : ℝ) : V3 := ⟨-a, H, 0⟩
+def u3 (a H c : ℝ) : V3 := ⟨-H, a, c * H⟩
+def v3 (a H c : ℝ) : V3 := ⟨-H, -a, c * H⟩
+
+theorem passive_carrier_transverse (a H c : ℝ) :
+    dot (p3 a H) (u3 a H c) = 0 ∧
+    dot (q3 a H) (v3 a H c) = 0 := by
+  constructor <;> simp [dot, p3, q3, u3, v3] <;> ring
+
+theorem passive_high_symbol_parallel (a H c : ℝ) :
+    symSymbol (add (p3 a H) (q3 a H)) (u3 a H c) (v3 a H c) =
+      smul (-2 * a ^ 2) (add (p3 a H) (q3 a H)) := by
+  apply V3.ext <;>
+    simp [symSymbol, add, smul, dot, p3, q3, u3, v3] <;>
+    ring
+
+theorem passive_high_leray_zero (a H c : ℝ) :
+    leray (add (p3 a H) (q3 a H))
+      (symSymbol (add (p3 a H) (q3 a H)) (u3 a H c) (v3 a H c)) =
+      zero := by
+  rw [passive_high_symbol_parallel]
+  unfold leray
+  apply V3.ext <;>
+    simp [add, sub, smul, dot, p3, q3, zero] <;>
+    field_simp <;>
+    ring
+
+theorem passive_low_leray_exact (a H c : ℝ) :
+    leray (sub (p3 a H) (q3 a H))
+      (symSymbol (sub (p3 a H) (q3 a H)) (u3 a H c) (v3 a H c)) =
+      ⟨0, 0, -4 * c * a * H ^ 2⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    simp [add, sub, smul, dot, p3, q3, u3, v3] <;>
+    field_simp <;>
+    ring
+
 #print axioms carrier_transverse
 #print axioms equal_shell_and_norm
 #print axioms high_symbol_parallel
@@ -192,5 +234,9 @@ theorem real_two_chord_no_go (t s : ℝ) (h₁ : t = s) (h₂ : t = -s) :
 #print axioms two_frame_cross_pollution_ne_zero
 #print axioms four_fiber_hadamard_no_go
 #print axioms real_two_chord_no_go
+#print axioms passive_carrier_transverse
+#print axioms passive_high_symbol_parallel
+#print axioms passive_high_leray_zero
+#print axioms passive_low_leray_exact
 
 end NSSelectiveLerayAtom
