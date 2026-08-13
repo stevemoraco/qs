@@ -62,9 +62,9 @@ theorem zero_locus_constraint_vanishes
 space is constant. -/
 theorem fixed_section_gives_constant_zero_locus
     {T X R : Type*} [Zero R]
-    (section : T → X → R) (t0 : T)
-    (hfixed : ∀ t, section t = section t0) :
-    ∀ t, zeroLocus (section t) = zeroLocus (section t0) := by
+    (familySection : T → X → R) (t0 : T)
+    (hfixed : ∀ t, familySection t = familySection t0) :
+    ∀ t, zeroLocus (familySection t) = zeroLocus (familySection t0) := by
   intro t
   rw [hfixed t]
 
@@ -110,12 +110,15 @@ theorem zero_orbit_is_singleton
   · intro hv
     change ∃ g, act g 0 = v at hv
     rcases hv with ⟨g, hg⟩
-    have : v = 0 := by simpa [hzero g] using hg.symm
-    simpa [this]
+    have hv0 : v = 0 := by
+      calc
+        v = act g 0 := hg.symm
+        _ = 0 := hzero g
+    simpa [hv0]
   · intro hv
     have hv0 : v = 0 := by simpa using hv
     subst v
-    let g : G := Classical.choice inferInstance
+    let g : G := Classical.choice (inferInstance : Nonempty G)
     exact ⟨g, hzero g⟩
 
 /-- Concrete sign-orbit shadow: the orbit of one under multiplication by signs
