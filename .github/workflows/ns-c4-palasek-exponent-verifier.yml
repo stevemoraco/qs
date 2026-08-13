@@ -1,0 +1,141 @@
+name: Verify NS C4-Palasek backreaction exponent core
+
+on:
+  push:
+    branches:
+      - agent/ns-c4-palasek-exponent-verifier-20260813-r2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Canonical-source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean
+          EXPECTED_BLOB=4dce50553f5262a391a3901927039f5a9cac7ca8
+          ACTUAL_BLOB=$(git hash-object "$SRC")
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden source token: {match.group(2)}')
+          if 'Lean.ofReduceBool' in text or 'native_decide' in text:
+              raise SystemExit('forbidden source oracle')
+          if text.count('#print axioms') != 7:
+              raise SystemExit('expected exactly seven staged #print axioms commands')
+          print('source trust preflight: clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30 and preserve raw response
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-c4-palasek-exponent/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import urllib.request
+
+          source_path = pathlib.Path(
+              'verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean'
+          )
+          out = pathlib.Path(
+              'verification/ns-c4-palasek-exponent/evidence/axle-response.json'
+          )
+          payload = json.dumps({
+              'content': source_path.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-c4-palasek-exponent/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_blob=$(git hash-object verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean)"
+            echo "source_sha256=$(sha256sum verification/ns-c4-palasek-exponent/NSC4PalasekBackreactionExponent.lean | awk '{print $1}')"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact compiler evidence before verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-c4-palasek-exponent-evidence
+          path: verification/ns-c4-palasek-exponent/evidence/
+          if-no-files-found: error
+
+      - name: Enforce warning-free compiler and postcompile trust verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          p = pathlib.Path(
+              'verification/ns-c4-palasek-exponent/evidence/axle-response.json'
+          )
+          if not p.exists():
+              raise SystemExit('missing AXLE response evidence')
+          result = json.loads(p.read_text())
+          lean_errors = result.get('lean_messages', {}).get('errors', [])
+          lean_warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          tool_warnings = result.get('tool_messages', {}).get('warnings', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or lean_errors or lean_warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('Lean/AXLE verification failed or warned; inspect uploaded response artifact')
+          rendered = json.dumps(result)
+          for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
+              if forbidden in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
+          print('VERIFIED WARNING-FREE: exact NS exponent source compiled under AXLE Lean 4.30')
+          PY
