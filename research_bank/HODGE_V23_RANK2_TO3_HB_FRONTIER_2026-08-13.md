@@ -27,10 +27,20 @@ Thus an algebraic rank-two bundle can be written
  c_1(Q)=a x,\qquad c_2(Q)=b\frac{x^2}{2},
  \qquad a,b\in\mathbf Z. \tag{2}
 \]
-Equation (1) is an integral cohomology statement. It does not assert that
-the primitive class \(x^2/2\) is represented by an integral algebraic
-cycle on a very general ppav; existence of \(Q\) is an additional
-condition.
+Equation (1) is an integral cohomology statement. Its algebraic
+subgroup is strictly smaller. Engel--de Gaay Fortman--Schreieder,
+*Matroids and the integral Hodge conjecture for abelian varieties*,
+[arXiv:2507.15704](https://arxiv.org/abs/2507.15704), Theorem 1.1
+(version dated 2026-04-01), proves that on a very general ppav of dimension
+at least four every algebraic codimension-two class has **even** coefficient
+relative to \(x^2/2\). Since \(c_2(Q)\) is algebraic, it follows
+independently that
+\[
+ b\in2\mathbf Z. \tag{2a}
+\]
+This newest integral-cycle obstruction is sharp enough to matter in the
+setup, but all three survivors below satisfy it. Existence of \(Q\) is
+still an additional condition.
 
 ## 2. The rank-three top-Chern equation
 
