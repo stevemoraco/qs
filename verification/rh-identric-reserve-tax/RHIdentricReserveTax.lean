@@ -57,7 +57,7 @@ theorem normalized_identric_log_gap_le
       ring
     convert! hraw using 1
     rw [hlog]
-    dsimp [p, n]
+    dsimp [p, n] at hp hn ⊢
     field_simp [hp, hn]
     ring
   have hcont : ContinuousOn G (Icc 0 t) := by
