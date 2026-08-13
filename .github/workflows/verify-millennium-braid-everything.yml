@@ -18,20 +18,12 @@ jobs:
       - name: Checkout verifier
         uses: actions/checkout@v4
 
-      - name: Checkout exact RH-Lean source commit
-        uses: actions/checkout@v4
-        with:
-          repository: stevemoraco/RH-Lean
-          ref: 2f5044d0cc191fa63597309f6ab607ada98d66f2
-          path: RH-Lean
-          persist-credentials: false
-
-      - name: Pin source identity and reject proof carriers
-        working-directory: RH-Lean
+      - name: Pin mirrored source identity and reject proof carriers
+        working-directory: verification/millennium-braid-everything/project
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "2f5044d0cc191fa63597309f6ab607ada98d66f2"
           test "$(git hash-object lean-worker/MillenniumBraidAll.lean)" = "4db30ea04f98225152d3e5efb5f7f710617e3b65"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.31.0"
           python3 - <<'PY'
           import pathlib, re
 
@@ -107,13 +99,13 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Resolve pinned Mathlib
-        working-directory: RH-Lean
+        working-directory: verification/millennium-braid-everything/project
         run: |
           lake update
           lake exe cache get
 
       - name: Build and replay complete import spine
-        working-directory: RH-Lean
+        working-directory: verification/millennium-braid-everything/project
         run: |
           set -euo pipefail
           lake build MillenniumBraidAll 2>&1 | tee unified-build.txt
@@ -123,7 +115,7 @@ jobs:
           fi
 
       - name: Generate SHA and declaration manifest
-        working-directory: RH-Lean
+        working-directory: verification/millennium-braid-everything/project
         run: |
           python3 - <<'PY'
           import hashlib, json, pathlib, re, subprocess
@@ -150,7 +142,8 @@ jobs:
                   'declaration_lines': len(kinds),
               })
           report = {
-              'source_commit': subprocess.check_output(
+              'canonical_source_commit': '2f5044d0cc191fa63597309f6ab607ada98d66f2',
+              'verifier_commit': subprocess.check_output(
                   ['git', 'rev-parse', 'HEAD'], text=True
               ).strip(),
               'root_git_blob': subprocess.check_output(
@@ -176,7 +169,7 @@ jobs:
         with:
           name: millennium-braid-everything-evidence
           path: |
-            RH-Lean/unified-build.txt
-            RH-Lean/unified-axioms.txt
-            RH-Lean/unified-manifest.json
+            verification/millennium-braid-everything/project/unified-build.txt
+            verification/millennium-braid-everything/project/unified-axioms.txt
+            verification/millennium-braid-everything/project/unified-manifest.json
           if-no-files-found: warn
