@@ -136,6 +136,7 @@ jobs:
               print('::error title=AXLE evidence::missing AXLE response evidence')
               raise SystemExit(1)
           result = json.loads(p.read_text())
+          annotate('notice', json.dumps(result, sort_keys=True, separators=(',', ':')))
           lean_errors = result.get('lean_messages', {}).get('errors', [])
           lean_warnings = result.get('lean_messages', {}).get('warnings', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
