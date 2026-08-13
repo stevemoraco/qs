@@ -1,0 +1,184 @@
+name: Millennium braid finite public replay
+
+on:
+  push:
+    branches:
+      - agent/millennium-braid-finite-public-replay-20260813
+    paths:
+      - 'verification/millennium-braid-finite-public/**'
+      - '.github/workflows/millennium-braid-finite-public-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/millennium-braid-finite-public/**'
+      - '.github/workflows/millennium-braid-finite-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify-three-finite-cores
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/millennium-braid-finite-public'
+          status=0
+          while IFS='|' read -r slug file expected; do
+            actual="$(git hash-object "$dir/$file")"
+            printf 'expected_git_blob=%s\nactual_git_blob=%s\n' "$expected" "$actual" \
+              | tee "$dir/$slug-source-identity.txt"
+            if [ "$actual" != "$expected" ]; then
+              status=1
+            fi
+            sha256sum "$dir/$file" | tee "$dir/$slug-source-sha256.txt"
+          done <<'SOURCES'
+          hodge-suspension|HodgePrimitiveSuspensionFinite.lean|331438dc006a3088749dfc9e52ad38681ead5b8a
+          ns-octagon|NSNoncollinearOctagonFinite.lean|1aaeb8d4eebc299bd1c7ab003b12c46aecb7d4b0
+          ym-pure-electric|YMPureElectricDefectFinite.lean|0992240d7a6985d61cb02d0429656cd71462d1e5
+          SOURCES
+          exit "$status"
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/millennium-braid-finite-public'
+          files=(
+            "$dir/HodgePrimitiveSuspensionFinite.lean"
+            "$dir/NSNoncollinearOctagonFinite.lean"
+            "$dir/YMPureElectricDefectFinite.lean"
+          )
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "${files[@]}"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "${files[@]}"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "${files[@]}"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/millennium-braid-finite-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/toolchain.txt"
+          lake --version | tee -a "$dir/toolchain.txt"
+          cd "$dir"
+          lake update
+          python3 - <<'PY'
+          import json
+          manifest = json.load(open('lake-manifest.json', encoding='utf-8'))
+          mathlib = next(package for package in manifest['packages']
+                         if package['name'] == 'mathlib')
+          expected = '520045ab14e26149ee970e2e617ca04b09bde5d6'
+          actual = mathlib['rev']
+          print(f'expected_mathlib_rev={expected}')
+          print(f'actual_mathlib_rev={actual}')
+          if actual != expected:
+              raise SystemExit('resolved Mathlib revision mismatch')
+          PY
+          lake exe cache get
+
+      - name: Fresh kernel replays and axiom audits
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          dir='verification/millennium-braid-finite-public'
+          cd "$dir"
+          aggregate=0
+          while IFS='|' read -r slug file expected_reports; do
+            output="$slug-lean-kernel-output.txt"
+            lake env lean -DwarningAsError=true "$file" > "$output" 2>&1
+            compile_status=$?
+            cat "$output"
+            if [ "$compile_status" -ne 0 ]; then
+              echo "$slug: Lean compilation failed with status $compile_status" >&2
+              aggregate=1
+              continue
+            fi
+            if grep -Eq 'sorryAx|declaration uses .sorry.|Lean\.ofReduceBool' "$output"; then
+              echo "$slug: forbidden dependency found in kernel report" >&2
+              aggregate=1
+              continue
+            fi
+            python3 - "$output" "$expected_reports" > "$slug-axiom-count.txt" <<'PY'
+          import re
+          import sys
+
+          output_path, expected_text = sys.argv[1:]
+          text = open(output_path, encoding='utf-8').read()
+          dependency_reports = re.findall(
+              r'depends on axioms:\s*\[([^\]]*)\]', text
+          )
+          empty_reports = re.findall(
+              r'does not depend on any axioms', text
+          )
+          allowed = {'propext', 'Quot.sound', 'Classical.choice'}
+          unexpected = []
+          for report in dependency_reports:
+              axioms = {item.strip() for item in report.split(',') if item.strip()}
+              unexpected.extend(sorted(axioms - allowed))
+          reports = len(dependency_reports) + len(empty_reports)
+          expected = int(expected_text)
+          print(f'axiom_reports={reports}')
+          print(f'expected_axiom_reports={expected}')
+          print(f'allowed_axioms={sorted(allowed)}')
+          if unexpected:
+              print(f'unexpected_axioms={unexpected}')
+              raise SystemExit(1)
+          if reports != expected:
+              raise SystemExit(1)
+          PY
+            audit_status=$?
+            cat "$slug-axiom-count.txt"
+            if [ "$audit_status" -ne 0 ]; then
+              echo "$slug: axiom audit failed" >&2
+              aggregate=1
+              continue
+            fi
+            sha256sum "$output" | tee "$slug-kernel-output-sha256.txt"
+          done <<'SOURCES'
+          hodge-suspension|HodgePrimitiveSuspensionFinite.lean|10
+          ns-octagon|NSNoncollinearOctagonFinite.lean|15
+          ym-pure-electric|YMPureElectricDefectFinite.lean|7
+          SOURCES
+          exit "$aggregate"
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-braid-three-core-replay-${{ github.sha }}
+          path: |
+            verification/millennium-braid-finite-public/HodgePrimitiveSuspensionFinite.lean
+            verification/millennium-braid-finite-public/NSNoncollinearOctagonFinite.lean
+            verification/millennium-braid-finite-public/YMPureElectricDefectFinite.lean
+            verification/millennium-braid-finite-public/lakefile.toml
+            verification/millennium-braid-finite-public/lean-toolchain
+            verification/millennium-braid-finite-public/lake-manifest.json
+            verification/millennium-braid-finite-public/toolchain.txt
+            verification/millennium-braid-finite-public/*-source-identity.txt
+            verification/millennium-braid-finite-public/*-source-sha256.txt
+            verification/millennium-braid-finite-public/*-lean-kernel-output.txt
+            verification/millennium-braid-finite-public/*-axiom-count.txt
+            verification/millennium-braid-finite-public/*-kernel-output-sha256.txt
+          if-no-files-found: warn
