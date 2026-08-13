@@ -58,11 +58,13 @@ def isoCarrier : V3 := ⟨-1, 0, 0⟩
 def isoA : V3 := ⟨0, 1, -1⟩
 def isoR : V3 := ⟨0, 1, 1⟩
 
-/-- Other two carriers/polarization needed to test whether enlarging the
-`P`-fiber preserves the selective conjugate-difference cancellation. -/
+/-- Remaining carriers and selected polarizations of the hostile isosceles
+relay. -/
 def isoP : V3 := ⟨1, 0, 0⟩
 def isoQ : V3 := ⟨0, 1, 0⟩
+def isoK : V3 := ⟨-1, -1, 0⟩
 def isoB : V3 := ⟨-1, 0, 1⟩
+def isoN : V3 := ⟨0, 0, 1⟩
 
 theorem iso_transverse_iff_x_zero (s : V3) :
     dot isoCarrier s = 0 ↔ s.x = 0 := by
@@ -108,10 +110,8 @@ theorem selected_line_kills_conjugate_difference :
   apply V3.ext <;>
     norm_num [dot, add, sub, smul, isoP, isoQ, isoA, isoB]
 
-/-- Hostile repair test: admitting the leaked orthogonal polarization `isoR`
-into the same carrier fiber reopens the previously killed exterior difference
-`P-Q`.  Thus full same-carrier polarization closure and the original selective
-frequency cancellation cannot simply be combined by taking the full fiber. -/
+/-- Admitting the leaked orthogonal polarization `isoR` reopens the previously
+killed exterior difference `P-Q`. -/
 theorem leaked_line_reopens_conjugate_difference :
     leray (sub isoP isoQ)
       (symSymbol (sub isoP isoQ) isoR isoB) = ⟨0, 0, -2⟩ := by
@@ -119,7 +119,6 @@ theorem leaked_line_reopens_conjugate_difference :
   apply V3.ext <;>
     norm_num [dot, add, sub, smul, isoP, isoQ, isoR, isoB]
 
-/-- The reopened exterior difference is genuinely nonzero. -/
 theorem leaked_line_reopens_conjugate_difference_ne_zero :
     leray (sub isoP isoQ)
       (symSymbol (sub isoP isoQ) isoR isoB) ≠ ⟨0, 0, 0⟩ := by
@@ -127,6 +126,52 @@ theorem leaked_line_reopens_conjugate_difference_ne_zero :
   intro h
   have hz := congrArg V3.z h
   norm_num at hz
+
+/-- The reciprocal `Q+K=-P` interaction that forced the polarization repair. -/
+theorem reciprocal_selected_pair_output :
+    leray (add isoQ isoK)
+      (symSymbol (add isoQ isoK) isoB isoN) = isoN := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoQ, isoK, isoB, isoN]
+
+/-- With scalar amplitudes `b,c`, the reciprocal output scales as `b*c` and
+contains a forced `isoR` coefficient `(b*c)/2`. -/
+theorem scaled_reciprocal_output_decomposition (b c : ℝ) :
+    smul (b * c) isoN =
+      add (smul (-(b * c) / 2) isoA) (smul ((b * c) / 2) isoR) := by
+  apply V3.ext <;>
+    simp [smul, add, isoN, isoA, isoR] <;>
+    ring
+
+/-- Exact coefficient-level second-generation leak.  Once the reciprocal
+interaction has generated its forced `R` coefficient `(b*c)/2`, pairing it
+with the real conjugate `Q` amplitude `b` produces the exterior `P-Q` mode with
+z-amplitude `-b^2*c`. -/
+theorem forced_second_generation_exterior (b c : ℝ) :
+    leray (sub isoP isoQ)
+      (symSymbol (sub isoP isoQ)
+        (smul ((b * c) / 2) isoR) (smul b isoB)) =
+      ⟨0, 0, -(b ^ 2 * c)⟩ := by
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, isoP, isoQ, isoR, isoB] <;>
+    ring
+
+/-- Therefore, inside the isolated triad, nonzero reciprocal-driving
+amplitudes force a genuinely nonzero exterior contribution at the next
+bilinear interaction. -/
+theorem forced_second_generation_exterior_ne_zero
+    {b c : ℝ} (hb : b ≠ 0) (hc : c ≠ 0) :
+    leray (sub isoP isoQ)
+      (symSymbol (sub isoP isoQ)
+        (smul ((b * c) / 2) isoR) (smul b isoB)) ≠ ⟨0, 0, 0⟩ := by
+  rw [forced_second_generation_exterior]
+  intro h
+  have hz : -(b ^ 2 * c) = 0 := by
+    simpa using congrArg V3.z h
+  have hzero : b ^ 2 * c = 0 := neg_eq_zero.mp hz
+  exact (mul_ne_zero (pow_ne_zero 2 hb) hc) hzero
 
 #print axioms dot_comm
 #print axioms dot_sub_right
@@ -139,5 +184,9 @@ theorem leaked_line_reopens_conjugate_difference_ne_zero :
 #print axioms selected_line_kills_conjugate_difference
 #print axioms leaked_line_reopens_conjugate_difference
 #print axioms leaked_line_reopens_conjugate_difference_ne_zero
+#print axioms reciprocal_selected_pair_output
+#print axioms scaled_reciprocal_output_decomposition
+#print axioms forced_second_generation_exterior
+#print axioms forced_second_generation_exterior_ne_zero
 
 end SixLaneAudit.NSPolarizationBundleClosure
