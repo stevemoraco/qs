@@ -44,6 +44,31 @@ jobs:
           print('source trust preflight: clean')
           PY
 
+      - name: Replay deterministic exact checker twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKER=verification/ns-selective-leray-atom/check_ns_selective_leray_atom.py
+          EXPECTED_CHECKER_GIT_BLOB=3485d1c7ef8d4500d428e9bb485ab4d02d66de76
+          test "$(git hash-object "$CHECKER")" = "$EXPECTED_CHECKER_GIT_BLOB"
+          OUT=verification/ns-selective-leray-atom/evidence
+          mkdir -p "$OUT"
+          python3 "$CHECKER" > "$OUT/checker-run-1.json"
+          python3 "$CHECKER" > "$OUT/checker-run-2.json"
+          cmp "$OUT/checker-run-1.json" "$OUT/checker-run-2.json"
+          python3 - <<'PY'
+          import json
+          import pathlib
+          p = pathlib.Path('verification/ns-selective-leray-atom/evidence/checker-run-1.json')
+          result = json.loads(p.read_text())
+          if result.get('assertions', 0) < 1000:
+              raise SystemExit('checker coverage gate failed')
+          if not result.get('status', '').startswith('finite exact algebra verified'):
+              raise SystemExit('checker scope/status gate failed')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          print('DETERMINISTIC REPLAY: two byte-identical exact checker runs')
+          PY
+
       - name: Execute AXLE Lean 4.30 and preserve raw response
         shell: bash
         run: |
