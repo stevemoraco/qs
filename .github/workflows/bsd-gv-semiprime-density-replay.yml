@@ -1,15 +1,15 @@
 name: BSD semiprime density Lean replay
 
 on:
-  pull_request:
-    paths:
-      - "verification/bsd-gv-semiprime-density/**"
-      - ".github/workflows/bsd-gv-semiprime-density-replay.yml"
   push:
     paths:
       - "verification/bsd-gv-semiprime-density/**"
       - ".github/workflows/bsd-gv-semiprime-density-replay.yml"
   workflow_dispatch:
+
+concurrency:
+  group: bsd-gv-semiprime-density-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
