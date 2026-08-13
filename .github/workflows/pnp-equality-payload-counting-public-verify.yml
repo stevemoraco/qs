@@ -26,7 +26,7 @@ jobs:
           dir='verification/pnp-equality-payload-counting-public'
           file="$dir/PNPEqualityPayloadCountingFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='5b5c97111c226c944bdafa4f651dcd8191152b49'
+          expected_blob='e450ae82fff2162e218203834f9962f3d5fc07d2'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
