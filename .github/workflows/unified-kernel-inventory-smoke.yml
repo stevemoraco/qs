@@ -1,0 +1,85 @@
+name: Unified kernel inventory smoke
+
+on:
+  push:
+    branches:
+      - agent/unified-kernel-inventory-smoke-20260813-gpt56
+  pull_request:
+    paths:
+      - verification/millennium-grand-ledger/KernelInventorySmoke.lean
+      - .github/workflows/unified-kernel-inventory-smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/millennium-grand-ledger
+          lake update
+          lake exe cache get
+          lean --version
+          lake --version
+
+      - name: Compile environment-level theorem audit
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/millennium-grand-ledger
+          lake env lean KernelInventorySmoke.lean 2>&1 | tee kernel-inventory-smoke.log
+          grep -q 'AUDITED_SMOKE_THEOREMS=1' kernel-inventory-smoke.log
+
+      - name: Prove custom axiom dependency is rejected
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/millennium-grand-ledger
+          python3 - <<'PY'
+          from pathlib import Path
+          Path("GeneratedBadFixture.lean").write_text(r"""
+          import Mathlib
+          import Lean.Util.CollectAxioms
+
+          namespace GeneratedBadFixture
+          axiom Bad : False
+          theorem contaminated : False := Bad
+
+          open Lean Elab Command
+          elab "#rejectContaminated" : command => do
+            let axioms ← Lean.collectAxioms ``GeneratedBadFixture.contaminated
+            if axioms.contains ``GeneratedBadFixture.Bad then
+              throwError "EXPECTED_CUSTOM_AXIOM_REJECTION"
+            throwError "fixture failed to expose its custom axiom"
+
+          #rejectContaminated
+          end GeneratedBadFixture
+          """)
+          PY
+          set +e
+          lake env lean GeneratedBadFixture.lean > bad-fixture.log 2>&1
+          status=$?
+          set -e
+          test "$status" -ne 0
+          grep -q 'EXPECTED_CUSTOM_AXIOM_REJECTION' bad-fixture.log
+          rm GeneratedBadFixture.lean
+          echo 'CUSTOM_AXIOM_NEGATIVE_CONTROL=PASS'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-kernel-inventory-smoke
+          path: |
+            verification/millennium-grand-ledger/kernel-inventory-smoke.log
+            verification/millennium-grand-ledger/bad-fixture.log
+          if-no-files-found: warn
