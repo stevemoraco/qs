@@ -1,0 +1,32 @@
+name: YM physical-scale interface verifier
+on:
+  push:
+    branches: [agent/ym-physical-scale-interface-public-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify exact Lean source
+        run: |
+          set -euo pipefail
+          test "$(git hash-object verification/ym_physical_scale_interface/PhysicalScaleInterfaceFirewall.lean)" = ad34e493e3e4cf8abb855ff46a2ed8728c8f9799
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/ym_physical_scale_interface/PhysicalScaleInterfaceFirewall.lean').read_text()
+          payload = json.dumps({'content': source, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          request = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          assert not result.get('lean_messages', {}).get('errors', [])
+          assert not result.get('lean_messages', {}).get('warnings', [])
+          assert 'sorryAx' not in json.dumps(result)
+          PY
