@@ -1,0 +1,63 @@
+name: NS Shahmurov equation type public verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-shahmurov-equation-type-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/ns-shahmurov-equation-type-public/**'
+      - '.github/workflows/ns-shahmurov-equation-type-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-shahmurov-equation-type-public'
+          file="$dir/NSShahmurovEquationTypeFirewall.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='71c6c9907aa721d3003715f39a97b6be551a5c73'
+          test "$actual_blob" = "$expected_blob"
+          printf 'public_source_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-shahmurov-equation-type-public'
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSShahmurovEquationTypeFirewall.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then exit "$status"; fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then exit 1; fi
+          echo 'VERIFIED Shahmurov equation-type finite firewalls.'
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-shahmurov-equation-type-public-evidence
+          path: |
+            verification/ns-shahmurov-equation-type-public/source-blob.txt
+            verification/ns-shahmurov-equation-type-public/source-sha256.txt
+            verification/ns-shahmurov-equation-type-public/lean-version.txt
+            verification/ns-shahmurov-equation-type-public/lean-output.log
