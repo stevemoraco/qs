@@ -35,7 +35,7 @@ jobs:
           finite_blob="$(git hash-object "$finite")"
           landau_blob="$(git hash-object "$landau")"
           test "$finite_blob" = 'f92f1a7c9749173070b405870f4a2903211efeee'
-          test "$landau_blob" = '4c178f672979d947b3313bb28497f309c1e3f238'
+          test "$landau_blob" = 'e0c50376a91c9074b17338318fa1348d2d929b4c'
 
           printf 'finite_blob=%s\nlandau_blob=%s\n' \
             "$finite_blob" "$landau_blob" | tee "$dir/source-blobs.txt"
@@ -110,7 +110,7 @@ jobs:
               r"'([^']+)' does not depend on any axioms",
               text,
           )
-          expected = 14
+          expected = 24
           found = len(with_axioms) + len(without_axioms)
           if found != expected:
               raise SystemExit(
@@ -141,7 +141,7 @@ jobs:
           out.write_text(report)
           print(report, end='')
           PY
-          echo 'VERIFIED RH Chebyshev area finite and logical skeleton cores.'
+          echo 'VERIFIED RH Chebyshev area finite and strengthened logical skeleton cores.'
 
       - name: Upload verification evidence
         if: always()
