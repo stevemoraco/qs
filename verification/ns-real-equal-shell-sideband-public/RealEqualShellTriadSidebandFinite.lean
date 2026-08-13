@@ -90,12 +90,6 @@ theorem singleLowCannotKillBothOuter
           (mul_ne_zero (by norm_num) hh) hA) hB) hZ
   exact hne hzero
 
-/-- Polynomial core of the quantitative one-triad obstruction.  In the
-symmetric exact-difference-cancellation family, the two projected outer-mode
-squared norms sum to `2*r^2/(r^2+9)` times the right-hand polynomial below,
-while the squared desired coefficient along the low polarization is
-`16*A^2*r^2*z^2*Z^2`.  Thus this inequality yields the RMS lower bound
-`outer >= desired/sqrt 2` once the projection formula is instantiated. -/
 theorem symmetricOuterPolynomialLower
     (r A z C Z : ℝ) (hz : z^2 ≤ 1) :
     4 * A^2 * z^2 * Z^2 * (r^2 + 9) ≤
@@ -122,6 +116,12 @@ theorem symmetricOuterPolynomialLower
     ring
   nlinarith [hterm1, hterm2, hdecomp]
 
+theorem noPassiveAuxiliaryExponent
+    (alpha gamma : ℝ) (ha : 2 < alpha)
+    (hdamp : alpha - 1 < gamma)
+    (hpersist : 2 * gamma ≤ alpha) : False := by
+  linarith
+
 theorem localizationSeparationExponent (alpha : ℝ) :
     1 - 2 * (alpha - 1) / 3 = (5 - 2 * alpha) / 3 := by
   ring
@@ -144,6 +144,7 @@ theorem localizationSeparationPositive (alpha : ℝ)
 #print axioms secondSelfZero
 #print axioms singleLowCannotKillBothOuter
 #print axioms symmetricOuterPolynomialLower
+#print axioms noPassiveAuxiliaryExponent
 #print axioms localizationSeparationExponent
 #print axioms localizationSeparationPositive
 
