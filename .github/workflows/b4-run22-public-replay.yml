@@ -1,6 +1,12 @@
 name: B4 run22 public replay
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'verification/b4-run22/*Bank.lean'
+      - '.github/workflows/b4-run22-public-replay.yml'
   push:
     branches:
       - automation/b4-run22-public-replay-20260813-0425
