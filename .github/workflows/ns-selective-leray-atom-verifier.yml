@@ -49,7 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           CHECKER=verification/ns-selective-leray-atom/check_ns_selective_leray_atom.py
-          EXPECTED_CHECKER_GIT_BLOB=3485d1c7ef8d4500d428e9bb485ab4d02d66de76
+          EXPECTED_CHECKER_GIT_BLOB=3f83ec151f285b0a7267adf7da0dbf59f81cfb57
           test "$(git hash-object "$CHECKER")" = "$EXPECTED_CHECKER_GIT_BLOB"
           OUT=verification/ns-selective-leray-atom/evidence
           mkdir -p "$OUT"
