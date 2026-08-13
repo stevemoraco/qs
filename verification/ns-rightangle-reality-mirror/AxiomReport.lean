@@ -1,0 +1,8 @@
+import NSRightAngleRealityMirror
+
+#print axioms NSRightAngleRealityMirror.desired_source_exact
+#print axioms NSRightAngleRealityMirror.mirror_source_exact
+#print axioms NSRightAngleRealityMirror.desired_equals_reality_mirror
+#print axioms NSRightAngleRealityMirror.verticalSource_ne_zero
+#print axioms NSRightAngleRealityMirror.child_helicity_probes_opposite
+#print axioms NSRightAngleRealityMirror.child_helicity_norms_equal
