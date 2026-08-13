@@ -1,4 +1,4 @@
-name: RH short power-window public verifier
+name: RH short and fixed-window public verifier
 
 on:
   push:
@@ -23,26 +23,33 @@ jobs:
         run: |
           set -euo pipefail
           dir='verification/rh-short-power-window-public'
-          file="$dir/RHShortPowerWindowFinite.lean"
-          actual_blob="$(git hash-object "$file")"
-          expected_blob='f7cf819a4ffe208f0c16f5e68f7b79140a3f64a4'
-          test "$actual_blob" = "$expected_blob"
-          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
-          sha256sum "$file" | tee "$dir/source-sha256.txt"
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
-            echo 'Forbidden proof placeholder found.' >&2
-            exit 1
-          fi
-          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
-            echo 'Forbidden trust declaration found.' >&2
-            exit 1
-          fi
-          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
-            echo 'Forbidden computational trust escape found.' >&2
-            exit 1
-          fi
+          power="$dir/RHShortPowerWindowFinite.lean"
+          fixed="$dir/RHFixedMultiplicativeWindowFinite.lean"
+          power_blob="$(git hash-object "$power")"
+          fixed_blob="$(git hash-object "$fixed")"
+          test "$power_blob" = 'f7cf819a4ffe208f0c16f5e68f7b79140a3f64a4'
+          test "$fixed_blob" = '2fb9736850c565b57762cc542738736815df1c7f'
+          {
+            printf 'canonical_power_private_blob=%s\n' "$power_blob"
+            printf 'canonical_fixed_private_blob=%s\n' "$fixed_blob"
+          } | tee "$dir/source-blobs.txt"
+          sha256sum "$power" "$fixed" | tee "$dir/source-sha256.txt"
+          for file in "$power" "$fixed"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+              echo "Forbidden proof placeholder found in $file." >&2
+              exit 1
+            fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              echo "Forbidden trust declaration found in $file." >&2
+              exit 1
+            fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+              echo "Forbidden computational trust escape found in $file." >&2
+              exit 1
+            fi
+          done
 
-      - name: Install pinned Lean and compile exact source
+      - name: Install pinned Lean and compile exact sources
         shell: bash
         run: |
           set -euo pipefail
@@ -56,28 +63,32 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
-          set +e
-          lake env lean RHShortPowerWindowFinite.lean > lean-output.log 2>&1
-          status=$?
-          set -e
+          : > lean-output.log
+          for file in RHShortPowerWindowFinite.lean RHFixedMultiplicativeWindowFinite.lean; do
+            set +e
+            lake env lean "$file" >> lean-output.log 2>&1
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              cat lean-output.log
+              echo "Lean compilation failed for $file with status $status" >&2
+              exit "$status"
+            fi
+          done
           cat lean-output.log
-          if [ "$status" -ne 0 ]; then
-            echo "Lean compilation failed with status $status" >&2
-            exit "$status"
-          fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             echo 'Forbidden dependency found in compiler report.' >&2
             exit 1
           fi
-          echo 'VERIFIED RH short power-window finite algebra.'
+          echo 'VERIFIED RH short/fixed-window finite algebra.'
 
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rh-short-power-window-public-evidence
+          name: rh-short-fixed-window-public-evidence
           path: |
-            verification/rh-short-power-window-public/source-blob.txt
+            verification/rh-short-power-window-public/source-blobs.txt
             verification/rh-short-power-window-public/source-sha256.txt
             verification/rh-short-power-window-public/lean-version.txt
             verification/rh-short-power-window-public/lean-output.log
