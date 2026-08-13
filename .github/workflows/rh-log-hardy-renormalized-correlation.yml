@@ -29,7 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           file='formal/rh-log-hardy-renormalized-correlation/RHLogHardyRenormalizedCorrelation.lean'
-          expected='a9c8848d492fc2c10b631c12a834d7321be1cab6'
+          expected='95fa18f7051cd9200cf5d72dbc68987f806367a8'
           actual="$(git hash-object "$file")"
           printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
           test "$actual" = "$expected"
