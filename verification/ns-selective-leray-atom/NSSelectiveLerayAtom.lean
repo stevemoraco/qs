@@ -10,6 +10,11 @@ Clay-problem blow-up solution.
 
 namespace NSSelectiveLerayAtom
 
+set_option linter.unreachableTactic false
+set_option linter.unusedTactic false
+set_option linter.unnecessarySeqFocus false
+set_option linter.unusedSimpArgs false
+
 @[ext]
 structure V3 where
   x : ℝ
@@ -62,8 +67,11 @@ theorem high_symbol_parallel (A H : ℝ) :
 theorem high_leray_zero (A H : ℝ) (hH : H ≠ 0) :
     leray (kHigh A H) (symSymbol (kHigh A H) (u A H) (v A H)) = zero := by
   rw [high_symbol_parallel]
-  ext <;> simp [leray, kHigh, add, sub, smul, dot, p, q, zero, hH] <;>
-    field_simp <;> ring
+  unfold leray
+  apply V3.ext <;>
+    simp [kHigh, add, sub, smul, dot, p, q, zero, hH] <;>
+    field_simp [hH] <;>
+    ring
 
 /-- The low-difference symbol before projection. -/
 theorem low_symbol_exact (A H : ℝ) :
@@ -76,8 +84,11 @@ theorem low_leray_exact (A H : ℝ) (hA : A ≠ 0) :
     leray (kLow A H) (symSymbol (kLow A H) (u A H) (v A H)) =
       ⟨0, 4 * A * H ^ 2, 0⟩ := by
   rw [low_symbol_exact]
-  ext <;> simp [leray, kLow, sub, smul, dot, p, q, hA] <;>
-    field_simp <;> ring
+  unfold leray
+  apply V3.ext <;>
+    simp [kLow, sub, smul, dot, p, q, hA] <;>
+    field_simp [hA] <;>
+    ring
 
 /-- Exact normalized-coefficient defect identity; the correction is cubic in
 `A` divided by the polarization norm squared. -/
@@ -118,15 +129,21 @@ theorem two_frame_carrier_transverse :
 
 theorem first_frame_low_output :
     leray (sub p₁ q₁) (symSymbol (sub p₁ q₁) u₁ v₁) = ⟨0, -4, 0⟩ := by
-  norm_num [leray, symSymbol, dot, add, sub, smul, p₁, q₁, u₁, v₁]
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, p₁, q₁, u₁, v₁]
 
 theorem second_frame_low_output :
     leray (sub p₂ q₂) (symSymbol (sub p₂ q₂) u₂ v₂) = ⟨0, 0, -4⟩ := by
-  norm_num [leray, symSymbol, dot, add, sub, smul, p₂, q₂, u₂, v₂]
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, p₂, q₂, u₂, v₂]
 
 theorem two_frame_cross_pollution :
     leray (add p₁ p₂) (symSymbol (add p₁ p₂) u₁ u₂) = ⟨2, -2, 2⟩ := by
-  norm_num [leray, symSymbol, dot, add, sub, smul, p₁, p₂, u₁, u₂]
+  unfold leray symSymbol
+  apply V3.ext <;>
+    norm_num [dot, add, sub, smul, p₁, p₂, u₁, u₂]
 
 theorem two_frame_cross_pollution_ne_zero :
     leray (add p₁ p₂) (symSymbol (add p₁ p₂) u₁ u₂) ≠ zero := by
