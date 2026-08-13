@@ -1,4 +1,4 @@
-name: Millennium Grand Unified Ledger Lean
+name: Grand Ledger Lean
 
 on:
   push:
@@ -18,15 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reject placeholders and hidden conclusion carriers
+      - name: Reject placeholders and hidden declarations
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import pathlib, re
-          p = pathlib.Path('verification/millennium-grand-ledger/MillenniumGrandLedger.lean')
-          text = p.read_text()
-          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
-          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          root = pathlib.Path('verification/millennium-grand-ledger')
           forbidden = [
               r'^\s*(sorry|admit)\b',
               r'^\s*(axiom|opaque)\b',
@@ -34,13 +31,18 @@ jobs:
               r'\bnative_decide\b',
               r'\bLean\.ofReduceBool\b',
           ]
-          for pattern in forbidden:
-              m = re.search(pattern, stripped, flags=re.M)
-              if m:
-                  raise SystemExit(f'forbidden declaration or proof device: {m.group(0)!r}')
+          for p in sorted(root.glob('*.lean')):
+              text = p.read_text()
+              stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+              for pattern in forbidden:
+                  m = re.search(pattern, stripped, flags=re.M)
+                  if m:
+                      raise SystemExit(
+                          f'{p}: forbidden declaration or proof device: {m.group(0)!r}')
           PY
 
-      - name: Install pinned Lean and compile grand ledger
+      - name: Install pinned Lean and compile entrypoint
         run: |
           set -euo pipefail
           curl --proto '=https' --tlsv1.2 -sSf \
@@ -52,17 +54,17 @@ jobs:
           cd verification/millennium-grand-ledger
           lake update
           lake exe cache get
-          lake env lean MillenniumGrandLedger.lean 2>&1 | tee lean-output.log
+          lake env lean UnifiedEntrypoint.lean 2>&1 | tee lean-output.log
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
             echo 'Forbidden placeholder axiom found in compiler output.' >&2
             exit 1
           fi
-          echo 'VERIFIED Millennium grand finite/algebraic ledger.'
+          echo 'VERIFIED integrated finite and algebraic ledger.'
 
       - name: Upload compiler evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: millennium-grand-ledger-lean-evidence
+          name: grand-ledger-lean-evidence
           path: verification/millennium-grand-ledger/lean-output.log
           if-no-files-found: warn
