@@ -57,7 +57,9 @@ theorem hodge_generic_not_universal :
       ¬ (∀ n : ℕ, n ≠ 0) := by
   constructor
   · intro n hn
-    omega
+    have hpos : 0 < n := by
+      simpa [HodgeGenericIndex] using hn
+    exact ne_of_gt hpos
   · intro h
     exact h 0 rfl
 
@@ -69,8 +71,8 @@ theorem ns_two_phase_projector_oscillation :
 /-- A probe seeing the unit mode does not remove a smaller hidden mode. -/
 theorem ym_hidden_mode_countermodel
     {eps : ℝ} (heps : 0 < eps) (hlt : eps < 1) :
-    min (1 : ℝ) eps = eps ∧ eps < 1 := by
-  exact ⟨min_eq_right (le_of_lt hlt), hlt⟩
+    0 < eps ∧ min (1 : ℝ) eps = eps ∧ eps < 1 := by
+  exact ⟨heps, min_eq_right (le_of_lt hlt), hlt⟩
 
 /-- Carrying Perelman's solved lane is not an end-to-end formalization:
 a bridge out of `True` contains exactly a proof of its target. -/
@@ -142,7 +144,7 @@ structure FrontierFirewallBank : Prop where
   nsOscillation :
     ((1 : ℝ) - 1 / 2) ^ 2 + ((0 : ℝ) - 1 / 2) ^ 2 = 1 / 2
   ymHidden : ∀ {eps : ℝ}, 0 < eps → eps < 1 →
-    min (1 : ℝ) eps = eps ∧ eps < 1
+    0 < eps ∧ min (1 : ℝ) eps = eps ∧ eps < 1
   perelmanFormalization : ∀ P : Prop, (True → P) ↔ P
   finiteVsUniform :
     (∀ n : ℕ, ∃ w : ℕ, ∀ i : ℕ, i ≤ n → PrefixCert i w) ∧
