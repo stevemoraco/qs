@@ -16,17 +16,19 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
+      - name: Install, resolve, and build pinned Lean project
+        uses: leanprover/lean-action@v1
         with:
-          auto-config: false
-          use-mathlib-cache: true
           lake-package-directory: millennium/rh-deficit-kernel
-      - name: Build exact critical-point theorem
+          auto-config: true
+          build: true
+          use-mathlib-cache: true
+          nanoda: true
+          nanoda-allow-sorry: false
+      - name: Replay source and print axiom sets
         working-directory: millennium/rh-deficit-kernel
         run: |
           set -euo pipefail
-          lake update
-          lake build
           lake env lean RHDeficitExactCriticalPoint.lean 2>&1 | tee lean-output.txt
           if grep -Eq 'declaration uses .sorry.|declaration has metavariables|declaration uses sorry|unsolved goals' lean-output.txt; then
             echo 'forbidden proof hole detected'
