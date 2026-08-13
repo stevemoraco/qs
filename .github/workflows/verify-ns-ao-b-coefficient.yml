@@ -1,0 +1,55 @@
+name: Verify NS AO b coefficient
+on:
+  push:
+    branches: [agent/ns-ao-b-coefficient-verifier-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Exact source preflight
+        run: |
+          set -euo pipefail
+          SRC=formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean
+          test "$(sha256sum "$SRC" | cut -d' ' -f1)" = "e3183f2b1544e5a3ef47ebef9256c2d7d296973677f389b0071f5fd9d9cf2da3"
+          ! grep -En '(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)' "$SRC"
+          test "$(grep -c '#print axioms' "$SRC")" = 5
+      - name: Compile with AXLE Lean 4.30
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-ao-b-coefficient/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean').read_text()
+          payload = json.dumps({'content': source, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          request = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('verification/ns-ao-b-coefficient/evidence/axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          assert result.get('okay') is True
+          assert result.get('failed_declarations', []) == []
+          assert result.get('lean_messages', {}).get('errors', []) == []
+          assert result.get('lean_messages', {}).get('warnings', []) == []
+          assert result.get('tool_messages', {}).get('errors', []) == []
+          assert result.get('tool_messages', {}).get('warnings', []) == []
+          rendered = json.dumps(result)
+          assert 'sorryAx' not in rendered and 'Lean.ofReduceBool' not in rendered
+          print(json.dumps(result, indent=2))
+          PY
+      - name: Metadata
+        if: always()
+        run: |
+          mkdir -p verification/ns-ao-b-coefficient/evidence
+          printf 'commit=%s\nsource_sha256=%s\nenvironment=lean-4.30.0\n' "$GITHUB_SHA" "$(sha256sum formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean | cut -d' ' -f1)" > verification/ns-ao-b-coefficient/evidence/replay-metadata.txt
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-ao-b-coefficient-evidence
+          path: verification/ns-ao-b-coefficient/evidence/
+          if-no-files-found: error
