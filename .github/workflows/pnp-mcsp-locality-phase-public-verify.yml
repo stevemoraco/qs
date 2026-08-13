@@ -26,7 +26,7 @@ jobs:
           dir='verification/pnp-mcsp-locality-phase-public'
           file="$dir/PNPMCSPThresholdTimePhaseFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='5b536411049e61033218aa02fac2ccc153edf2b4'
+          expected_blob='c4c7800a6efc4201388733af93e5f6f1a6dc07f6'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
