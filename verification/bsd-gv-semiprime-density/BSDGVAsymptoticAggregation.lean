@@ -26,9 +26,9 @@ mass `c`, then the accepted states have total mass `28 * c`. -/
 theorem accepted_uniform_mass
     (mass : State → ℝ) (c : ℝ)
     (h : ∀ x, mass x = c) :
-    (∑ x in acceptedStates, mass x) = 28 * c := by
+    (∑ x ∈ acceptedStates, mass x) = 28 * c := by
   calc
-    (∑ x in acceptedStates, mass x) = ∑ _x in acceptedStates, c := by
+    (∑ x ∈ acceptedStates, mass x) = ∑ _x ∈ acceptedStates, c := by
       apply Finset.sum_congr rfl
       intro x _hx
       exact h x
@@ -42,15 +42,15 @@ theorem accepted_mass_tendsto
     (mass : State → ℕ → ℝ) (c : ℝ)
     (h : ∀ x, Tendsto (mass x) atTop (𝓝 c)) :
     Tendsto
-      (fun n => ∑ x in acceptedStates, mass x n)
+      (fun n => ∑ x ∈ acceptedStates, mass x n)
       atTop (𝓝 (28 * c)) := by
   have hsum :
       Tendsto
-        (fun n => ∑ x in acceptedStates, mass x n)
+        (fun n => ∑ x ∈ acceptedStates, mass x n)
         atTop
-        (𝓝 (∑ _x in acceptedStates, c)) := by
+        (𝓝 (∑ _x ∈ acceptedStates, c)) := by
     exact tendsto_finset_sum acceptedStates (fun x _hx => h x)
-  have hconst : (∑ _x in acceptedStates, c) = 28 * c := by
+  have hconst : (∑ _x ∈ acceptedStates, c) = 28 * c := by
     exact accepted_uniform_mass (fun _x => c) c (fun _x => rfl)
   rw [hconst] at hsum
   exact hsum
@@ -61,7 +61,7 @@ theorem accepted_density_tendsto
     (mass : State → ℕ → ℝ)
     (h : ∀ x, Tendsto (mass x) atTop (𝓝 (1 / 128 : ℝ))) :
     Tendsto
-      (fun n => ∑ x in acceptedStates, mass x n)
+      (fun n => ∑ x ∈ acceptedStates, mass x n)
       atTop (𝓝 (7 / 32 : ℝ)) := by
   convert accepted_mass_tendsto mass (1 / 128 : ℝ) h using 1 <;> norm_num
 
