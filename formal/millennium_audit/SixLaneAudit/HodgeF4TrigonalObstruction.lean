@@ -2,16 +2,24 @@ import Mathlib
 
 namespace SixLaneAudit.HodgeF4TrigonalObstruction
 
-/--
-Abstract finite core of the `F₄` trigonal obstruction.
+theorem moving_branch_genus_ten :
+    1 + (((36 : ℚ) - 18) / 2) = 10 := by
+  norm_num
 
-After the geometric reductions, `branchBase` is the source ruling restricted to
-its moving genus-10 branch curve, `targetBase` is the target ruling after
-identifying the two moving branch curves, and `τ` is the base automorphism
-forced by uniqueness of the trigonal pencil. The three points `x` lie on one
-general source ruling fibre. The ruling-to-section property makes their target
-base values injective, while trigonal uniqueness makes all three values equal.
--/
+theorem genus_ten_map_degree_one {d ram : ℕ}
+    (hd : 0 < d)
+    (hRH : 18 = 18 * d + ram) :
+    d = 1 := by
+  omega
+
+theorem trigonal_castelnuovo_severi_ceiling :
+    ((3 - 1) * (3 - 1) : ℕ) = 4 := by
+  norm_num
+
+theorem genus_ten_exceeds_trigonal_ceiling :
+    ¬ (10 : ℕ) ≤ (3 - 1) * (3 - 1) := by
+  norm_num
+
 theorem trigonal_fiber_collision
     {C SourceBase TargetBase : Type*}
     (branchBase : C → SourceBase)
@@ -29,6 +37,10 @@ theorem trigonal_fiber_collision
   have hfin : (0 : Fin 3) = 1 := h_target_base_injective h01
   norm_num at hfin
 
+#print axioms moving_branch_genus_ten
+#print axioms genus_ten_map_degree_one
+#print axioms trigonal_castelnuovo_severi_ceiling
+#print axioms genus_ten_exceeds_trigonal_ceiling
 #print axioms trigonal_fiber_collision
 
 end SixLaneAudit.HodgeF4TrigonalObstruction
