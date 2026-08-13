@@ -127,7 +127,7 @@ def packetAtScale (N : ℕ) (k : Fin N) : Set (Fin (N + 1)) :=
   {x | k.val ≤ x.val}
 
 /-- Unit point mass at `atomPoint N`. -/
-def atomMass (N : ℕ) (A : Set (Fin (N + 1))) : ℕ := by
+noncomputable def atomMass (N : ℕ) (A : Set (Fin (N + 1))) : ℕ := by
   classical
   exact if atomPoint N ∈ A then 1 else 0
 
