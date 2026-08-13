@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_von_mangoldt_l2_correction/RHVonMangoldtL2Correction.lean
-          EXPECTED_BLOB=769150321f1782855b7faee4c22eaf298fd0f49a
+          EXPECTED_BLOB=1f730eb1fb23fdc49e564e29b1d83bd805ecdd20
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
