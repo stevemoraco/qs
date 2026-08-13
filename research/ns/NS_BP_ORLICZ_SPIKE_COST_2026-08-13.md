@@ -15,12 +15,14 @@ Let
 
 where `L` is the positive increasing triple-logarithmic factor in Barker–Popkin's local Orlicz criterion. Choose `S_*` so large that `L(s) >= 1` and `L` is increasing for `s >= S_*`.
 
-For a measurable region `B` and a vector field `u in H^1(R^3)`, define the high-amplitude local charge
+For a measurable region `B` and a vector field `u in H^1(R^3)`, define the continuous truncated local charge
 
 \[
-M_B(u)=\int_{B\cap\{|u|\ge S_*\}}\Phi(|u|)\,dx.
+M_B(u)=\int_B[\Phi(|u|)-\Phi(S_*)]_+\,dx.
 \tag{1.1}
 \]
+
+This is the convenient record variable: for smooth `u` on a bounded cylinder it is continuous in time, and Barker–Popkin divergence of `int_B Phi(|u|)` is equivalent to divergence of `M_B(u)` up to the fixed finite contribution `Phi(S_*)|B|`.
 
 Write
 
@@ -64,20 +66,24 @@ A=\frac{M}{2E}\ge S_*.
 On `S_* <= |u| <= A`, the bound `L>=1` gives
 
 \[
-\Phi(|u|)\le |u|^3\le A|u|^2.
+[\Phi(|u|)-\Phi(S_*)]_+
+\le\Phi(|u|)
+\le |u|^3
+\le A|u|^2.
 \]
 
-Therefore
+Therefore the contribution from `|u| <= A` is at most
 
 \[
-\int_{B\cap\{S_*\le|u|\le A\}}\Phi(|u|)dx
-\le AE=\frac M2.
+AE=\frac M2.
 \]
 
-At least half of the charge lies above `A`:
+At least half of the truncated charge lies above `A`:
 
 \[
 \frac M2
+\le
+\int_{B\cap\{|u|>A\}}[\Phi(|u|)-\Phi(S_*)]_+dx
 \le
 \int_{B\cap\{|u|>A\}}\Phi(|u|)dx.
 \]
@@ -194,7 +200,7 @@ M_B(u_A)
 \tag{4.2}
 \]
 
-The iterated logarithm is slowly varying, so
+The subtraction of `Phi(S_*)` contributes only `O(EA^{-2})` and does not affect `(4.2)`. The iterated logarithm is slowly varying, so
 
 \[
 L\!\left(\frac{M_B(u_A)}E\right)\asymp L(A).
