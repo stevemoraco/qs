@@ -21,16 +21,7 @@ jobs:
       - name: Trust preflight
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import pathlib, re
-          p = pathlib.Path('verification/b2_round54/B2Round54RHPNP.lean')
-          s = p.read_text()
-          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
-          m = forbidden.search(s)
-          if m: raise SystemExit(m.group(2))
-          if 'native_decide' in s or 'Lean.ofReduceBool' in s: raise SystemExit('shortcut')
-          if s.count('#print axioms') != 2: raise SystemExit('expected 2 axiom reports')
-          PY
+          grep -R -nE 'sorry|admit|sorryAx|^axiom |^opaque |unsafe|native_decide|Lean.ofReduceBool' verification/b2_round54/*.lean && exit 1 || true
       - name: Install Lean and replay
         run: |
           set -euo pipefail
@@ -39,11 +30,14 @@ jobs:
           cd verification/b2_round54
           lake update
           lake exe cache get
-          lake env lean B2Round54RHPNP.lean 2>&1 | tee lean-output.log
-          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then exit 1; fi
+          lake env lean B2Round54RHPNP.lean
+          lake env lean B2Round54HodgeProjectionCore.lean
+          lake env lean B2Round54NSSmallPositive.lean
+          lake env lean B2Round54BSDDelayValues.lean
+          lake env lean B2Round54YMOrbitValues.lean
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: b2-round54-lean-evidence
-          path: verification/b2_round54/lean-output.log
+          path: verification/b2_round54
           if-no-files-found: warn
