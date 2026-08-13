@@ -2,8 +2,15 @@ name: PNP anti-merging replay
 on:
   push:
     branches: [agent/pnp-antimerging-entropy-firewalls-public-verify-20260813]
+permissions:
+  contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install Lean
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
