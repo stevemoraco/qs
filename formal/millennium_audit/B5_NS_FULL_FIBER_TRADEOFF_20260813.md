@@ -52,6 +52,6 @@ Only after a finite controller survives recursive closure should the B5 uniform-
 
 ## Provenance
 
-Hostile base relay independently verified in `stevemoraco/qs` PR #304, source blob `7dcac2d8ba0dbf370b35d5a6463c4bdcbd8322`, successful run/job `31694179218` / `94428020276`. New B5 theorems are on isolated branch `agent/b5-synthesis-pointwise-uniformity-obstruction-20260813`; parent B5 ledger `c69b77aa6532a627888f8f3271811c64fd661829`.
+Hostile base relay independently verified in `stevemoraco/qs` PR #304, source blob `7dcac2d8ba0dbabf370b35d5a6463c4bdcbd8322`, successful run/job `31694179218` / `94428020276`. New B5 theorems are on isolated branch `agent/b5-synthesis-pointwise-uniformity-obstruction-20260813`; parent B5 ledger `c69b77aa6532a627888f8f3271811c64fd661829`.
 
 No official Navier–Stokes theorem/disproof is closed. FIVE-ALARM remains off.
