@@ -26,7 +26,7 @@ jobs:
           dir='verification/ns-distributed-volume-tiling'
           file="$dir/NSDistributedVolumeTilingFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='c973fb41ab53e3972b4dd5609f463a4859d064a9'
+          expected_blob='7ab455e9418e407315f52cbfd87ee6e412f7be8e'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
