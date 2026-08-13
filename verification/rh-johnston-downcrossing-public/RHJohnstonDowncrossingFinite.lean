@@ -42,7 +42,7 @@ theorem gap_nondecreasing
   have hp : 0 ≤ (t - s) * (s * t - theta) := mul_nonneg h1 h2
   have hq : 0 ≤ (t - s) * (s * t - theta) / (s * t) :=
     div_nonneg hp (le_of_lt hden)
-  have hf := gap_increment_factorization (A := A) (c := c)
+  have hf := gap_increment_factorization (theta := theta) (A := A) (c := c)
     (ne_of_gt hs) (ne_of_gt ht)
   linarith
 
@@ -60,7 +60,7 @@ theorem gap_nonincreasing
     mul_nonpos_of_nonneg_of_nonpos h1 h2
   have hq : (t - s) * (s * t - theta) / (s * t) ≤ 0 :=
     div_nonpos_of_nonpos_of_nonneg hp (le_of_lt hden)
-  have hf := gap_increment_factorization (A := A) (c := c)
+  have hf := gap_increment_factorization (theta := theta) (A := A) (c := c)
     (ne_of_gt hs) (ne_of_gt ht)
   linarith
 
