@@ -1,6 +1,6 @@
 name = "RHLeanUnified"
 version = "0.1.0"
-defaultTargets = ["MillenniumBraidAll", "MillenniumExpandedCandidate"]
+defaultTargets = ["MillenniumBraidAll"]
 
 [[require]]
 name = "mathlib"
@@ -19,9 +19,13 @@ roots = [
   "PerelmanCompletionRouteEquivalenceFirewall",
   "RHPureSimpleZeroNoCoercivity",
   "SeventhObjectRouteEquivalenceFirewall",
-  "YMJacobsenActivityFirewall",
-  "MillenniumExpandedCandidate"
+  "YMJacobsenActivityFirewall"
 ]
+
+[[lean_lib]]
+name = "MillenniumExpandedCandidate"
+srcDir = "lean-worker"
+roots = ["MillenniumExpandedCandidate"]
 
 [[lean_lib]]
 name = "ExpandedBank01"
