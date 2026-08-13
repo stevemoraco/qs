@@ -1,13 +1,13 @@
-# Millennium braid three-core public replay provenance
+# Millennium braid four-core public replay provenance
 
 Date: 2026-08-13 UTC
 
-Status: **TWO HOSTED REPLAYS: HODGE AND NS FINITE CORES VERIFIED; YM SOURCE
-API REPAIR AND FULL THREE-SOURCE REPLAY REQUESTED; NO MILLENNIUM CLAIM;
+Status: **HODGE, NS, AND YM FINITE CORES HAVE REPRODUCIBLE HOSTED RECEIPTS;
+RH SCHUR-RESIDUAL FINITE CORE ADDED FOR A FIRST REPLAY; NO MILLENNIUM CLAIM;
 SIX-ALARM OFF.**
 
 This isolated `stevemoraco/qs` verifier contains byte-identical copies of
-three finite scalar sources from separate `stevemoraco/RH-Lean` draft stacks.
+four finite scalar sources from separate `stevemoraco/RH-Lean` draft stacks.
 The workflow gates every copy by its exact Git blob before compiling it under
 one pinned Lean/Mathlib project.
 
@@ -18,6 +18,7 @@ one pinned Lean/Mathlib project.
 | Hodge | #928, `31f5af6962198314c8d3afe5112ffdc4491d7495` | `331438dc006a3088749dfc9e52ad38681ead5b8a` | `035bc5f18659c53d3cc3822b92b12b5fecd1097400a8272e86bb7e6d2b5eeced` | 10 |
 | Navier--Stokes | #976, `9a0b837a6455df07e22a6a89b011a9bc1cb0150e` | `039323b80f1cb8fe89dece3a7380bf81d1b6bf1b` | `86e0497e7ab2747a35908a047209f8f60985415b1808f82af2abe5d2ae838f74` | 15 |
 | Yang--Mills | #983, `46455556507ee0878388c51ad6f048c3f6966674` | `030b4c18fc859434c220caaa3ed01519d229a9fe` | `94ef451cd7ad8fc406892285593feb97943ad619c92b91d23f3d7eb5f2f6b818` | 7 |
+| RH | #992, `d9e5f2333e1dda00a39231d5314841ec6332cd09` | `f7b23feacfcc2d705684cd64e45a8c74d80d744b` | `b16e6c0425cc800afc385cbce7006311030de436cc928bd8279390ee74b60774` | 4 |
 
 The replay branch starts from qs `main` at
 `e832133f25f4432ffba007f99359989d1bb16734`.
@@ -80,13 +81,17 @@ only those three lines.  Second-run artifact `9180396662` has archive digest
   defect floors and reverse-Poincare budgets.  It does not formalize compact
   groups, Haar measure, gauge invariance, ground-state transforms, continuum
   Yang--Mills, or a mass gap.
+- `RHOddWeilSchurResidualSquaredCore.lean` proves only a real-scalar Schur
+  residual identity, its residual-budget inequality, and a scalar cofinal
+  limit implication.  It does not formalize Hilbert-space operators, the Weil
+  form, Yoshida coercivity, zeta, or RH.
 
 The workflow rejects proof holes, custom trust declarations, and hidden
-computational escapes; requires all 32 requested axiom reports; whitelists
+computational escapes; requires all 36 requested axiom reports; whitelists
 only `propext`, `Quot.sound`, and `Classical.choice`; and preserves the exact
 sources, toolchain, manifest, logs, hashes, and audit summaries even on
 failure.
 
-Only the exact Hodge and NS finite sources are called Lean-verified from these
-receipts.  The YM finite source remains unverified until a clean hosted job
+The exact Hodge, NS, and YM finite sources have clean reproducible hosted
+receipts.  The RH finite source remains unverified until a clean hosted job
 succeeds and its preserved evidence is inspected.
