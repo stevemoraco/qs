@@ -10,6 +10,5 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           lake-package-directory: verification/pnp-low-ball-syndrome
-          auto-config: false
       - run: lake env lean PNPLowBallSyndromeSeparator.lean
         working-directory: verification/pnp-low-ball-syndrome
