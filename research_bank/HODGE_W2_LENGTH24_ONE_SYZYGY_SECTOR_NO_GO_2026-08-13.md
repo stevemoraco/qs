@@ -105,12 +105,23 @@ But \(\operatorname{Hom}(\mathcal O(2),\operatorname{Sym}^2\mathcal
 O^2)=0\), so the later generator cannot lift to the symmetric power even
 though (3.1) holds.
 
-### Buried overclaim
+### Buried overclaims
 
 An earlier draft used precisely that invalid later-generator injection to
 eliminate the three-generator type \((1,2,3,4,5,5,4)\). The separate
 slope bound does not follow. Only the canonical Tor–\(K\)-theory
 identities (3.1)–(3.2) are retained.
+
+A later attempt to exclude the globally special ghost-Betti table failed for
+the same reason. The linear coefficient \(u:U\to V\) globalizes, but after
+changing a degree-six lift the quadratic coefficient changes by \(u\ell\).
+It therefore maps canonically only to
+\[
+\operatorname{Sym}^2V/(uV)\simeq(V/U)^2,
+\]
+not to \(\operatorname{Sym}^2V\). A semistability bound for a nonexistent
+global quadratic lift is invalid; the resulting determinant identity is
+tautological. The globally special table remains live.
 
 ## 4. Finite one-syzygy classification with at most two generator degrees
 
