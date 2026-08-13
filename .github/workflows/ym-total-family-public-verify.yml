@@ -50,9 +50,9 @@ jobs:
             echo 'Forbidden placeholder axiom or reduction carrier found in compiler output.' >&2
             exit 1
           fi
-          grep -F 'explicitCertificateTime : ' lean-output.log
-          grep -F 'detectedModeLowerBound : ' lean-output.log
-          grep -F 'finiteDetectedSpectrumLowerBound : ' lean-output.log
+          grep -F "YMTotalFamilyFinite.explicitCertificateTime' depends on axioms:" lean-output.log
+          grep -F "YMTotalFamilyFinite.detectedModeLowerBound' depends on axioms:" lean-output.log
+          grep -F "YMTotalFamilyFinite.finiteDetectedSpectrumLowerBound' depends on axioms:" lean-output.log
           test -s source-sha256.log
           echo 'VERIFIED finite YM total-family detected-spectrum theorem.'
 
