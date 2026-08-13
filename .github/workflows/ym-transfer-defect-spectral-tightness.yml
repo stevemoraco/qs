@@ -14,15 +14,15 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Verify exact theorem source
+      - name: Verify corrected theorem source
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/ym-transfer-defect-spectral-tightness/TransferDefectSpectralTightness.lean
+          SRC=verification/ym-transfer-defect-spectral-tightness/TransferDefectSpectralTightnessV2.lean
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
           python3 - <<'PY'
           import json, pathlib, urllib.request
-          source = pathlib.Path('verification/ym-transfer-defect-spectral-tightness/TransferDefectSpectralTightness.lean').read_text()
+          source = pathlib.Path('verification/ym-transfer-defect-spectral-tightness/TransferDefectSpectralTightnessV2.lean').read_text()
           payload = json.dumps({
               'content': source,
               'environment': 'lean-4.30.0',
