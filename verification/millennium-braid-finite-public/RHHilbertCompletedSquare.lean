@@ -77,8 +77,11 @@ theorem quadratic_lower_bound_of_coercive
     neg_le_of_abs_le (abs_real_inner_le_norm (D z - b) (y - z))
   have hyoung : -(‖D z - b‖ ^ 2 / μ) ≤
       μ * ‖y - z‖ ^ 2 - 2 * ‖D z - b‖ * ‖y - z‖ := by
-    apply (div_le_iff₀ hμ).2
-    nlinarith [sq_nonneg (μ * ‖y - z‖ - ‖D z - b‖)]
+    have hdiv : -(‖D z - b‖ ^ 2) / μ ≤
+        μ * ‖y - z‖ ^ 2 - 2 * ‖D z - b‖ * ‖y - z‖ := by
+      apply (div_le_iff₀ hμ).2
+      nlinarith [sq_nonneg (μ * ‖y - z‖ - ‖D z - b‖)]
+    simpa only [neg_div] using hdiv
   have henergy := hcoercive (y - z)
   nlinarith
 
