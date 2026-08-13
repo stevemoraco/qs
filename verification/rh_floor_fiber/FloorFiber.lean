@@ -35,7 +35,7 @@ theorem corrected_scale_has_witness (m : ℕ) (hm : 0 < m) :
     · calc
         m + 1 = 1 * (m + 1) := by simp
         _ ≤ m * (m + 1) := Nat.mul_le_mul_right (m + 1) hm
-  · exact Nat.mul_div_right m (m + 1)
+  · exact Nat.mul_div_right m (by omega)
 
 #print axioms FloorFiber.three_two_empty
 #print axioms FloorFiber.three_two_weight_zero
