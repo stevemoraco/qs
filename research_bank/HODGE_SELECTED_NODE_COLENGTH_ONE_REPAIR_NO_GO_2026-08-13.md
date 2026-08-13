@@ -161,7 +161,7 @@ matrix and does not vanish on the rank-one orbit.
 
 Let
 \[
- V=\mathfrak m/\mathfrak m^2,qquad
+ V=\mathfrak m/\mathfrak m^2,\qquad
  C_\lambda=\frac{\Lambda^2V}{\mathbf C\phi_2(\lambda)}. \tag{9}
 \]
 Minimalizing the shifted mapping cone of the chain map leaves the same
@@ -202,7 +202,7 @@ connections, direct contraction of their raw Atiyah square gives, up to the
 nonzero universal sign/scalar determined by the convention for
 \(\operatorname{At}^2\),
 \[
- \Lambda^2T_R\longrightarrow C_\lambda,qquad
+ \Lambda^2T_R\longrightarrow C_\lambda,\qquad
  \pi\longmapsto
  \operatorname{pr}_{C_\lambda}(\iota_\pi\mathrm{vol}). \tag{13}
 \]
