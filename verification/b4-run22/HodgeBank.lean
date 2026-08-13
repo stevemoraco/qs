@@ -29,7 +29,7 @@ or the Hodge conjecture.
 
 namespace Millennium.Hodge.SeparatedNodeLocalCore
 
-noncomputable section
+noncomputable section FiniteCore
 
 abbrev Var := Fin 4
 abbrev Poly := MvPolynomial Var ℤ
@@ -139,6 +139,8 @@ theorem no_homotopy_for_constantRow :
       boundaryRow hminus hzero = ((1 : Poly), 0) := by
   rintro ⟨hminus, hzero, hboundary⟩
   exact constantRow_not_boundary hminus hzero hboundary
+
+end FiniteCore
 
 #print axioms d_one_mul_d_zero
 #print axioms evalZero_boundaryRow
