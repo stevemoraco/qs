@@ -1,0 +1,57 @@
+name: PNP polynomial core Lean replay
+
+on:
+  push:
+    branches:
+      - agent/gpt56-pnp-polycore-frontier-20260813-run5
+    paths:
+      - 'verification/pnp-polycore/**'
+      - '.github/workflows/pnp-polycore-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-polycore/PNPPolynomialCoreFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned mathlib
+        shell: bash
+        working-directory: verification/pnp-restriction-density
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/pnp-restriction-density
+        run: |
+          set -euo pipefail
+          lake env lean ../pnp-polycore/PNPPolynomialCoreFinite.lean | tee pnp-polycore-replay.log
+          test "$(grep -c '^warning: declaration uses' pnp-polycore-replay.log || true)" -eq 0
