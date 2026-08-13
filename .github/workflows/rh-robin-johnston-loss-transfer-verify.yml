@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           ROOT='verification/rh-robin-johnston-loss-transfer'
           SRC="$ROOT/RHRobinJohnstonLossTransfer.lean"
-          EXPECTED_BLOB='6f68558a5ec9ed9997d0b4f7598d68e1046c9563'
+          EXPECTED_BLOB='60ed502600dc44c8cafc91788fe6bfcd223d089a'
 
           CHECKOUT_STATUS="$(git status --porcelain=v1)"
           printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
