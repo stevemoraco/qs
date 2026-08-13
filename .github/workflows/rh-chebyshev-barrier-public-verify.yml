@@ -1,4 +1,4 @@
-name: RH Chebyshev barrier public verifier
+name: RH Chebyshev barrier and debt public verifier
 
 on:
   push:
@@ -23,23 +23,29 @@ jobs:
         run: |
           set -euo pipefail
           dir='verification/rh-chebyshev-barrier-public'
-          file="$dir/RHPrimePrefixChebyshevBarrier.lean"
-          actual_blob="$(git hash-object "$file")"
-          expected_blob='1cf5728e6c48407e5df0ea462b17dbe2945efd82'
-          test "$actual_blob" = "$expected_blob"
-          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
-          sha256sum "$file" | tee "$dir/source-sha256.txt"
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
-            exit 1
-          fi
-          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
-            exit 1
-          fi
-          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
-            exit 1
-          fi
+          declare -A expected
+          expected[RHPrimePrefixChebyshevBarrier.lean]='1cf5728e6c48407e5df0ea462b17dbe2945efd82'
+          expected[RHPrimePrefixBadArrivalDebt.lean]='0f227304c1f3f6d4613fa8a8c16080ab194d0d7a'
+          : > "$dir/source-blobs.txt"
+          : > "$dir/source-sha256.txt"
+          for name in RHPrimePrefixChebyshevBarrier.lean RHPrimePrefixBadArrivalDebt.lean; do
+            file="$dir/$name"
+            actual_blob="$(git hash-object "$file")"
+            test "$actual_blob" = "${expected[$name]}"
+            printf '%s=%s\n' "$name" "$actual_blob" | tee -a "$dir/source-blobs.txt"
+            sha256sum "$file" | tee -a "$dir/source-sha256.txt"
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+              exit 1
+            fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              exit 1
+            fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+              exit 1
+            fi
+          done
 
-      - name: Install pinned Lean and compile exact source
+      - name: Install pinned Lean and compile exact sources
         shell: bash
         run: |
           set -euo pipefail
@@ -53,18 +59,23 @@ jobs:
           cd "$dir"
           lake update
           lake exe cache get
-          set +e
-          lake env lean RHPrimePrefixChebyshevBarrier.lean > lean-output.log 2>&1
-          status=$?
-          set -e
+          : > lean-output.log
+          for file in RHPrimePrefixChebyshevBarrier.lean RHPrimePrefixBadArrivalDebt.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            set +e
+            lake env lean "$file" >> lean-output.log 2>&1
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              cat lean-output.log
+              exit "$status"
+            fi
+          done
           cat lean-output.log
-          if [ "$status" -ne 0 ]; then
-            exit "$status"
-          fi
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             exit 1
           fi
-          echo 'VERIFIED RH Chebyshev barrier finite algebra.'
+          echo 'VERIFIED RH Chebyshev barrier and bad-arrival debt finite algebra.'
 
       - name: Upload verification evidence
         if: always()
@@ -72,7 +83,7 @@ jobs:
         with:
           name: rh-chebyshev-barrier-public-evidence
           path: |
-            verification/rh-chebyshev-barrier-public/source-blob.txt
+            verification/rh-chebyshev-barrier-public/source-blobs.txt
             verification/rh-chebyshev-barrier-public/source-sha256.txt
             verification/rh-chebyshev-barrier-public/lean-version.txt
             verification/rh-chebyshev-barrier-public/lean-output.log
