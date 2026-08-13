@@ -26,8 +26,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns-braid-return-self-energy/NSBraidReturnSelfEnergy.lean
-          test "$(git hash-object "$SRC")" = "a71764d98a2ed22e50bdf6168c55e7c79922ec45"
-          test "$(sha256sum "$SRC" | awk '{print $1}')" = "13c15e0c095c092b0e88918abf07551a398c207cb7e6564d9e60cd28b0a452df"
+          test "$(git hash-object "$SRC")" = "b70f60f54f993e0425cbabb288816563c52bd029"
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = "596ed8ce613e1432522a2997cad4556062efbf6f07118ad31f4c8c3ce0010d90"
           python3 - <<'PY'
           import pathlib
           import re

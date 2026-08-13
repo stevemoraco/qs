@@ -18,6 +18,9 @@ Millennium theorem.
 
 namespace NSBraidReturnSelfEnergy
 
+set_option linter.unreachableTactic false
+set_option linter.unusedTactic false
+
 @[ext]
 structure V3 where
   x : ℝ
@@ -129,11 +132,11 @@ theorem first_braid_carrier_norms (N : ℝ) :
 
 /-- Scalar one-mode return self-energy after eliminating an exterior mode with
 damping `d` at Laplace parameter `lambda`. -/
-def selfEnergy (gamma d lambda : ℝ) : ℝ := gamma ^ 2 / (lambda + d)
+noncomputable def selfEnergy (gamma d lambda : ℝ) : ℝ := gamma ^ 2 / (lambda + d)
 
 /-- The self-energy normalized by the active coupling scale at
 `lambda = gamma`. -/
-def normalizedReturn (gamma d : ℝ) : ℝ := gamma / (gamma + d)
+noncomputable def normalizedReturn (gamma d : ℝ) : ℝ := gamma / (gamma + d)
 
 theorem selfEnergy_at_coupling_scale
     {gamma d : ℝ} (hgamma : 0 < gamma) (hd : 0 ≤ d) :
@@ -143,7 +146,6 @@ theorem selfEnergy_at_coupling_scale
     ne_of_gt (add_pos_of_pos_of_nonneg hgamma hd)
   unfold selfEnergy normalizedReturn
   field_simp [hgamma0, hden0]
-  ring
 
 /-- If exterior damping is no larger than the coupling scale, the normalized
 one-path return self-energy is at least one half. -/
