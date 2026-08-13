@@ -1,0 +1,41 @@
+name: YM flag gauge invariance replay
+
+on:
+  push:
+    branches:
+      - verification/ym-flag-gauge-invariance-20260814
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: AXLE replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-flag-gauge-invariance/FlagGaugeInvarianceCore.lean
+          ! grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          source = pathlib.Path('verification/ym-flag-gauge-invariance/FlagGaugeInvarianceCore.lean').read_text()
+          payload = json.dumps({'content':source,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          assert not lean.get('errors', []) and not lean.get('warnings', [])
+          assert not tool.get('errors', []) and not tool.get('warnings', [])
+          assert 'sorryAx' not in json.dumps(result)
+          PY
