@@ -1,0 +1,18 @@
+name: YM time tightness replay
+on:
+  push:
+    branches:
+      - verification/ym-time-tightness-20260814
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          xxd -r -p verification/ym-time-tightness/run.sh.hex > /tmp/run.sh
+          bash /tmp/run.sh
