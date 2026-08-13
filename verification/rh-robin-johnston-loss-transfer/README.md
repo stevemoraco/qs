@@ -8,9 +8,9 @@ Hypothesis.
 
 - Canonical repository: `stevemoraco/RH-Lean`
 - Canonical branch: `agent/rh-robin-johnston-loss-transfer-20260812`
-- Canonical branch tip when mirrored: `bbba9cf28cb5ccaacd0ecd0f7881991d1e46d69d`
-- Canonical source blob: `c434e998c2a28f2d7323aca3a95bd67cb5610aa5`
-- Public source blob: `c434e998c2a28f2d7323aca3a95bd67cb5610aa5`
+- Canonical source correction commit: `79330f3e1d925b8caea02bba32fd21c4961ba8a3`
+- Canonical source blob: `6f68558a5ec9ed9997d0b4f7598d68e1046c9563`
+- Public source blob: `6f68558a5ec9ed9997d0b4f7598d68e1046c9563`
 - Lean toolchain: `leanprover/lean4:v4.33.0`
 - Mathlib revision: `v4.33.0`
 
@@ -34,3 +34,8 @@ custom `axiom`, `opaque`, `unsafe`, `native_decide`, and `Lean.ofReduceBool`,
 compiles the source directly, parses every requested `#print axioms` report,
 allows only `propext`, `Classical.choice`, and `Quot.sound`, and uploads a replay
 receipt.
+
+The first direct replay reached Lean 4.33.0 and correctly rejected the original
+source because finite-sum notation lacked `open scoped BigOperators`. The
+canonical and public sources were corrected byte-for-byte; no theorem statement
+or hypothesis was weakened.
