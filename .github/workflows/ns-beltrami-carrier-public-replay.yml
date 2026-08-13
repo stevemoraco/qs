@@ -47,11 +47,11 @@ jobs:
             exit 1
           fi
 
-      - name: Install Lean, Mathlib cache, build, and run independent nanoda checker
+      - name: Install Lean, generate the pinned manifest, build, and run nanoda
         uses: leanprover/lean-action@v1
         with:
           lake-package-directory: formal/millennium_audit
-          auto-config: false
+          auto-config: true
           build: true
           test: false
           lint: false
