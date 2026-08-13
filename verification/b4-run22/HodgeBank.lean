@@ -9,7 +9,7 @@ structure DegreeOneHomotopy (R : Type*) where
   hMinus : Fin 4 → Fin 2 → R
   hZero : Fin 4 → R
 
-variable {R K : Type*} [Ring R] [Ring K] [Nontrivial K]
+variable {R K : Type*} [Ring R] [Ring K]
 
 /-- The degree-two row `D₁ h⁻¹ + h⁰ D₀` for
 
