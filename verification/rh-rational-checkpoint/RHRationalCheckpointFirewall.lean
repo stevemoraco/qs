@@ -48,7 +48,8 @@ theorem strict_on_dense_does_not_force_strict_everywhere :
       (∀ x ∈ ({x : ℝ | x ≠ 0}), 0 < x ^ 2) ∧
       ¬ (∀ x : ℝ, 0 < x ^ 2) := by
   constructor
-  · exact dense_compl_singleton
+  · simpa only [Set.mem_setOf_eq] using
+      (dense_compl_singleton (x := (0 : ℝ)))
   constructor
   · intro x hx
     exact sq_pos_of_ne_zero hx
@@ -63,7 +64,11 @@ theorem bounded_window_does_not_force_global (A : ℝ) (hA : 0 ≤ A) :
       A ^ 2 - (A + 1) ^ 2 < 0 := by
   constructor
   · intro x hx
-    nlinarith [sq_le_sq.mpr ⟨neg_le_of_abs_le hx, le_of_abs_le hx⟩]
+    have hxlo : -A ≤ x := neg_le_of_abs_le hx
+    have hxhi : x ≤ A := le_of_abs_le hx
+    have hprod : 0 ≤ (A - x) * (A + x) :=
+      mul_nonneg (sub_nonneg.mpr hxhi) (by linarith)
+    nlinarith [hprod]
   · nlinarith
 
 #print axioms continuous_nonnegative_of_dense
