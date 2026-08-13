@@ -7,6 +7,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install Lean
@@ -14,3 +15,11 @@ jobs:
           set -euo pipefail
           curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Replay
+        working-directory: verification/pnp-restriction-averaging
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+          lake env lean ../pnp-antimerging-entropy-firewalls/PNPAntimergingCore.lean 2>&1 | tee anti-merging-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.|admit' anti-merging-replay.log; then exit 1; fi
