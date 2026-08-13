@@ -82,19 +82,14 @@ theorem psd_kernel_sign_firewall :
     (3 : ℝ) - (1 / 2 : ℝ) * 3 ^ 2 < 0 := by
   norm_num
 
-/-- After subtracting the exact optimizer capacity, one Brownian cell relinearizes. -/
-theorem cell_debt_minus_capacity_linearization
-    (u v T : ℝ) (hu : u ≠ 0) (hv : v ≠ 0)
-    (hden : u ^ 2 + u * v + v ^ 2 ≠ 0) :
-    (1 / u ^ 3 - 1 / v ^ 3) *
-        (T - (u ^ 2 * v ^ 2) / (u ^ 2 + u * v + v ^ 2)) ^ 2 -
-      (u * v * (v - u)) / (u ^ 2 + u * v + v ^ 2) =
+/-- Denominator-free exact form of the Brownian cell relinearization. -/
+theorem cell_debt_minus_capacity_cross_multiplied (u v T : ℝ) :
+    (v ^ 3 - u ^ 3) *
+        (T * (u ^ 2 + u * v + v ^ 2) - u ^ 2 * v ^ 2) ^ 2 -
+      u ^ 4 * v ^ 4 * (v - u) * (u ^ 2 + u * v + v ^ 2) =
     T * (v - u) *
-        ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) /
-      (u ^ 3 * v ^ 3) := by
-  have hden' : v * u + v ^ 2 + u ^ 2 ≠ 0 := by
-    simpa [mul_comm, add_comm, add_left_comm, add_assoc] using hden
-  field_simp [hu, hv, hden, hden']
+        ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) *
+      (u ^ 2 + u * v + v ^ 2) ^ 2 := by
   ring
 
 /-- The relinearized cell is nonnegative once its exact threshold is met. -/
@@ -125,7 +120,7 @@ theorem cell_relinearized_nonnegative_of_threshold
 #print axioms boundary_optimizer_identity
 #print axioms decreasing_slopes_give_nonnegative_atom
 #print axioms psd_kernel_sign_firewall
-#print axioms cell_debt_minus_capacity_linearization
+#print axioms cell_debt_minus_capacity_cross_multiplied
 #print axioms cell_relinearized_nonnegative_of_threshold
 
 end RHBrownianMinKernelDiagonal
