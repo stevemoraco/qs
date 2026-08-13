@@ -57,10 +57,14 @@ theorem event_increment_nonneg_iff_midpoint
   rw [event_increment_identity (ne_of_gt hq) (ne_of_gt huv) hmass]
   constructor
   · intro h
-    have h' : 0 ≤ (2 / (u + v) - 1 / q) * w := by
-      simpa [mul_comm] using h
-    have hkernel : 0 ≤ 2 / (u + v) - 1 / q :=
-      nonneg_of_mul_nonneg_right h' hw
+    let k : ℝ := 2 / (u + v) - 1 / q
+    have hkernel : 0 ≤ k := by
+      by_contra hk
+      have hkneg : k < 0 := lt_of_not_ge hk
+      have hprodneg : w * k < 0 := mul_neg_of_pos_of_neg hw hkneg
+      dsimp [k] at hprodneg
+      linarith
+    dsimp [k] at hkernel
     have hfrac : 1 / q ≤ 2 / (u + v) := sub_nonneg.mp hkernel
     simpa using (div_le_div_iff₀ hq huv).mp hfrac
   · intro hmid
