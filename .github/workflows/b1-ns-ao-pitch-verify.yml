@@ -1,0 +1,28 @@
+name: B1 NS AO pitch Lean replay
+on:
+  push:
+    branches: [agent/b1-ns-ao-pitch-lean-public-20260813]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lean
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Compile
+        run: |
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/ns-ao-critical-pitch-ratio
+          lake update
+          lake exe cache get
+          lake env lean NSAOCriticalPitchRatio.lean | tee lean-output.log
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b1-ns-ao-pitch-lean-log
+          path: verification/ns-ao-critical-pitch-ratio/lean-output.log
