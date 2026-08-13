@@ -36,9 +36,14 @@ theorem event_increment_identity
       w * (2 / (u + v) - 1 / q) := by
   have hdiff : (v - u) * (u + v) = w := by
     nlinarith
+  have hrat : v - u = w / (u + v) := by
+    exact (eq_div_iff huv).2 hdiff
   unfold potential
-  field_simp [hq, huv]
-  nlinarith
+  calc
+    2 * v - (A + w / q) - c - (2 * u - A - c) =
+        2 * (v - u) - w / q := by ring
+    _ = 2 * (w / (u + v)) - w / q := by rw [hrat]
+    _ = w * (2 / (u + v) - 1 / q) := by ring
 
 /-- With positive event mass and positive coordinates, the critical potential
 increases exactly when the event location satisfies the midpoint condition
@@ -53,12 +58,13 @@ theorem event_increment_nonneg_iff_midpoint
   constructor
   · intro h
     have hkernel : 0 ≤ 2 / (u + v) - 1 / q :=
-      nonneg_of_mul_nonneg_left h (le_of_lt hw)
+      nonneg_of_mul_nonneg_left h hw
     have hfrac : 1 / q ≤ 2 / (u + v) := sub_nonneg.mp hkernel
-    exact (div_le_div_iff₀ hq huv).mp hfrac
+    simpa using (div_le_div_iff₀ hq huv).mp hfrac
   · intro hmid
+    have hcross : 1 * (u + v) ≤ 2 * q := by simpa using hmid
     have hfrac : 1 / q ≤ 2 / (u + v) :=
-      (div_le_div_iff₀ hq huv).mpr hmid
+      (div_le_div_iff₀ hq huv).mpr hcross
     have hkernel : 0 ≤ 2 / (u + v) - 1 / q := sub_nonneg.mpr hfrac
     exact mul_nonneg (le_of_lt hw) hkernel
 
@@ -96,8 +102,9 @@ theorem delayed_mass_event_nondecreasing
     (hmass : v ^ 2 = u ^ 2 + w) :
     potential u A c ≤ potential v (A + w / q) c := by
   have hmid : u + v ≤ 2 * q := by linarith
-  exact (event_increment_nonneg_iff_midpoint
+  have hnon := (event_increment_nonneg_iff_midpoint
     (A := A) (c := c) hq huv hw hmass).mpr hmid
+  linarith
 
 /-- Exact finite telescoping interface for any sequence of event increments. -/
 theorem telescoping_potential
