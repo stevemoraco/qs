@@ -79,7 +79,6 @@ theorem strip_budget_of_threshold_bound
 worst complementary correction, the corrected margin remains positive. -/
 theorem schur_margin_positive
     {lambda₂ kappa delta : ℝ}
-    (hdelta : 0 < delta)
     (hmargin : kappa ^ 2 / delta < lambda₂) :
     0 < lambda₂ - kappa ^ 2 / delta := by
   exact sub_pos.mpr hmargin
