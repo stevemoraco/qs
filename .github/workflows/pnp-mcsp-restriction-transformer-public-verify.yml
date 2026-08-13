@@ -25,7 +25,7 @@ jobs:
           dir='verification/pnp-mcsp-restriction-transformer-public'
           file="$dir/PNPMCSPRestrictionTransformerFirewall.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='69ca0c2d6ea3391afa42d1c326147d056cdd4604'
+          expected_blob='ba559f195faeca617842fde9be2d3b8f7ba933f9'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
@@ -61,7 +61,7 @@ jobs:
           if [ "$status" -ne 0 ]; then
             exit "$status"
           fi
-          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+          if grep -Eq 'warning:|declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
             exit 1
           fi
           echo 'VERIFIED PNP MCSP restriction-transformer finite core.'
