@@ -1,10 +1,7 @@
 import Mathlib
 
-open scoped BigOperators
-
 namespace SixLaneAudit
 
-/-- Field-theoretic core: a square-one element is a sign. -/
 theorem hodge_isometric_loop_eq_one_or_neg_one
     {K : Type*} [Field K] (u : K) (hu : u ^ 2 = 1) :
     u = 1 ∨ u = -1 := by
@@ -16,15 +13,15 @@ theorem hodge_isometric_loop_eq_one_or_neg_one
   · exact Or.inl (sub_eq_zero.mp hminus)
   · exact Or.inr ((add_eq_zero_iff_eq_neg).mp hplus)
 
-/-- Finite rational combinations of square-one loops are rational scalars. -/
 theorem hodge_rational_span_of_isometric_loops
     {K : Type*} [Field K] [Algebra ℚ K]
     {ι : Type*} [DecidableEq ι]
     (I : Finset ι) (c : ι → ℚ) (u : ι → K)
     (hu : ∀ i ∈ I, u i ^ 2 = 1) :
-    ∃ q : ℚ, (∑ i in I, algebraMap ℚ K (c i) * u i) = algebraMap ℚ K q := by
+    ∃ q : ℚ,
+      Finset.sum I (fun i => algebraMap ℚ K (c i) * u i) = algebraMap ℚ K q := by
   classical
-  refine ⟨∑ i in I, if u i = 1 then c i else -c i, ?_⟩
+  refine ⟨Finset.sum I (fun i => if u i = 1 then c i else -c i), ?_⟩
   rw [map_sum]
   apply Finset.sum_congr rfl
   intro i hi
@@ -34,19 +31,17 @@ theorem hodge_rational_span_of_isometric_loops
       (hodge_isometric_loop_eq_one_or_neg_one (u i) (hu i hi)).resolve_left hpos
     simp [hpos, hneg]
 
-/-- A non-rational generator is not in that rational span. -/
 theorem hodge_irrational_generator_not_in_rational_span
     {K : Type*} [Field K] [Algebra ℚ K]
     (s : K) (hs : ∀ q : ℚ, s ≠ algebraMap ℚ K q)
     {ι : Type*} [DecidableEq ι]
     (I : Finset ι) (c : ι → ℚ) (u : ι → K)
     (hu : ∀ i ∈ I, u i ^ 2 = 1) :
-    (∑ i in I, algebraMap ℚ K (c i) * u i) ≠ s := by
+    Finset.sum I (fun i => algebraMap ℚ K (c i) * u i) ≠ s := by
   intro hsum
   obtain ⟨q, hq⟩ := hodge_rational_span_of_isometric_loops I c u hu
   exact hs q (hsum.symm.trans hq)
 
-/-- If `13^j ∣ m ∣ 13^(j+1)`, then `m` is one of the two endpoints. -/
 theorem hodge_index_sandwich_base_one
     (j m : ℕ) (hlower : 13 ^ j ∣ m) (hupper : m ∣ 13 * 13 ^ j) :
     m = 13 ^ j ∨ m = 13 ^ (j + 1) := by
@@ -62,7 +57,6 @@ theorem hodge_index_sandwich_base_one
   · right
     simpa [hk, pow_succ]
 
-/-- Classification for the base-degree-thirteen sandwich. -/
 theorem hodge_index_sandwich_base_thirteen
     (j m : ℕ) (hlower : 13 ^ j ∣ 13 * m)
     (hupper : 13 * m ∣ 13 * 13 ^ j) :
