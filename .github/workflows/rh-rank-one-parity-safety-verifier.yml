@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh-rank-one-parity-safety/RHRankOneParitySafetyCore.lean
-          EXPECTED=a1028adcc349bd658f8e966f410a6e5555da4837fc0f586a7bff99e9cd667197
+          EXPECTED=2601b88d9efaa4fc21cd53e60d1cc1f0bdbbd5aa54ac3c11797e9cfd99f2053b
           ACTUAL=$(sha256sum "$SRC" | awk '{print $1}')
           test "$ACTUAL" = "$EXPECTED"
           python3 - <<'PY'
