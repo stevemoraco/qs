@@ -91,7 +91,23 @@ theorem weighted_telescope
       simp
       ring
   | succ n ih =>
-      rw [Finset.sum_range_succ, Finset.sum_range_succ, ih]
+      have hSourceSplit :
+          (∑ k ∈ Finset.range (Nat.succ n + 1),
+              w k * (phi (k + 1) - phi k)) =
+            (∑ k ∈ Finset.range (n + 1),
+              w k * (phi (k + 1) - phi k)) +
+              w (n + 1) * (phi (n + 2) - phi (n + 1)) := by
+        rw [show Nat.succ n + 1 = (n + 1) + 1 by omega,
+          Finset.sum_range_succ]
+      have hVariationSplit :
+          (∑ k ∈ Finset.range (Nat.succ n),
+              (w k - w (k + 1)) * phi (k + 1)) =
+            (∑ k ∈ Finset.range n,
+              (w k - w (k + 1)) * phi (k + 1)) +
+              (w n - w (n + 1)) * phi (n + 1) := by
+        rw [show Nat.succ n = n + 1 by omega, Finset.sum_range_succ]
+      rw [hSourceSplit, ih, hVariationSplit]
+      simp only [Nat.succ_eq_add_one]
       ring
 
 /-- Exact finite four-ledger decomposition: terminal energy, weight variation,
@@ -120,10 +136,8 @@ theorem weighted_chain
         (∑ k ∈ Finset.range (n + 1), w k * area k) +
         (∑ k ∈ Finset.range (n + 1), w k * remainder k) := by
       simp_rw [mul_add, Finset.sum_add_distrib]
-      ring
     _ = _ := by
       rw [weighted_telescope]
-      ring
 
 /-- For nonnegative decreasing weights and a nonpositive initial energy, the
 weighted cell-area budget is dominated by the weighted source ledger. -/
