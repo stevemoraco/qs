@@ -97,15 +97,18 @@ theorem weighted_telescope
             (∑ k ∈ Finset.range (n + 1),
               w k * (phi (k + 1) - phi k)) +
               w (n + 1) * (phi (n + 2) - phi (n + 1)) := by
-        rw [show Nat.succ n + 1 = (n + 1) + 1 by omega,
-          Finset.sum_range_succ]
+        simpa only [Nat.succ_eq_add_one, Nat.add_assoc] using
+          (Finset.sum_range_succ
+            (fun k => w k * (phi (k + 1) - phi k)) (n + 1))
       have hVariationSplit :
           (∑ k ∈ Finset.range (Nat.succ n),
               (w k - w (k + 1)) * phi (k + 1)) =
             (∑ k ∈ Finset.range n,
               (w k - w (k + 1)) * phi (k + 1)) +
               (w n - w (n + 1)) * phi (n + 1) := by
-        rw [show Nat.succ n = n + 1 by omega, Finset.sum_range_succ]
+        simpa only [Nat.succ_eq_add_one] using
+          (Finset.sum_range_succ
+            (fun k => (w k - w (k + 1)) * phi (k + 1)) n)
       rw [hSourceSplit, ih, hVariationSplit]
       simp only [Nat.succ_eq_add_one]
       ring
