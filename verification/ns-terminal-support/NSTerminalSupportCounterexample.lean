@@ -51,8 +51,7 @@ theorem residual_partial_sum_eq_one
   | zero => simp [residual]
   | succ n ih =>
       rw [Finset.sum_range_succ]
-      have hne : n + 1 ≠ 0 := Nat.succ_ne_zero n
-      simp [residual, hne, ih]
+      simpa [residual] using ih
 
 /-- Elementary epsilon-delta definition of a zero left limit. -/
 def LeftLimitZero (f : ℝ → ℝ) (T : ℝ) : Prop :=
@@ -103,34 +102,34 @@ theorem terminallyAbsent_leftLimitZero
   rw [hzero t hτt ht]
   simpa using hε
 
-/-- Exact finite-prefix plus uniform-tail repair.  If every chosen finite prefix
-has zero left limit, the remainder can be made uniformly small, and the total
-splits as prefix plus remainder, then the total has zero left limit.
+/-- Exact finite-part plus uniform-remainder repair.  If every chosen finite
+part has zero left limit, the remainder can be made uniformly small, and the
+total splits as finite part plus remainder, then the total has zero left limit.
 
 This theorem is the abstract epsilon/2 closure step needed after terminal
-support has killed the fixed low-shell prefix.  It intentionally does not hide
-an infinite-series theorem inside the statement. -/
-theorem leftLimitZero_of_prefix_tail
+support has killed the fixed low-shell finite part.  It intentionally does not
+hide an infinite-series theorem inside the statement. -/
+theorem leftLimitZero_of_finitePart_remainder
     (total : ℝ → ℝ)
-    (prefix tail : ℕ → ℝ → ℝ)
+    (finitePart remainder : ℕ → ℝ → ℝ)
     (T : ℝ)
-    (hdecomp : ∀ K t, total t = prefix K t + tail K t)
-    (hprefix : ∀ K, LeftLimitZero (prefix K) T)
-    (htail : ∀ ε : ℝ, 0 < ε →
-      ∃ K : ℕ, ∀ t : ℝ, t < T → |tail K t| < ε) :
+    (hdecomp : ∀ K t, total t = finitePart K t + remainder K t)
+    (hfinite : ∀ K, LeftLimitZero (finitePart K) T)
+    (hremainder : ∀ ε : ℝ, 0 < ε →
+      ∃ K : ℕ, ∀ t : ℝ, t < T → |remainder K t| < ε) :
     LeftLimitZero total T := by
   intro ε hε
   have hhalf : 0 < ε / 2 := by linarith
-  rcases htail (ε / 2) hhalf with ⟨K, hK⟩
-  rcases hprefix K (ε / 2) hhalf with ⟨δ, hδ, hpre⟩
+  rcases hremainder (ε / 2) hhalf with ⟨K, hK⟩
+  rcases hfinite K (ε / 2) hhalf with ⟨δ, hδ, hfiniteNear⟩
   refine ⟨δ, hδ, ?_⟩
   intro t hnear ht
-  have hp := hpre t hnear ht
+  have hf := hfiniteNear t hnear ht
   have hr := hK t ht
   calc
-    |total t| = |prefix K t + tail K t| := by rw [hdecomp K t]
-    _ ≤ |prefix K t| + |tail K t| := abs_add _ _
-    _ < ε / 2 + ε / 2 := add_lt_add hp hr
+    |total t| = |finitePart K t + remainder K t| := by rw [hdecomp K t]
+    _ ≤ |finitePart K t| + |remainder K t| := abs_add _ _
+    _ < ε / 2 + ε / 2 := add_lt_add hf hr
     _ = ε := by ring
 
 #print axioms residual_future_supported
@@ -139,6 +138,6 @@ theorem leftLimitZero_of_prefix_tail
 #print axioms constant_one_not_leftLimitZero
 #print axioms future_support_zero_tail_not_terminal_zero
 #print axioms terminallyAbsent_leftLimitZero
-#print axioms leftLimitZero_of_prefix_tail
+#print axioms leftLimitZero_of_finitePart_remainder
 
 end NSTerminalSupportCounterexample
