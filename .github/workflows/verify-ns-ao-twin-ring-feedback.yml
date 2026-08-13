@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=formal/millennium_audit/SixLaneAudit/NSAOTwinRingFeedback.lean
-          test "$(git hash-object "$SRC")" = "01c368daa929b2bf95f211341f0145a33bacfa79"
+          test "$(git hash-object "$SRC")" = "fb39abed1c8274a0dcc938cb233e977da6d2a2fd"
           test "$(grep -c '#print axioms' "$SRC")" = 10
           if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$SRC"; then
             echo 'Rejected: proof hole or trust carrier found.'
