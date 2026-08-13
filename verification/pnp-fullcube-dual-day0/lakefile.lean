@@ -8,3 +8,4 @@ require mathlib from git
 
 lean_lib PNPWeightedDual
 lean_lib PNPFullCubeRandomWalk
+lean_lib PNPHammingBallFlux
