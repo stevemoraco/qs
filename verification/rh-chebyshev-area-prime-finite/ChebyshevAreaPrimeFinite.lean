@@ -6,11 +6,11 @@ import Mathlib
 This file replaces the arbitrary weighted support by the actual finite prime
 weights `log p`. At prefix `n`, define
 
-`thetaNat n = ∑ p ≤ n, p.Prime ? log p : 0`
+`thetaNat n = sum over p ≤ n of (p.Prime ? log p : 0)`
 
 and the corresponding closed-form area parabola
 
-`primeArea n x = x^2 / 2 - 2 - ∑ p ≤ n, (x-p) log p`.
+`primeArea n x = x^2 / 2 - 2 - sum over p ≤ n of (x-p) log p`.
 
 On the real unit interval `[n,n+1]`, this is exactly the integrated Chebyshev
 staircase, up to the separate analytic theorem identifying the real integral
@@ -26,7 +26,6 @@ positive.
 namespace Millennium.RH.ChebyshevAreaPrimeFinite
 
 open Set
-open scoped BigOperators
 
 noncomputable section
 
@@ -34,18 +33,19 @@ noncomputable section
 def primeWeight (p : ℕ) : ℝ :=
   if Nat.Prime p then Real.log p else 0
 
-/-- Finite Chebyshev prefix `∑_{p≤n} log p`. -/
+/-- Finite Chebyshev prefix `sum_{p≤n} log p`. -/
 def thetaNat (n : ℕ) : ℝ :=
-  ∑ p in Finset.range (n + 1), primeWeight p
+  (Finset.range (n + 1)).sum primeWeight
 
-/-- Finite first prime moment `∑_{p≤n} p log p`. -/
+/-- Finite first prime moment `sum_{p≤n} p log p`. -/
 def primeMoment (n : ℕ) : ℝ :=
-  ∑ p in Finset.range (n + 1), (p : ℝ) * primeWeight p
+  (Finset.range (n + 1)).sum (fun p => (p : ℝ) * primeWeight p)
 
 /-- Closed-form area on a unit interval carrying the prime prefix through `n`. -/
 def primeArea (n : ℕ) (x : ℝ) : ℝ :=
   x ^ 2 / 2 - 2 -
-    ∑ p in Finset.range (n + 1), (x - (p : ℝ)) * primeWeight p
+    (Finset.range (n + 1)).sum
+      (fun p => (x - (p : ℝ)) * primeWeight p)
 
 /-- Value of the prime-prefix area parabola at its center. -/
 def primeCenter (n : ℕ) : ℝ :=
