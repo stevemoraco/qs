@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_robin_johnston_bregman/RHRobinJohnstonBregman.lean
-          EXPECTED_BLOB=cdd966235b153be9eb3f21767849c216e3f4ed5c
+          EXPECTED_BLOB=70010faac851a18432d913ba8e89b22ed66e774e
           ACTUAL_BLOB=$(git hash-object "$SRC")
           test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
           python3 - <<'PY'
@@ -82,13 +82,14 @@ jobs:
           lean_errors = result.get('lean_messages', {}).get('errors', [])
           tool_errors = result.get('tool_messages', {}).get('errors', [])
           failed = result.get('failed_declarations', [])
-          if not result.get('okay') or lean_errors or tool_errors or failed:
-              raise SystemExit('Lean/AXLE verification failed')
+          warnings = result.get('lean_messages', {}).get('warnings', [])
+          if not result.get('okay') or lean_errors or tool_errors or failed or warnings:
+              raise SystemExit('Lean/AXLE verification failed or emitted warnings')
           rendered = json.dumps(result)
           for forbidden in ('sorryAx', 'Lean.ofReduceBool'):
               if forbidden in rendered:
                   raise SystemExit(f'postcompile forbidden dependency: {forbidden}')
-          print('VERIFIED: exact canonical source compiled under AXLE Lean 4.30')
+          print('VERIFIED: exact warning-free canonical source compiled under AXLE Lean 4.30')
           PY
 
       - name: Record replay metadata
