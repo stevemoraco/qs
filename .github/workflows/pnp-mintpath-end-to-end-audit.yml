@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - verify/pnp-mintpath-end-to-end-audit-macos-20260813
-  pull_request:
-    paths:
-      - 'verification/pnp-mintpath-audit/**'
-      - '.github/workflows/pnp-mintpath-end-to-end-audit.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: pnp-mintpath-macos-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -52,6 +53,7 @@ jobs:
           test "$actual" = "$expected"
           printf 'Mintpath/p-neq-np-lean=%s\n' "$actual" | tee dependency-commit.txt
           lake exe cache get
+          lake build p_ne_np:PNeNp
 
       - name: Compile theorem audit and print kernel dependencies
         shell: bash
@@ -59,7 +61,10 @@ jobs:
           set -euo pipefail
           dir='verification/pnp-mintpath-audit'
           cd "$dir"
-          lake env lean MintpathAudit.lean > lean-output.log 2>&1
+          if ! lake env lean MintpathAudit.lean > lean-output.log 2>&1; then
+            cat lean-output.log
+            exit 1
+          fi
           cat lean-output.log
 
       - name: Enforce exact audit findings
