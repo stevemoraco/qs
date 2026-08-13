@@ -55,24 +55,48 @@ theorem corresponding_cubics_have_no_integer_roots :
     (¬ ∃ z : ℤ, z ^ 3 - 6 * z ^ 2 + 21 * z - 68 = 0) := by
   constructor
   · rintro ⟨z, hz⟩
-    let r : ZMod 3 := z
-    have hr : r ^ 3 - 18 * r ^ 2 + 29 * r - 208 = 0 := by
+    let r : ℤ := z % 3
+    have hr0 : 0 ≤ r := by
       dsimp [r]
-      exact_mod_cast hz
-    fin_cases r <;> norm_num at hr
+      exact Int.emod_nonneg z (by norm_num)
+    have hrlt : r < 3 := by
+      dsimp [r]
+      exact Int.emod_lt_of_pos z (by norm_num)
+    have hrz : r ≡ z [ZMOD 3] := by
+      simp [Int.ModEq, r]
+    have H : r ^ 3 - 18 * r ^ 2 + 29 * r - 208 ≡ 0 [ZMOD 3] := calc
+      _ ≡ z ^ 3 - 18 * z ^ 2 + 29 * z - 208 [ZMOD 3] := by gcongr
+      _ = 0 := hz
+    interval_cases r <;> norm_num [Int.ModEq] at H
   constructor
   · rintro ⟨z, hz⟩
-    let r : ZMod 3 := z
-    have hr : r ^ 3 + 9 * r ^ 2 + 11 * r + 107 = 0 := by
+    let r : ℤ := z % 3
+    have hr0 : 0 ≤ r := by
       dsimp [r]
-      exact_mod_cast hz
-    fin_cases r <;> norm_num at hr
+      exact Int.emod_nonneg z (by norm_num)
+    have hrlt : r < 3 := by
+      dsimp [r]
+      exact Int.emod_lt_of_pos z (by norm_num)
+    have hrz : r ≡ z [ZMOD 3] := by
+      simp [Int.ModEq, r]
+    have H : r ^ 3 + 9 * r ^ 2 + 11 * r + 107 ≡ 0 [ZMOD 3] := calc
+      _ ≡ z ^ 3 + 9 * z ^ 2 + 11 * z + 107 [ZMOD 3] := by gcongr
+      _ = 0 := hz
+    interval_cases r <;> norm_num [Int.ModEq] at H
   · rintro ⟨z, hz⟩
-    let r : ZMod 5 := z
-    have hr : r ^ 3 - 6 * r ^ 2 + 21 * r - 68 = 0 := by
+    let r : ℤ := z % 5
+    have hr0 : 0 ≤ r := by
       dsimp [r]
-      exact_mod_cast hz
-    fin_cases r <;> norm_num at hr
+      exact Int.emod_nonneg z (by norm_num)
+    have hrlt : r < 5 := by
+      dsimp [r]
+      exact Int.emod_lt_of_pos z (by norm_num)
+    have hrz : r ≡ z [ZMOD 5] := by
+      simp [Int.ModEq, r]
+    have H : r ^ 3 - 6 * r ^ 2 + 21 * r - 68 ≡ 0 [ZMOD 5] := calc
+      _ ≡ z ^ 3 - 6 * z ^ 2 + 21 * z - 68 [ZMOD 5] := by gcongr
+      _ = 0 := hz
+    interval_cases r <;> norm_num [Int.ModEq] at H
 
 /-- Combined arithmetic no-go: every solution of the factor equation is
 one of the three unordered pairs, and none of its corresponding cubics
