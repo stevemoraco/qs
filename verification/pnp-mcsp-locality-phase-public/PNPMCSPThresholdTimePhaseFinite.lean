@@ -61,12 +61,10 @@ theorem terminal_101_strict_boundary
     (101 : ℝ) / 200 < mu := by
   linarith
 
-/-- A fixed positive exponent gap survives any smaller additive exponent
-slack. -/
+/-- A fixed positive exponent gap survives every additive exponent slack that
+is smaller than that gap. No separate sign assumption on the slack is needed. -/
 theorem fixed_gap_cannot_be_hidden
     {tau mu epsilon : ℝ}
-    (htau : 1 < tau)
-    (hepsilon_nonneg : 0 ≤ epsilon)
     (hepsilon_small : epsilon < (tau - 1) / 2)
     (hcertificate : tau / 2 - epsilon ≤ mu) :
     (1 : ℝ) / 2 < mu := by
