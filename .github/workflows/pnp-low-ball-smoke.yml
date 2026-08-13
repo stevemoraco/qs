@@ -1,0 +1,10 @@
+name: PNP low-ball source smoke
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: test -f verification/pnp-low-ball-syndrome/PNPLowBallSyndromeSeparator.lean
