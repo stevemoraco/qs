@@ -1,0 +1,74 @@
+name: NS Beltrami carrier public Lean replay
+
+on:
+  push:
+    branches: [agent/ns-beltrami-carrier-public-replay-20260813]
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
+      - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
+      - 'formal/millennium_audit/lakefile.lean'
+      - 'formal/millennium_audit/lean-toolchain'
+      - '.github/workflows/ns-beltrami-carrier-public-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/NSBeltramiCarrierConeObstruction.lean'
+      - 'formal/millennium_audit/SixLaneAudit/NSBeltramiSixCarrierFrame.lean'
+      - 'formal/millennium_audit/lakefile.lean'
+      - 'formal/millennium_audit/lean-toolchain'
+      - '.github/workflows/ns-beltrami-carrier-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lean-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: formal/millennium_audit
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record exact source hashes and reject explicit holes
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sha256sum \
+            SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
+            SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
+            lean-toolchain lakefile.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' \
+            SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
+            SixLaneAudit/NSBeltramiSixCarrierFrame.lean; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+
+      - name: Install Lean, Mathlib cache, build, and run independent nanoda checker
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal/millennium_audit
+          auto-config: false
+          build: true
+          test: false
+          lint: false
+          nanoda: true
+          nanoda-allow-sorry: false
+          use-github-cache: true
+
+      - name: Fresh direct file replay and axiom report
+        shell: bash
+        run: |
+          set -euxo pipefail
+          lake env lean SixLaneAudit/NSBeltramiCarrierConeObstruction.lean \
+            | tee ns_beltrami_cone_axioms.txt
+          lake env lean SixLaneAudit/NSBeltramiSixCarrierFrame.lean \
+            | tee ns_beltrami_frame_axioms.txt
+          if grep -nE '(sorryAx|declaration uses.*sorry|error:)' \
+            ns_beltrami_cone_axioms.txt ns_beltrami_frame_axioms.txt; then
+            echo 'Forbidden axiom or Lean error found in replay output'
+            exit 1
+          fi
