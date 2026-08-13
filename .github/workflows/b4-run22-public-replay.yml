@@ -1,0 +1,149 @@
+name: B4 run22 public replay
+
+on:
+  push:
+    branches:
+      - automation/b4-run22-public-replay-20260813-0425
+    paths:
+      - 'verification/b4-run22/*Bank.lean'
+      - '.github/workflows/b4-run22-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact replay branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          files = sorted(pathlib.Path('verification/b4-run22').glob('*Bank.lean'))
+          if len(files) != 6:
+              raise SystemExit(f'expected 6 bank files, found {len(files)}')
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          for p in files:
+              text = p.read_text()
+              m = forbidden.search(text)
+              if m:
+                  raise SystemExit(f'{p}: forbidden token {m.group(2)}')
+              if 'Lean.ofReduceBool' in text or 'native_decide' in text:
+                  raise SystemExit(f'{p}: forbidden proof shortcut')
+              if text.count('#print axioms') != 3:
+                  raise SystemExit(f'{p}: expected exactly three axiom reports')
+              print(f'{p}: trust preflight clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30 on all six exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          root = pathlib.Path('verification/b4-run22')
+          out = root / 'evidence'
+          out.mkdir(exist_ok=True)
+          files = sorted(root.glob('*Bank.lean'))
+          summary = {}
+          for p in files:
+              payload = json.dumps({
+                  'content': p.read_text(),
+                  'environment': 'lean-4.30.0',
+                  'ignore_imports': True,
+                  'mathlib_options': False,
+                  'timeout_seconds': 900,
+              }).encode()
+              request = urllib.request.Request(
+                  'https://axle.axiommath.ai/api/v1/check',
+                  data=payload,
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=960) as response:
+                      result = json.load(response)
+              except Exception as exc:
+                  result = {
+                      'okay': False,
+                      'request_exception': repr(exc),
+                      'lean_messages': {'errors': [], 'warnings': []},
+                      'tool_messages': {'errors': [], 'warnings': []},
+                      'failed_declarations': [],
+                  }
+              (out / f'{p.stem}-axle-response.json').write_text(
+                  json.dumps(result, indent=2, sort_keys=True)
+              )
+              summary[p.name] = {
+                  'okay': result.get('okay'),
+                  'failed_declarations': result.get('failed_declarations', []),
+                  'lean_errors': result.get('lean_messages', {}).get('errors', []),
+                  'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+                  'tool_errors': result.get('tool_messages', {}).get('errors', []),
+                  'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+                  'request_exception': result.get('request_exception'),
+              }
+              print(p.name, json.dumps(summary[p.name], indent=2))
+          (out / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/b4-run22/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "environment=lean-4.30.0"
+            sha256sum verification/b4-run22/*Bank.lean
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact compiler evidence before verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b4-run22-six-bank-evidence
+          path: verification/b4-run22/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler and postcompile trust verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/b4-run22/evidence/summary.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE summary evidence')
+          summary = json.loads(p.read_text())
+          if len(summary) != 6:
+              raise SystemExit('expected six compiler responses')
+          for name, result in summary.items():
+              if not result.get('okay'):
+                  raise SystemExit(f'{name}: AXLE did not return okay=true')
+              if result.get('failed_declarations'):
+                  raise SystemExit(f'{name}: failed declarations')
+              if result.get('lean_errors') or result.get('lean_warnings'):
+                  raise SystemExit(f'{name}: Lean errors or warnings')
+              if result.get('tool_errors') or result.get('tool_warnings'):
+                  raise SystemExit(f'{name}: tool errors or warnings')
+              if result.get('request_exception'):
+                  raise SystemExit(f'{name}: request exception')
+          print('B4 RUN22: ALL SIX BANK FILES VERIFIED WARNING-FREE')
+          PY
