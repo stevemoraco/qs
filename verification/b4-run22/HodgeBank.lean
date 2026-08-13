@@ -1,56 +1,33 @@
 import Mathlib
 
-namespace Millennium.Hodge.KSTransfer
+namespace Millennium.Hodge.IsogenyDegreeExponent
 
-variable {HX HA ZX ZA : Type*}
+/-- BANKER: the standard multiplication-map degree exponent `2g` becomes
+`4n` when the abelian variety has dimension `g = 2n`. -/
+theorem banker_integer_scalar_degree_in_weil_dimension
+    (m g n : ℕ) (hg : g = 2 * n) :
+    m ^ (2 * g) = m ^ (4 * n) := by
+  subst g
+  apply congrArg (fun e : ℕ => m ^ e)
+  omega
 
-theorem banker_transfer_of_commuting_retraction
-    (ι : HX → HA) (ρ : HA → HX)
-    (clA : ZA → HA) (clX : ZX → HX) (push : ZA → ZX)
-    (hretract : ∀ h, ρ (ι h) = h)
-    (hcomm : ∀ z, clX (push z) = ρ (clA z))
-    {h : HX} {z : ZA} (hz : clA z = ι h) :
-    ∃ x : ZX, clX x = h := by
-  refine ⟨push z, ?_⟩
-  rw [hcomm, hz, hretract]
+/-- CRITIC: in dimension four (`n = 2`), the integer scalar `2` has the
+standard degree `2^8 = 256`, not the quadratic norm value `2^2 = 4`. -/
+theorem critic_quadratic_norm_is_not_isogeny_degree_in_dimension_four :
+    (2 : ℕ) ^ 8 ≠ 2 ^ 2 := by
+  norm_num
 
-def criticEmbed : Bool → Bool := id
+/-- CLEANER: for an integer inside an imaginary quadratic field, whose field
+norm is `m^2`, the corrected dimension-sensitive degree is its `2n`-th power. -/
+theorem cleaner_norm_power_recovers_integer_scalar_degree
+    (m n : ℕ) :
+    (m ^ 2) ^ (2 * n) = m ^ (4 * n) := by
+  rw [← pow_mul]
+  apply congrArg (fun e : ℕ => m ^ e)
+  omega
 
-def criticRetract : Bool → Bool := id
+#print axioms banker_integer_scalar_degree_in_weil_dimension
+#print axioms critic_quadratic_norm_is_not_isogeny_degree_in_dimension_four
+#print axioms cleaner_norm_power_recovers_integer_scalar_degree
 
-def criticTargetClass : Bool → Bool := id
-
-def criticSourceClass : PUnit → Bool := fun _ => false
-
-theorem critic_split_target_data_not_enough :
-    Function.LeftInverse criticRetract criticEmbed ∧
-      Function.Surjective criticTargetClass ∧
-      ¬ Function.Surjective criticSourceClass := by
-  constructor
-  · intro b
-    rfl
-  constructor
-  · intro b
-    exact ⟨b, rfl⟩
-  · intro hsurj
-    obtain ⟨x, hx⟩ := hsurj true
-    cases x
-    simp [criticSourceClass] at hx
-
-theorem cleaner_surjectivity_requires_cycle_map
-    (ι : HX → HA) (ρ : HA → HX)
-    (clA : ZA → HA) (clX : ZX → HX) (push : ZA → ZX)
-    (hretract : ∀ h, ρ (ι h) = h)
-    (hcomm : ∀ z, clX (push z) = ρ (clA z))
-    (hsurj : Function.Surjective clA) :
-    Function.Surjective clX := by
-  intro h
-  obtain ⟨z, hz⟩ := hsurj (ι h)
-  exact banker_transfer_of_commuting_retraction
-    ι ρ clA clX push hretract hcomm hz
-
-#print axioms banker_transfer_of_commuting_retraction
-#print axioms critic_split_target_data_not_enough
-#print axioms cleaner_surjectivity_requires_cycle_map
-
-end Millennium.Hodge.KSTransfer
+end Millennium.Hodge.IsogenyDegreeExponent
