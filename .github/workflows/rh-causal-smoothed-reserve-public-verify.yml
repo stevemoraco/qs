@@ -25,7 +25,7 @@ jobs:
           dir='verification/rh-causal-smoothed-reserve-public'
           file="$dir/RHCausalSmoothedReserveFinite.lean"
           actual_blob="$(git hash-object "$file")"
-          expected_blob='767d67d57378da62d7d656658e821bd37131e824'
+          expected_blob='cd96ee6152409eb1150af98bed0f08c624841d06'
           test "$actual_blob" = "$expected_blob"
           printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
           sha256sum "$file" | tee "$dir/source-sha256.txt"
