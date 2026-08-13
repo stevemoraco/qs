@@ -5,22 +5,22 @@ import Mathlib
 
 For a finite weighted support `S`, positions `position i`, and weights `weight i`, define
 
-`area x = x^2 / 2 - base - ∑ i in S, (x - position i) * weight i`.
+`area x = x^2 / 2 - base - S.sum (fun i => (x - position i) * weight i)`.
 
 Writing
 
-`theta = ∑ i in S, weight i`
+`theta = S.sum weight`
 
 and
 
-`moment = ∑ i in S, position i * weight i`,
+`moment = S.sum (fun i => position i * weight i)`,
 
 the area is exactly a parabola
 
 `area x = (moment - theta^2 / 2 - base) + (x - theta)^2 / 2`.
 
 For the prime application, `position i` is the prime, `weight i = log p`,
-`base = 2`, and `theta` is the Chebyshev prefix.  The file proves the exact
+`base = 2`, and `theta` is the Chebyshev prefix. The file proves the exact
 finite algebra and the three possible minimizers on a closed prime gap.
 
 This file does not define primes, infinite Chebyshev functions, Mellin
@@ -29,7 +29,6 @@ transforms, zeta zeros, Landau's theorem, or the Riemann hypothesis.
 
 namespace Millennium.RH.ChebyshevArea
 
-open Finset
 open Set
 
 noncomputable section
@@ -38,18 +37,18 @@ variable {ι : Type*}
 
 /-- Total weight of a finite support. -/
 def theta (S : Finset ι) (weight : ι → ℝ) : ℝ :=
-  ∑ i in S, weight i
+  S.sum weight
 
 /-- First weighted moment of the support positions. -/
 def firstMoment (S : Finset ι) (position weight : ι → ℝ) : ℝ :=
-  ∑ i in S, position i * weight i
+  S.sum (fun i => position i * weight i)
 
 /-- Closed-form finite area attached to a weighted support. -/
 def area
     (S : Finset ι) (position weight : ι → ℝ)
     (base x : ℝ) : ℝ :=
   x ^ 2 / 2 - base -
-    ∑ i in S, (x - position i) * weight i
+    S.sum (fun i => (x - position i) * weight i)
 
 /-- Value of the finite area parabola at its center `theta`. -/
 def centerValue
@@ -66,7 +65,7 @@ theorem area_eq_center_add_square
         (x - theta S weight) ^ 2 / 2 := by
   unfold area centerValue firstMoment theta
   simp_rw [sub_mul]
-  rw [sum_sub_distrib, ← mul_sum]
+  rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
   ring
 
 /-- The center value is attained at `x = theta`. -/
@@ -85,7 +84,7 @@ theorem centerValue_le_area
     centerValue S position weight base ≤
       area S position weight base x := by
   rw [area_eq_center_add_square]
-  positivity
+  nlinarith [sq_nonneg (x - theta S weight)]
 
 /-- Equality with the center value occurs only at the center. -/
 theorem area_eq_centerValue_iff
@@ -100,20 +99,19 @@ theorem area_eq_centerValue_iff
     have hsquare : (x - theta S weight) ^ 2 = 0 := by
       nlinarith
     nlinarith [sq_nonneg (x - theta S weight)]
-  · intro h
-    subst x
+  · rintro rfl
     ring
 
 /-- If the center lies inside a closed interval, it minimizes the area there. -/
 theorem center_minimizes_on_interval
     (S : Finset ι) (position weight : ι → ℝ)
     (base left right : ℝ)
-    (hcenter : theta S weight ∈ Icc left right)
-    {x : ℝ} (hx : x ∈ Icc left right) :
+    (_hcenter : theta S weight ∈ Icc left right)
+    {x : ℝ} (_hx : x ∈ Icc left right) :
     area S position weight base (theta S weight) ≤
       area S position weight base x := by
   rw [area_at_center, area_eq_center_add_square]
-  positivity
+  nlinarith [sq_nonneg (x - theta S weight)]
 
 /-- If the center lies to the left of a closed interval, the left endpoint minimizes the area. -/
 theorem left_endpoint_minimizes
@@ -124,11 +122,10 @@ theorem left_endpoint_minimizes
     area S position weight base left ≤
       area S position weight base x := by
   let t := theta S weight
-  have hleft : 0 ≤ left - t := sub_nonneg.mpr hcenter
   have hstep : 0 ≤ (x - t) - (left - t) := by
     linarith [hx.1]
   have hsum : 0 ≤ (x - t) + (left - t) := by
-    linarith [hx.1]
+    linarith [hx.1, hcenter]
   have hprod :
       0 ≤ ((x - t) - (left - t)) * ((x - t) + (left - t)) :=
     mul_nonneg hstep hsum
@@ -145,11 +142,10 @@ theorem right_endpoint_minimizes
     area S position weight base right ≤
       area S position weight base x := by
   let t := theta S weight
-  have hright : 0 ≤ t - right := sub_nonneg.mpr hcenter
   have hstep : 0 ≤ (t - x) - (t - right) := by
     linarith [hx.2]
   have hsum : 0 ≤ (t - x) + (t - right) := by
-    linarith [hx.2]
+    linarith [hx.2, hcenter]
   have hprod :
       0 ≤ ((t - x) - (t - right)) * ((t - x) + (t - right)) :=
     mul_nonneg hstep hsum
@@ -161,7 +157,7 @@ theorem right_endpoint_minimizes
 theorem interval_minimizer_trichotomy
     (S : Finset ι) (position weight : ι → ℝ)
     (base left right : ℝ)
-    (hle : left ≤ right) :
+    (_hle : left ≤ right) :
     (theta S weight ≤ left ∧
       ∀ x ∈ Icc left right,
         area S position weight base left ≤
@@ -175,15 +171,15 @@ theorem interval_minimizer_trichotomy
         area S position weight base right ≤
           area S position weight base x) := by
   by_cases hleft : theta S weight ≤ left
-  · exact Or.inl ⟨hleft, fun x hx ↦
+  · exact Or.inl ⟨hleft, fun x hx =>
       left_endpoint_minimizes S position weight base left right hleft hx⟩
   · have hlt : left < theta S weight := lt_of_not_ge hleft
     by_cases hright : theta S weight ≤ right
-    · exact Or.inr <| Or.inl ⟨⟨hlt.le, hright⟩, fun x hx ↦
+    · exact Or.inr <| Or.inl ⟨⟨hlt.le, hright⟩, fun x hx =>
         center_minimizes_on_interval S position weight base left right
           ⟨hlt.le, hright⟩ hx⟩
     · have hright' : right ≤ theta S weight := le_of_not_ge hright
-      exact Or.inr <| Or.inr ⟨hright', fun x hx ↦
+      exact Or.inr <| Or.inr ⟨hright', fun x hx =>
         right_endpoint_minimizes S position weight base left right hright' hx⟩
 
 /-- A nonnegative center value makes the whole finite area nonnegative. -/
