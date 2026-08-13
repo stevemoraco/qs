@@ -42,6 +42,8 @@ theorem negative_set_mono_of_nonnegative_correction
     (hcorr : ∀ x, 0 ≤ correction x) :
     {x | full x < 0} ⊆ {x | base x < 0} := by
   intro x hx
+  change full x < 0 at hx
+  change base x < 0
   rw [hfull x] at hx
   linarith [hcorr x]
 
@@ -62,10 +64,12 @@ theorem negative_rank_one_safe
     mul_le_mul_of_nonneg_left hell htau
   have hstrict : tau * M * normSq < m * normSq :=
     mul_lt_mul_of_pos_right hmargin hnorm
+  have hstrict' : tau * (M * normSq) < m * normSq := by
+    calc
+      tau * (M * normSq) = tau * M * normSq := by ring
+      _ < m * normSq := hstrict
   calc
-    0 < m * normSq - tau * (M * normSq) := by
-      rw [mul_assoc]
-      linarith
+    0 < m * normSq - tau * (M * normSq) := sub_pos.mpr hstrict'
     _ ≤ base - tau * ellSq := sub_le_sub hbase hupdate
 
 /-- Cauchy--Schwarz-specialized form of the odd-sector safety gate. -/
