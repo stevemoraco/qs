@@ -30,7 +30,7 @@ theorem conditioned_single_row_bound
 most `8/15`, have joint miss probability at most `64/225`. -/
 theorem two_independent_rows_bound
     {q₁ q₂ : ℝ}
-    (hq₁0 : 0 ≤ q₁) (hq₂0 : 0 ≤ q₂)
+    (hq₂0 : 0 ≤ q₂)
     (hq₁ : q₁ ≤ (8 : ℝ) / 15)
     (hq₂ : q₂ ≤ (8 : ℝ) / 15) :
     q₁ * q₂ ≤ (64 : ℝ) / 225 := by
@@ -59,7 +59,7 @@ theorem conditioned_two_row_error_below_third
   have h₁ := conditioned_single_row_bound hp₁ hq₁0 hj₁
   have h₂ := conditioned_single_row_bound hp₂ hq₂0 hj₂
   exact lt_of_le_of_lt
-    (two_independent_rows_bound hq₁0 hq₂0 h₁ h₂)
+    (two_independent_rows_bound hq₂0 h₁ h₂)
     sixty_four_over_225_lt_one_third
 
 /-- If twice the row support cap is bounded by `d + 4*r + 2`, then two raw
