@@ -16,7 +16,7 @@ namespace RHLogGapStaircase
 
 /-- The accumulated logarithmic event weight through index `n`. -/
 def prefixMass (weight : ℕ → ℝ) (n : ℕ) : ℝ :=
-  ∑ k in Finset.range (n + 1), weight k
+  Finset.sum (Finset.range (n + 1)) weight
 
 /-- Event location minus accumulated logarithmic weight. -/
 def prefixDefect (location weight : ℕ → ℝ) (n : ℕ) : ℝ :=
@@ -30,7 +30,11 @@ theorem prefixDefect_step
       weight (n + 1) - delta n) :
     prefixDefect location weight (n + 1) =
       prefixDefect location weight n - delta n := by
-  simp only [prefixDefect, prefixMass, Finset.sum_range_succ]
+  have hmass :
+      prefixMass weight (n + 1) =
+        prefixMass weight n + weight (n + 1) := by
+    simp [prefixMass, Nat.add_assoc]
+  rw [prefixDefect, prefixDefect, hmass]
   linarith
 
 /-- Abstract scalar form of the same one-step defect identity. -/
@@ -46,7 +50,8 @@ theorem defect_telescope
     (defect delta : ℕ → ℝ)
     (hrec : ∀ n, defect (n + 1) = defect n - delta n)
     (n : ℕ) :
-    defect n = defect 0 - ∑ k in Finset.range n, delta k := by
+    defect n =
+      defect 0 - Finset.sum (Finset.range n) delta := by
   induction n with
   | zero => simp
   | succ n ih =>
@@ -59,7 +64,8 @@ theorem cumulative_bias_forces_negative
     (defect delta : ℕ → ℝ)
     (hrec : ∀ n, defect (n + 1) = defect n - delta n)
     (n : ℕ) (B : ℝ)
-    (hlarge : defect 0 + B < ∑ k in Finset.range n, delta k) :
+    (hlarge :
+      defect 0 + B < Finset.sum (Finset.range n) delta) :
     defect n < -B := by
   rw [defect_telescope defect delta hrec n]
   linarith
@@ -67,10 +73,10 @@ theorem cumulative_bias_forces_negative
 /-- A nonnegative endpoint tax places the prefix floor below the continuous
 margin. -/
 theorem nonnegative_tax_forces_prefix_below_margin
-    (margin prefix tax : ℝ)
-    (hdecomp : margin - prefix = tax)
+    (margin prefixValue tax : ℝ)
+    (hdecomp : margin - prefixValue = tax)
     (htax : 0 ≤ tax) :
-    prefix ≤ margin := by
+    prefixValue ≤ margin := by
   linarith
 
 /-- The identity `I = -2M` converts a positive critical integral into a
@@ -85,16 +91,17 @@ theorem positive_integral_forces_negative_margin
 /-- Combining positive critical integral with a nonnegative endpoint tax makes
 the prefix floor strictly negative. -/
 theorem positive_integral_and_tax_force_negative_prefix
-    (integral margin prefix tax : ℝ)
+    (integral margin prefixValue tax : ℝ)
     (hidentity : integral = -2 * margin)
-    (hdecomp : margin - prefix = tax)
+    (hdecomp : margin - prefixValue = tax)
     (hintegral : 0 < integral)
     (htax : 0 ≤ tax) :
-    prefix < 0 := by
+    prefixValue < 0 := by
   have hmargin : margin < 0 :=
     positive_integral_forces_negative_margin integral margin hidentity hintegral
-  have hprefix : prefix ≤ margin :=
-    nonnegative_tax_forces_prefix_below_margin margin prefix tax hdecomp htax
+  have hprefix : prefixValue ≤ margin :=
+    nonnegative_tax_forces_prefix_below_margin
+      margin prefixValue tax hdecomp htax
   exact hprefix.trans_lt hmargin
 
 /-- The square-root endpoint tax is algebraically nonnegative once represented
