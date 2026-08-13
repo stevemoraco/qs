@@ -182,4 +182,22 @@ promise-correct evaluation, and a gate-count theorem. It also does not
 formalize Fan--Li--Yang, Chen--Li--Yang, the canonical search, a decoder lower
 bound, or the full target language.
 
+
+## 7. Lean replay receipt
+
+The exact Lean source with blob
+2d164dc9338d9cf2164f6327e0ca087f1497cffa and SHA-256
+aef70625aa541d6838ce56c4b3e38658f0f91acd7a00bd26ee70db0e540fa3f2
+passed workflow run 31700968449, job 94449746727, under Lean 4.32.1,
+Lake 5.0.0, and Mathlib v4.32.1.
+
+Artifact 9181264966 has digest
+sha256:b54b9f57622032b4e2968df7892b259e60508f124ff55d630a42d686f3dbdb1a.
+The source trust scan found no sorry, admit, sorryAx, custom axiom, opaque,
+unsafe, native_decide, or Lean.ofReduceBool. The printed theorem dependencies
+are only propext, Classical.choice, and Quot.sound.
+
+This receipt verifies the finite Lean statements listed in Section 6. It is
+not evidence for an unformalized circuit construction or for P versus NP.
+
 **SIX-ALARM: OFF.**
