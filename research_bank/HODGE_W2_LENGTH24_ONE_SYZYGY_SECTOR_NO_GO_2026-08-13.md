@@ -167,23 +167,31 @@ canonical additive identities leave a genuine numerical family. Writing
 \(c_1(E)=tD\), the remaining target equation is
 \[
 \begin{aligned}
-0={}&3t^2+(111-6u+18w)t-252u^2-24uw+36w^2\\
-   &\qquad +6888u+328w-59826.
+0={}&3t^2+(111+6u)t-12u^2-96uw-144w^2\\
+   &\qquad -1640u-5248w-59826.
 \end{aligned}
 \tag{4.4}
 \]
-For example \((u,w,t)=(-7,12,139)\) is an exact integral solution (the
-other root is \(-262\)); its discriminant is \(1203^2\). This small
-point is only a Chern-data countermodel and violates the separate first-
-generator slope bound. Even after imposing that slope bound and the two
-resultant-effectivity intersections, the exact integral point
+The equation is obtained directly from the finite quotient \(K\)-class,
+not from a choice of split generators. It has the exact integral solution
 \[
-(u,w,t)=(-194,30,-2215)
+(u,w,t)=(2,-7,85).
 \]
-remains numerically admissible. Neither point asserts existence of an
-actual algebra, but together they prove that NS integrality, GRR, and the
-currently available elementary positivity tests cannot eliminate this
-type.
+At this point
+\[
+a=(2,-7),\quad b=(-316,51),\quad
+g=(602,-105),\quad q=(288,-61)
+\]
+in the \((X,H)\) basis, and direct intersection gives
+\[
+\operatorname{ch}_2(E)=-\frac{1189}{2},\qquad
+\operatorname{ch}_2(E)+\frac t2=-552.
+\]
+It also satisfies the canonical first-generator slope
+\(aX=-26\) and the elementary resultant-effectivity intersections
+\(\Delta H=3236,\ \Delta X=566\). This is only a Chern-data
+countermodel, not an actual algebra, but it proves that NS integrality,
+GRR, and those elementary positivity tests cannot eliminate this type.
 
 ## 5. Additive obstructions that survive
 
