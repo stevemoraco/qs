@@ -1,0 +1,161 @@
+name: Verify and preserve NS periodic Golay frame 3D
+
+on:
+  push:
+    branches:
+      - verification/ns-periodic-golay-3d-20260813
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  verify-and-preserve:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean
+          git hash-object "$SRC" | tee /tmp/source-blob
+          python3 - <<'PY'
+          import pathlib, re
+          text=pathlib.Path('verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean').read_text()
+          m=re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)',text)
+          if m: raise SystemExit(f'forbidden token: {m.group(2)}')
+          if 'native_decide' in text or 'Lean.ofReduceBool' in text: raise SystemExit('forbidden token')
+          if text.count('#print axioms') != 7: raise SystemExit('expected seven axiom reports')
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-periodic-golay-3d/evidence
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import json,pathlib,urllib.request
+          src=pathlib.Path('verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean')
+          out=pathlib.Path('verification/ns-periodic-golay-3d/evidence/axle-response.json')
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=json.dumps({'content':src.read_text(),'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode(),headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=960) as r: result=json.load(r)
+          out.write_text(json.dumps(result,indent=2,sort_keys=True))
+          print(json.dumps(result,indent=2))
+          PY
+
+      - name: Enforce compiler and trust verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+          r=json.loads(pathlib.Path('verification/ns-periodic-golay-3d/evidence/axle-response.json').read_text())
+          if not r.get('okay') or r.get('lean_messages',{}).get('errors') or r.get('tool_messages',{}).get('errors') or r.get('failed_declarations'): raise SystemExit('Lean/AXLE verification failed')
+          rendered=json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered: raise SystemExit('forbidden postcompile dependency')
+          if len(r.get('lean_messages',{}).get('infos',[])) != 7: raise SystemExit('expected seven axiom reports')
+          PY
+
+      - name: Record metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/ns-periodic-golay-3d/evidence
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "source_git_blob=$(cat /tmp/source-blob)"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload exact evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-periodic-golay-3d-evidence
+          path: verification/ns-periodic-golay-3d/evidence/
+          if-no-files-found: error
+
+      - name: Generate permanent receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,urllib.request
+          root=pathlib.Path('verification/ns-periodic-golay-3d/evidence')
+          response=root/'axle-response.json'; metadata=root/'replay-metadata.txt'
+          r=json.loads(response.read_text()); blob=pathlib.Path('/tmp/source-blob').read_text().strip()
+          def get(url):
+              req=urllib.request.Request(url,headers={'Authorization':f"Bearer {os.environ['GH_TOKEN']}",'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'})
+              with urllib.request.urlopen(req,timeout=120) as x:return json.load(x)
+          api,repo,run_id=os.environ['GITHUB_API_URL'],os.environ['GITHUB_REPOSITORY'],os.environ['GITHUB_RUN_ID']
+          jobs=get(f'{api}/repos/{repo}/actions/runs/{run_id}/jobs')['jobs']; job=next((j for j in jobs if j['name']=='verify-and-preserve'),jobs[0])
+          artifacts=get(f'{api}/repos/{repo}/actions/runs/{run_id}/artifacts')['artifacts']; artifact=next((a for a in artifacts if a['name']=='ns-periodic-golay-3d-evidence'),None)
+          info=r['info']; art='- Artifact: not yet visible through run API'
+          if artifact: art=f"- Artifact ID: `{artifact['id']}`\n- Artifact digest: `{artifact.get('digest','unavailable')}`"
+          receipt=f'''# NS periodic Golay frame 3D — verification receipt
+
+Date: 2026-08-13 UTC
+
+Status: **explicit eight-species three-dimensional finite translation-frame theorem verified; not a Navier–Stokes theorem; six-alarm off.**
+
+## Canonical source
+
+- Source: `verification/ns-periodic-golay-3d/PeriodicGolayFrame3D.lean`
+- Git blob: `{blob}`
+- Replay input commit: `{os.environ['GITHUB_SHA']}`
+
+## Fresh replay
+
+- Workflow run: `{run_id}`
+- Workflow job: `{job['id']}`
+- Environment: AXLE `lean-4.30.0`
+- AXLE request: `{info.get('request_id')}`
+- AXLE executor commit: `{info.get('_executor_commit_sha')}`
+- AXLE executor image: `{info.get('_executor_docker_image_id')}`
+- `okay={str(r.get('okay')).lower()}`
+- Lean errors: `{len(r.get('lean_messages',{}).get('errors',[]))}`
+- Tool errors: `{len(r.get('tool_messages',{}).get('errors',[]))}`
+- Failed declarations: `{len(r.get('failed_declarations',[]))}`
+- Warnings: `{len(r.get('lean_messages',{}).get('warnings',[]))}`
+{art}
+
+## Axiom audit
+
+All seven `#print axioms` reports are preserved in `axle-response.json` and `axiom-report.txt`. No theorem-specific custom axiom or `sorryAx` occurs.
+
+## Evidence hashes
+
+- `axle-response.json` SHA-256: `{hashlib.sha256(response.read_bytes()).hexdigest()}`
+- `replay-metadata.txt` SHA-256: `{hashlib.sha256(metadata.read_bytes()).hexdigest()}`
+
+## Exact theorem scope
+
+The source proves the explicit one-dimensional cyclic Golay Gram identity, a generic Kronecker-product Gram factorization, preservation of delta Gram matrices under tensoring, exact two-dimensional constant `64`, exact three-dimensional constant `512`, and exact analysis–synthesis reconstruction for every real signal on `(Fin 8)^3`.
+
+It does not prove a Fourier lattice embedding, divergence-free helical vector-symbol matching, Leray projection, leakage or feedback control, Palasek cascade shadowing, or Navier–Stokes breakdown.
+'''
+          (root/'EVIDENCE.md').write_text(receipt)
+          (root/'axiom-report.txt').write_text('\n'.join(r.get('lean_messages',{}).get('infos',[]))+'\n')
+          PY
+
+      - name: Commit preserved evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add verification/ns-periodic-golay-3d/evidence/
+          git commit -m 'Preserve verified periodic Golay 3D evidence [skip ci]'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
