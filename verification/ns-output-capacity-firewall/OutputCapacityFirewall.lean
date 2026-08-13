@@ -45,14 +45,16 @@ theorem fixedOutputConvolution_sq_le
           ≤ ∑ i, (L * u i) ^ 2 := by
             apply Finset.sum_le_sum
             intro i hi
-            have hΓsq : (Γ i) ^ 2 ≤ L ^ 2 :=
-              sq_le_sq₀ (abs_nonneg _) hL (hΓ i)
+            have hΓsqAbs : |Γ i| ^ 2 ≤ L ^ 2 :=
+              (sq_le_sq₀ (abs_nonneg _) hL).2 (hΓ i)
+            have hΓsq : (Γ i) ^ 2 ≤ L ^ 2 := by
+              simpa using hΓsqAbs
             have hmul :=
               mul_le_mul_of_nonneg_right hΓsq (sq_nonneg (u i))
             simpa [mul_pow] using hmul
       _ = L ^ 2 * ∑ i, (u i) ^ 2 := by
             simp_rw [mul_pow]
-            rw [← mul_sum]
+            rw [Finset.mul_sum]
   have hV : 0 ≤ ∑ i, (v i) ^ 2 := by
     exact Finset.sum_nonneg fun i hi => sq_nonneg (v i)
   calc
@@ -112,7 +114,7 @@ theorem capacity_required_for_viscous_rate
       _ ≤ G ^ 2 := hlower
       _ ≤ J * C ^ 2 * N ^ 2 * Eu * Ev := hupper
       _ = N ^ 2 * (J * C ^ 2 * Eu * Ev) := by ring
-  exact (mul_le_mul_left hN2).mp hmul
+  nlinarith
 
 /-- If an output bundle has capacity at most `W³`, the same viscous-rate tax
 passes to the packet width.  This is the scalar source of the critical
@@ -136,8 +138,9 @@ the relative shell-width tax tends to zero as `t` grows. -/
 theorem quarticCarrier_cubicWidth_meets_capacity
     (t : ℝ) (ht : 1 ≤ t) :
     (t ^ 4) ^ 2 ≤ (t ^ 3) ^ 3 := by
+  have ht0 : 0 ≤ t := le_trans zero_le_one ht
   have hnonneg : 0 ≤ t ^ 8 * (t - 1) :=
-    mul_nonneg (pow_nonneg t 8) (sub_nonneg.mpr ht)
+    mul_nonneg (pow_nonneg ht0 8) (sub_nonneg.mpr ht)
   calc
     (t ^ 4) ^ 2 = t ^ 8 := by ring
     _ ≤ t ^ 9 := by nlinarith
@@ -148,7 +151,6 @@ theorem quarticCarrier_cubicWidth_ratio
     (t : ℝ) (ht : 0 < t) :
     t ^ 3 / t ^ 4 = 1 / t := by
   field_simp [ne_of_gt ht]
-  ring
 
 #print axioms fixedOutputConvolution_sq_le
 #print axioms outputBundle_sq_le
