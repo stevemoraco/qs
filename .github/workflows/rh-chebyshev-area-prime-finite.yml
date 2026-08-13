@@ -1,0 +1,88 @@
+name: RH genuine prime-area finite verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-chebyshev-area-prime-finite-20260813-gpt56
+    paths:
+      - 'verification/rh-chebyshev-area-prime-finite/**'
+      - '.github/workflows/rh-chebyshev-area-prime-finite.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-area-prime-finite'
+          file="$dir/ChebyshevAreaPrimeFinite.lean"
+          actual="$(git hash-object "$file")"
+          test "$actual" = '7ce740dd210a4282565ce6b408c044cbe769faa6'
+          printf 'source_blob=%s\n' "$actual" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            exit 1
+          fi
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-area-prime-finite'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean ChebyshevAreaPrimeFinite.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          exit "$status"
+      - name: Audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh-chebyshev-area-prime-finite/lean-output.log')
+          t = p.read_text()
+          rows = re.findall(r"'([^']+)' depends on axioms:\s*\[(.*?)\]", t, flags=re.S)
+          none = re.findall(r"'([^']+)' does not depend on any axioms", t)
+          if len(rows) + len(none) != 9:
+              raise SystemExit(f'expected 9 reports, found {len(rows)+len(none)}')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for theorem, payload in rows:
+              deps = {x.strip() for x in payload.split(',') if x.strip()}
+              if deps - allowed:
+                  raise SystemExit(f'{theorem}: {sorted(deps - allowed)}')
+          print('VERIFIED genuine finite-prime Chebyshev area core')
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-chebyshev-area-prime-finite-evidence
+          path: |
+            verification/rh-chebyshev-area-prime-finite/source-blob.txt
+            verification/rh-chebyshev-area-prime-finite/source-sha256.txt
+            verification/rh-chebyshev-area-prime-finite/lean-version.txt
+            verification/rh-chebyshev-area-prime-finite/lean-output.log
+          if-no-files-found: warn
