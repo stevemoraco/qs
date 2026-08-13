@@ -1,0 +1,11 @@
+import NSPalasekShortTimeSlaving
+
+#print axioms NSPalasekShortTimeSlaving.response_fraction_identity
+#print axioms NSPalasekShortTimeSlaving.residual_identity
+#print axioms NSPalasekShortTimeSlaving.residual_abs_identity
+#print axioms NSPalasekShortTimeSlaving.transient_fraction_lower
+#print axioms NSPalasekShortTimeSlaving.short_time_residual_lower
+#print axioms NSPalasekShortTimeSlaving.short_time_not_epsilon_slaved
+#print axioms NSPalasekShortTimeSlaving.palasek_clock_beats_same_shell_viscosity
+#print axioms NSPalasekShortTimeSlaving.palasek_accumulated_damping_exponent_negative
+#print axioms NSPalasekShortTimeSlaving.palasek_parameter_witness
