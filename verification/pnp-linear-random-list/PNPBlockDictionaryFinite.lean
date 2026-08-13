@@ -79,7 +79,7 @@ theorem secondLevelExpectedPairsLtOne
   apply (div_lt_iff₀ hTablePos).2
   have hNumerator : r * (r - 1) / 2 < r * r := by
     nlinarith
-  exact hNumerator.trans_le hTable
+  simpa using hNumerator.trans_le hTable
 
 /-- If the first-level squared bucket sum is below `2M` and second-level
 allocation is at most twice that sum, total table space is below `4M`. -/
