@@ -102,3 +102,11 @@ theorem ao_ground_mode_invariant_factor (a sqrtN : ℝ) :
   ring
 
 end Millennium.NavierStokes
+
+#print axioms Millennium.NavierStokes.ao_weber_current_coefficient
+#print axioms Millennium.NavierStokes.ao_odd_mode_center_anti_alignment
+#print axioms Millennium.NavierStokes.ao_even_mode_center_anti_alignment
+#print axioms Millennium.NavierStokes.ao_center_anti_alignment_excludes_joint_increase
+#print axioms Millennium.NavierStokes.ao_odd_mode_fuel_derivative_zero
+#print axioms Millennium.NavierStokes.ao_even_mode_fuel_derivative_zero
+#print axioms Millennium.NavierStokes.ao_affine_rate_integrates_to_fuel_invariant
