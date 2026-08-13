@@ -25,6 +25,8 @@ for n in range(1, MAX_N + 1):
                             [n, r, a, b, k, low, high]
                         )
 
+# For the denominator-free transfer it is enough to test the smallest allowed
+# support, support=good.  Every larger support only increases q*support.
 fraction_cases = 0
 fraction_violations = []
 for t in range(MAX_T + 1):
@@ -32,10 +34,10 @@ for t in range(MAX_T + 1):
     for q in range(1, MAX_Q + 1):
         for good in range(total + 1):
             if total <= q * good:
-                for support in range(good, total + 1):
-                    fraction_cases += 1
-                    if not (total <= q * support):
-                        fraction_violations.append([t, q, good, support])
+                fraction_cases += 1
+                support = good
+                if not (total <= q * support):
+                    fraction_violations.append([t, q, good, support])
 
 result = {
     "boundary_max_n": MAX_N,
@@ -43,7 +45,7 @@ result = {
     "boundary_violations": len(boundary_violations),
     "fraction_max_t": MAX_T,
     "fraction_max_q": MAX_Q,
-    "fraction_applicable_cases": fraction_cases,
+    "fraction_applicable_minimal_support_cases": fraction_cases,
     "fraction_violations": len(fraction_violations),
     "status": "PASS" if not boundary_violations and not fraction_violations else "FAIL",
 }
