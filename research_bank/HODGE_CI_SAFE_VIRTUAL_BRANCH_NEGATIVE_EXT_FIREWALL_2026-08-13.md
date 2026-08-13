@@ -36,7 +36,7 @@ and then by \(uR\) gives
 \]
 Here \(uR/uI\simeq R/I\), while
 \[
- R^2/uR\xrightarrow{\sim}I,qquad
+ R^2/uR\xrightarrow{\sim}I,\qquad
  [(a,b)]\longmapsto -ya+xb.
 \]
 Consequently
@@ -96,7 +96,7 @@ Let \(X\) be smooth, let \(s\in H^0(X,L_1)\) and
 \]
 and
 \[
- A=(-t,s):K\to E,qquad
+ A=(-t,s):K\to E,\qquad
  B=\binom{s}{t}(s,t):E\to F. \tag{7}
 \]
 The types in (7) are exact:
@@ -233,11 +233,11 @@ Return to \(I=(x,y)\) and (1). Let \(J_0=\left(\begin{smallmatrix}
 \end{smallmatrix}\right)\). Multiplication by \(x^2\) on \(I\) lifts
 to a map \(f:I\to N\) using
 \[
- C=x^2J_0:R^2\to R^2,qquad H=\binom{-x}{0}:R\to R^2.
+ C=x^2J_0:R^2\to R^2,\qquad H=\binom{-x}{0}:R\to R^2.
 \]
 The identities
 \[
- (-y,x)C=x^2(x,y),qquad CA=BH
+ (-y,x)C=x^2(x,y),\qquad CA=BH
 \]
 verify the chain map. Since \(qf=x^2\operatorname{id}_I\), the map
 \(f\) is injective. Its mapping cone is already minimal:
@@ -249,7 +249,7 @@ with
 \[
  D_2=\begin{pmatrix}
  -y&-x\\x&0\\0&y\\0&-x
- \end{pmatrix},qquad
+ \end{pmatrix},\qquad
  D_1=\begin{pmatrix}
  x^2&xy&0&-x^2\\
  xy&y^2&x^2&0
