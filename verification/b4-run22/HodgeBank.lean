@@ -53,7 +53,7 @@ def boundaryV : Matrix (Fin 2) (Fin 2) R :=
 
 /-- The quadratic row block composes with the Koszul column to zero. -/
 theorem safeBlock_BA_zero (x y : R) :
-    safeB x y *ᵥ safeA x y = 0 := by
+    Matrix.mulVec (safeB x y) (safeA x y) = 0 := by
   funext i
   fin_cases i <;>
     simp [safeA, safeB, Matrix.mulVec, Fin.sum_univ_two] <;>
@@ -62,7 +62,8 @@ theorem safeBlock_BA_zero (x y : R) :
 /-- The alternating first-derivative contraction is exactly
 `(-3x,-3y)ᵀ`. -/
 theorem safeBlock_derivative_contraction (x y : R) :
-    dxB x y *ᵥ dyA - dyB x y *ᵥ dxA = contractionC x y := by
+    Matrix.mulVec (dxB x y) dyA -
+      Matrix.mulVec (dyB x y) dxA = contractionC x y := by
   funext i
   fin_cases i <;>
     simp [dxA, dyA, dxB, dyB, contractionC,
@@ -71,7 +72,7 @@ theorem safeBlock_derivative_contraction (x y : R) :
 
 /-- The displayed constant matrix sends `A` to the contraction vector. -/
 theorem safeBlock_VA_eq_C (x y : R) :
-    boundaryV *ᵥ safeA x y = contractionC x y := by
+    Matrix.mulVec boundaryV (safeA x y) = contractionC x y := by
   funext i
   fin_cases i <;>
     simp [boundaryV, safeA, contractionC,
