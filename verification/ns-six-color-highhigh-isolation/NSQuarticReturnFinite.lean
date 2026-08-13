@@ -77,7 +77,10 @@ theorem conjugate_pair_rectangle (a b c : Vec3) :
   rcases a with ⟨a1,a2,a3⟩
   rcases b with ⟨b1,b2,b3⟩
   rcases c with ⟨c1,c2,c3⟩
-  simp [add,neg]
+  simp only [add, neg, Prod.mk.injEq]
+  constructor
+  · ring
+  constructor <;> ring
 
 #print axioms carrier_geometry
 #print axioms carrier_transversality
