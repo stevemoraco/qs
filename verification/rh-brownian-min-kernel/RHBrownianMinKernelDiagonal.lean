@@ -92,7 +92,9 @@ theorem cell_debt_minus_capacity_linearization
     T * (v - u) *
         ((u ^ 2 + u * v + v ^ 2) * T - 2 * u ^ 2 * v ^ 2) /
       (u ^ 3 * v ^ 3) := by
-  field_simp [hu, hv, hden]
+  have hden' : v * u + v ^ 2 + u ^ 2 ≠ 0 := by
+    simpa [mul_comm, add_comm, add_left_comm, add_assoc] using hden
+  field_simp [hu, hv, hden, hden']
   ring
 
 /-- The relinearized cell is nonnegative once its exact threshold is met. -/
