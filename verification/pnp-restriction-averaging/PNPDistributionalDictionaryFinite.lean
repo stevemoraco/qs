@@ -146,6 +146,76 @@ theorem normalizedDictionaryPointwiseFloor
     exact hwitness c
   · exact hpoint
 
+/-- Exact distributional mass of a decidable marked subfamily. -/
+def markedMass
+    (mu : C → ℝ) (marked : C → Prop) [DecidablePred marked] : ℝ :=
+  ∑ c, if marked c then mu c else 0
+
+/--
+If every marked deterministic object has an error witness in `K`, then under a
+pointwise-`epsilon` mixture the entire marked subfamily has mass at most
+`|K| * epsilon`.
+
+This is the finite localization form used to discard structurally pathological
+circuits from a randomized circuit distribution.
+-/
+theorem markedMass_le_card_mul_epsilon
+    (mu : C → ℝ) (err : C → X → ℝ) (K : Finset X)
+    (marked : C → Prop) [DecidablePred marked] (epsilon : ℝ)
+    (hmu : ∀ c, 0 ≤ mu c)
+    (herr0 : ∀ c x, 0 ≤ err c x)
+    (hwitness : ∀ c, marked c → ∃ x ∈ K, 1 ≤ err c x)
+    (hpoint : ∀ x ∈ K, mixedError mu err x ≤ epsilon) :
+    markedMass mu marked ≤ (K.card : ℝ) * epsilon := by
+  apply goodMassDictionaryPointwiseFloor
+    mu err K marked (markedMass mu marked) epsilon hmu herr0
+  · simp [markedMass]
+  · exact hwitness
+  · exact hpoint
+
+/--
+For a normalized distribution, if `K` catches every marked object, at least
+`1 - |K| * epsilon` mass lies in the unmarked complement.
+-/
+theorem unmarkedMass_ge_one_sub_card_mul_epsilon
+    (mu : C → ℝ) (err : C → X → ℝ) (K : Finset X)
+    (marked : C → Prop) [DecidablePred marked] (epsilon : ℝ)
+    (hmu : ∀ c, 0 ≤ mu c)
+    (hmusum : ∑ c, mu c = 1)
+    (herr0 : ∀ c x, 0 ≤ err c x)
+    (hwitness : ∀ c, marked c → ∃ x ∈ K, 1 ≤ err c x)
+    (hpoint : ∀ x ∈ K, mixedError mu err x ≤ epsilon) :
+    1 - (K.card : ℝ) * epsilon ≤
+      markedMass mu (fun c => ¬ marked c) := by
+  have hmarked := markedMass_le_card_mul_epsilon
+    mu err K marked epsilon hmu herr0 hwitness hpoint
+  have hpartition :
+      markedMass mu marked + markedMass mu (fun c => ¬ marked c) = 1 := by
+    rw [markedMass, markedMass, ← hmusum]
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro c _
+    by_cases hc : marked c <;> simp [hc]
+  linarith
+
+/--
+A convenient slack form: if the dictionary error budget is at most `eta`, then
+at least `1-eta` of the distribution lies outside the marked subfamily.
+-/
+theorem unmarkedMass_ge_one_sub_eta
+    (mu : C → ℝ) (err : C → X → ℝ) (K : Finset X)
+    (marked : C → Prop) [DecidablePred marked] (epsilon eta : ℝ)
+    (hmu : ∀ c, 0 ≤ mu c)
+    (hmusum : ∑ c, mu c = 1)
+    (herr0 : ∀ c x, 0 ≤ err c x)
+    (hwitness : ∀ c, marked c → ∃ x ∈ K, 1 ≤ err c x)
+    (hpoint : ∀ x ∈ K, mixedError mu err x ≤ epsilon)
+    (hscale : (K.card : ℝ) * epsilon ≤ eta) :
+    1 - eta ≤ markedMass mu (fun c => ¬ marked c) := by
+  have hmass := unmarkedMass_ge_one_sub_card_mul_epsilon
+    mu err K marked epsilon hmu hmusum herr0 hwitness hpoint
+  linarith
+
 #print axioms mixedError
 #print axioms dictionaryErrorFubini
 #print axioms dictionaryWitnessImpliesRowFloor
@@ -153,6 +223,10 @@ theorem normalizedDictionaryPointwiseFloor
 #print axioms goodMassDictionaryPointwiseFloor
 #print axioms noPointwiseBelowDistributionalDictionaryScale
 #print axioms normalizedDictionaryPointwiseFloor
+#print axioms markedMass
+#print axioms markedMass_le_card_mul_epsilon
+#print axioms unmarkedMass_ge_one_sub_card_mul_epsilon
+#print axioms unmarkedMass_ge_one_sub_eta
 
 end PNPDistributionalDictionaryFinite
 end MillenniumBraid
