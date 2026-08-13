@@ -27,8 +27,14 @@ def ez : IVec3 := ⟨0, 0, 1⟩
   cases a with
   | mk ax ay az =>
     cases b with
-    | mk bx by bz =>
-      simp_all
+    | mk bx byy bz =>
+      change ax = bx at hx
+      change ay = byy at hy
+      change az = bz at hz
+      subst bx
+      subst byy
+      subst bz
+      rfl
 
 theorem carrier_resonance (K N : ℤ) :
     add (k1 K N) (k2 K N) = k0 N := by
