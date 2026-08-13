@@ -24,81 +24,64 @@ open Set
 
 noncomputable section
 
-/-- The numerator form whose sign is equivalent to the quadratic identric
-log-gap estimate. -/
-def identricGapPrimitive : ℝ → ℝ :=
-  (fun t => (t + 1) * Real.log (t + 1))
-    - (fun t => (1 - t) * Real.log (1 - t))
-    - (fun t => 2 * t)
-    + (fun t => t ^ 3 / 3)
-
-/-- Exact derivative of the identric gap primitive on `(-1,1)`. -/
-lemma hasDerivAt_identricGapPrimitive
-    {t : ℝ} (htm : -1 < t) (htp : t < 1) :
-    HasDerivAt identricGapPrimitive (Real.log (1 - t ^ 2) + t ^ 2) t := by
-  have hp : t + 1 ≠ 0 := by linarith
-  have hm : 1 - t ≠ 0 := by linarith
-  have hplus0 : HasDerivAt (fun x : ℝ => x + 1) 1 t :=
-    (hasDerivAt_id t).const_add 1
-  have hminus0 : HasDerivAt (fun x : ℝ => 1 - x) (-1) t :=
-    (hasDerivAt_id t).const_sub 1
-  have hplus :
-      HasDerivAt (fun x : ℝ => (x + 1) * Real.log (x + 1))
-        (Real.log (t + 1) + 1) t := by
-    simpa [hp] using hplus0.mul (hplus0.log hp)
-  have hminus :
-      HasDerivAt (fun x : ℝ => (1 - x) * Real.log (1 - x))
-        (-Real.log (1 - t) - 1) t := by
-    simpa [hm] using hminus0.mul (hminus0.log hm)
-  have hlinear : HasDerivAt (fun x : ℝ => 2 * x) 2 t := by
-    simpa using (hasDerivAt_id t).const_mul 2
-  have hcubic : HasDerivAt (fun x : ℝ => x ^ 3 / 3) (t ^ 2) t := by
-    convert ((hasDerivAt_id t).pow 3).div_const 3 using 1
-    · rfl
-    · ring
-  have h := (hplus.sub hminus).sub hlinear |>.add hcubic
-  have hlog : Real.log (1 - t ^ 2) = Real.log (t + 1) + Real.log (1 - t) := by
-    rw [← Real.log_mul hp hm]
-    congr 1
-    ring
-  simpa only [identricGapPrimitive, hlog] using h
-
-/-- On `[0,1)`, the primitive is nonpositive.  The proof uses only
-`log z ≤ z-1` at `z=1-t^2`. -/
-lemma identricGapPrimitive_nonpos
-    {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) :
-    identricGapPrimitive t ≤ 0 := by
-  have hcont : ContinuousOn identricGapPrimitive (Icc 0 t) := by
-    intro x hx
-    exact (hasDerivAt_identricGapPrimitive (by linarith [hx.1])
-      (by linarith [hx.2])).continuousAt.continuousWithinAt
-  have hanti : AntitoneOn identricGapPrimitive (Icc 0 t) := by
-    apply antitoneOn_of_deriv_nonpos (convex_Icc 0 t) hcont
-    · intro x hx
-      have hx' : x ∈ Ioo 0 t := by simpa [interior_Icc] using hx
-      exact (hasDerivAt_identricGapPrimitive (by linarith [hx'.1])
-        (by linarith [hx'.2])).differentiableAt.differentiableWithinAt
-    · intro x hx
-      have hx' : x ∈ Ioo 0 t := by simpa [interior_Icc] using hx
-      have hx0 : 0 < x := hx'.1
-      have hx1 : x < 1 := hx'.2.trans ht1
-      rw [(hasDerivAt_identricGapPrimitive (by linarith) hx1).deriv]
-      have hpos : 0 < 1 - x ^ 2 := by nlinarith [sq_nonneg x]
-      have hlog := Real.log_le_sub_one_of_pos hpos
-      nlinarith
-  have h := hanti (by simp [ht0]) (by simp [ht0]) ht0
-  simpa [identricGapPrimitive] using h
-
 /-- The normalized identric mean lies below the arithmetic mean by a strict
 second-order logarithmic tax. -/
 theorem normalized_identric_log_gap_le
     {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
-    ((t + 1) * Real.log (t + 1)
-        - (1 - t) * Real.log (1 - t)) / (2 * t) - 1
+    (((1 : ℝ) + t) * Real.log ((1 : ℝ) + t)
+        - ((1 : ℝ) - t) * Real.log ((1 : ℝ) - t)) / (2 * t) - 1
       ≤ -(t ^ 2) / 6 := by
-  have h := identricGapPrimitive_nonpos ht0.le ht1
+  let G : ℝ → ℝ := fun x =>
+    ((1 : ℝ) + x) * Real.log ((1 : ℝ) + x)
+      - ((1 : ℝ) - x) * Real.log ((1 : ℝ) - x)
+      - (2 : ℝ) * x + x ^ 3 / (3 : ℝ)
+  have hderiv (x : ℝ) (hx : x ∈ Ioo (-1 : ℝ) 1) :
+      HasDerivAt G (Real.log (1 - x ^ 2) + x ^ 2) x := by
+    let p : ℝ → ℝ := fun y => (1 : ℝ) + y
+    let n : ℝ → ℝ := fun y => (1 : ℝ) - y
+    have hp : p x ≠ 0 := by dsimp [p]; linarith [hx.1]
+    have hn : n x ≠ 0 := by dsimp [n]; linarith [hx.2]
+    have hp0 : HasDerivAt p 1 x := by
+      simpa [p] using (hasDerivAt_id x).const_add (1 : ℝ)
+    have hn0 : HasDerivAt n (-1) x := by
+      simpa [n] using (hasDerivAt_id x).const_sub (1 : ℝ)
+    have hplus := hp0.mul (hp0.log hp)
+    have hminus := hn0.mul (hn0.log hn)
+    have hlinear := (hasDerivAt_id x).const_mul (2 : ℝ)
+    have hcubic := (hasDerivAt_pow 3 x).div_const (3 : ℝ)
+    have hraw := ((hplus.sub hminus).sub hlinear).add hcubic
+    have hlog : Real.log (1 - x ^ 2) = Real.log (p x) + Real.log (n x) := by
+      rw [← Real.log_mul hp hn]
+      congr 1
+      dsimp [p, n]
+      ring
+    convert hraw using 1
+    · ext y
+      simp [G, p, n]
+    · rw [hlog]
+      dsimp [p, n]
+      field_simp [hp, hn]
+      ring
+  have hcont : ContinuousOn G (Icc 0 t) := by
+    intro x hx
+    exact (hderiv x ⟨by linarith [hx.1], by linarith [hx.2]⟩).continuousAt.continuousWithinAt
+  have hanti : AntitoneOn G (Icc 0 t) := by
+    apply antitoneOn_of_deriv_nonpos (convex_Icc 0 t) hcont
+    · intro x hx
+      have hx' : x ∈ Ioo 0 t := by simpa [interior_Icc] using hx
+      exact (hderiv x ⟨by linarith [hx'.1], by linarith [hx'.2]⟩).differentiableAt.differentiableWithinAt
+    · intro x hx
+      have hx' : x ∈ Ioo 0 t := by simpa [interior_Icc] using hx
+      have hxdom : x ∈ Ioo (-1 : ℝ) 1 := ⟨by linarith [hx'.1], by linarith [hx'.2]⟩
+      rw [(hderiv x hxdom).deriv]
+      have hpos : 0 < 1 - x ^ 2 := by nlinarith [sq_nonneg x, hxdom.1, hxdom.2]
+      have hlog := Real.log_le_sub_one_of_pos hpos
+      nlinarith
+  have hG := hanti (by simp [ht0.le]) (by simp [ht0.le]) ht0.le
+  have hG0 : G 0 = 0 := by simp [G]
+  rw [hG0] at hG
   rw [sub_le_iff_le_add, div_le_iff₀ (by positivity)]
-  simp only [identricGapPrimitive, Pi.sub_apply, Pi.add_apply] at h
+  dsimp [G] at hG
   nlinarith
 
 /-- Elementary exponential conversion: a logarithmic tax `z` forces the
@@ -154,8 +137,6 @@ theorem positive_arrival_narrows_half_atom_window
   rw [hmdef] at htax ⊢
   linarith
 
-#print axioms hasDerivAt_identricGapPrimitive
-#print axioms identricGapPrimitive_nonpos
 #print axioms normalized_identric_log_gap_le
 #print axioms exp_neg_le_one_div_one_add
 #print axioms positive_arrival_forces_reserve_tax
