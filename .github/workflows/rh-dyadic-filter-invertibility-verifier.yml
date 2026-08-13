@@ -27,8 +27,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/rh_dyadic_filter_invertibility/RHDyadicFilterInvertibility.lean
-          EXPECTED_BLOB=db045509870326b7a48d22cad06ecb40869972d8
-          EXPECTED_SHA256=d87dce7bb3c11aeefad47705a49cbaa803b9efe526197998be57d397d53104c8
+          EXPECTED_BLOB=e8fec3f328568450643a7ecbb593170f8f3d33e7
+          EXPECTED_SHA256=afcd1072d67d389b128dd668f36d91ec26dc8dffd14c1e1febb10186326e77f8
           test "$(git hash-object "$SRC")" = "$EXPECTED_BLOB"
           test "$(sha256sum "$SRC" | awk '{print $1}')" = "$EXPECTED_SHA256"
           python3 - <<'PY'
