@@ -1,4 +1,4 @@
-import BSDGVAsymptoticAggregation
+import BSDGVDiscriminantHeight
 
 #print axioms BSDGVSemiprimeDensity.totalStateCount_eq
 #print axioms BSDGVSemiprimeDensity.residuePairCount_eq
@@ -24,3 +24,11 @@ import BSDGVAsymptoticAggregation
 #print axioms BSDGVSemiprimeDensity.accepted_uniform_mass
 #print axioms BSDGVSemiprimeDensity.accepted_mass_tendsto
 #print axioms BSDGVSemiprimeDensity.accepted_density_tendsto
+#print axioms BSDGVSemiprimeDensity.short_weierstrass_discriminant
+#print axioms BSDGVSemiprimeDensity.discriminant_height_density_coefficient
+#print axioms BSDGVSemiprimeDensity.positive_sector_discriminant_coefficient
+#print axioms BSDGVSemiprimeDensity.negative_sector_discriminant_coefficient
+#print axioms BSDGVSemiprimeDensity.discriminant_sector_sum
+#print axioms BSDGVSemiprimeDensity.discriminant_relative_density_certificate
+#print axioms BSDGVSemiprimeDensity.positive_sector_share_certificate
+#print axioms BSDGVSemiprimeDensity.negative_sector_share_certificate
