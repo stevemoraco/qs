@@ -24,6 +24,64 @@ theorem exterior_square_strictly_larger (g c : ℝ) (hg : g ≠ 0) :
   have hg2 : 0 < g ^ 2 := sq_pos_of_ne_zero hg
   nlinarith [exterior_minus_desired_square_identity g c]
 
+theorem sum_difference_normal_identity
+    (alpha beta gamma delta : ℝ) :
+    (alpha * delta - gamma * beta) +
+        (alpha * delta + gamma * beta) =
+      2 * alpha * delta := by
+  ring
+
+theorem pressureKill_nonzeroRelay_forces_nonzero_coefficients
+    (alpha beta gamma delta : ℝ)
+    (hkill : alpha * delta + gamma * beta = 0)
+    (hrelay : alpha * delta - gamma * beta ≠ 0) :
+    alpha ≠ 0 ∧ beta ≠ 0 ∧ gamma ≠ 0 ∧ delta ≠ 0 := by
+  constructor
+  · intro halpha
+    subst alpha
+    simp at hkill
+    apply hrelay
+    simp [hkill]
+  constructor
+  · intro hbeta
+    subst beta
+    simp at hkill
+    apply hrelay
+    simp [hkill]
+  constructor
+  · intro hgamma
+    subst gamma
+    simp at hkill
+    apply hrelay
+    simp [hkill]
+  · intro hdelta
+    subst delta
+    simp at hkill
+    apply hrelay
+    simp [hkill]
+
+theorem normal_not_in_mixed_line
+    (planar normal : ℝ)
+    (hplanar : planar ≠ 0) :
+    ¬ ∃ scale : ℝ, scale * planar = 0 ∧ scale * normal = 1 := by
+  rintro ⟨scale, hzero, hone⟩
+  have hscale : scale = 0 :=
+    (mul_eq_zero.mp hzero).resolve_right hplanar
+  subst scale
+  norm_num at hone
+
+theorem pressureKill_nonzeroRelay_forces_noninvariance
+    (alpha beta gamma delta : ℝ)
+    (hkill : alpha * delta + gamma * beta = 0)
+    (hrelay : alpha * delta - gamma * beta ≠ 0) :
+    (¬ ∃ scale : ℝ, scale * alpha = 0 ∧ scale * beta = 1) ∧
+      (¬ ∃ scale : ℝ, scale * gamma = 0 ∧ scale * delta = 1) := by
+  rcases pressureKill_nonzeroRelay_forces_nonzero_coefficients
+      alpha beta gamma delta hkill hrelay with
+    ⟨halpha, _hbeta, hgamma, _hdelta⟩
+  exact ⟨normal_not_in_mixed_line alpha beta halpha,
+    normal_not_in_mixed_line gamma delta hgamma⟩
+
 theorem skew_normal_energy_cancellation (g A B r s x : ℝ) :
     2 * r * (g * B * x) + 2 * s * (-g * A * x) +
       2 * x * (g * (A * s - B * r)) = 0 := by
@@ -70,6 +128,10 @@ theorem chosen_ne_orthogonal :
 #print axioms desired_eq_c_mul_leakage
 #print axioms exterior_minus_desired_square_identity
 #print axioms exterior_square_strictly_larger
+#print axioms sum_difference_normal_identity
+#print axioms pressureKill_nonzeroRelay_forces_nonzero_coefficients
+#print axioms normal_not_in_mixed_line
+#print axioms pressureKill_nonzeroRelay_forces_noninvariance
 #print axioms skew_normal_energy_cancellation
 #print axioms pump_harmonic_acceleration
 #print axioms skew_characteristic_coefficients
