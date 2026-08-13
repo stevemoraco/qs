@@ -160,11 +160,70 @@ theorem atomicLedgerFundsArbitrarilyManyNestedScales (N : ℕ) :
   intro k
   exact everyPacketHasFullAtomMass N k
 
+/-- A selected-interval depletion inequality telescopes exactly.  This is
+the finite budget algebra needed by any repaired cross-scale stopping
+argument: visible activity can persist only while its accumulated charge is
+bounded by the initial budget plus accumulated errors. -/
+theorem finiteSelectedIntervalDepletion
+    (n : ℕ)
+    (budget activity error : ℕ → ℝ)
+    (c : ℝ)
+    (hstep : ∀ k : ℕ,
+      budget (k + 1) + c * activity k ≤ budget k + error k)
+    (hterminal : 0 ≤ budget n) :
+    c * (∑ k in Finset.range n, activity k) ≤
+      budget 0 + ∑ k in Finset.range n, error k := by
+  have htel :
+      budget n + c * (∑ k in Finset.range n, activity k) ≤
+        budget 0 + ∑ k in Finset.range n, error k := by
+    induction n with
+    | zero => simp
+    | succ n ih =>
+      have hs := hstep n
+      simp only [Finset.sum_range_succ]
+      nlinarith
+  linarith
+
+/-- If each selected activity dominates a proposed floor and the depletion
+coefficient is nonnegative, then no finite prefix may have floor charge
+strictly larger than the initial budget plus all prefix errors.  This is the
+finite firewall behind a valid vanishing-threshold diagonal: the powered
+threshold floors must have divergent partial sums, while the depletion
+constant and error budget stay uniform. -/
+theorem finiteDepletionOverrunImpossible
+    (n : ℕ)
+    (budget activity error floor : ℕ → ℝ)
+    (c : ℝ)
+    (hc : 0 ≤ c)
+    (hstep : ∀ k : ℕ,
+      budget (k + 1) + c * activity k ≤ budget k + error k)
+    (hterminal : 0 ≤ budget n)
+    (hfloor : ∀ k < n, floor k ≤ activity k)
+    (hoverrun :
+      budget 0 + (∑ k in Finset.range n, error k) <
+        c * ∑ k in Finset.range n, floor k) :
+    False := by
+  have hsum :
+      (∑ k in Finset.range n, floor k) ≤
+        ∑ k in Finset.range n, activity k := by
+    apply Finset.sum_le_sum
+    intro k hk
+    exact hfloor k (Finset.mem_range.mp hk)
+  have hweighted :
+      c * (∑ k in Finset.range n, floor k) ≤
+        c * ∑ k in Finset.range n, activity k :=
+    mul_le_mul_of_nonneg_left hsum hc
+  have hdepletion :=
+    finiteSelectedIntervalDepletion n budget activity error c hstep hterminal
+  linarith
+
 #print axioms equalCellTotal
 #print axioms noUniformSingleCellFraction
 #print axioms typedZeroDoesNotImplyExternalZero
 #print axioms firstThresholdDoesNotSupplyLowAncestor
 #print axioms subthresholdScoreDoesNotImplySmallMass
 #print axioms atomicLedgerFundsArbitrarilyManyNestedScales
+#print axioms finiteSelectedIntervalDepletion
+#print axioms finiteDepletionOverrunImpossible
 
 end NavierStokesCoveringCountermodel
