@@ -1,0 +1,94 @@
+name: RH CCM Feshbach product-margin replay
+
+on:
+  push:
+    branches:
+      - verification/rh-ccm-feshbach-product-margin-20260813
+    paths:
+      - 'formal/rh-ccm-feshbach/**'
+      - '.github/workflows/rh-ccm-feshbach-product-margin-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/rh-ccm-feshbach/**'
+      - '.github/workflows/rh-ccm-feshbach-product-margin-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: formal/rh-ccm-feshbach
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Record exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git hash-object RHCCMFeshbachProductMargin.lean | tee source-git-blob.txt
+          sha256sum RHCCMFeshbachProductMargin.lean | tee source-sha256.txt
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='RHCCMFeshbachProductMargin.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.32.1
+          "$HOME/.elan/bin/lean" --version | tee toolchain.txt
+
+      - name: Resolve pinned Mathlib and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$HOME/.elan/bin/lake" update
+          "$HOME/.elan/bin/lake" exe cache get
+
+      - name: Warning-free kernel replay and axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          output='lean-kernel-output.txt'
+          "$HOME/.elan/bin/lake" env lean -DwarningAsError=true RHCCMFeshbachProductMargin.lean 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+          count="$(grep -c "does not depend on any axioms\|depends on axioms" "$output")"
+          echo "axiom reports: $count"
+          test "$count" -eq 5
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-ccm-feshbach-product-margin-${{ github.sha }}
+          path: |
+            formal/rh-ccm-feshbach/RHCCMFeshbachProductMargin.lean
+            formal/rh-ccm-feshbach/lean-toolchain
+            formal/rh-ccm-feshbach/lakefile.toml
+            formal/rh-ccm-feshbach/lake-manifest.json
+            formal/rh-ccm-feshbach/source-git-blob.txt
+            formal/rh-ccm-feshbach/source-sha256.txt
+            formal/rh-ccm-feshbach/toolchain.txt
+            formal/rh-ccm-feshbach/lean-kernel-output.txt
+          if-no-files-found: warn
