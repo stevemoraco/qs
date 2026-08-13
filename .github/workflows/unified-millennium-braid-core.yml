@@ -1,0 +1,117 @@
+name: Unified Millennium braid core Lean
+
+on:
+  push:
+    branches:
+      - agent/unified-millennium-braid-core-replay-20260813-gpt56pro
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-core.yml'
+  pull_request:
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/unified-millennium-braid/UnifiedMillenniumBraid.lean'
+          git hash-object "$file" | tee verification/unified-millennium-braid/source-blob.txt
+          sha256sum "$file" | tee verification/unified-millennium-braid/source-sha256.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('verification/unified-millennium-braid/UnifiedMillenniumBraid.lean')
+          text = path.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx)([^A-Za-z0-9_]|$)',
+              r'^\s*(axiom|opaque|unsafe)\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in patterns:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(f'forbidden trust carrier: {match.group(0)!r}')
+          print('trust scan passed')
+          PY
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/unified-millennium-braid/lean-version.txt
+          lake --version | tee -a verification/unified-millennium-braid/lean-version.txt
+          cd verification/unified-millennium-braid
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean UnifiedMillenniumBraid.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          test "$status" -eq 0
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
+            echo 'forbidden dependency or compiler error in report' >&2
+            exit 1
+          fi
+          echo 'VERIFIED unified Millennium braid conditional core.'
+
+      - name: Enforce foundation-only axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('verification/unified-millennium-braid/lean-output.log')
+          text = path.read_text()
+          reports = re.findall(r"'([^']+)' depends on axioms:\s*\[(.*?)\]", text, flags=re.S)
+          no_axioms = re.findall(r"'([^']+)' does not depend on any axioms", text)
+          if not reports and not no_axioms:
+              raise SystemExit('no axiom reports found')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in reports:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(f'{theorem} uses non-foundation axioms: {sorted(extra)}')
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in no_axioms:
+              rows.append(f'{theorem}: []')
+          Path('verification/unified-millennium-braid/axiom-report.txt').write_text(
+              '\n'.join(sorted(rows)) + '\n')
+          print('\n'.join(sorted(rows)))
+          PY
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-core-evidence
+          path: |
+            verification/unified-millennium-braid/source-blob.txt
+            verification/unified-millennium-braid/source-sha256.txt
+            verification/unified-millennium-braid/lean-version.txt
+            verification/unified-millennium-braid/lean-output.log
+            verification/unified-millennium-braid/axiom-report.txt
+          if-no-files-found: warn
