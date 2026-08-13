@@ -1,3 +1,17 @@
 import PNPWeightedDual
+import PNPFullCubeRandomWalk
 
 #print axioms PNPFullCubeDual.weighted_cover_mass_lower_bound
+#print axioms PNPFullCubeRandomWalk.swapFirst_length
+#print axioms PNPFullCubeRandomWalk.swapFirst_involutive
+#print axioms PNPFullCubeRandomWalk.swapFirst_injective
+#print axioms PNPFullCubeRandomWalk.parity_true_mem
+#print axioms PNPFullCubeRandomWalk.parity_swapFirst_left
+#print axioms PNPFullCubeRandomWalk.parity_swapFirst_right
+#print axioms PNPFullCubeRandomWalk.parity_swapFirst_other
+#print axioms PNPFullCubeRandomWalk.endpoint_swapFirst
+#print axioms PNPFullCubeRandomWalk.fiberMap_injective
+#print axioms PNPFullCubeRandomWalk.coefficient_partition
+#print axioms PNPFullCubeRandomWalk.odd_slice_descent
+#print axioms PNPFullCubeRandomWalk.three_step_success_count
+#print axioms PNPFullCubeRandomWalk.iterate_descent
