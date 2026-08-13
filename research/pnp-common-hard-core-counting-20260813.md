@@ -8,7 +8,7 @@ Status: research theorem only; no NP-uniform construction and no P-vs-NP conclus
 
 Chen--Li--Yang, ECCC TR22-086 rev.1 (2022), https://eccc.weizmann.ac.il/report/2022/086/ gives the sparse-NP hardness-magnification frontier `2n+O(n/log log n)` and permits a one-sided lower-bound premise. Fan--Li--Yang, ECCC TR21-125 rev.1 (2021), https://eccc.weizmann.ac.il/report/2021/125/ is the source of the `2n-2` critical-path baseline. Internal circuit-count provenance is `verification/pnp-linear-random-list/verify.py` at commit `5a7335d5fb9ed65300abe45654b9fcb678f55195`.
 
-Primary-source correction: CLY Theorem 1.1 states `ell=log^2 n/log log n` and seed length `r=O(ell log^2 n)`, not `O(ell log^3 n)`. Thus the expanded seed bound is `O(log^4 n/log log n)`. The earlier branch note had one extra factor of `log n`; this commit corrects it explicitly.
+Primary-source correction (2026-08-13): two different CLY parameter statements must not be conflated. Introductory Theorem 1.1 specializes to `ell=log^2 n/log log n` and states seed length `r=O(ell log^2 n)`. But the published proof of Theorem 4.1 explicitly invokes general Theorem 3.9 with `beta=2`, whose seed length is `O(ell log^(beta+1) n)=O(ell log^3 n)`. At `ell=Theta(log^2 n/log log n)`, the displayed Theorem-4.1 seed bound is therefore `O(log^5 n/log log n)`. The earlier version of this note incorrectly substituted the special Theorem-1.1 seed bound into Theorem 4.1. The companion note `research/pnp-hidden-seed-absorption-20260813.md` records the correction and a legal `beta=1` optimization lane separately.
 
 ## Theorem
 
@@ -52,9 +52,9 @@ So visible selection costs exactly `2r` relative to the `2m` baseline, and one-s
 
 However, if all `2^r` selectors contribute at least one positive, then `|L_N|>=2^r`. The CLY sparse envelope `N^{log N/log log N}` has base-two logarithm only `Theta((log N)^2/log log N)`. Therefore an all-seed packed language can expose only `r=O((log N)^2/log log N)` selector bits. The tempting `r=Theta(N/log log N)` use of circuit slack violates sparsity exponentially.
 
-There is a second mismatch: CLY Theorem 1.1 uses seed length `O(ell log^2 N)` for `ell=log^2 N/log log N`, namely `O(log^4 N/log log N)`. Blindly exposing all of those hash seeds as positive prefixes exceeds the same sparse-language budget by about a `log^2 N` factor in the exponent.
+For the hash family actually displayed in CLY Theorem 4.1, `beta=2` gives seed length `O(ell log^3 N)`; at `ell=Theta(log^2 N/log log N)` this is `O(log^5 N/log log N)`. Blindly exposing those seeds as positive prefixes exceeds the sparse-language exponent budget by a `Theta(log^3 N)` factor. The special introductory Theorem 1.1 has a shorter `O(ell log^2 N)` seed, but that is not the parameter choice written in the Theorem-4.1 proof.
 
-**Salvage:** find a much smaller seed family, expose only an NP-sparse subset of longer seeds, or prove a collision-absorption theorem for hidden seeds sharing a visible prefix.
+**Salvage:** visible selectors are not the only class-preserving implementation. If all seed slices lie in a fixed sparse universe, one may hide the seed existentially in the NP witness without increasing input-space sparsity. The companion hidden-seed absorption theorem shows that the resulting hardness loss is governed by aggregate hard-core absorption, not by visible selector length or hard-core congestion.
 
 ## Barrier audit
 
@@ -64,4 +64,4 @@ Recent Range Avoidance work remains relevant to that explicitization step, inclu
 
 ## Next target
 
-Construct an NP-uniform generator with visible seed length at most `O((log n)^2/log log n)` whose image contains a pair with the constant-core property, or prove a bounded hidden-seed collision theorem that preserves constant core density.
+Use the hidden-seed formulation rather than paying visible selector bits. Construct a polynomial-time verifiable anchor / admissible-seed relation whose positive union remains inside the fixed sparse universe and whose aggregate local-core absorption is `<1/4` (concretely `<=1/8` would give `tau_f<=8` from quarter-density local cores). Only if an unweighted common core is later required does one additionally need bounded multiplicity / `O(log log n)` congestion.
