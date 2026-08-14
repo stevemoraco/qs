@@ -65,7 +65,6 @@ theorem terminal_degree_three_discriminant
     {R : Type*} [CommRing R] (u : R) :
     cubicDisc 1 0 0 (-u ^ 2) = -27 * u ^ 4 := by
   simp [cubicDisc]
-  ring
 
 /-- Discriminant of `W*(Z^2-u^3*W^2)`. -/
 theorem degree_two_plus_one_discriminant
