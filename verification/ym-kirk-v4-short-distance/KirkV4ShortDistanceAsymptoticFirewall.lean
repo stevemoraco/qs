@@ -10,7 +10,7 @@ operator products, Yang--Mills, or Clay theorem are formalized.
 -/
 
 /-- A toy correlation with a free contact value and a fixed exponential tail. -/
-def tailCorrelation (contact : ℝ) (n : ℕ) : ℝ :=
+noncomputable def tailCorrelation (contact : ℝ) (n : ℕ) : ℝ :=
   if n = 0 then contact else ((1 : ℝ) / 2) ^ n
 
 /-- The contact parameter is completely invisible at every positive time. -/
@@ -36,7 +36,8 @@ theorem same_exponential_tail_different_contact :
   refine ⟨tailCorrelation 0, tailCorrelation 1, ?_,
     tailCorrelation_contacts_differ⟩
   intro n hn
-  constructor <;> simp [tailCorrelation, Nat.ne_of_gt hn]
+  have hn0 : n ≠ 0 := Nat.ne_of_gt hn
+  constructor <;> simp [tailCorrelation, hn0]
 
 /-- A coarse short-distance envelope after multiplication by the model scale. -/
 def CoarseShortDistanceBound (c : ℕ → ℝ) : Prop :=
