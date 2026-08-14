@@ -94,6 +94,24 @@ jobs:
           (directory / 'source-git-blob.txt').write_text(actual_blob + '\n')
           PY
 
+      - name: Apply and authenticate surgical repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='formal/unified-eight-lane'
+          cd "$dir"
+          patch -p0 < unified-eight-lane-repair.patch
+          actual_sha256="$(sha256sum UnifiedMillenniumPerelmanInversionAudit.lean | cut -d' ' -f1)"
+          actual_blob="$(git hash-object UnifiedMillenniumPerelmanInversionAudit.lean)"
+          expected_sha256='f5da70375b3393a545a8b2133a3bf501388471f112957fe24a68dd389a7db3cc'
+          expected_blob='0aa63ef174a19f99344aef692968058efba8f567'
+          printf 'expected repaired SHA-256: %s\nactual repaired SHA-256:   %s\n' \
+            "$expected_sha256" "$actual_sha256" | tee repaired-source-sha256.txt
+          printf 'expected repaired Git blob: %s\nactual repaired Git blob:   %s\n' \
+            "$expected_blob" "$actual_blob" | tee repaired-source-git-blob.txt
+          test "$actual_sha256" = "$expected_sha256"
+          test "$actual_blob" = "$expected_blob"
+
       - name: Static trust audit
         shell: bash
         run: |
@@ -118,7 +136,7 @@ jobs:
           test "$theorem_count" -ge 30
           test "$axiom_count" -ge 25
 
-      - name: Install pinned Lean and compile exact source
+      - name: Install pinned Lean and compile exact repaired source
         shell: bash
         run: |
           set -euo pipefail
@@ -156,8 +174,11 @@ jobs:
           path: |
             formal/unified-eight-lane/UnifiedMillenniumPerelmanInversionAudit.lean
             formal/unified-eight-lane/retrieved-source.lean
+            formal/unified-eight-lane/unified-eight-lane-repair.patch
             formal/unified-eight-lane/source-sha256.txt
             formal/unified-eight-lane/source-git-blob.txt
+            formal/unified-eight-lane/repaired-source-sha256.txt
+            formal/unified-eight-lane/repaired-source-git-blob.txt
             formal/unified-eight-lane/canonical-job.json
             formal/unified-eight-lane/normalization-report.json
             formal/unified-eight-lane/lean-version.txt
