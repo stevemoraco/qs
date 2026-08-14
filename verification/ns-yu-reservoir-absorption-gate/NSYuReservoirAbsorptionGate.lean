@@ -79,6 +79,46 @@ theorem strictEndpointDrop_of_reservoirFraction
     mul_lt_mul_of_pos_right htheta hmargin
   nlinarith
 
+/-! ## Yu filter-ratio penalty cannot be tuned small -/
+
+/-- Elementary reparameterized lower bound.  If `a = 1/rho >= 4` and
+`b = rho/sigma >= 1`, then the geometric factor `b^5 a^3` is at least `64`. -/
+theorem reparameterizedFilterPenalty_lowerBound
+    (a b : ℝ) (ha : 4 ≤ a) (hb : 1 ≤ b) :
+    64 ≤ b ^ 5 * a ^ 3 := by
+  have hbpow : (1 : ℝ) ^ 5 ≤ b ^ 5 := by
+    gcongr
+  have hapow : (4 : ℝ) ^ 3 ≤ a ^ 3 := by
+    gcongr
+  calc
+    (64 : ℝ) = (1 : ℝ) ^ 5 * (4 : ℝ) ^ 3 := by norm_num
+    _ ≤ b ^ 5 * a ^ 3 := by
+      exact mul_le_mul hbpow hapow (by norm_num) (by positivity)
+
+/-- On Yu's admissible parameter range `0 < sigma <= rho <= 1/4`, the bare
+geometric reservoir factor `rho^2 * sigma^(-5)` is never small: its minimum is
+at least `64`.  Thus shrinking the filter ratio cannot create the missing
+reservoir absorption margin. -/
+theorem admissibleFilterPenalty_lowerBound
+    (rho sigma : ℝ)
+    (hsigma : 0 < sigma)
+    (hsr : sigma ≤ rho)
+    (hrho : rho ≤ (1 : ℝ) / 4) :
+    64 ≤ rho ^ 2 / sigma ^ 5 := by
+  have hrhopos : 0 < rho := lt_of_lt_of_le hsigma hsr
+  have ha : 4 ≤ (1 : ℝ) / rho := by
+    apply (le_div_iff₀ hrhopos).2
+    nlinarith
+  have hb : 1 ≤ rho / sigma := by
+    exact (le_div_iff₀ hsigma).2 (by simpa using hsr)
+  have hbase := reparameterizedFilterPenalty_lowerBound (1 / rho) (rho / sigma) ha hb
+  have hs0 : sigma ≠ 0 := ne_of_gt hsigma
+  have hr0 : rho ≠ 0 := ne_of_gt hrhopos
+  rw [show (rho / sigma) ^ 5 * (1 / rho) ^ 3 = rho ^ 2 / sigma ^ 5 by
+    field_simp [hs0, hr0]
+    ring] at hbase
+  exact hbase
+
 /-! ## Critical finite-energy normalization firewall -/
 
 def dyadicShellEnergy (k : ℕ) : ℝ := ((1 : ℝ) / 2) ^ k
@@ -125,6 +165,8 @@ theorem finiteEnergy_does_not_force_criticalNormalizedDecay (N : ℕ) :
 #print axioms surplusZero_does_not_force_reservoirZero
 #print axioms reservoirAbsorption_closes
 #print axioms strictEndpointDrop_of_reservoirFraction
+#print axioms reparameterizedFilterPenalty_lowerBound
+#print axioms admissibleFilterPenalty_lowerBound
 #print axioms criticalNormalizedEnergy_plateau
 #print axioms dyadicShellEnergy_sum
 #print axioms dyadicShellEnergy_uniform_budget
