@@ -101,11 +101,15 @@ theorem coefficient_depletion_survives_relative_error
     (hstretch : stretching ≤ (1 - eta) * nu * D + E)
     (hE : E ≤ theta * eta * nu * D) :
     stretching - nu * D ≤ -((1 - theta) * eta * nu * D) := by
+  have hsum :
+      (1 - eta) * nu * D + E ≤
+        (1 - eta) * nu * D + theta * eta * nu * D :=
+    add_le_add_left hE _
   calc
     stretching - nu * D ≤ ((1 - eta) * nu * D + E) - nu * D :=
       sub_le_sub_right hstretch _
-    _ ≤ ((1 - eta) * nu * D + theta * eta * nu * D) - nu * D := by
-      exact sub_le_sub_right (add_le_add_left hE _) _
+    _ ≤ ((1 - eta) * nu * D + theta * eta * nu * D) - nu * D :=
+      sub_le_sub_right hsum _
     _ = -((1 - theta) * eta * nu * D) := by ring
 
 /-- A strict fractional error budget preserves strict absorption. -/
