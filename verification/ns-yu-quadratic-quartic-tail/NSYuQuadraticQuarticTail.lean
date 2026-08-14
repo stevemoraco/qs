@@ -107,8 +107,10 @@ theorem quadratic_tail_le_quartic_div_sq
   have hR0 : 0 ≤ R := hR.le
   have hR2 : 0 < R ^ 2 := sq_pos_of_pos hR
   have hδ : 0 ≤ C / R ^ 2 := div_nonneg hC hR2.le
-  have hCδ : C ≤ (C / R ^ 2) * R ^ 2 := by
+  have heq : (C / R ^ 2) * R ^ 2 = C := by
     field_simp [ne_of_gt hR2]
+  have hCδ : C ≤ (C / R ^ 2) * R ^ 2 := by
+    rw [heq]
   exact quadratic_tail_le_quartic_fraction
     q c R C (C / R ^ 2) hR0 hq hδ hCδ hc
 
