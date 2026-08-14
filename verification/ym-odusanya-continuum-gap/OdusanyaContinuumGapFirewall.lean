@@ -3,14 +3,14 @@ import Mathlib
 /-!
 # Continuum-gap inference firewalls for a claimed 4D Yang--Mills construction
 
-This file formalizes three finite countermodels/inference checks that are
-load-bearing for transporting a lattice/cluster gap to a regulator- and
-volume-uniform physical Hamiltonian gap.
+This file formalizes finite countermodels/inference checks that are load-bearing
+for transporting a lattice/cluster gap to a regulator- and volume-uniform
+physical Hamiltonian gap and continuum OS limit.
 
 The motivating source audit is Oliver Odusanya, `Continuum Limit of SU(2)
 Yang--Mills Theory and Osterwalder--Schrader Reconstruction` (Paper III,
-April 7, 2026), especially Lemma 3.2, Lemma 3.3 and Corollary 3.4, together
-with Paper I, Theorem 2.1 / Corollary 2.2.
+April 7, 2026), especially Theorem 2.1, Lemma 3.2, Lemma 3.3 and Corollary
+3.4, together with Paper I, Theorem 2.1 / Corollary 2.2.
 
 The formal statements below do not assert anything about Yang--Mills itself.
 They isolate elementary logical implications that any continuum-gap argument
@@ -21,12 +21,16 @@ must respect:
 * two exponential envelopes with different exponents do not identify an exact
   decay exponent;
 * a common upper clustering estimate allows arbitrarily large masses and hence
-  cannot by itself provide a uniform upper bound on the physical mass.
+  cannot by itself provide a uniform upper bound on the physical mass;
+* an exponential family whose physical decay rate diverges can retain a fixed
+  nonzero variation across distances tending to zero, obstructing a claimed
+  regulator-uniform equicontinuity estimate unless the rate is uniformly
+  bounded.
 
 Honesty boundary: this is a finite scalar firewall, not a proof or disproof of
 the Clay Yang--Mills theorem. A candidate construction can survive only by
-supplying additional theorems that close the missing volume-uniform and
-spectral-identification bridges.
+supplying additional theorems that close the missing volume-uniform,
+spectral-identification, physical-scale, and continuum-compactness bridges.
 -/
 
 namespace Millennium.YangMills
@@ -88,9 +92,29 @@ theorem upperClustering_allows_arbitrarily_large_mass
   apply Real.exp_le_exp.mpr
   nlinarith
 
+/-- A shrinking physical correlation length can destroy regulator-uniform
+equicontinuity even though each individual exponential is smooth and bounded.
+For every requested spatial tolerance `δ`, choose scale `a = δ/2` and move by
+`x = a`: the value drops from `1` to `exp(-1)` across a distance `< δ`, with a
+fixed strictly positive variation independent of `δ`. -/
+theorem shrinkingScale_exponential_has_fixed_nonzero_variation
+    (δ : ℝ) (hδ : 0 < δ) :
+    ∃ a x : ℝ,
+      0 < a ∧ 0 ≤ x ∧ x < δ ∧
+      Real.exp (-0 / a) = 1 ∧
+      Real.exp (-x / a) = Real.exp (-1) ∧
+      0 < 1 - Real.exp (-1) := by
+  refine ⟨δ / 2, δ / 2, by positivity, by positivity, by linarith, ?_, ?_, ?_⟩
+  · simp
+  · have ha : δ / 2 ≠ 0 := ne_of_gt (by positivity)
+    rw [neg_div, div_self ha]
+  · have h : Real.exp (-1) < Real.exp 0 := Real.exp_lt_exp.mpr (by norm_num)
+    simpa using sub_pos.mpr h
+
 #print axioms finiteVolume_anchor_does_not_give_uniform_half_anchor
 #print axioms twoSided_exponential_bounds_do_not_identify_rate
 #print axioms exponential_upper_bound_orientation
 #print axioms upperClustering_allows_arbitrarily_large_mass
+#print axioms shrinkingScale_exponential_has_fixed_nonzero_variation
 
 end Millennium.YangMills
