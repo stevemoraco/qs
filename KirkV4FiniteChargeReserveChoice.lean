@@ -39,7 +39,6 @@ theorem reserveChoiceRadius_pays_quarter
           Lambda + mu * c / 4 := by
       unfold reserveChoiceRadius
       field_simp [hne]
-      <;> ring
     rw [hid]
     nlinarith
 
