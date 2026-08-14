@@ -27,14 +27,21 @@ jobs:
           if grep -nE '(Lean\.ofReduceBool|native_decide)' "$P"; then exit 1; fi
 
       - name: Install pinned Lean
-        uses: leanprover/lean-action@v1
-        with:
-          auto-config: false
-          build: false
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version
+          "$HOME/.elan/bin/lake" --version
 
       - name: Fetch Mathlib cache
         working-directory: verification/pnp-sparse-restriction-affine-firewall
-        run: lake exe cache get
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
 
       - name: Kernel replay
         working-directory: verification/pnp-sparse-restriction-affine-firewall
