@@ -1,0 +1,224 @@
+name: Clay review monolith verifier
+
+on:
+  push:
+    branches:
+      - agent/clay-review-monolith-verifier-20260813-gpt56pro
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout exact verifier branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Reconstruct exact monolithic Lean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/clay_review_monolith
+          cat \
+            parts/part00.b64 \
+            parts/part01.b64 \
+            parts/part02.b64 \
+            parts/part03_0.b64 \
+            parts/part03_1.b64 \
+            parts/part03_2.b64 \
+            parts/part03_3.b64 \
+            parts/part03_4.b64 \
+            parts/part03_5.b64 \
+            parts/part03_6.b64 \
+            parts/part03_7.b64 \
+            > MillenniumBraidEverything.lean.gz.b64
+          base64 -d MillenniumBraidEverything.lean.gz.b64 \
+            > MillenniumBraidEverything.lean.gz
+          test "$(sha256sum MillenniumBraidEverything.lean.gz | awk '{print $1}')" = \
+            27d3225e9f94f78b4c7dd1feb3b8760ea22101524d79fa3031a2e6869af56786
+          gzip -dc MillenniumBraidEverything.lean.gz \
+            > MillenniumBraidEverything.lean
+          test "$(sha256sum MillenniumBraidEverything.lean | awk '{print $1}')" = \
+            0b5991423ffce0f4c55ece074d530ba0dd50c132b3de8698d3bb1de55257327c
+          test "$(wc -l < MillenniumBraidEverything.lean)" = 9964
+
+      - name: Static trust and census audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/clay_review_monolith
+          mkdir -p evidence
+          python3 - <<'PY' | tee evidence/static-audit.json
+          import hashlib, json, pathlib, re
+
+          path = pathlib.Path('MillenniumBraidEverything.lean')
+          text = path.read_text()
+
+          def code_only(src: str) -> str:
+              out = []
+              i = 0
+              block = 0
+              line = False
+              string = False
+              while i < len(src):
+                  pair = src[i:i+2]
+                  ch = src[i]
+                  if line:
+                      if ch == '\n':
+                          line = False
+                          out.append('\n')
+                      else:
+                          out.append(' ')
+                      i += 1
+                  elif block:
+                      if pair == '/-':
+                          block += 1; out.extend('  '); i += 2
+                      elif pair == '-/':
+                          block -= 1; out.extend('  '); i += 2
+                      else:
+                          out.append('\n' if ch == '\n' else ' '); i += 1
+                  elif string:
+                      if ch == '\\' and i + 1 < len(src):
+                          out.extend('  '); i += 2
+                      elif ch == '"':
+                          string = False; out.append(' '); i += 1
+                      else:
+                          out.append('\n' if ch == '\n' else ' '); i += 1
+                  elif pair == '--':
+                      line = True; out.extend('  '); i += 2
+                  elif pair == '/-':
+                      block = 1; out.extend('  '); i += 2
+                  elif ch == '"':
+                      string = True; out.append(' '); i += 1
+                  else:
+                      out.append(ch); i += 1
+              if block or string:
+                  raise SystemExit('unterminated comment or string')
+              return ''.join(out)
+
+          code = code_only(text)
+          forbidden = {
+              name: len(re.findall(pattern, code))
+              for name, pattern in {
+                  'sorry': r'\bsorry\b',
+                  'admit': r'\badmit\b',
+                  'sorryAx': r'\bsorryAx\b',
+                  'axiom': r'\baxiom\b',
+                  'constant': r'\bconstant\b',
+                  'opaque': r'\bopaque\b',
+                  'unsafe': r'\bunsafe\b',
+                  'partial': r'\bpartial\b',
+                  'native_decide': r'\bnative_decide\b',
+                  'Lean.ofReduceBool': r'\bLean\.ofReduceBool\b',
+                  'run_tac': r'\brun_tac\b',
+                  'run_meta': r'\brun_meta\b',
+                  'run_elab': r'\brun_elab\b',
+              }.items()
+          }
+          if any(forbidden.values()):
+              raise SystemExit(f'forbidden source tokens: {forbidden}')
+          if re.findall(r'^\s*import\s+(.+?)\s*$', code, re.M) != ['Mathlib']:
+              raise SystemExit('source must import exactly Mathlib')
+
+          audit = {
+              'source_sha256': hashlib.sha256(text.encode()).hexdigest(),
+              'lines': text.count('\n'),
+              'bytes': len(text.encode()),
+              'theorem_lemma_syntactic_bodies': len(re.findall(
+                  r'^\s*(?:(?:private|protected|local|noncomputable)\s+|@\[[^\n]*\]\s*)*(?:theorem|lemma)\s+',
+                  code, re.M)),
+              'staged_print_axioms': code.count('#print axioms'),
+              'forbidden_counts': forbidden,
+              'contains_internal_source_count_134': 'sourceFiles.length = 134' in text,
+              'contains_internal_declaration_count_970': 'declarations.length = 970' in text,
+              'contains_internal_700_certificate': '700 ≤ declarations.length' in text,
+              'contains_internal_occurrence_count_717': 'theoremLikeOccurrenceCount = 717' in text,
+              'contains_internal_trusted_count_662': 'trustedTheoremLikeCount = 662' in text,
+              'contains_internal_materialized_count_491': 'materializedTheoremLikeCount = 491' in text,
+          }
+          if audit['staged_print_axioms'] != 832:
+              raise SystemExit(f"expected 832 staged axiom reports, got {audit['staged_print_axioms']}")
+          for key in (
+              'contains_internal_source_count_134',
+              'contains_internal_declaration_count_970',
+              'contains_internal_700_certificate',
+              'contains_internal_occurrence_count_717',
+              'contains_internal_trusted_count_662',
+              'contains_internal_materialized_count_491',
+          ):
+              if not audit[key]:
+                  raise SystemExit(f'missing internal census marker: {key}')
+          print(json.dumps(audit, indent=2, sort_keys=True))
+          PY
+
+      - name: Install pinned Lean and Mathlib
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: verification/clay_review_monolith
+          use-github-cache: true
+          use-mathlib-cache: true
+          build: false
+          test: false
+          lint: false
+
+      - name: Compile exact monolithic source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/clay_review_monolith
+          lake update
+          mkdir -p evidence .lake/build/lib/lean
+          lake env lean MillenniumBraidEverything.lean \
+            -o .lake/build/lib/lean/MillenniumBraidEverything.olean \
+            2>&1 | tee evidence/lean-output.log
+          if grep -Eq 'error:|sorryAx|declaration uses .sorry.|Lean\.ofReduceBool' \
+              evidence/lean-output.log; then
+            exit 1
+          fi
+          test "$(grep -c "depends on axioms\|does not depend on any axioms" evidence/lean-output.log)" -ge 800
+
+      - name: Fresh kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/clay_review_monolith
+          lake env leanchecker --fresh MillenniumBraidEverything \
+            2>&1 | tee evidence/leanchecker.log
+
+      - name: Record exact replay metadata
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/clay_review_monolith
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "lean_version=$(lake env lean --version | head -1)"
+            echo "lake_version=$(lake --version | head -1)"
+            echo "source_sha256=$(sha256sum MillenniumBraidEverything.lean | awk '{print $1}')"
+            echo "source_bytes=$(wc -c < MillenniumBraidEverything.lean)"
+            echo "source_lines=$(wc -l < MillenniumBraidEverything.lean)"
+            echo "compressed_sha256=$(sha256sum MillenniumBraidEverything.lean.gz | awk '{print $1}')"
+          } > evidence/replay-metadata.txt
+
+      - name: Upload exact source and compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clay-review-monolith-evidence
+          path: |
+            verification/clay_review_monolith/MillenniumBraidEverything.lean
+            verification/clay_review_monolith/MillenniumBraidEverything.lean.gz
+            verification/clay_review_monolith/evidence/
+          if-no-files-found: error
