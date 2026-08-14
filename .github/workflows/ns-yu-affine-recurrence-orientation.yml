@@ -77,10 +77,10 @@ jobs:
               for kind in ('errors','warnings'):
                   if r.get(group, {}).get(kind, []): bad = True
           if r.get('failed_declarations', []): bad = True
-          rendered = json.dumps(r)
+          rendered = json.dumps(r, sort_keys=True)
           if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered: bad = True
           if bad:
-              print(json.dumps(r, indent=2))
+              print('::error title=AXLE diagnostic::' + rendered.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
               raise SystemExit(1)
           print('VERIFIED CLEAN')
           PY
