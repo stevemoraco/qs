@@ -1,5 +1,7 @@
 import Mathlib
 
+open Filter
+
 /-!
 # Yu fixed-filter unfiltering firewall
 
