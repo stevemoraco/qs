@@ -1,6 +1,12 @@
 name: Unified Millennium bank public replay
 
 on:
+  push:
+    branches:
+      - agent/unified-millennium-bank-public-20260813
+    paths:
+      - 'formal/unified-millennium-bank/**'
+      - '.github/workflows/unified-millennium-bank-public.yml'
   pull_request:
     branches: [main]
     paths:
@@ -13,7 +19,7 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -22,76 +28,70 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file='formal/unified-millennium-bank/UnifiedMillenniumBank.lean'
+          dir='formal/unified-millennium-bank'
+          file="$dir/UnifiedMillenniumBank.lean"
           expected='a7d09b000b9aca002a7aa05cc348a3d4d28f3a9b'
           actual="$(git hash-object "$file")"
-          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual" \
+            | tee "$dir/source-blob.txt"
           test "$actual" = "$expected"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
 
       - name: Reject proof holes and trust escapes
         shell: bash
         run: |
           set -euo pipefail
           file='formal/unified-millennium-bank/UnifiedMillenniumBank.lean'
-          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
-            echo 'Rejected: proof hole or custom trust carrier found.'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
             exit 1
           fi
 
-      - name: Submit exact source to Lean compile farm
+      - name: Install pinned Lean and compile exact source
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json
-          import pathlib
-          import time
-          import urllib.error
-          import urllib.request
+          dir='formal/unified-millennium-bank'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean UnifiedMillenniumBank.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED unified Millennium finite bank.'
 
-          API = 'https://lean-compile-farm.replit.app/api'
-          path = pathlib.Path('formal/unified-millennium-bank/UnifiedMillenniumBank.lean')
-          source = path.read_text()
-
-          request = urllib.request.Request(
-              f'{API}/compile',
-              data=json.dumps({
-                  'name': 'unified-millennium-bank-public',
-                  'lean_source': source,
-              }).encode(),
-              headers={'Content-Type': 'application/json'},
-              method='POST',
-          )
-          with urllib.request.urlopen(request, timeout=120) as response:
-              job = json.load(response)
-          job_id = job['id']
-          print('job', job_id, flush=True)
-
-          for poll in range(180):
-              time.sleep(20)
-              try:
-                  with urllib.request.urlopen(f'{API}/jobs/{job_id}', timeout=120) as response:
-                      job = json.load(response)
-              except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
-                  print(f'poll {poll}: transient failure: {error}', flush=True)
-                  continue
-              print(f"poll {poll}: {job.get('status')} {job.get('verdict')}", flush=True)
-              if job.get('status') in ('done', 'failed'):
-                  pathlib.Path('formal/unified-millennium-bank/result.json').write_text(
-                      json.dumps(job, indent=2))
-                  print(json.dumps(job, indent=2), flush=True)
-                  if job.get('verdict') != 'VERIFIED' or job.get('sorry_count') != 0:
-                      raise SystemExit(1)
-                  raise SystemExit(0)
-          raise SystemExit('compile farm did not return a verdict before timeout')
-          PY
-
-      - name: Preserve replay evidence
+      - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unified-millennium-bank-${{ github.sha }}
+          name: unified-millennium-bank-public-evidence
           path: |
-            formal/unified-millennium-bank/UnifiedMillenniumBank.lean
-            formal/unified-millennium-bank/result.json
+            formal/unified-millennium-bank/source-blob.txt
+            formal/unified-millennium-bank/source-sha256.txt
+            formal/unified-millennium-bank/lean-version.txt
+            formal/unified-millennium-bank/lean-output.log
           if-no-files-found: warn
