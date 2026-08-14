@@ -1,0 +1,44 @@
+PNPNonlinearFingerprintFirewall.lean:166:2: error: unsolved goals
+case inl
+m : ℕ
+p : F2Vec m × F2Vec m
+hpR : p.2 = 0
+⊢ (p.1, 0) = p
+PNPNonlinearFingerprintFirewall.lean:168:4: error: unsolved goals
+case pos
+m : ℕ
+p : F2Vec m × F2Vec m
+hpL : p.1 = 0
+hpR : p.2 = 0
+⊢ (0, 0) = p
+PNPNonlinearFingerprintFirewall.lean:169:4: error: unsolved goals
+case neg
+m : ℕ
+p : F2Vec m × F2Vec m
+hpL : p.1 = 0
+hpR : ¬p.2 = 0
+⊢ (0, p.2) = p
+'PNPNonlinearFingerprintFirewall.every_vector_is_axis_difference' depends on axioms: [propext]
+'PNPNonlinearFingerprintFirewall.eq_zero_of_map_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PNPNonlinearFingerprintFirewall.injective_of_injOn_axes' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PNPNonlinearFingerprintFirewall.card_square_le_of_injOn_axes' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PNPNonlinearFingerprintFirewall.f2_power_lower' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PNPNonlinearFingerprintFirewall.f2_output_bits_lower' depends on axioms: [propext, Classical.choice, Quot.sound]
+'PNPNonlinearFingerprintFirewall.factor_two_log_rewrite' depends on axioms: [propext, Quot.sound]
+'PNPNonlinearFingerprintFirewall.orTree_eq_false_iff_all_false' depends on axioms: [propext, Quot.sound]
+'PNPNonlinearFingerprintFirewall.blockAxesClassifier_eq_true_iff' depends on axioms: [propext, Quot.sound]
+'PNPNonlinearFingerprintFirewall.blockAxesGateCount_equal_length' depends on axioms: [propext, Quot.sound]
+'PNPNonlinearFingerprintFirewall.axisNonlinearDecoder_fingerprint' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'PNPNonlinearFingerprintFirewall.axisNonlinearFingerprint_injOn' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'PNPNonlinearFingerprintFirewall.axisNonlinearFingerprint_output_card' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PNPNonlinearFingerprintFirewall.axisNonlinearFingerprintGateCount_eq' depends on axioms: [propext, Quot.sound]
