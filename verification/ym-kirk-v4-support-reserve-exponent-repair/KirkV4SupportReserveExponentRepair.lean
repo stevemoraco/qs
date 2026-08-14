@@ -88,8 +88,7 @@ theorem charged_weight_transfer
     (hsep : c * R * (n - 1) ≤ d)
     (hcharge : lambda ≤ (m - a) * c * R)
     (hv : 0 ≤ v)
-    (hB : Real.exp (m * d) * v ≤ B)
-    (hB0 : 0 ≤ B) :
+    (hB : Real.exp (m * d) * v ≤ B) :
     Real.exp (lambda * n + a * d) * v ≤
       Real.exp (2 * lambda - (m - a) * c * R) * B := by
   have hexponent :
@@ -106,9 +105,11 @@ theorem charged_weight_transfer
     Real.exp (lambda * n + a * d) * v
         = Real.exp (lambda * n + a * d - m * d) *
             (Real.exp (m * d) * v) := by
-          rw [← mul_assoc, ← Real.exp_add]
-          congr 1
-          ring
+          have harg :
+              lambda * n + a * d =
+                (lambda * n + a * d - m * d) + m * d := by
+            ring
+          rw [harg, Real.exp_add, mul_assoc]
     _ ≤ Real.exp (2 * lambda - (m - a) * c * R) * B := by
       exact mul_le_mul hexp hB hsource0
         (le_of_lt (Real.exp_pos _))
