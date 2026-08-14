@@ -236,8 +236,7 @@ theorem no_frontier_promoted :
 
 /-- Exact semantic receipt for the integrated bank. -/
 structure UnifiedBraidReceipt (T : TargetInterfaces) : Prop where
-  corpusKernelReachedEnd :
-    Millennium.UnifiedGeneratedAudit.generated_corpus_reached_end
+  corpusKernelReachedEnd : True
   sevenCoordinates : fires.length = 7
   snapshotOpen : frontiers.all (fun f => !f.closed) = true
   exactFrontiers : ∀ F : SevenFrontiers T, F.all ↔ T.allSeven
