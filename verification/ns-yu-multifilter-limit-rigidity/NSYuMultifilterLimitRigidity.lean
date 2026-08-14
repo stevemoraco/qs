@@ -147,7 +147,10 @@ theorem positive_defect_forces_budget_branch
     (hup : defect ≤ channel₁ + channel₂) :
     delta / 2 ≤ channel₁ ∨ delta / 2 ≤ channel₂ := by
   by_contra h
-  push_neg at h
+  have h₁ : channel₁ < delta / 2 :=
+    lt_of_not_ge (fun h₁ => h (Or.inl h₁))
+  have h₂ : channel₂ < delta / 2 :=
+    lt_of_not_ge (fun h₂ => h (Or.inr h₂))
   linarith
 
 #print axioms vanishing_minor_limit_forces_limit_minor
