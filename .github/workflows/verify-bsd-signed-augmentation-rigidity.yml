@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=BSDSignedAugmentationRigidity.lean
-          test "$(git hash-object "$file")" = "cf4fdb6195971c813b49de98f0c07f5f680b950f"
+          test "$(git hash-object "$file")" = "a180e7bc52fa4648f36ba04748bd2a73cebd65bd"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
@@ -59,6 +59,15 @@ jobs:
           lake env lean BSDSignedAugmentationRigidity.lean 2>&1 | tee lean-output.txt
           if grep -q 'sorryAx' lean-output.txt; then
             echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Reject compiler warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q 'warning:' lean-output.txt; then
+            echo "Lean warning found"
             exit 1
           fi
 
