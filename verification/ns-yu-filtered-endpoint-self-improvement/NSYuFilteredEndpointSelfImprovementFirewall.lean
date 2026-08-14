@@ -105,6 +105,37 @@ theorem improvedDirection_uniform_budget (N : ℕ) :
       (fun j => criticalDirectionGradientSq j * criticalTimeShellLength j * alignmentGainSq j) ≤ 2 := by
   simpa only [improvedDirection_shellCost] using halfGeometricSum_le_two N
 
+/-- A genuinely logarithmic-in-time model gain: on dyadic time shells the index
+j is proportional to |log tau|, and this squared coefficient is O(j^-2). -/
+def logarithmicGainSq (j : ℕ) : ℝ :=
+  1 / (((j : ℝ) + 1) * ((j : ℝ) + 2))
+
+/-- The logarithmic squared gain has an exact telescoping representation. -/
+theorem logarithmicGainSq_telescopes (j : ℕ) :
+    logarithmicGainSq j =
+      1 / ((j : ℝ) + 1) - 1 / ((j : ℝ) + 2) := by
+  have h1 : (j : ℝ) + 1 ≠ 0 := by positivity
+  have h2 : (j : ℝ) + 2 ≠ 0 := by positivity
+  field_simp [logarithmicGainSq, h1, h2] <;> ring
+
+/-- Exact finite logarithmic-shell budget. -/
+theorem logarithmicGainSq_sum (N : ℕ) :
+    Finset.sum (Finset.range N) (fun j => logarithmicGainSq j) =
+      1 - 1 / ((N : ℝ) + 1) := by
+  induction N with
+  | zero => norm_num [logarithmicGainSq]
+  | succ N ih =>
+      rw [Finset.sum_range_succ, ih, logarithmicGainSq_telescopes]
+      norm_num [Nat.cast_succ]
+      ring
+
+/-- A logarithmic coefficient gain already supplies a uniform finite shell budget. -/
+theorem logarithmicGainSq_uniform_budget (N : ℕ) :
+    Finset.sum (Finset.range N) (fun j => logarithmicGainSq j) ≤ 1 := by
+  rw [logarithmicGainSq_sum]
+  have hden : 0 ≤ 1 / ((N : ℝ) + 1) := by positivity
+  linarith
+
 def endpointShellFourthMass (_j : ℕ) : ℝ := 1
 
 def improvedShellFourthMass (j : ℕ) : ℝ := ((1 : ℝ) / 2) ^ j
@@ -122,6 +153,9 @@ theorem improvedShellFourthMass_uniform_budget (N : ℕ) :
 #print axioms weightedPacking_does_not_by_itself_give_unweightedClosure
 #print axioms criticalDirection_budget_grows_linearly
 #print axioms improvedDirection_uniform_budget
+#print axioms logarithmicGainSq_telescopes
+#print axioms logarithmicGainSq_sum
+#print axioms logarithmicGainSq_uniform_budget
 #print axioms endpointShellFourthMass_sum
 #print axioms improvedShellFourthMass_uniform_budget
 
