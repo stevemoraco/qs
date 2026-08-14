@@ -24,7 +24,7 @@ noncomputable section
 
 namespace NSYuPositiveWorkMass
 
-variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+variable {ι : Type*} [Fintype ι]
 
 /-- Total weight carried by points whose visible work is strictly above `κ`. -/
 def visibleWeight (w k : ι → ℝ) (κ : ℝ) : ℝ :=
@@ -130,7 +130,10 @@ theorem half_bounded_mean_half_threshold
         (α - α / 2) / ((1 / 2 : ℝ) - α / 2) = α / (1 - α) := by
       field_simp [hden, hhalfden]
       ring
-    simpa [heq] using hmass
+    calc
+      α / (1 - α) =
+          (α - α / 2) / ((1 / 2 : ℝ) - α / 2) := heq.symm
+      _ ≤ visibleWeight w k (α / 2) := hmass
 
 /-- Positive average does not imply pointwise positivity everywhere: two equal
 atoms with values `1/2` and `0` have average `1/4`, while one atom remains
