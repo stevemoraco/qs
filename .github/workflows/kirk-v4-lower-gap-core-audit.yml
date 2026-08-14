@@ -1,0 +1,51 @@
+name: Kirk v4 lower-gap core audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/kirk-v4-lower-gap-core-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: read
+
+jobs:
+  lower-gap-core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin and extract immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract lower-gap bridge contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          targets=['Theorem 6.43','Theorem 6.44','Theorem 7.2','Theorem 7.3','Lemma 7.5','Corollary 7.8','acoustic','optical','mE','mopt','owner-map','massless','spectral floor','first crossing','b⋆ :=']
+          out=[]; low=text.lower()
+          for target in targets:
+            start=0
+            for hit in range(8):
+              i=low.find(target.lower(),start)
+              if i<0: break
+              s=' '.join(text[max(0,i-1300):min(len(text),i+3000)].split())
+              out.append(f'=== {target} hit {hit+1} ===\n{s}\n')
+              start=i+len(target)
+          Path('kirk_v4_lower_gap_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
+          print('\n'.join(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-lower-gap-core-contexts
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_lower_gap_contexts.txt
