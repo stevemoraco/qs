@@ -25,32 +25,33 @@ theorem linear_cubic_drift_weighted_budget
       beta * (u n)^2 ≤ u (n + 1) - u n)
     (hdelta : ∀ n < N,
       |delta n| ≤ D * u n) :
-    (∑ n in Finset.range N, |delta n| * u n) ≤
+    Finset.sum (Finset.range N) (fun n => |delta n| * u n) ≤
       (D / beta) * (u N - u 0) := by
   have hcoef : 0 ≤ D / beta :=
     div_nonneg hD (le_of_lt hbeta)
   have htel :
-      (∑ n in Finset.range N, (u (n + 1) - u n)) = u N - u 0 := by
+      Finset.sum (Finset.range N) (fun n => u (n + 1) - u n) =
+        u N - u 0 := by
     induction N with
     | zero => simp
     | succ N ih =>
         rw [Finset.sum_range_succ, ih]
         ring
   calc
-    (∑ n in Finset.range N, |delta n| * u n)
-        ≤ ∑ n in Finset.range N, D * (u n)^2 := by
+    Finset.sum (Finset.range N) (fun n => |delta n| * u n)
+        ≤ Finset.sum (Finset.range N) (fun n => D * (u n)^2) := by
           apply Finset.sum_le_sum
           intro n hn
           have hnlt : n < N := Finset.mem_range.mp hn
           have hun : 0 ≤ u n := hu n hnlt
           nlinarith [hdelta n hnlt]
-    _ = ∑ n in Finset.range N,
-        (D / beta) * (beta * (u n)^2) := by
+    _ = Finset.sum (Finset.range N)
+        (fun n => (D / beta) * (beta * (u n)^2)) := by
           apply Finset.sum_congr rfl
           intro n hn
           field_simp [ne_of_gt hbeta]
-    _ ≤ ∑ n in Finset.range N,
-        (D / beta) * (u (n + 1) - u n) := by
+    _ ≤ Finset.sum (Finset.range N)
+        (fun n => (D / beta) * (u (n + 1) - u n)) := by
           apply Finset.sum_le_sum
           intro n hn
           have hnlt : n < N := Finset.mem_range.mp hn
@@ -71,10 +72,10 @@ theorem linear_cubic_drift_uniform_budget
       beta * (u n)^2 ≤ u (n + 1) - u n)
     (hdelta : ∀ n < N,
       |delta n| ≤ D * u n) :
-    (∑ n in Finset.range N, |delta n| * u n) ≤
+    Finset.sum (Finset.range N) (fun n => |delta n| * u n) ≤
       (D / beta) * U := by
   calc
-    (∑ n in Finset.range N, |delta n| * u n)
+    Finset.sum (Finset.range N) (fun n => |delta n| * u n)
         ≤ (D / beta) * (u N - u 0) :=
           linear_cubic_drift_weighted_budget u delta N hbeta hD hu hgrowth hdelta
     _ ≤ (D / beta) * U := by
