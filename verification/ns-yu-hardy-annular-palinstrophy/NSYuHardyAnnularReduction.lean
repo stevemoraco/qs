@@ -104,13 +104,11 @@ theorem cubic_mesoscopic_split_factor
   field_simp [hs]
 
 /-- Once the PDE estimate has reduced a far-tail reservoir to `C*s*E`, a
-    uniform nonnegative dissipation budget `E <= M` preserves the small factor
-    `s`.  This is the finite scalar endgame of the mesoscopic tail split. -/
+    uniform upper budget `E <= M` preserves the small factor `s`. -/
 theorem mesoscopic_tail_charge
     {tail C s E M : ℝ}
     (hC : 0 ≤ C)
     (hs : 0 ≤ s)
-    (hE : 0 ≤ E)
     (hEM : E ≤ M)
     (htail : tail ≤ C * s * E) :
     tail ≤ C * M * s := by
