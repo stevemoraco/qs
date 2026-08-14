@@ -36,12 +36,23 @@ theorem carrier_agrees_on_cly_boundary
     · exact Or.inr (Or.inl hn')
 
 theorem low_pair_truth_table
-    (n : ℕ) (mark0 mark1a mark1b mark2 : Prop) :
+    (n : ℕ) (hn : 6 ≤ n)
+    (mark0 mark1a mark1b mark2 : Prop) :
     (¬ carrierByWeight n 0 mark0) ∧
       carrierByWeight n 1 mark1a ∧
       carrierByWeight n 1 mark1b ∧
       ¬ carrierByWeight n 2 mark2 := by
-  simp [carrierByWeight]
+  constructor
+  · intro h
+    have hiff := carrier_agrees_on_cly_boundary n 0 mark0 hn (Or.inl (by omega))
+    rcases hiff.mp h with h1 | heq <;> omega
+  · constructor
+    · exact Or.inl rfl
+    · constructor
+      · exact Or.inl rfl
+      · intro h
+        have hiff := carrier_agrees_on_cly_boundary n 2 mark2 hn (Or.inl (by omega))
+        rcases hiff.mp h with h1 | heq <;> omega
 
 theorem high_pair_truth_table
     (n : ℕ) (hn : 6 ≤ n)
