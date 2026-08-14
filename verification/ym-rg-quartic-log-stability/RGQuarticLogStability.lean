@@ -140,7 +140,6 @@ theorem corrected_coordinate_difference_le_quartic
       _ ≤ 2 * R * u^2 * (v * w) := hscaleProd
       _ = ((2 * R / b) * u^2) * (b * v * w) := by
         field_simp [ne_of_gt hb]
-        ring
   have hlog := log_difference_le_two_quartic u v w r R hu hw hv hvw hR hr
   have hscaleLog : 2 * R * u^3 ≤ 2 * R * U * u^2 := by
     have hnon : 0 ≤ 2 * R * u^2 := by positivity
