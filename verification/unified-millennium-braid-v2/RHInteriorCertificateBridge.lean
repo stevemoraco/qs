@@ -4,7 +4,7 @@ namespace Millennium.RH.InteriorCertificate
 
 def q (y : ℝ) : ℝ := 4 * y^2 - 2 * y
 
-def stationaryY (N : ℝ) : ℝ := (1 + Real.sqrt (1 + 4 * N)) / 4
+noncomputable def stationaryY (N : ℝ) : ℝ := (1 + Real.sqrt (1 + 4 * N)) / 4
 
 theorem stationaryY_quadratic (N : ℝ) (hN : 0 ≤ N) : q (stationaryY N) = N := by
   have hrad : 0 ≤ 1 + 4 * N := by linarith
@@ -13,9 +13,10 @@ theorem stationaryY_quadratic (N : ℝ) (hN : 0 ≤ N) : q (stationaryY N) = N :
   nlinarith
 
 theorem quarter_lt_stationaryY (N : ℝ) (hN : 0 ≤ N) : (1 / 4 : ℝ) < stationaryY N := by
-  have hs : 0 ≤ Real.sqrt (1 + 4 * N) := Real.sqrt_nonneg _
+  have hrad : 0 < 1 + 4 * N := by linarith
+  have hs : 0 < Real.sqrt (1 + 4 * N) := Real.sqrt_pos.2 hrad
   dsimp [stationaryY]
-  linarith
+  nlinarith
 
 theorem q_lt_q {a b : ℝ} (ha : (1 / 4 : ℝ) < a) (hab : a < b) : q a < q b := by
   have hba : 0 < b - a := sub_pos.mpr hab
