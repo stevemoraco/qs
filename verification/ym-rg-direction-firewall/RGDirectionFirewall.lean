@@ -61,7 +61,7 @@ theorem positive_quadratic_with_small_remainder_strictly_increases
 `R U^2 ≤ b/2`. -/
 theorem quartic_remainder_le_half_quadratic
     (b R u U r : ℝ)
-    (hb : 0 < b) (hR : 0 ≤ R) (hu : 0 < u) (huU : u ≤ U)
+    (hR : 0 ≤ R) (hu : 0 < u) (huU : u ≤ U)
     (hRU : R * U^2 ≤ b / 2)
     (hr : |r| ≤ R * u^4) :
     |r| ≤ (b / 2) * u^2 := by
@@ -81,12 +81,12 @@ budget. This is the growth hypothesis needed by the accumulated-remainder
 theorem after restricting to a fixed weak-coupling threshold. -/
 theorem quartic_remainder_preserves_quadratic_growth
     (b R u U r : ℝ)
-    (hb : 0 < b) (hR : 0 ≤ R) (hu : 0 < u) (huU : u ≤ U)
+    (hR : 0 ≤ R) (hu : 0 < u) (huU : u ≤ U)
     (hRU : R * U^2 ≤ b / 2)
     (hr : |r| ≤ R * u^4) :
     (b / 2) * u^2 ≤ (u + b * u^2 + r) - u := by
   have hhalf := quartic_remainder_le_half_quadratic
-    b R u U r hb hR hu huU hRU hr
+    b R u U r hR hu huU hRU hr
   have hrlo : -((b / 2) * u^2) ≤ r := (abs_le.mp hhalf).1
   nlinarith
 
