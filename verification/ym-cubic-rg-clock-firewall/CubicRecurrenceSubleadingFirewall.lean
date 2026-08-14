@@ -1,5 +1,7 @@
 import Mathlib
 
+set_option linter.unnecessarySeqFocus false
+
 /-!
 # Cubic RG recurrence subleading-normalization firewall
 
@@ -29,7 +31,7 @@ def cubicRGStep (b c u : ℝ) : ℝ :=
   u + b * u ^ 2 + c * u ^ 3
 
 /-- Progress of the leading reciprocal clock `1 / (b u)` in one RG step. -/
-def reciprocalClockProgress (b c u : ℝ) : ℝ :=
+noncomputable def reciprocalClockProgress (b c u : ℝ) : ℝ :=
   1 / (b * u) - 1 / (b * cubicRGStep b c u)
 
 /-- Exact one-step reciprocal-clock progress for the cubic recurrence. -/
@@ -47,8 +49,7 @@ theorem reciprocalClockProgress_exact
     rw [hfactor]
     exact mul_ne_zero hu hden
   rw [reciprocalClockProgress]
-  field_simp [hfactor, hb, hu, hden, hstep]
-  <;> ring
+  field_simp [hfactor, hb, hu, hden, hstep] <;> ring
 
 /-- The defect from one unit of reciprocal-clock progress depends explicitly
 on the cubic coefficient `c`. -/
@@ -62,7 +63,6 @@ theorem reciprocalClockProgress_sub_one_exact
         (1 + b * u + c * u ^ 2)) := by
   rw [reciprocalClockProgress_exact hb hu hden]
   field_simp [hden]
-  <;> ring
 
 /-- Two recurrences with the same linear and quadratic terms can differ only
 at cubic order.  Here `c = 0` and `c = 1` differ by exactly `u^3`. -/
@@ -83,7 +83,6 @@ theorem quadratic_step_normalized_clock_defect
     (by norm_num) hu (by simpa using hden)
   rw [hbase]
   field_simp [hu, hden]
-  <;> ring
 
 /-- Adding the cubic term `u^3`, while leaving the same quadratic data, changes
 the normalized reciprocal-clock defect to `-u/(1+u+u^2)`. -/
@@ -98,7 +97,6 @@ theorem cubic_step_normalized_clock_defect
     (by norm_num) hu (by simpa using hden)
   rw [hbase]
   field_simp [hu, hden]
-  <;> ring
 
 #print axioms reciprocalClockProgress_exact
 #print axioms reciprocalClockProgress_sub_one_exact
