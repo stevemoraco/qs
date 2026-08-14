@@ -20,6 +20,8 @@ blow-up.
 
 open scoped BigOperators
 
+noncomputable section
+
 namespace NSYuPositiveWorkMass
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -52,7 +54,7 @@ theorem bounded_mean_forces_visible_mass
       nlinarith
     · have hik : k i ≤ κ := le_of_not_gt hi
       simp only [hi, if_false, mul_zero, add_zero]
-      exact mul_le_mul_of_nonneg_left hik (hw i)
+      simpa [mul_comm] using mul_le_mul_of_nonneg_left hik (hw i)
   have hupper :
       (∑ i, w i * k i) ≤
         κ * (∑ i, w i) + (M - κ) * visibleWeight w k κ := by
@@ -63,9 +65,8 @@ theorem bounded_mean_forces_visible_mass
         exact Finset.sum_le_sum (fun i _hi => hpoint i)
       _ = κ * (∑ i, w i) +
           (M - κ) * visibleWeight w k κ := by
-        rw [Finset.sum_add_distrib]
-        simp only [visibleWeight]
-        rw [Finset.mul_sum, Finset.mul_sum]
+        unfold visibleWeight
+        rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
   linarith
 
 /-- If the mean threshold is strictly above `κ`, the total weight is positive,
@@ -106,8 +107,8 @@ theorem half_bounded_mean_forces_mass_fraction
   apply (div_le_iff₀ (sub_pos.mpr hκhalf)).2
   simpa [mul_comm] using hmass
 
-/-- In particular, choosing `κ = α/2` gives an explicit positive-mass lower
-bound whenever `0 < α < 1`. -/
+/-- Choosing `κ = α/2` yields a strictly positive explicit mass fraction when
+`0 < α < 1`. -/
 theorem half_bounded_mean_half_threshold
     (w k : ι → ℝ) (α : ℝ)
     (hw : ∀ i, 0 ≤ w i)
@@ -116,11 +117,20 @@ theorem half_bounded_mean_half_threshold
     (hα0 : 0 < α)
     (hα1 : α < 1)
     (hmean : α * (∑ i, w i) ≤ ∑ i, w i * k i) :
-    α / (1 - α) ≤ visibleWeight w k (α / 2) := by
-  have hκhalf : α / 2 < (1 / 2 : ℝ) := by linarith
-  have hmass := half_bounded_mean_forces_mass_fraction
-    w k (α / 2) α hw hksup hweight hκhalf hmean
-  convert hmass using 1 <;> field_simp <;> ring
+    0 < α / (1 - α) ∧
+      α / (1 - α) ≤ visibleWeight w k (α / 2) := by
+  constructor
+  · exact div_pos hα0 (sub_pos.mpr hα1)
+  · have hκhalf : α / 2 < (1 / 2 : ℝ) := by linarith
+    have hmass := half_bounded_mean_forces_mass_fraction
+      w k (α / 2) α hw hksup hweight hκhalf hmean
+    have hden : 1 - α ≠ 0 := ne_of_gt (sub_pos.mpr hα1)
+    have hhalfden : (1 / 2 : ℝ) - α / 2 ≠ 0 := by linarith
+    have heq :
+        (α - α / 2) / ((1 / 2 : ℝ) - α / 2) = α / (1 - α) := by
+      field_simp [hden, hhalfden]
+      ring
+    simpa [heq] using hmass
 
 /-- Positive average does not imply pointwise positivity everywhere: two equal
 atoms with values `1/2` and `0` have average `1/4`, while one atom remains
