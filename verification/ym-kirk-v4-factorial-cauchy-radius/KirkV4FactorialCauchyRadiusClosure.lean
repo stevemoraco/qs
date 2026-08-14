@@ -1,5 +1,6 @@
 import Mathlib
 
+-- Public independent replay nonce: 2026-08-14T22:10Z.
 open scoped BigOperators
 
 namespace Millennium.YangMills
