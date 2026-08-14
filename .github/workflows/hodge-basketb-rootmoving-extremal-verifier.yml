@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/hodge_basketb_rootmoving_extremal/HodgeBasketBRootMovingExtremalFinite.lean
-          test "$(git hash-object "$SRC")" = d74febc773eeb027963be0225de2f5a58dc19325
+          test "$(git hash-object "$SRC")" = cdc6b4b373d6ba9623357c23b64ea3b6f567f80a
           python3 - <<'PY'
           import pathlib, re
           path = pathlib.Path('verification/hodge_basketb_rootmoving_extremal/HodgeBasketBRootMovingExtremalFinite.lean')
@@ -35,8 +35,8 @@ jobs:
           for token in ('Lean.ofReduceBool', 'native_decide'):
               if token in text:
                   raise SystemExit(f'forbidden source token: {token}')
-          if text.count('#print axioms') != 7:
-              raise SystemExit('expected exactly seven staged axiom reports')
+          if text.count('#print axioms') != 8:
+              raise SystemExit('expected exactly eight staged axiom reports')
           print('source trust preflight: clean')
           PY
 
