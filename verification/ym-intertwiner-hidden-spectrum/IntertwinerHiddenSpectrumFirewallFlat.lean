@@ -2,9 +2,9 @@ import Mathlib
 
 namespace Millennium.YangMills
 
-def hiddenSpectrumFineTransfer (x : ℝ) : ℝ := x / 4
+noncomputable def hiddenSpectrumFineTransfer (x : ℝ) : ℝ := x / 4
 
-def hiddenSpectrumCoarseTransfer (x : ℝ × ℝ) : ℝ × ℝ :=
+noncomputable def hiddenSpectrumCoarseTransfer (x : ℝ × ℝ) : ℝ × ℝ :=
   (x.1 / 4, x.2 / 2)
 
 def hiddenSpectrumEmbedding (x : ℝ) : ℝ × ℝ := (x, 0)
