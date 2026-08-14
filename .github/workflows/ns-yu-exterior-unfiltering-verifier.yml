@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns_yu_exterior_unfiltering/NSYuExteriorUnfiltering.lean
-          test "$(git hash-object "$SRC")" = 2b2fb42b249f7681a28ba26b950f36e2a83dea90
+          test "$(git hash-object "$SRC")" = c65cc908e130f394d5cb874f8b68763958c151f9
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ns_yu_exterior_unfiltering/NSYuExteriorUnfiltering.lean')
