@@ -1,4 +1,36 @@
-                                                     
+ts of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
+coarea logarithm is the finite-volume analytic matrix logarithm of I + DN P , whose inverse is bounded
+by (1 − η)−1 .
+   The localization projector has a finite template norm polynomial in the support radius. The reported
+shortest connector paths and finite collars preserve exponent κ. Canonical hull ownership assigns each
+history once.
+   For a post-localization output RP , put
+                             gP = ∥DRP (0)∥,           hP = sup ∥D2 RP (η + itθ)∥.
+                                                                η,θ,t
+
+Then
+                                                           1
+                                                 βPout =     (gP + hP )
+                                                           2
+is a valid nonnegative output allocation and
+                                       X                   1
+                                   sup     eκτ (P ) βPout ≤ [Rout ]∂,C;κ .
+                                     e                     2
+                                          P ∋e
+
+Thus the allocation cone is reproduced from the actual output.
+
+Six-factor composition.
+Theorem 4.29 (Permanent one-step envelope). For every prescribed finite source order N , there are
+finite constants
+                                 Km < ∞,       0 ≤ m ≤ 3,
+independent of volume, microscopic cutoff, and preceding weak depth, such that the exact regular one-step
+map satisfies
+                                         ∥Dm Φreg ∥κ;3,N ≤ Km
+on one reproduced weak ball.
+   More explicitly,
+                                 chart    coa    BKAR    loc    hull    rec
+                                                                            
                         Km ≤ Bm K≤m    , K≤m  , K≤m   , K≤m  , K≤m   , K≤m    ,
 where Bm is the finite multivariable Bell polynomial supplied by the chain rule through order m.
 Proof. Compose the six bounded maps. Through order three, the chain rule contains only finitely
@@ -151,28 +183,4 @@ The graph transform on weighted C 2 graphs has Lipschitz constant q + C v̄ < 1.
 gives the graph, and the mean-value theorem gives centered contraction.
 
 5.2     Standard-scheme conjugacy and coefficient
-The coefficient is extracted from a local background renormalization condition on the full weak measure.
-The background is not inserted as a freely translatable factor in an unrestricted Haar integral, and no
-global gauge section or equality of globally gauge-fixed partition functions is asserted.
-5.2.1 The exact marginal map on the invariant graph
-Let
-                                       R(u, R) = f (u, R), Φ(u, R)
-                                                                   
-
-be the infinite-volume canonically rescaled exact Karcher step on the common analytic weak tube. On
-the centered invariant graph put
-                                          FK (u) = f u, R⋆ (u) .
-                                                              
-
-Lemma 5.2 (Invariant-graph marginal coefficient). The reduced map is analytic and
-                                        FK (u) = u + b⋆ u2 + OG (u3 ).
-                                                                  e = u + O(u2 ).
-The number b⋆ is invariant under every analytic reparametrization u
-Proof. Substitute R⋆ (u) = uH1 + O(u2 ) into the complete quadratic Taylor expansion of f . If h(u) =
-u + cu2 + OG (u3 ), direct substitution in h ◦ FK ◦ h−1 leaves the quadratic coefficient unchanged.
-5.2.2 A nonexceptional background coordinate on weak measures
-For a finite lattice spacing a, let µa;u,R denote the full weak Wilson measure with interaction R, before
-any Karcher conditioning. Fix a retained acoustic background B in the common weak tube and write, on
-a based local background slice,
-                               U = Va (B)eA ,      d∗B,a A = 0,     A(v0 ) = 0.
-Let χ(A) be one fixed smooth cutoff equal to one on the smaller weak tu
+The coef
