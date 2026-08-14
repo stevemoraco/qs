@@ -66,6 +66,27 @@ theorem threeEigenvalueAnisotropyIdentity (a b c : ℝ) :
   dsimp
   ring
 
+/-- For nonnegative covariance eigenvalues, squared deviatoric anisotropy is at
+most two-thirds of squared trace.  Rank-one covariance saturates the bound. -/
+theorem psdCovariance_anisotropy_le_twoThirdTraceSq
+    {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) :
+    let m := (a + b + c) / 3
+    (a - m) ^ 2 + (b - m) ^ 2 + (c - m) ^ 2 ≤
+      (2 / 3 : ℝ) * (a + b + c) ^ 2 := by
+  dsimp
+  have hab : 0 ≤ a * b := mul_nonneg ha hb
+  have hac : 0 ≤ a * c := mul_nonneg ha hc
+  have hbc : 0 ≤ b * c := mul_nonneg hb hc
+  nlinarith
+
+/-- Rank-one covariance realizes the extremal anisotropy ratio exactly. -/
+theorem rankOneCovariance_saturates_anisotropy (q : ℝ) :
+    let m := (q + 0 + 0) / 3
+    (q - m) ^ 2 + ((0 : ℝ) - m) ^ 2 + ((0 : ℝ) - m) ^ 2 =
+      (2 / 3 : ℝ) * q ^ 2 := by
+  dsimp
+  ring
+
 /-- Equal covariance eigenvalues have zero deviatoric anisotropy even when the
 common covariance level is nonzero. -/
 theorem isotropicCovariance_has_zero_anisotropy (q : ℝ) :
@@ -81,6 +102,8 @@ theorem isotropicCovariance_has_zero_anisotropy (q : ℝ) :
 #print axioms null_component_does_not_contribute
 #print axioms nonzero_work_requires_visible_component
 #print axioms threeEigenvalueAnisotropyIdentity
+#print axioms psdCovariance_anisotropy_le_twoThirdTraceSq
+#print axioms rankOneCovariance_saturates_anisotropy
 #print axioms isotropicCovariance_has_zero_anisotropy
 
 end NSCommutatorAnisotropyCompactnessFirewall
