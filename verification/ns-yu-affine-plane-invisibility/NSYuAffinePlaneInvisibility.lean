@@ -106,6 +106,45 @@ theorem nonzero_affine_covariance_can_be_derivative_invisible
   intro x
   exact centered_affine_covariance_constant a x h
 
+/-- Finite expanding-ball growth gate.  If an affine scalar component has
+visible slope `|a| >= gamma` and is bounded by `M` at both endpoints `0` and
+`R`, then `gamma * R <= 2 M`.  Thus a persistent nonzero affine slope cannot
+coexist with a radius-independent bound on arbitrarily large normalized balls. -/
+theorem bounded_affine_endpoints_control_visible_slope
+    (a c R M gamma : ℝ)
+    (hR : 0 ≤ R)
+    (hslope : gamma ≤ |a|)
+    (h0 : |c| ≤ M)
+    (hRbound : |a * R + c| ≤ M) :
+    gamma * R ≤ 2 * M := by
+  have htri : |a * R| ≤ |a * R + c| + |c| := by
+    rw [show a * R = (a * R + c) + (-c) by ring]
+    calc
+      |(a * R + c) + (-c)| ≤ |a * R + c| + |-c| := abs_add _ _
+      _ = |a * R + c| + |c| := by rw [abs_neg]
+  have hAR : |a| * R ≤ 2 * M := by
+    calc
+      |a| * R = |a| * |R| := by rw [abs_of_nonneg hR]
+      _ = |a * R| := (abs_mul a R).symm
+      _ ≤ |a * R + c| + |c| := htri
+      _ ≤ M + M := add_le_add hRbound h0
+      _ = 2 * M := by ring
+  exact le_trans (mul_le_mul_of_nonneg_right hslope hR) hAR
+
+/-- Contrapositive form of the expanding-ball gate: once the visible affine
+slope would force more than `2M` variation across radius `R`, the two endpoint
+bounds cannot both hold. -/
+theorem visible_affine_slope_breaks_uniform_ball_bound
+    (a c R M gamma : ℝ)
+    (hR : 0 ≤ R)
+    (hslope : gamma ≤ |a|)
+    (hlarge : 2 * M < gamma * R) :
+    ¬ (|c| ≤ M ∧ |a * R + c| ≤ M) := by
+  rintro ⟨h0, hRbound⟩
+  have hsmall := bounded_affine_endpoints_control_visible_slope
+    a c R M gamma hR hslope h0 hRbound
+  linarith
+
 #print axioms affine_plane_divergence
 #print axioms affine_plane_vorticity_x
 #print axioms affine_plane_ns_residual
@@ -116,5 +155,7 @@ theorem nonzero_affine_covariance_can_be_derivative_invisible
 #print axioms centered_affine_covariance_constant
 #print axioms centered_affine_covariance_position_independent
 #print axioms nonzero_affine_covariance_can_be_derivative_invisible
+#print axioms bounded_affine_endpoints_control_visible_slope
+#print axioms visible_affine_slope_breaks_uniform_ball_bound
 
 end NSYuAffinePlaneInvisibility
