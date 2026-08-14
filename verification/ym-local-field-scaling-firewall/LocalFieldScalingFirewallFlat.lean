@@ -1,5 +1,6 @@
 import Mathlib
 
+-- Fresh replay nonce: 2026-08-14T10:15Z; theorem content unchanged.
 namespace Millennium.YangMills
 
 theorem plaquette_defect_three_scalings (a : ℝ) (ha : a ≠ 0) :
