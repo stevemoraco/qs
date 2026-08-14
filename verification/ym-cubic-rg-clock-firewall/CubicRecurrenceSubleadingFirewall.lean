@@ -45,11 +45,8 @@ theorem reciprocalClockProgress_exact
   have hfactor : cubicRGStep b c u = u * (1 + b * u + c * u ^ 2) := by
     simp [cubicRGStep]
     ring
-  have hstep : cubicRGStep b c u ≠ 0 := by
-    rw [hfactor]
-    exact mul_ne_zero hu hden
-  rw [reciprocalClockProgress]
-  field_simp [hfactor, hb, hu, hden, hstep] <;> ring
+  rw [reciprocalClockProgress, hfactor]
+  field_simp [hb, hu, hden] <;> ring
 
 /-- The defect from one unit of reciprocal-clock progress depends explicitly
 on the cubic coefficient `c`. -/
@@ -62,14 +59,13 @@ theorem reciprocalClockProgress_sub_one_exact
       (((c / b - b) * u - c * u ^ 2) /
         (1 + b * u + c * u ^ 2)) := by
   rw [reciprocalClockProgress_exact hb hu hden]
-  field_simp [hden]
+  field_simp [hden] <;> ring
 
 /-- Two recurrences with the same linear and quadratic terms can differ only
 at cubic order.  Here `c = 0` and `c = 1` differ by exactly `u^3`. -/
 theorem same_quadratic_data_cubic_difference (u : ℝ) :
     cubicRGStep 1 1 u - cubicRGStep 1 0 u = u ^ 3 := by
   simp [cubicRGStep]
-  ring
 
 /-- For the recurrence `u' = u + u^2`, the normalized reciprocal-clock defect
 is exactly `-1/(1+u)`. -/
@@ -82,7 +78,7 @@ theorem quadratic_step_normalized_clock_defect
     (b := (1 : ℝ)) (c := (0 : ℝ)) (u := u)
     (by norm_num) hu (by simpa using hden)
   rw [hbase]
-  field_simp [hu, hden]
+  field_simp [hu, hden] <;> ring
 
 /-- Adding the cubic term `u^3`, while leaving the same quadratic data, changes
 the normalized reciprocal-clock defect to `-u/(1+u+u^2)`. -/
@@ -96,7 +92,7 @@ theorem cubic_step_normalized_clock_defect
     (b := (1 : ℝ)) (c := (1 : ℝ)) (u := u)
     (by norm_num) hu (by simpa using hden)
   rw [hbase]
-  field_simp [hu, hden]
+  field_simp [hu, hden] <;> ring
 
 #print axioms reciprocalClockProgress_exact
 #print axioms reciprocalClockProgress_sub_one_exact
