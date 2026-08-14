@@ -86,7 +86,6 @@ order can differ at quartic order. -/
 theorem ym_same_cubic_data_quartic_difference (u : ℝ) :
     quarticRGStep 1 u - quarticRGStep 0 u = u ^ 4 := by
   simp [quarticRGStep]
-  ring
 
 /-- At the concrete weak-coupling test point `u=1/2`, the quartic term changes
 the reciprocal-clock progress from 6/7 to 14/15.  Thus even cubic recurrence
