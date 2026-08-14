@@ -28,7 +28,7 @@ theorem geometric_steps_tendsto
     (u : ℕ → X) (r C : ℝ)
     (hr : r < 1)
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ C * r ^ n) :
-    ∃ x : X, Tendsto u atTop (𝓝 x) := by
+    ∃ x : X, Tendsto u atTop (nhds x) := by
   have hcauchy : CauchySeq u :=
     cauchySeq_of_le_geometric r C hr hstep
   exact cauchySeq_tendsto_of_complete hcauchy
@@ -39,7 +39,7 @@ theorem summable_steps_tendsto
     (u : ℕ → X) (d : ℕ → ℝ)
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ d n)
     (hsum : Summable d) :
-    ∃ x : X, Tendsto u atTop (𝓝 x) := by
+    ∃ x : X, Tendsto u atTop (nhds x) := by
   have hcauchy : CauchySeq u :=
     cauchySeq_of_dist_le_of_summable d hstep hsum
   exact cauchySeq_tendsto_of_complete hcauchy
@@ -52,7 +52,7 @@ theorem geometric_steps_tendsto_in_closed
     (hr : r < 1)
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ C * r ^ n)
     (hmem : ∀ n : ℕ, u n ∈ K) :
-    ∃ x : X, x ∈ K ∧ Tendsto u atTop (𝓝 x) := by
+    ∃ x : X, x ∈ K ∧ Tendsto u atTop (nhds x) := by
   obtain ⟨x, hx⟩ := geometric_steps_tendsto u r C hr hstep
   refine ⟨x, ?_, hx⟩
   exact hK.mem_of_tendsto hx (Eventually.of_forall hmem)
@@ -64,7 +64,7 @@ theorem summable_steps_tendsto_in_closed
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ d n)
     (hsum : Summable d)
     (hmem : ∀ n : ℕ, u n ∈ K) :
-    ∃ x : X, x ∈ K ∧ Tendsto u atTop (𝓝 x) := by
+    ∃ x : X, x ∈ K ∧ Tendsto u atTop (nhds x) := by
   obtain ⟨x, hx⟩ := summable_steps_tendsto u d hstep hsum
   refine ⟨x, ?_, hx⟩
   exact hK.mem_of_tendsto hx (Eventually.of_forall hmem)
@@ -76,7 +76,7 @@ theorem geometric_real_lower_margin
     (hr : r < 1)
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ C * r ^ n)
     (hmargin : ∀ n : ℕ, margin ≤ u n) :
-    ∃ x : ℝ, margin ≤ x ∧ Tendsto u atTop (𝓝 x) := by
+    ∃ x : ℝ, margin ≤ x ∧ Tendsto u atTop (nhds x) := by
   obtain ⟨x, hx⟩ := geometric_steps_tendsto u r C hr hstep
   refine ⟨x, ?_, hx⟩
   exact isClosed_Ici.mem_of_tendsto hx (Eventually.of_forall hmargin)
@@ -85,7 +85,7 @@ theorem geometric_real_lower_margin
 theorem dyadic_steps_tendsto
     (u : ℕ → X) (C : ℝ)
     (hstep : ∀ n : ℕ, dist (u n) (u (n + 1)) ≤ C * (1 / 2 : ℝ) ^ n) :
-    ∃ x : X, Tendsto u atTop (𝓝 x) := by
+    ∃ x : X, Tendsto u atTop (nhds x) := by
   exact geometric_steps_tendsto u (1 / 2 : ℝ) C (by norm_num) hstep
 
 #print axioms geometric_steps_tendsto
