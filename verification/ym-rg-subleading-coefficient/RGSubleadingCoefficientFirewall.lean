@@ -23,10 +23,17 @@ condition is uniquely
 so the corresponding coefficient of `log (1/u)` in a crossing-time asymptotic
 is `1 - c / b^2`.
 
-This file deliberately proves only the exact finite algebra.  It does not
-formalize Taylor remainders, summability over RG steps, a Yang--Mills beta
-function, scheme conversion, an interacting mass gap, or Osterwalder--Schrader
-reconstruction.
+For pure SU(N) Yang--Mills, inserting the universal one- and two-loop beta
+coefficients gives the exact exponent
+
+    b1 / (2 b0^2) = 51 / 121.
+
+Thus a one-loop-only exponential scale `exp(-1/(2 b0 g^2))` misses the universal
+power `(b0 g^2)^(-51/121)` appearing in the two-loop transmutation scale.
+
+This file deliberately proves only exact finite algebra.  It does not formalize
+Taylor remainders, summability over RG steps, scheme conversion, an interacting
+mass gap, or Osterwalder--Schrader reconstruction.
 -/
 
 namespace Millennium.YangMills
@@ -36,7 +43,7 @@ def cubicRGStep (b c u : ℝ) : ℝ := u + b * u^2 + c * u^3
 
 /-- Factorization used to expose the inverse-coupling drift. -/
 theorem cubicRGStep_factor (b c u : ℝ) :
-    cubicRGStep b c u = u * (1 + b * u + c * u^2) := by
+    cubicRGStep b c u = u * (1 + u * b + u^2 * c) := by
   rw [cubicRGStep]
   ring
 
@@ -44,17 +51,17 @@ theorem cubicRGStep_factor (b c u : ℝ) :
 theorem inverseCouplingDrift_exact
     {b c u : ℝ}
     (hu : u ≠ 0)
-    (hden : 1 + b * u + c * u^2 ≠ 0) :
+    (hden : 1 + u * b + u^2 * c ≠ 0) :
     1 / cubicRGStep b c u - 1 / u + b =
-      u * (b^2 + b * c * u - c) / (1 + b * u + c * u^2) := by
+      u * (b^2 + b * c * u - c) / (1 + u * b + u^2 * c) := by
   rw [cubicRGStep_factor]
-  have hstep : u * (1 + b * u + c * u^2) ≠ 0 := mul_ne_zero hu hden
+  have hstep : u * (1 + u * b + u^2 * c) ≠ 0 := mul_ne_zero hu hden
   field_simp [hu, hden, hstep]
   ring
 
 /-- Coefficient multiplying `log u` that cancels the linear defect in the
 standard compensated inverse-coupling potential. -/
-def logCountertermCoeff (b c : ℝ) : ℝ := c / b^2 - 1
+noncomputable def logCountertermCoeff (b c : ℝ) : ℝ := c / b^2 - 1
 
 /-- The uncancelled linear drift for an arbitrary logarithmic coefficient `p`
 is exactly `b` times the coefficient error. -/
@@ -89,10 +96,31 @@ theorem crossingLogCoeff_eq
   rw [logCountertermCoeff]
   ring
 
+/-- Universal one-loop coefficient for pure SU(N), written with a real rank
+parameter only to isolate the exact scalar cancellation. -/
+noncomputable def pureSUBeta0 (N : ℝ) : ℝ :=
+  11 * N / (48 * Real.pi^2)
+
+/-- Universal two-loop coefficient for pure SU(N). -/
+noncomputable def pureSUBeta1 (N : ℝ) : ℝ :=
+  34 * N^2 / (3 * (16 * Real.pi^2)^2)
+
+/-- For every nonzero rank parameter, the universal two-loop transmutation
+exponent is exactly 51/121; all N and pi factors cancel. -/
+theorem pureSU_twoLoopExponent
+    {N : ℝ}
+    (hN : N ≠ 0) :
+    pureSUBeta1 N / (2 * (pureSUBeta0 N)^2) = (51 : ℝ) / 121 := by
+  rw [pureSUBeta0, pureSUBeta1]
+  have hpi : Real.pi ≠ 0 := ne_of_gt Real.pi_pos
+  field_simp [hN, hpi]
+  ring
+
 #print axioms cubicRGStep_factor
 #print axioms inverseCouplingDrift_exact
 #print axioms linearDriftResidual_exact
 #print axioms logCountertermCoeff_unique
 #print axioms crossingLogCoeff_eq
+#print axioms pureSU_twoLoopExponent
 
 end Millennium.YangMills
