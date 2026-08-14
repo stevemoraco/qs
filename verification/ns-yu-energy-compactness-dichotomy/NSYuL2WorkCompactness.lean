@@ -27,7 +27,7 @@ theorem quadratic_product_difference_bound (a b : ℝ) :
   rw [quadratic_product_difference_identity]
   calc
     |(a - b) * a + b * (a - b)|
-        ≤ |(a - b) * a| + |b * (a - b)| := abs_add _ _
+        ≤ |(a - b) * a| + |b * (a - b)| := abs_add_le _ _
     _ = (|a| + |b|) * |a - b| := by
       rw [abs_mul, abs_mul]
       ring
@@ -44,7 +44,7 @@ theorem bilinear_work_difference_bound (rn r tn t : ℝ) :
   rw [bilinear_work_difference_identity]
   calc
     |(rn - r) * tn + r * (tn - t)|
-        ≤ |(rn - r) * tn| + |r * (tn - t)| := abs_add _ _
+        ≤ |(rn - r) * tn| + |r * (tn - t)| := abs_add_le _ _
     _ = |rn - r| * |tn| + |r| * |tn - t| := by
       rw [abs_mul, abs_mul]
 
@@ -53,20 +53,22 @@ then the work error is linear in the same error. This is the finite algebra
 behind freezing a filter ratio first and applying ordinary local compactness. -/
 theorem work_error_linear_budget
     (A B C D du rErr tBound rBound tErr workErr : ℝ)
-    (hA : 0 ≤ A) (hB : 0 ≤ B) (hC : 0 ≤ C) (hD : 0 ≤ D)
-    (hdu : 0 ≤ du)
-    (hrErr : 0 ≤ rErr) (htBound : 0 ≤ tBound)
-    (hrBound : 0 ≤ rBound) (htErr : 0 ≤ tErr)
+    (hA : 0 ≤ A) (hC : 0 ≤ C) (hdu : 0 ≤ du)
+    (htBound : 0 ≤ tBound) (htErr : 0 ≤ tErr)
     (hr : rErr ≤ A * du)
     (htb : tBound ≤ B)
     (hrb : rBound ≤ C)
     (hte : tErr ≤ D * du)
     (hw : workErr ≤ rErr * tBound + rBound * tErr) :
     workErr ≤ (A * B + C * D) * du := by
+  have hAdu : 0 ≤ A * du := mul_nonneg hA hdu
+  have h1 : rErr * tBound ≤ (A * du) * B :=
+    mul_le_mul hr htb htBound hAdu
+  have h2 : rBound * tErr ≤ C * (D * du) :=
+    mul_le_mul hrb hte htErr hC
   calc
     workErr ≤ rErr * tBound + rBound * tErr := hw
-    _ ≤ (A * du) * B + C * (D * du) := by
-      gcongr
+    _ ≤ (A * du) * B + C * (D * du) := add_le_add h1 h2
     _ = (A * B + C * D) * du := by ring
 
 /-- A vanishing stress error alone is not enough if the test amplitude is allowed
