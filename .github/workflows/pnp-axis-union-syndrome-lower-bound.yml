@@ -1,0 +1,62 @@
+name: PNP axis-union syndrome lower bound Lean replay
+
+on:
+  push:
+    branches:
+      - agent/pnp-axis-union-syndrome-lower-bound-20260814
+    paths:
+      - 'verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean'
+      - '.github/workflows/pnp-axis-union-syndrome-lower-bound.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean'
+      - '.github/workflows/pnp-axis-union-syndrome-lower-bound.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden trust escape found'
+            exit 1
+          fi
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/pnp-restriction-averaging
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/pnp-restriction-averaging
+        run: |
+          set -euo pipefail
+          lake env lean PNPAxisUnionSyndromeLowerBound.lean | tee pnp-axis-union-syndrome.log
+          test "$(grep -c '^warning: declaration uses' pnp-axis-union-syndrome.log || true)" -eq 0
