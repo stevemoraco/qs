@@ -1,0 +1,125 @@
+name: YM Kirk v4 short-distance firewall replay
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-short-distance-firewall-20260814-gpt56pro
+    paths:
+      - 'verification/ym-kirk-v4-short-distance/**'
+      - '.github/workflows/ym-kirk-v4-short-distance-firewall.yml'
+  pull_request:
+    paths:
+      - 'verification/ym-kirk-v4-short-distance/**'
+      - '.github/workflows/ym-kirk-v4-short-distance-firewall.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='verification/ym-kirk-v4-short-distance/KirkV4ShortDistanceAsymptoticFirewall.lean'
+          test -s "$SRC"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'forbidden trust carrier found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 6
+          git hash-object "$SRC" | tee source-blob.txt
+          sha256sum "$SRC" | tee source-sha256.txt
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path(
+              'verification/ym-kirk-v4-short-distance/'
+              'KirkV4ShortDistanceAsymptoticFirewall.lean').read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          pathlib.Path('axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler and foundation report
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, re
+          p = pathlib.Path('axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response')
+          r = json.loads(p.read_text())
+          bad = not r.get('okay', False)
+          for bucket in ('errors', 'warnings'):
+              if r.get('lean_messages', {}).get(bucket, []):
+                  bad = True
+              if r.get('tool_messages', {}).get(bucket, []):
+                  bad = True
+          if r.get('failed_declarations', []):
+              bad = True
+          rendered = json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              bad = True
+          infos = r.get('lean_messages', {}).get('infos', [])
+          reports = [x for x in infos if 'depends on axioms' in x or 'does not depend on any axioms' in x]
+          if len(reports) != 6:
+              print(f'expected 6 axiom reports, got {len(reports)}')
+              bad = True
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for report in reports:
+              m = re.search(r'depends on axioms:\s*\[(.*?)\]', report, re.S)
+              if m:
+                  used = set(re.findall(r'[A-Za-z_][A-Za-z0-9_.]*', m.group(1)))
+                  if not used <= allowed:
+                      print('forbidden axioms', sorted(used - allowed))
+                      bad = True
+          if bad:
+              raise SystemExit(1)
+          print('VERIFIED CLEAN: six declarations; accepted foundations only')
+          PY
+
+      - name: Collect receipt
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p replay-receipt
+          cp source-blob.txt replay-receipt/ 2>/dev/null || true
+          cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp axle-response.json replay-receipt/ 2>/dev/null || true
+          git rev-parse HEAD > replay-receipt/commit.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-short-distance-firewall
+          path: replay-receipt/
+          if-no-files-found: error
+          retention-days: 90
