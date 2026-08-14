@@ -17,7 +17,7 @@ theorem downstairs_det_five : chainDet [2, 2, 2, 2] = 5 := by
 /-- The numerator `(8,6,4,2)` solves the downstairs canonical-cycle equations
 after clearing the canonical denominator five. -/
 theorem downstairs_canonical_numerator :
-    (-2 * 8 + 6 = -10) ∧
+    ((-2 : ℤ) * 8 + 6 = -10) ∧
     (8 - 2 * 6 + 4 = 0) ∧
     (6 - 2 * 4 + 2 = 0) ∧
     (4 - 2 * 2 = 0) := by
@@ -44,7 +44,7 @@ theorem minimal_cover_unimodular : chainDet [1, 2, 2, 2] = 1 := by
 
 /-- `(4,3,2,1)` is the integral canonical cycle of the minimal cover graph. -/
 theorem minimal_cover_canonical_cycle :
-    (-4 + 3 = -1) ∧
+    ((-4 : ℤ) + 3 = -1) ∧
     (4 - 2 * 3 + 2 = 0) ∧
     (3 - 2 * 2 + 1 = 0) ∧
     (2 - 2 = 0) := by
