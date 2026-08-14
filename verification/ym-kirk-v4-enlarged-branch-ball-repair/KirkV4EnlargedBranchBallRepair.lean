@@ -44,8 +44,10 @@ theorem affine_contractive_step_preserves_ball
     q * x + C ≤ M := by
   have hqx : q * x ≤ q * M := mul_le_mul_of_nonneg_left hx hq
   calc
-    q * x + C ≤ q * M + C := add_le_add_right hqx C
-    _ ≤ q * M + (1 - q) * M := add_le_add_left hC (q * M)
+    q * x + C ≤ q * M + C := by
+      simpa [add_comm] using add_le_add_right hqx C
+    _ ≤ q * M + (1 - q) * M := by
+      simpa [add_comm] using add_le_add_left hC (q * M)
     _ = M := by ring
 
 theorem affine_contractive_sequence_bounded
@@ -66,7 +68,6 @@ theorem affine_contractive_sequence_bounded
 
 theorem strict_contraction_has_forcing_ball
     (q C : ℝ)
-    (hq0 : 0 ≤ q)
     (hq1 : q < 1)
     (hC0 : 0 ≤ C) :
     ∃ M : ℝ, 0 < M ∧ C ≤ (1 - q) * M := by
@@ -82,7 +83,6 @@ theorem strict_contraction_has_forcing_ball
   have hcalc : (1 - q) * M = C + (1 - q) := by
     dsimp [M]
     field_simp [hne]
-    ring
   rw [hcalc]
   linarith
 
