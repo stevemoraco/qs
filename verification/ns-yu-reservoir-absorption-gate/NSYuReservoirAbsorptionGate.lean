@@ -17,8 +17,8 @@ reservoir.  Its later defect surplus subtracts the `B O` term before taking a
 positive part.  Consequently, vanishing of the post-near-field surplus is not,
 by itself, decay of `O` or an endpoint contraction.
 
-This file proves only finite algebra and a critical dyadic countermodel.  It does
-not formalize Yu's PDE theorem, Navier--Stokes solutions, regularity, or blowup.
+This file proves only finite algebra and critical countermodels.  It does not
+formalize Yu's PDE theorem, Navier--Stokes regularity, or blowup.
 -/
 
 namespace NSYuReservoirAbsorptionGate
@@ -118,6 +118,36 @@ theorem admissibleFilterPenalty_lowerBound
     field_simp [hs0, hr0]] at hbase
   exact hbase
 
+/-! ## Rigid-rotation null mode: full reservoir absorption cannot be universal -/
+
+/-- For the affine rigid rotation `u=(-c*y,c*x,0)`, the symmetric off-diagonal
+strain coefficient is zero. -/
+theorem rigidRotation_symmetricStrain_zero (c : ℝ) :
+    ((-c) + c) / 2 = 0 := by ring
+
+/-- The same rigid rotation has constant vertical vorticity `2c`. -/
+theorem rigidRotation_vorticityZ (c : ℝ) :
+    c - (-c) = 2 * c := by ring
+
+/-- Its finite stationary Navier--Stokes coefficient balance closes exactly with
+pressure gradient `(c^2*x,c^2*y,0)`: the convective acceleration is the opposite
+radial vector.  This is the algebraic core of the smooth rigid-rotation null
+mode; no PDE differentiation is encoded here. -/
+theorem rigidRotation_stationaryBalance (c x y : ℝ) :
+    ((-c * y) * 0 + (c * x) * (-c) + c ^ 2 * x = 0) ∧
+    ((-c * y) * c + (c * x) * 0 + c ^ 2 * y = 0) := by
+  constructor <;> ring
+
+/-- Nonzero rigid rotation therefore has positive constant-vorticity enstrophy
+while the vorticity-gradient cost is zero.  A universal estimate of the form
+`O <= kappa * P` cannot hold before quotienting/removing this coherent null mode. -/
+theorem rigidRotation_positiveReservoir_zeroPalinstrophy
+    (c kappa : ℝ) (hc : c ≠ 0) :
+    0 < (2 * c) ^ 2 ∧ ¬ ((2 * c) ^ 2 ≤ kappa * 0) := by
+  have h2c : 2 * c ≠ 0 := mul_ne_zero (by norm_num) hc
+  have hpos : 0 < (2 * c) ^ 2 := sq_pos_of_ne_zero h2c
+  exact ⟨hpos, by intro h; nlinarith⟩
+
 /-! ## Critical finite-energy normalization firewall -/
 
 def dyadicShellEnergy (k : ℕ) : ℝ := ((1 : ℝ) / 2) ^ k
@@ -166,6 +196,10 @@ theorem finiteEnergy_does_not_force_criticalNormalizedDecay (N : ℕ) :
 #print axioms strictEndpointDrop_of_reservoirFraction
 #print axioms reparameterizedFilterPenalty_lowerBound
 #print axioms admissibleFilterPenalty_lowerBound
+#print axioms rigidRotation_symmetricStrain_zero
+#print axioms rigidRotation_vorticityZ
+#print axioms rigidRotation_stationaryBalance
+#print axioms rigidRotation_positiveReservoir_zeroPalinstrophy
 #print axioms criticalNormalizedEnergy_plateau
 #print axioms dyadicShellEnergy_sum
 #print axioms dyadicShellEnergy_uniform_budget
