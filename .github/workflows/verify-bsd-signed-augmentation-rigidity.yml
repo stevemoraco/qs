@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=BSDSignedAugmentationRigidity.lean
-          test "$(git hash-object "$file")" = "a180e7bc52fa4648f36ba04748bd2a73cebd65bd"
+          test "$(git hash-object "$file")" = "6e448472542a3f0ec51a9a3bcd815bedb5f5caff"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
