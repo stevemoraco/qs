@@ -46,9 +46,9 @@ theorem summable_of_summable_block_majorant
 /-- Once a cumulative nonnegative debt is bounded above by a finite total,
 every partial debt is uniformly bounded. -/
 theorem partial_debt_bounded
-    (partial : ℕ → ℝ) (total : ℝ)
-    (h : ∀ N, partial N ≤ total) :
-    ∀ N, partial N ≤ total := h
+    (partialDebt : ℕ → ℝ) (total : ℝ)
+    (h : ∀ N, partialDebt N ≤ total) :
+    ∀ N, partialDebt N ≤ total := h
 
 /-- A bounded nonnegative debt is automatically subpower at the elementary
 comparison level: every positive power threshold above the bound dominates it. -/
