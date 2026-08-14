@@ -24,26 +24,26 @@ theorem strict_transform_square_ledger :
 minimal index-one cover graph. -/
 theorem fundamental_cycle_intersections :
     ((-1 : ℤ) + 1 = 0) ∧
-    (1 - 2 + 1 = 0) ∧
-    (1 - 2 + 1 = 0) ∧
-    (1 - 2 + 1 = 0) ∧
-    (1 - 2 + 1 = 0) ∧
-    (1 - 4 + 1 + 1 + 1 = 0) ∧
-    (1 - 2 + 1 = 0) ∧
-    (1 - 2 = -1) := by
+    ((1 : ℤ) - 2 + 1 = 0) ∧
+    ((1 : ℤ) - 2 + 1 = 0) ∧
+    ((1 : ℤ) - 2 + 1 = 0) ∧
+    ((1 : ℤ) - 2 + 1 = 0) ∧
+    ((1 : ℤ) - 4 + 1 + 1 + 1 = 0) ∧
+    ((1 : ℤ) - 2 + 1 = 0) ∧
+    ((1 : ℤ) - 2 = -1) := by
   norm_num
 
 /-- The integral vector `(8,7,6,5,4,3,2,1,2,1,2,1)` solves the canonical
 intersection equations on the minimal cover graph. -/
 theorem canonical_cycle_intersections :
     ((-8 : ℤ) + 7 = -1) ∧
-    (8 - 2 * 7 + 6 = 0) ∧
-    (7 - 2 * 6 + 5 = 0) ∧
-    (6 - 2 * 5 + 4 = 0) ∧
-    (5 - 2 * 4 + 3 = 0) ∧
-    (4 - 4 * 3 + 2 + 2 + 2 = -2) ∧
-    (3 - 2 * 2 + 1 = 0) ∧
-    (2 - 2 * 1 = 0) := by
+    ((8 : ℤ) - 2 * 7 + 6 = 0) ∧
+    ((7 : ℤ) - 2 * 6 + 5 = 0) ∧
+    ((6 : ℤ) - 2 * 5 + 4 = 0) ∧
+    ((5 : ℤ) - 2 * 4 + 3 = 0) ∧
+    ((4 : ℤ) - 4 * 3 + 2 + 2 + 2 = -2) ∧
+    ((3 : ℤ) - 2 * 2 + 1 = 0) ∧
+    ((2 : ℤ) - 2 * 1 = 0) := by
   norm_num
 
 /-- The eight nested layer vectors add coordinatewise to the canonical vector. -/
