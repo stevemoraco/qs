@@ -1,0 +1,78 @@
+name: Yang-Mills Kirk v4 time-zero density firewall
+
+on:
+  push:
+    branches:
+      - ym-kirk-v4-source-access-20260814
+    paths:
+      - 'verification/ym-kirk-v4-time-zero-density/**'
+      - '.github/workflows/ym-kirk-v4-time-zero-density.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=verification/ym-kirk-v4-time-zero-density/TimeZeroDensityFirewall.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('verification/ym-kirk-v4-time-zero-density/TimeZeroDensityFirewall.lean')
+          s = p.read_text()
+          s = re.sub(r'/-.*?-/', '', s, flags=re.S)
+          s = re.sub(r'--.*$', '', s, flags=re.M)
+          forbidden = [
+              r'\bsorry\b', r'\badmit\b', r'\bsorryAx\b',
+              r'(?m)^\s*(?:axiom|constant|opaque|unsafe)\b',
+              r'\bnative_decide\b', r'Lean\.ofReduceBool'
+          ]
+          for pattern in forbidden:
+              if re.search(pattern, s):
+                  raise SystemExit(f'forbidden token: {pattern}')
+          print('trust scan passed')
+          PY
+          sha256sum "$f" | tee source.sha256
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fresh foundation-only kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.txt
+          f=verification/ym-kirk-v4-time-zero-density/TimeZeroDensityFirewall.lean
+          lean -DwarningAsError=true "$f" 2>&1 | tee lean-output.txt
+          ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' lean-output.txt
+          test "$(grep -c 'does not depend on any axioms' lean-output.txt)" -eq 8
+
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-time-zero-density-replay
+          path: |
+            verification/ym-kirk-v4-time-zero-density/TimeZeroDensityFirewall.lean
+            source.sha256
+            lean-version.txt
+            lean-output.txt
+          if-no-files-found: error
