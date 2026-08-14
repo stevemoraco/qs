@@ -105,7 +105,7 @@ theorem relative_perturbation_freezes_frame
       gamma * (y2 ^ 2 + y3 ^ 2) ≤ 2 * delta := hbudget
       _ ≤ 2 * (eta * gamma) := hdelta2
       _ = gamma * (2 * eta) := by ring
-  exact (mul_le_mul_left hgamma).mp hmul
+  exact le_of_mul_le_mul_left hmul hgamma
 
 /-- Abstract shell-comparison interface.  Once harmonic scale separation gives
 `scaledVariation <= theta * visibleScale` and spectral visibility gives
