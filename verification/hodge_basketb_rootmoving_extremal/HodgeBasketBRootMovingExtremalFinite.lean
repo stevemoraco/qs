@@ -60,6 +60,16 @@ theorem no_offroot_units_forces_all_five
     h = 5 := by
   omega
 
+/-- A four-point infinitely-near chain along one elliptic fibre cannot fit
+inside a pencil class whose total intersection with that fibre is three. -/
+theorem four_chain_exceeds_degree_three
+    (chainLength fibreDegree : Nat)
+    (hchain : chainLength = 4)
+    (hdegree : fibreDegree = 3)
+    (hrequired : chainLength ≤ fibreDegree) :
+    False := by
+  omega
+
 /-- Finite terminal composition of the root-moving resource ledger. The
 geometric hypotheses that produce `hk`, `hfive`, and `hoffroot` are deliberately
 kept explicit rather than hidden in this arithmetic theorem. -/
@@ -83,6 +93,7 @@ theorem root_moving_extremal
 #print axioms HodgeBasketBRootMovingExtremalFinite.nonzero_three_torsion_not_two_torsion
 #print axioms HodgeBasketBRootMovingExtremalFinite.root_moving_forces_six
 #print axioms HodgeBasketBRootMovingExtremalFinite.no_offroot_units_forces_all_five
+#print axioms HodgeBasketBRootMovingExtremalFinite.four_chain_exceeds_degree_three
 #print axioms HodgeBasketBRootMovingExtremalFinite.root_moving_extremal
 
 end HodgeBasketBRootMovingExtremalFinite
