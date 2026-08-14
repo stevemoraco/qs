@@ -34,7 +34,7 @@ jobs:
             echo 'Forbidden trust escape found' >&2
             exit 1
           fi
-          test "$(grep -c '^#print axioms ' "$SRC")" = 7
+          test "$(grep -c '^#print axioms ' "$SRC")" = 8
 
       - name: Execute exact source with AXLE Lean 4.30
         shell: bash
