@@ -14,6 +14,12 @@ defect but zero kernel coupling.  Hence Yu's one-way estimate from positive
 near-field work to a pairwise direction defect cannot be inverted by a
 universal positive coercivity constant.
 
+The final two identities retain the exact work-visible geometry: after
+multiplying the remote direction by its vorticity magnitude, the cross-product
+projection of the direction difference is exactly the same projection of the
+full vorticity increment.  Thus the kernel only sees a projected increment, not
+the whole angular defect.
+
 This file does not formalize Yu's PDE theorem, filtered vorticity, singular
 solutions, Navier--Stokes regularity, or blow-up.
 -/
@@ -76,10 +82,34 @@ theorem zero_coupling_does_not_force_zero_defect :
   rw [explicit_direction_defect_sq] at hzero
   norm_num at hzero
 
+/-- The coordinate cross product `x × z` is exactly orthogonal to `x`. -/
+theorem cross_projection_annihilates_local_direction
+    (x1 x2 x3 z1 z2 z3 : ℝ) :
+    (x2*z3 - x3*z2)*x1 +
+      (x3*z1 - x1*z3)*x2 +
+      (x1*z2 - x2*z1)*x3 = 0 := by
+  ring
+
+/-- If local and remote vorticities are `a*x` and `b*y`, respectively, then
+`b (x×z)·(y-x)` is exactly `(x×z)·(b*y-a*x)`.  The exact kernel therefore sees
+only the projected vorticity increment; components in its nullspace need not
+be geometrically rigid. -/
+theorem magnitude_weighted_direction_projection_is_vorticity_increment
+    (a b x1 x2 x3 z1 z2 z3 y1 y2 y3 : ℝ) :
+    b * ((x2*z3 - x3*z2)*(y1-x1) +
+      (x3*z1 - x1*z3)*(y2-x2) +
+      (x1*z2 - x2*z1)*(y3-x3)) =
+    (x2*z3 - x3*z2)*(b*y1-a*x1) +
+      (x3*z1 - x1*z3)*(b*y2-a*x2) +
+      (x1*z2 - x2*z1)*(b*y3-a*x3) := by
+  ring
+
 #print axioms explicit_direction_defect_sq
 #print axioms explicit_yu_kernel_coupling_zero
 #print axioms positive_direction_defect_with_zero_coupling
 #print axioms no_positive_reverse_coercivity
 #print axioms zero_coupling_does_not_force_zero_defect
+#print axioms cross_projection_annihilates_local_direction
+#print axioms magnitude_weighted_direction_projection_is_vorticity_increment
 
 end NSYuDirectionDefectReverseCoercivityFirewall
