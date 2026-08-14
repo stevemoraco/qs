@@ -46,7 +46,6 @@ ordinary normalized coefficient estimate with the same tube radius. -/
 theorem normalized_factorial_cauchy_bound_standalone
     (d : ℕ → ℝ)
     (C rho : ℝ)
-    (hrho : 0 < rho)
     (hd : ∀ q : ℕ,
       |d q| ≤ C * (q.factorial : ℝ) / rho ^ q) :
     ∀ q : ℕ,
@@ -76,7 +75,7 @@ theorem factorial_cauchy_coefficients_have_common_positive_radius_standalone
   exact cauchy_coefficients_summable_at_smaller_radius_standalone
     (fun q : ℕ => d q / (q.factorial : ℝ)) C (rho / 2) rho
     (by linarith) hrho (by linarith)
-    (normalized_factorial_cauchy_bound_standalone d C rho hrho hd)
+    (normalized_factorial_cauchy_bound_standalone d C rho hd)
 
 /-- A uniformly factorial-Cauchy family shares the same half-radius. -/
 theorem uniform_factorial_cauchy_family_has_common_positive_radius_standalone
@@ -96,7 +95,7 @@ theorem uniform_factorial_cauchy_family_has_common_positive_radius_standalone
   exact cauchy_coefficients_summable_at_smaller_radius_standalone
     (fun q : ℕ => d i q / (q.factorial : ℝ)) C (rho / 2) rho
     (by linarith) hrho (by linarith)
-    (normalized_factorial_cauchy_bound_standalone (d i) C rho hrho (hd i))
+    (normalized_factorial_cauchy_bound_standalone (d i) C rho (hd i))
 
 #print axioms cauchy_coefficients_summable_at_smaller_radius_standalone
 #print axioms normalized_factorial_cauchy_bound_standalone
