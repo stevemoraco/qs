@@ -1,0 +1,1670 @@
+===== (HT5) hit 1 at 236689 =====
+xact normalized-score identity
+                                                                                    
+                      d                                d                 d
+                         log wp,η (U (t)) = EU (t),η −    Qref + Rreg +    log Jcomp ,
+                                                                     
+                      dt                               dt               dt
+where Jcomp denotes the complete Haar, coarea, coordinate-return, and owned normalization factor. The
+support-summed first-derivative form of (42) bounds the reference score by C(u−1 + 1); (43) bounds the
+regular score by a smaller fixed term.
+   On a collar or irregular branch the same identity is applied to the recombined real integral. For every
+owned core meeting the pivot, the plateau and differentiated total-variation theorems give the displayed
+normalized ratio
+
+                        X ( · ; U, η)∥TV
+                   ∥∇U λbad                                                  X
+                                         ≤ C(u−1 + 1) bu (X),          sup         bu (X) ≤ C.           (HT3)
+                        GX (U, η)                                       p
+                                                                             X∋p
+
+Indeed the numerator is the same charged action exponential as the undifferentiated bad row times
+                                                                                                  2
+a fixed polynomial in u−1 , while the denominator is the trial-ball lower bound [c0 ud0 /2 e−CRg ]|X| ; the
+action-dominance inequality absorbs that polynomial and the trial loss into bu (X). For a one-core reference
+there is no Gaussian cross word; the ratio is therefore taken before the remaining product-reference
+variables are integrated. Cross-core words remain in the explicit connected row. Summing (HT3) proves
+the collar/irregular score row.
+   Higher pivot derivatives are obtained by differentiating the normalized-score identity. They are finite
+Bell polynomials in derivatives of the complete local action, Jacobian, and normalized cumulants. The
+fixed-group atlas and the C ∞ splice templates supply these derivatives through order 2sG ; the plateau
+denominator and differentiated total-variation bounds control each normalized cumulant without a
+core-volume factor. Thus the hth derivative costs only a fixed polynomial in u−1 .
+   Because u ranges in the fixed compact interval I⋆ , all remaining finite powers of u−1 are absorbed into
+the displayed CG,h (1 + u−h ) hierarchy. A finite atlas covers the one-pivot compact fiber, so the score
+constants are uniform in U , exterior data, volume, and preceding weak depth. Integrating the first score
+along a geodesic of length at most diam G proves the oscillation bound. Marking one fixed factor uses
+the corresponding marked rows.
+   For a finite family of active straight macro-paths, keep every fine link on those active paths in its
+original link coordinate. An active path carries one nontrivial retained Peter–Weyl coefficient, or one
+bounded scalar probe whose first derivative at the origin is centered. Choose live pivots P = {p1 , . . . , pN }
+among the original links of the active paths, with mutually disjoint buffered neighborhoods separated
+by distance R and separated from all path endpoints. Condition on every nonpivot fine link, every link
+outside the active paths, and all exterior/source data; denote this collection by η. Do not condition on a
+retained path product carrying an active coefficient or probe.
+   Assign every physical factor by its incidence in the original fine-link support: factors meeting no live
+pivot enter H0 , complete owned factors meeting exactly pi enter the ith one-pivot weight, and connected
+factors meeting at least two live pivots enter the multipivot remainder. The active retained carriers are
+distinguished insertions and are never absorbed into a one-pivot density or counted as physical activities.
+   Define
+
+              Ω(u) := CΩ (ū)(u−1 + 1),                                                                    (45)
+                         h                                                                     i
+             ∆R (u) := C∆ (u−1 + 1)e−mref cp R + (uω0 + u3 )e−areg cp R + u−p e−c/u e−airr cp R ,          (46)
+
+where cp > 0 is the original-support separation constant. The constant CΩ (ū) may depend on the fixed
+crossing interval I⋆ , equivalently on its positive lower endpoint ū; downstream arguments consume only
+the finiteness of Ω⋆ , never uniformity as ū ↓ 0.
+
+
+                                                      56
+Theorem 6.10 (Carrier-adapted two-scale Haar-pivot landing). For every u ∈ I⋆ , every endpoint in C⋆ ,
+every finite active carrier family, every separated pivot family on the active paths, and every exterior
+datum, the exact pre-marginal pivot integral has the factorization
+          Z                        N
+                                   Y                              N
+                                                                  Y              Z                               N
+                                                                                                                 O
+              Φact (U ) e
+                        −H(U ;η)
+                                         dmG (Upi ) = e −H0 (η)
+                                                                        Zi (η)       Φact (U )e   −V≥2 (UP ;η)
+                                                                                                                       νi,η (dUpi ),    (47)
+                                   i=1                            i=1                                            i=1
+
+where
+                                            νi,η (dU ) = Zi (η)−1 e−hi (U ;η) dmG (U )
+contains every complete reference, regular, and irregular factor whose original fine-link support meets
+exactly pi . The active carrier Φact is left outside the reference. Moreover
+                                                               dνi,η
+                                                     osc log         ≤ Ω(u),                                                            (48)
+                                                               dmG
+and the connected activities of V≥2 satisfy, for every fixed λ > 0 and all sufficiently large R,
+        X               h ′                           ′                         ′
+                                                                                                   i
+  sup         eλ|IP (A)| earef diam A VAref C 2sG + eareg |A| ∥VAreg ∥C 2sG + eairr |A| VAirr [2s ] ≤ Cλ ∆R (u),
+                                                                                                                   G
+    i
+            A∋pi
+         |IP (A)|≥2
+                                                                                                                                       (HT5)
+where
+                               0 < a′ref < mref ,         0 < a′reg < areg ,           0 < a′irr < airr .
+The same row holds after zero, one, or two physical-source marks. If pi lies on an active path γ, then for
+fixed nonpivot links
+                                            Wγ = Bi Up±1
+                                                       i
+                                                         Ci ,                                         (49)
+with Bi , Ci independent of Upi . Thus every uncovered live pivot acts on the active carrier under the same
+exact product reference used in (47).
+Proof. Before any path-product coordinate is introduced, the Wilson base measure is the product of
+normalized Haar measures on the original fine links. Conditioning on all nonpivot links therefore leaves
+one exact
+       P Haar factor for each live pivot. Fubini and exact ownership split the physical interaction into
+H0 + i hi + V≥2 and give (47). The active carrier is not part of the physical interaction, so it remains a
+distinguished insertion.
+   The one-pivot oscillation is precisely the complete one-pivot ledger proved above; normalization changes
+only an U -independent scalar. For the multipivot row, every activity is reported in its original connected
+fine-link support. Split it by the three species in Proposition 6.8. A reference factor meeting separated
+pivots has diam A ≥ cp R(|IP (A)| − 1); a regular or irregular connected factor has |A| ≥ cp R(|IP (A)| − 1).
+Reserve respectively mref − a′ref , areg − a′reg , and airr − a′irr in the three input rows. After multiplying
+by the pivot charge eλ|IP (A)| , the reserved exponent absorbs that charge for sufficiently large finite R
+and yields exactly the three terms of ∆R (u). Thus no diameter estimate is used to pay a spanning-tree
+weight. Coordinate substitutions on inactive paths are independent of all live pivots and cannot create
+additional pivot incidence. Physical-source marks of order at most two change only Cλ ; the independent
+pivot derivatives through order 2sG are already included in the three norms in (HT5).
+   Finally, on an active path no anchor is reconstructed: all path links remain original variables. Splitting
+the ordered path product immediately gives (49). Haar invariance therefore annihilates the Haar part of
+every nontrivial carrier at an uncovered pivot under the same integral in which the product reference was
+obtained.
+   Set
+                            Ω⋆ := sup Ω(u) < ∞,             ϵ⋆ := e−Ω⋆ > 0,              θ⋆ := 1 − ϵ⋆ < 1.
+                                   u∈I⋆
+
+Corollary 6.11 (Correct one-pivot minorization). Every one-pivot reference satisfies
+
+                                                          νi,η ≥ ϵ⋆ mG ,
+
+and its centered Peter–Weyl operator has norm at most θ⋆ . The constant may be exponentially small in
+1/ū; only strict positivity, not weak-coupling smallness, is consumed. A normalized density whose log
+oscillation is at most Ω⋆ is bounded below by e−Ω⋆ times Haar. Split off that Haar part.
+
+
+                                                                  57
+Lemma 6.12 (Finite parameter order for the two-scale landing). Choose λ > − log θ⋆ .                    Since
+supu∈I⋆ ∆R (u) → 0 as R → ∞, a finite R0 exists such that
+                                1 1
+                                                                           
+                                                                                  3/4
+         Cλ sup ∆R0 (u) ≤ min    , − log θ⋆ ,      θ̄ := θ⋆ exp Cλ sup ∆R0 (u) ≤ θ⋆ < 1.
+            u∈I⋆                4 4                                u∈I⋆
+
+After fixing R0 , a finite number of pivots N makes (1 + N )s θ̄N smaller than any prescribed tolerance,
+and a finite dyadic L realizes those pivots with separation R0 .
+Proof. The first assertion follows from the three exponential R factors in (46). Since θ⋆ < 1, choose the
+multipivot row smaller than − 12 log θ⋆ /Cλ . Exponential decay in N then beats every fixed polynomial.
+The geometry requires only a finite path length once R0 , N are fixed.
+
+6.4    Finite-volume Perron input
+Proposition 6.13 (Finite-volume Perron input from two-scale landing). For every finite spatial volume,
+the one-step matching transfer kernel relative to product Haar is continuous, symmetric, and strictly
+positive. If MΛ is the finite number of one-link updates in a sweep, then
+                                                          −1
+                                          KL (x, y) ≥ ϵM
+                                                       ⋆ ZΛ,L > 0.
+                                                        Λ
+
+
+
+The compact transfer operator has a simple maximal eigenvalue and a unique strictly positive Perron
+eigenfunction. No volume-uniform lower bound for the complete kernel is asserted.
+Proof. Apply Theorem 6.10 with one live pivot at a time. Corollary 6.11 gives the finite-volume product
+lower bound. The aligned half-step is SL∗ SL , so the transfer is positive and self-adjoint. Jentzsch–Perron
+applies in finite volume.
+
+6.5    Exact Haar–optical matching law
+The matching macroblock used after the compact first crossing is the exact pushforward by oriented
+length-L path products. It is useful to distinguish the coordinates that define the map from the coordinates
+used to estimate a particular retained coefficient.
+   Fix one proof color. Its straight macro-paths are pairwise edge-disjoint and have mutually disjoint
+buffered interiors. For one path γ = (e1 , . . . , eL ) define
+                                            Pγ (U ) = Ue1 · · · UeL .
+The retained macro-link is Wγ = Pγ (U ). For paths not carrying an active coefficient one may use the
+standard coordinates
+                            Wγ = Pγ (U ),      Zγ,k = Uek , 2 ≤ k ≤ L,
+with
+                                         Ue1 = Wγ (Zγ,2 · · · Zγ,L )−1 .
+The full map BL is the finite composition of the colorwise pushforwards, with the reflection plane on
+macro-cell boundaries.
+Lemma 6.14 (Unit-Haar macroblock disintegration). For every path,
+                                L
+                                Y                              L
+                                                               Y
+                                      dmG (Uek ) = dmG (Wγ )         dmG (Zγ,k ).
+                                k=1                            k=2
+
+Consequently the simultaneous path-product map has unit Haar Jacobian, is gauge covariant at path
+endpoints, and intertwines aligned reflection.
+Proof. For fixed details, Ue1 7→ Wγ is right multiplication by a fixed group element. Haar invariance
+proves the identity. Edge-disjointness tensorizes it, gauge transformations telescope, and reflection reverses
+and inverts the product.
+Definition 6.15 (Carrier-adapted hybrid chart). Let A be the finite set of retained macro-links carrying
+nontrivial Peter–Weyl labels, bounded probes, or retained-source derivatives in the coefficient under study.
+On every path γ ∈ A retain the original link coordinates
+                                         Xγ,k = Uek ,        1 ≤ k ≤ L,
+and regard Wγ = Pγ (X) only as the output map. On paths γ ∈        / A use the standard (Wγ , Zγ,2:L )
+coordinates. Choose live pivots only among the X variables on active paths.
+
+
+                                                        58
+Lemma 6.16 (Exact hybrid Haar disintegration). For every active set A, the mixed coordinate map has
+unit Haar Jacobian:
+                                                      "             L
+                                                                                 #
+                YY              YY                 Y               Y
+                    dmG (Ue ) =        dmG (Xγ,e )      dmG (Wγ )     dmG (Zγ,k ) .            (50)
+                  γ e∈γ              γ∈A e∈γ                γ ∈A
+                                                              /            k=2
+
+Conditioning on all variables except separated live pivots on the active paths leaves the exact product Haar
+law on those pivots. No active retained product is conditioned.
+Proof. Use the identity of Lemma 6.14 only on inactive paths and the identity map on active paths.
+Same-color paths are edge-disjoint, so the factors tensorize. The final conditional statement is then
+immediate from (50).
+
+Lemma 6.17 (Carrier incidence and original-support locality). Let p be a live pivot on an active path γ.
+With all other active path links fixed,
+                                        Wγ = Bp Xp±1 Cp ,                                           (51)
+where Bp , Cp are independent of Xp . If a connected physical activity with original reported support Y
+meets k separated live pivots, then
+                                          τ (Y ) ≥ cp R(k − 1).                                     (52)
+Anchor reconstruction on an inactive path cannot alter the activity’s live pivot incidence.
+Proof. Equation (51) is the ordered product split before and after p. The second statement follows by
+joining the k pivot buffers inside the connected reported support. Every inactive-path coordinate is a
+function only of links on that inactive path; because no live pivot lies there, its substitution cannot create
+dependence on a live pivot.
+Lemma 6.18 (Exact carrier-adapted pivot product reference). Fix an active coefficient set A and
+condition on all nonpivot variables in the hybrid chart, denoting them by η. Split the physical interaction
+by original-support pivot incidence,
+                                              X
+                                H = H0 (η) +      hi (Xpi ; η) + V≥2 (XP ; η).
+                                                   i
+
+Then the live pivots have exact product Haar base and the normalized product reference
+                                           O       e−hi (X;η)
+                                 νη(0) =                              dmG (X)
+                                                 e−hi (Y ;η) dmG (Y )
+                                               R
+                                           i   G
+
+is exact. Every active retained carrier remains a function of the original active-path links and varies
+through each uncovered pivot as in (51). In particular, the product reference and the Haar-through-carrier
+cancellation belong to one and the same conditional integral.
+Proof. Apply Lemma 6.16, then split and normalize the physical factors by exact ownership. The active
+retained coordinates were never conditioned and no anchor was reconstructed on their paths. Lemma 6.17
+gives the final statement.
+Corollary 6.19 (Definition, exactness, and coefficientwise use of BL ). The matching macroblock BL is
+a well-defined finite exact pushforward on the compact first-crossing class. For every Fourier, source-
+marked, or normalized-probe coefficient of its retained density, the active paths may be analyzed in the
+carrier-adapted hybrid chart without changing that coefficient. The charged pivot expansion uses precisely
+the reference of Lemma 6.18; gauge covariance, reflection, and dyadic composition remain properties of
+the underlying exact pushforward.
+6.5.1 Compact collect with optical field live
+The matching theorem is now proved on one exact joint law, before the normal/optical variables are
+marginalized. This is the decisive ordering. The compact retained variables are reduced conditionally by
+Haar–pivot integration; the resulting activities remain functions of the complete optical field; and only
+then is the connected logarithm taken by the marked Gaussian forest theorem. Thus no retained density,
+latent mixture, or residual-only gas is inserted between the physical law and the connected source kernel.
+
+
+
+                                                       59
+6.5.2 One exact joint matching law
+Let W denote the compact retained variables in the exact Karcher chart and let ζ denote its complete
+optical normal field. At finite volume and with physical source J, Theorem 4.13, Theorem 3.28, and the
+exact owner map give
+                              dµJ (W, ζ) = Z(J)−1 dγopt (ζ) dH(W ) e−VJ (W,ζ) .                   (53)
+Here dH(W ) is product normalized Haar on the compact retained links. Indeed, ρ0,j in Theorem 4.13 owns
+only the field-independent linear Jacobian and empty-support normalization; Proposition 6.8 absorbs that
+scalar into Z(J) and restores product Haar. Every nonempty retained reference factor remains explicit in
+VJ . Every nonempty Haar, coarea, chart, determinant, Schur, regular, irregular, seam, wrapping, and
+source occurrence belongs to exactly one factor of VJ . Every scalar depending on an unintegrated variable
+remains inside (53). Define only the complete normalized source logarithm
+
+                                          W(J) = log Z(J) − log Z(0).                                   (54)
+
+No marginal density is logarithmized.
+Lemma 6.20 (Exact Haar projection contraction). Let Pp denote Haar averaging in one live pivot
+variable and Qp = I − Pp . For every complete one-pivot reference of Theorem 6.10, Corollary 6.11 gives
+the exact decomposition
+
+                         νp,η = ϵ⋆ mG + θ⋆ νep,η ,       0 < ϵ⋆ < 1,      θ⋆ = 1 − ϵ⋆ < 1.
+
+Consequently its convolution/conditional-expectation operator satisfies
+
+                        max ∥Tp,η Qp ∥L∞ →L∞ , ∥Tp,η Qp ∥L2 (mG )→L2 (mG ) ≤ θ⋆ .                       (55)
+                             
+
+
+This is the complete nonvacuum projection estimate, not a coefficientwise claim. It is group-generic.
+Source marks are inserted later as marked vertices and may remove at most one unmarked payment per
+mark.
+
+Proof. For Pp f = 0,
+                                     Tp,η f = ϵ⋆ Pp f + θ⋆ Te
+                                                            νp,η
+                                                                 f = θ⋆ Te
+                                                                         νp,η
+                                                                              f.
+Translation by the fixed left and right carrier factors is an isometry in both norms. The marked statement
+is exactly the one/two-mark ownership row of Theorem 6.10.
+
+6.5.3 Final compact Haar-pivot collect
+In (53), write U for the compact matching links and keep the complete optical field ζ and the actual
+local source roots unchanged. Apply the exact compact-only path-product block BL to U as a finite
+matching operation. Corollary 6.19 permits coefficientwise use of its hybrid chart, while every compact
+path detail is integrated in the same complete joint partition function. No optical variable is identified
+with a compact path detail, and no source is assumed fiber-constant under BL . The block is used once to
+place many same-law Haar pivots inside each coarse compact edge.
+Definition 6.21 (Matching-stage tri-graded norm). For a compact-stage activity family F = (FX ) and
+fixed positive mark weights σpiv , σζ , σJ , set
+                                                                  |α|
+                                               X                 σpiv σζr σJq
+                       ∥F ∥a;2sG |3|2 := sup         ea|X| max                 α
+                                                                              Dpiv Dζr DJq FX .         (56)
+                                         p               |α|≤2sG |α|! r! q!
+                                               X∋p       0≤r≤3
+                                                         0≤q≤2
+
+Here Dpiv differentiates only the declared live original-link pivot variables. The derivative Dζ is a Fréchet
+derivative in the unintegrated optical coordinate at the compact-collect call site, and DJ differentiates
+the physical source. The three indices are independent; no optical derivative is counted as a structural
+pivot derivative or as a source leaf. The pivot order 2sG is the fixed-group Sobolev order required by the
+product Peter–Weyl landing; the optical order three and the physical-source order two 
+
+===== (HT5) hit 2 at 238793 =====
+, Jacobian, and normalized cumulants. The
+fixed-group atlas and the C ∞ splice templates supply these derivatives through order 2sG ; the plateau
+denominator and differentiated total-variation bounds control each normalized cumulant without a
+core-volume factor. Thus the hth derivative costs only a fixed polynomial in u−1 .
+   Because u ranges in the fixed compact interval I⋆ , all remaining finite powers of u−1 are absorbed into
+the displayed CG,h (1 + u−h ) hierarchy. A finite atlas covers the one-pivot compact fiber, so the score
+constants are uniform in U , exterior data, volume, and preceding weak depth. Integrating the first score
+along a geodesic of length at most diam G proves the oscillation bound. Marking one fixed factor uses
+the corresponding marked rows.
+   For a finite family of active straight macro-paths, keep every fine link on those active paths in its
+original link coordinate. An active path carries one nontrivial retained Peter–Weyl coefficient, or one
+bounded scalar probe whose first derivative at the origin is centered. Choose live pivots P = {p1 , . . . , pN }
+among the original links of the active paths, with mutually disjoint buffered neighborhoods separated
+by distance R and separated from all path endpoints. Condition on every nonpivot fine link, every link
+outside the active paths, and all exterior/source data; denote this collection by η. Do not condition on a
+retained path product carrying an active coefficient or probe.
+   Assign every physical factor by its incidence in the original fine-link support: factors meeting no live
+pivot enter H0 , complete owned factors meeting exactly pi enter the ith one-pivot weight, and connected
+factors meeting at least two live pivots enter the multipivot remainder. The active retained carriers are
+distinguished insertions and are never absorbed into a one-pivot density or counted as physical activities.
+   Define
+
+              Ω(u) := CΩ (ū)(u−1 + 1),                                                                    (45)
+                         h                                                                     i
+             ∆R (u) := C∆ (u−1 + 1)e−mref cp R + (uω0 + u3 )e−areg cp R + u−p e−c/u e−airr cp R ,          (46)
+
+where cp > 0 is the original-support separation constant. The constant CΩ (ū) may depend on the fixed
+crossing interval I⋆ , equivalently on its positive lower endpoint ū; downstream arguments consume only
+the finiteness of Ω⋆ , never uniformity as ū ↓ 0.
+
+
+                                                      56
+Theorem 6.10 (Carrier-adapted two-scale Haar-pivot landing). For every u ∈ I⋆ , every endpoint in C⋆ ,
+every finite active carrier family, every separated pivot family on the active paths, and every exterior
+datum, the exact pre-marginal pivot integral has the factorization
+          Z                        N
+                                   Y                              N
+                                                                  Y              Z                               N
+                                                                                                                 O
+              Φact (U ) e
+                        −H(U ;η)
+                                         dmG (Upi ) = e −H0 (η)
+                                                                        Zi (η)       Φact (U )e   −V≥2 (UP ;η)
+                                                                                                                       νi,η (dUpi ),    (47)
+                                   i=1                            i=1                                            i=1
+
+where
+                                            νi,η (dU ) = Zi (η)−1 e−hi (U ;η) dmG (U )
+contains every complete reference, regular, and irregular factor whose original fine-link support meets
+exactly pi . The active carrier Φact is left outside the reference. Moreover
+                                                               dνi,η
+                                                     osc log         ≤ Ω(u),                                                            (48)
+                                                               dmG
+and the connected activities of V≥2 satisfy, for every fixed λ > 0 and all sufficiently large R,
+        X               h ′                           ′                         ′
+                                                                                                   i
+  sup         eλ|IP (A)| earef diam A VAref C 2sG + eareg |A| ∥VAreg ∥C 2sG + eairr |A| VAirr [2s ] ≤ Cλ ∆R (u),
+                                                                                                                   G
+    i
+            A∋pi
+         |IP (A)|≥2
+                                                                                                                                       (HT5)
+where
+                               0 < a′ref < mref ,         0 < a′reg < areg ,           0 < a′irr < airr .
+The same row holds after zero, one, or two physical-source marks. If pi lies on an active path γ, then for
+fixed nonpivot links
+                                            Wγ = Bi Up±1
+                                                       i
+                                                         Ci ,                                         (49)
+with Bi , Ci independent of Upi . Thus every uncovered live pivot acts on the active carrier under the same
+exact product reference used in (47).
+Proof. Before any path-product coordinate is introduced, the Wilson base measure is the product of
+normalized Haar measures on the original fine links. Conditioning on all nonpivot links therefore leaves
+one exact
+       P Haar factor for each live pivot. Fubini and exact ownership split the physical interaction into
+H0 + i hi + V≥2 and give (47). The active carrier is not part of the physical interaction, so it remains a
+distinguished insertion.
+   The one-pivot oscillation is precisely the complete one-pivot ledger proved above; normalization changes
+only an U -independent scalar. For the multipivot row, every activity is reported in its original connected
+fine-link support. Split it by the three species in Proposition 6.8. A reference factor meeting separated
+pivots has diam A ≥ cp R(|IP (A)| − 1); a regular or irregular connected factor has |A| ≥ cp R(|IP (A)| − 1).
+Reserve respectively mref − a′ref , areg − a′reg , and airr − a′irr in the three input rows. After multiplying
+by the pivot charge eλ|IP (A)| , the reserved exponent absorbs that charge for sufficiently large finite R
+and yields exactly the three terms of ∆R (u). Thus no diameter estimate is used to pay a spanning-tree
+weight. Coordinate substitutions on inactive paths are independent of all live pivots and cannot create
+additional pivot incidence. Physical-source marks of order at most two change only Cλ ; the independent
+pivot derivatives through order 2sG are already included in the three norms in (HT5).
+   Finally, on an active path no anchor is reconstructed: all path links remain original variables. Splitting
+the ordered path product immediately gives (49). Haar invariance therefore annihilates the Haar part of
+every nontrivial carrier at an uncovered pivot under the same integral in which the product reference was
+obtained.
+   Set
+                            Ω⋆ := sup Ω(u) < ∞,             ϵ⋆ := e−Ω⋆ > 0,              θ⋆ := 1 − ϵ⋆ < 1.
+                                   u∈I⋆
+
+Corollary 6.11 (Correct one-pivot minorization). Every one-pivot reference satisfies
+
+                                                          νi,η ≥ ϵ⋆ mG ,
+
+and its centered Peter–Weyl operator has norm at most θ⋆ . The constant may be exponentially small in
+1/ū; only strict positivity, not weak-coupling smallness, is consumed. A normalized density whose log
+oscillation is at most Ω⋆ is bounded below by e−Ω⋆ times Haar. Split off that Haar part.
+
+
+                                                                  57
+Lemma 6.12 (Finite parameter order for the two-scale landing). Choose λ > − log θ⋆ .                    Since
+supu∈I⋆ ∆R (u) → 0 as R → ∞, a finite R0 exists such that
+                                1 1
+                                                                           
+                                                                                  3/4
+         Cλ sup ∆R0 (u) ≤ min    , − log θ⋆ ,      θ̄ := θ⋆ exp Cλ sup ∆R0 (u) ≤ θ⋆ < 1.
+            u∈I⋆                4 4                                u∈I⋆
+
+After fixing R0 , a finite number of pivots N makes (1 + N )s θ̄N smaller than any prescribed tolerance,
+and a finite dyadic L realizes those pivots with separation R0 .
+Proof. The first assertion follows from the three exponential R factors in (46). Since θ⋆ < 1, choose the
+multipivot row smaller than − 12 log θ⋆ /Cλ . Exponential decay in N then beats every fixed polynomial.
+The geometry requires only a finite path length once R0 , N are fixed.
+
+6.4    Finite-volume Perron input
+Proposition 6.13 (Finite-volume Perron input from two-scale landing). For every finite spatial volume,
+the one-step matching transfer kernel relative to product Haar is continuous, symmetric, and strictly
+positive. If MΛ is the finite number of one-link updates in a sweep, then
+                                                          −1
+                                          KL (x, y) ≥ ϵM
+                                                       ⋆ ZΛ,L > 0.
+                                                        Λ
+
+
+
+The compact transfer operator has a simple maximal eigenvalue and a unique strictly positive Perron
+eigenfunction. No volume-uniform lower bound for the complete kernel is asserted.
+Proof. Apply Theorem 6.10 with one live pivot at a time. Corollary 6.11 gives the finite-volume product
+lower bound. The aligned half-step is SL∗ SL , so the transfer is positive and self-adjoint. Jentzsch–Perron
+applies in finite volume.
+
+6.5    Exact Haar–optical matching law
+The matching macroblock used after the compact first crossing is the exact pushforward by oriented
+length-L path products. It is useful to distinguish the coordinates that define the map from the coordinates
+used to estimate a particular retained coefficient.
+   Fix one proof color. Its straight macro-paths are pairwise edge-disjoint and have mutually disjoint
+buffered interiors. For one path γ = (e1 , . . . , eL ) define
+                                            Pγ (U ) = Ue1 · · · UeL .
+The retained macro-link is Wγ = Pγ (U ). For paths not carrying an active coefficient one may use the
+standard coordinates
+                            Wγ = Pγ (U ),      Zγ,k = Uek , 2 ≤ k ≤ L,
+with
+                                         Ue1 = Wγ (Zγ,2 · · · Zγ,L )−1 .
+The full map BL is the finite composition of the colorwise pushforwards, with the reflection plane on
+macro-cell boundaries.
+Lemma 6.14 (Unit-Haar macroblock disintegration). For every path,
+                                L
+                                Y                              L
+                                                               Y
+                                      dmG (Uek ) = dmG (Wγ )         dmG (Zγ,k ).
+                                k=1                            k=2
+
+Consequently the simultaneous path-product map has unit Haar Jacobian, is gauge covariant at path
+endpoints, and intertwines aligned reflection.
+Proof. For fixed details, Ue1 7→ Wγ is right multiplication by a fixed group element. Haar invariance
+proves the identity. Edge-disjointness tensorizes it, gauge transformations telescope, and reflection reverses
+and inverts the product.
+Definition 6.15 (Carrier-adapted hybrid chart). Let A be the finite set of retained macro-links carrying
+nontrivial Peter–Weyl labels, bounded probes, or retained-source derivatives in the coefficient under study.
+On every path γ ∈ A retain the original link coordinates
+                                         Xγ,k = Uek ,        1 ≤ k ≤ L,
+and regard Wγ = Pγ (X) only as the output map. On paths γ ∈        / A use the standard (Wγ , Zγ,2:L )
+coordinates. Choose live pivots only among the X variables on active paths.
+
+
+                                                        58
+Lemma 6.16 (Exact hybrid Haar disintegration). For every active set A, the mixed coordinate map has
+unit Haar Jacobian:
+                                                      "             L
+                                                                                 #
+                YY              YY                 Y               Y
+                    dmG (Ue ) =        dmG (Xγ,e )      dmG (Wγ )     dmG (Zγ,k ) .            (50)
+                  γ e∈γ              γ∈A e∈γ                γ ∈A
+                                                              /            k=2
+
+Conditioning on all variables except separated live pivots on the active paths leaves the exact product Haar
+law on those pivots. No active retained product is conditioned.
+Proof. Use the identity of Lemma 6.14 only on inactive paths and the identity map on active paths.
+Same-color paths are edge-disjoint, so the factors tensorize. The final conditional statement is then
+immediate from (50).
+
+Lemma 6.17 (Carrier incidence and original-support locality). Let p be a live pivot on an active path γ.
+With all other active path links fixed,
+                                        Wγ = Bp Xp±1 Cp ,                                           (51)
+where Bp , Cp are independent of Xp . If a connected physical activity with original reported support Y
+meets k separated live pivots, then
+                                          τ (Y ) ≥ cp R(k − 1).                                     (52)
+Anchor reconstruction on an inactive path cannot alter the activity’s live pivot incidence.
+Proof. Equation (51) is the ordered product split before and after p. The second statement follows by
+joining the k pivot buffers inside the connected reported support. Every inactive-path coordinate is a
+function only of links on that inactive path; because no live pivot lies there, its substitution cannot create
+dependence on a live pivot.
+Lemma 6.18 (Exact carrier-adapted pivot product reference). Fix an active coefficient set A and
+condition on all nonpivot variables in the hybrid chart, denoting them by η. Split the physical interaction
+by original-support pivot incidence,
+                                              X
+                                H = H0 (η) +      hi (Xpi ; η) + V≥2 (XP ; η).
+                                                   i
+
+Then the live pivots have exact product Haar base and the normalized product reference
+                                           O       e−hi (X;η)
+                                 νη(0) =                              dmG (X)
+                                                 e−hi (Y ;η) dmG (Y )
+                                               R
+                                           i   G
+
+is exact. Every active retained carrier remains a function of the original active-path links and varies
+through each uncovered pivot as in (51). In particular, the product reference and the Haar-through-carrier
+cancellation belong to one and the same conditional integral.
+Proof. Apply Lemma 6.16, then split and normalize the physical factors by exact ownership. The active
+retained coordinates were never conditioned and no anchor was reconstructed on their paths. Lemma 6.17
+gives the final statement.
+Corollary 6.19 (Definition, exactness, and coefficientwise use of BL ). The matching macroblock BL is
+a well-defined finite exact pushforward on the compact first-crossing class. For every Fourier, source-
+marked, or normalized-probe coefficient of its retained density, the active paths may be analyzed in the
+carrier-adapted hybrid chart without changing that coefficient. The charged pivot expansion uses precisely
+the reference of Lemma 6.18; gauge covariance, reflection, and dyadic composition remain properties of
+the underlying exact pushforward.
+6.5.1 Compact collect with optical field live
+The matching theorem is now proved on one exact joint law, before the normal/optical variables are
+marginalized. This is the decisive ordering. The compact retained variables are reduced conditionally by
+Haar–pivot integration; the resulting activities remain functions of the complete optical field; and only
+then is the connected logarithm taken by the marked Gaussian forest theorem. Thus no retained density,
+latent mixture, or residual-only gas is inserted between the physical law and the connected source kernel.
+
+
+
+                                                       59
+6.5.2 One exact joint matching law
+Let W denote the compact retained variables in the exact Karcher chart and let ζ denote its complete
+optical normal field. At finite volume and with physical source J, Theorem 4.13, Theorem 3.28, and the
+exact owner map give
+                              dµJ (W, ζ) = Z(J)−1 dγopt (ζ) dH(W ) e−VJ (W,ζ) .                   (53)
+Here dH(W ) is product normalized Haar on the compact retained links. Indeed, ρ0,j in Theorem 4.13 owns
+only the field-independent linear Jacobian and empty-support normalization; Proposition 6.8 absorbs that
+scalar into Z(J) and restores product Haar. Every nonempty retained reference factor remains explicit in
+VJ . Every nonempty Haar, coarea, chart, determinant, Schur, regular, irregular, seam, wrapping, and
+source occurrence belongs to exactly one factor of VJ . Every scalar depending on an unintegrated variable
+remains inside (53). Define only the complete normalized source logarithm
+
+                                          W(J) = log Z(J) − log Z(0).                                   (54)
+
+No marginal density is logarithmized.
+Lemma 6.20 (Exact Haar projection contraction). Let Pp denote Haar averaging in one live pivot
+variable and Qp = I − Pp . For every complete one-pivot reference of Theorem 6.10, Corollary 6.11 gives
+the exact decomposition
+
+                         νp,η = ϵ⋆ mG + θ⋆ νep,η ,       0 < ϵ⋆ < 1,      θ⋆ = 1 − ϵ⋆ < 1.
+
+Consequently its convolution/conditional-expectation operator satisfies
+
+                        max ∥Tp,η Qp ∥L∞ →L∞ , ∥Tp,η Qp ∥L2 (mG )→L2 (mG ) ≤ θ⋆ .                       (55)
+                             
+
+
+This is the complete nonvacuum projection estimate, not a coefficientwise claim. It is group-generic.
+Source marks are inserted later as marked vertices and may remove at most one unmarked payment per
+mark.
+
+Proof. For Pp f = 0,
+                                     Tp,η f = ϵ⋆ Pp f + θ⋆ Te
+                                                            νp,η
+                                                                 f = θ⋆ Te
+                                                                         νp,η
+                                                                              f.
+Translation by the fixed left and right carrier factors is an isometry in both norms. The marked statement
+is exactly the one/two-mark ownership row of Theorem 6.10.
+
+6.5.3 Final compact Haar-pivot collect
+In (53), write U for the compact matching links and keep the complete optical field ζ and the actual
+local source roots unchanged. Apply the exact compact-only path-product block BL to U as a finite
+matching operation. Corollary 6.19 permits coefficientwise use of its hybrid chart, while every compact
+path detail is integrated in the same complete joint partition function. No optical variable is identified
+with a compact path detail, and no source is assumed fiber-constant under BL . The block is used once to
+place many same-law Haar pivots inside each coarse compact edge.
+Definition 6.21 (Matching-stage tri-graded norm). For a compact-stage activity family F = (FX ) and
+fixed positive mark weights σpiv , σζ , σJ , set
+                                                                  |α|
+                                               X                 σpiv σζr σJq
+                       ∥F ∥a;2sG |3|2 := sup         ea|X| max                 α
+                                                                              Dpiv Dζr DJq FX .         (56)
+                                         p               |α|≤2sG |α|! r! q!
+                                               X∋p       0≤r≤3
+                                                         0≤q≤2
+
+Here Dpiv differentiates only the declared live original-link pivot variables. The derivative Dζ is a Fréchet
+derivative in the unintegrated optical coordinate at the compact-collect call site, and DJ differentiates
+the physical source. The three indices are independent; no optical derivative is counted as a structural
+pivot derivative or as a source leaf. The pivot order 2sG is the fixed-group Sobolev order required by the
+product Peter–Weyl landing; the optical order three and the physical-source order two are unchanged
+from the permanent marked hierarchy.
+Lemma 6.22 (Joint regular pivot–optical–source tube). There are positive radii ρpiv , ρζ , ρJ , independent
+of cutoff, volume, exterior configuration, and weak depth, such that every reference, regular, coarea,
+determinant, and Gaussian-normalization factor QX has a jointly holomorphic extension to the product
+
+
+
+                                                           60
+of (i) the complexified live-pivot chart polydisc of radius ρpiv and (ii) the common optical/source species
+tube of radii ρζ , ρJ . On that product tube the same rooted exponential row holds uniformly. Consequently,
+                                                            |α|
+                                  X                        ρpiv ρrζ ρqJ
+                            sup         e   a|X|
+                                                     max                 α
+                                                                        Dpiv Dζr DJq QX ≤ Creg .            (57)
+                             p                     |α|≤2sG |α|! r! q!
+                                  X∋p              0≤r≤3
+                                                   0≤q≤2
+
+Thus Definition 6.21 applies to this sector with any fixed σpiv ≤ ρpiv , σζ ≤ ρζ , and σJ ≤ ρJ .
+Proof. The finite regular chart atlas gives a common complex live-pivot polydisc, and Lemma 3.27(iii)
+gives the common optical/source species tube. On each chart the exact reference, coarea, determinant,
+Gaussian-normalization, and regular recombination formulas are finite compositions of local coefficient
+maps analytic in all three displayed variables, together with multiplication, determinant, and inversion.
+The real denominators already have a uniform positive lower bound, so one fixed shrinking of the three
+radii keeps every complexified denominator away from zero. The same formulas therefore extend jointly
+to the Cartesian product of the two printed domains. The atlas is finite, so the radii and the supremum
+constant are uniform. Multivariable Cauchy on the product tube then gives (57). T
+
+===== (HT5) hit 3 at 262127 =====
+ar/irregular/coarea/determinant factors obey one cutoff-, volume-, exterior-, and
+weak-depth-uniform ∥ · ∥a;2sG |3|2 row. Every marked physical occurrence is owned exactly once. A mark
+on a one-pivot reference removes at most one unmarked Haar payment; a mark on a multipivot factor is
+paid by the corresponding tri-graded charged row.
+Proof. Differentiate the exact compact factorization before integrating the optical field. At this call site ζ
+is an exterior coefficient variable: the compact pivot integration, the Peter–Weyl cut, and the BKAR
+interpolation parameters are held fixed. Consequently Dζ differentiates only the local coefficient atoms
+and the finite one-core normalizations already present in the exact factorization; it does not create an
+additional BKAR covariance derivative.
+    For the reference, regular, coarea, determinant, and Gaussian-normalization factors, apply Lemma 6.22
+to the entire regular sector. For an inner-chart irregular component, the absolute component row already
+holds on the joint exterior/optical/source product tube; multivariable Cauchy gives the mixed derivatives
+with |α| ≤ 2sG , r ≤ 3, and q ≤ 2. Transition and outer labels are finite-dimensional smooth densities on
+the same charged event and are differentiated directly. Their fixed Bell-polynomial loss is polynomial in
+the component size and is absorbed by the bad-action exponential.
+   The maps V 7→ e−V − 1, multiplication, inversion of the strictly positive scalar denominator, and
+the normalized logarithmic-score map are analytic maps of this finite-order tri-graded Banach algebra.
+Leibniz, Faà di Bruno, and the quotient rule are paid by the three factorial weights in (56). Since G
+is fixed, the derivative orders 2sG , three, and two are fixed finite integers, so the resulting constant is
+uniform in all declared limits. This proves the stated tri-graded row without identifying an optical field
+derivative with a passive source derivative.
+Lemma 6.24 (Exact charged nonvacuum ratio). Fix N selected pivots and their exact product reference
+   NN
+ν = p=1 νp . Let Φ lie in the nonvacuum Haar summand at every pivot, and let
+                                       X
+                                 V≥2 =    VA ,   zA = e−VA − 1,
+                                                        A
+
+where every A meets n(A) ≥ 2 selected pivots. If
+                   X                             X
+               sup    eℓn(A) ∥zA ∥ ≤ ζz ,   sup    eℓn(A) ∥VA ∥ ≤ ζV ,                     ℓ ≥ − log θ⋆ ,
+                  p                                         p
+                      A∋p                                         A∋p
+
+then
+                                            Eν [Φe−V≥2 ]       h                  iN
+                                                         ≤ ∥Φ∥  θ ⋆ e (ζz +ζV )/2
+                                                                                     .                      (58)
+                                             Eν [e ≥2 ]
+                                                  −V
+
+With r ≤ 3 passive optical marks and q ≤ 2 source marks, the same estimate holds after losing at most
+one unmarked pivot payment per mark and multiplying by a fixed polynomial in N determined by the
+marked rooted rows.
+
+
+                                                                   61
+Proof. Expand e−V≥2 = A (1 + zA ). For a selected family F, let U (F) be the union of its pivot
+                        Q
+incidences. Every pivot outside U (F) remains in the nonvacuum summand and contributes θ⋆ by
+Lemma 6.20. Therefore           "        #
+                                                   N −|U (F )|
+                                   Y                           Y
+                             Eν Φ      zA ≤ ∥Φ∥θ⋆                ∥zA ∥.
+                                         A∈F                              A∈F
+
+Since |U (F)| ≤    A∈F n(A), summing all families absolutely gives
+                  P
+
+                                                                                     !
+                                                                 X
+                              ∥Eν [Φe   −V≥2
+                                               ]∥ ≤ ∥Φ∥θ⋆N exp       e   ℓn(A)
+                                                                                 ∥zA ∥ .
+                                                                 A
+
+Every activity is counted at least twice in the rooted sum, so
+                              X                      N ζz        X                N ζV
+                                   eℓn(A) ∥zA ∥ ≤         ,          ∥VA ∥ ≤           .
+                                                      2                            2
+                               A                                 A
+                                 P
+Positivity yields Eν e−V≥2 ≥ e− A ∥VA ∥ , proving (58). Differentiating the exact numerator and denomi-
+nator with r ≤ 3 passive optical marks and q ≤ 2 source marks assigns each mark either to one one-pivot
+score or to one marked multipivot activity by Lemma 6.23. The quotient rule and the same positive lower
+bound give the stated fixed polynomial and lose no more than r + q payments globally.
+Lemma 6.25 (Complete compact-flux classification and canonical exploration). Fix ζ and take the
+Peter–Weyl decomposition of the complete compact incidence network generated by the exact pushforward
+under BL . Integrate all compact variables coefficientwise. A connected history is compact-vacuum only
+when every compact cut separating distinct mixed optical/source vertices carries the trivial representation.
+After removal of already reported physical cross-core connectors, such a history factorizes into one-core
+expectations or empty-support scalars and is assigned by the exact owner map to the normalized one-core
+references or the pre-existing regular/Gaussian inventory.
+   Every remaining history, including a multi-leg singlet with trivial visible coarse label but nontrivial
+internal flux, has a deterministic visited-set exploration. Order incident half-edges before marking an
+unoriented edge inspected. Discovery edges form a rooted spanning tree; each merger, reconnection, shared
+tail, cycle, seam, reflection, or wrapping edge is a uniquely owned closure edge. The record reconstructs
+the occupied geometric network without duplicating shared continuations.
+
+Proof. Vacuum factorization follows by deleting the reported physical connectors and applying Fubini
+across every trivial compact cut. Otherwise the least mixed cut, least nontrivial representation label, and
+least oriented half-edge choose the root and first edge. Deterministic depth-first exploration then classifies
+every occupied unoriented edge exactly once as a discovery or closure edge. A composite singlet is retained
+whenever any internal separating cut is nontrivial, independently of the visible output label.
+6.5.4 Complete compact collect with the optical field left live
+The local tags (HT1)–(HT5) used in this matching block refer to the reporting and normalization identities
+in Lemma 6.7, Proposition 6.8, Lemma 6.9, and Theorem 6.10; they are proved identities, not additional
+hypotheses.
+Lemma 6.26 (Species-exhaustive one-pivot factorization with full source dependence). During the
+evaluation of one coefficient, condition temporarily on ζ and on nonpivot compact links, but never on
+an active coarse carrier. After exact label recombination, assign every reported physical factor FJ by its
+original fine-link pivot incidence IP (F ) ⊂ P. For each pivot p, let Yp be the canonically owned fresh
+variables appearing only in factors with incidence {p}, and define the complete partial weight
+                                                              
+                             Z            X                   
+            wp,J (Up ; ζ) :=     exp −           FJ (Up , y; ζ) dλp (y),   hp,J := − log wp,J .
+                              Yp    
+                                         IP (F )={p}
+                                                               
+
+With the distinguished active carrier excluded from the reference, the post-integration exponent has the
+disjoint identity                                X
+                         VJ (U, ζ) = H0 (ζ; J) +    hp,J (Up ; ζ) + V≥2,J (UP , ζ),
+                                                       p∈P
+
+
+
+
+                                                         62
+where                                           X                               X
+                                   H0 =               FJ ,         V≥2,J =                 FJ .
+                                          IP (F )=∅                          |IP (F )|≥2
+
+Define                   Z
+            Zp,J (ζ) =        e−hp,J (U ;ζ) dmG (U ),        νp,ζ,J (dU ) = Zp,J (ζ)−1 e−hp,J (U ;ζ) dmG (U ).
+                         G
+Then, with no edgewise quotient and with the full J-dependence retained,
+                         Y                        Y                          O
+              e−VJ (U,ζ)   dmG (Up ) = e−H0 (ζ;J)    Zp,J (ζ)e−V≥2,J (UP ,ζ)   νp,ζ,J (dUp ).                    (59)
+                             p∈P                             p∈P                                  p∈P
+
+A J-derivative marks its assigned factor but does not change its original fine-link incidence, so the same
+trichotomy is exhaustive through every fixed source order used below.
+Proof. The reporting theorem lists every Wilson, reference, chart, coarea, determinant, regular, irregular,
+inherited, cutoff, and source factor before normalization. Exact recombination removes the temporary
+inner/collar/outer labels, and the canonical owner assigns each resulting factor and fresh variable once.
+The three possible incidences are mutually exclusive and exhaustive. The separated pivot buffers make
+the sets Yp disjoint, so Fubini first produces the complete partial weights wp,J and then gives Zp,J and
+νp,ζ,J . The zero-pivot row remains H0 , while every factor meeting at least two pivots remains in V≥2,J .
+Differentiation in J marks factors inside the same owned partial integral and does not change their
+geometric support, proving the final claim.
+   Every Zp,J (ζ) remains in the complete optical integral, and every nonpivot compact variable is
+integrated coefficientwise before the optical connected logarithm.
+   For zA,J = e−VA,J − 1 and pivot incidence n(A), define
+
+                                              eℓn(A) ems diam A ∥DJ≤2 zA,J |J=0 ∥[3] ,
+                                          X
+                            ζz (R) := sup                                                     (60)
+                                            p
+                                                A∋p
+
+                                                      eℓn(A) ems diam A ∥DJ≤2 VA,J |J=0 ∥[3] ,
+                                                X
+                               ζV (R) := sup                                                                     (61)
+                                            p
+                                                A∋p
+
+where ℓ > − log θ⋆ and ms > 0 lies below the unused reference/regular/irregular support exponents. The
+multipivot theorem and ∥e−VA − 1∥ ≤ e∥VA ∥ ∥VA ∥ imply ζz (R) + ζV (R) → 0 uniformly on I⋆ .
+
+Incidence-split product-group nuclear row and cycle-safe compact collect. Fix once and for
+all a finite physical-source order Q < ∞; the boundary-to-center theorem consumes only Q = 2.
+Lemma 6.27 (Fixed-order source upgrade at matching). For every fixed Q < ∞, the matching-stage
+product-tube, one-pivot-score, multipivot-activity, positive-denominator, and regular/irregular recombina-
+tion rows printed above with q ≤ 2 remain valid with q ≤ Q. The constants may depend on Q but are
+independent of cutoff, volume, exterior datum, and preceding weak depth. Original-support exponents and
+pivot-incidence charges are unchanged. With the exponential generating normalization in q, the constants
+are bounded on one common disc |tJ | < ρJ .
+Proof. The physical source enters the exact pre-marginal law through the common analytic species
+tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+corresponding finite local source coefficient norm at the incoming interface. This proves the fixed-Q
+upgrade.
+   For a finite pivot set I, write GI = p∈I Gp . For a scalar or finite-dimensional coefficient-valued
+                                          Q
+
+function f on GI , define the product Fourier–Wiener norm
+                                         X                         Y
+                              ∥f ∥AI :=      dλ ∥fb(λ)∥S1 ,  dλ :=     dλp .                        (62)
+                                          bI
+                                        λ∈G                        p∈I
+
+
+The coefficient norm is the fixed projective norm of the finite marked coefficient space.
+
+
+                                                              63
+Lemma 6.28 (Product Fourier–Wiener calculus). For scalar f ∈ AI , convolution by f on L2 (GI ) is
+trace class and
+                                ∥Kf ∥S1 (L2 (GI )) = ∥f ∥AI .                               (63)
+If I ⊂ I ′ , lifting f by independence of the coordinates in I ′ \ I preserves the norm. Pointwise multiplication
+satisfies
+                                              ∥f g∥AI ≤ ∥f ∥AI ∥g∥AI .                                       (64)
+The same inequalities hold coefficientwise in the declared finite projective marked norm. Left/right
+translations, inversion, and coordinate permutations are isometries.
+Proof. Peter–Weyl decomposes L2 (GI ) into the blocks Vλ ⊗ Vλ∗ . Convolution has block fb(λ) ⊗ I, whose
+trace norm is dλ ∥fb(λ)∥S1 ; summing gives (63). A lifted function has only the trivial Fourier block in
+every added coordinate, proving isometry. The standard coefficient-product formula, complete contraction
+in the unitary Clebsch–Gordan maps, and the projective trace norm give (64). The remaining symmetries
+are unitary changes of Peter–Weyl blocks.
+Lemma 6.29 (One-original-pivot nuclear supplier). Let p be one live original-link pivot and let ρp,η,J =
+dνp,η,J /dmG . Write Kp,η,J for convolution by ρp,η,J on L2 (G) and Qp = I − Pp . There are constants
+Ctr,r,q < ∞, 0 ≤ r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+that
+
+                                                     ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+                                    ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+
+Put
+                             (0)
+                           Ctr := max{1, Ctr,0,0 },            mark
+                                                              Ctr,Q := max Ctr,r,q .
+                                                                        r≤3,q≤Q
+
+                                                                                    (0)
+The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+logarithmic density. Together with (48),
+
+                            ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+
+and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+                                                                          X           d2λ
+              ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+                                                               CG,s   =                         < ∞,        (67)
+                                                                    G
+                                                                                (1 + C2 (λ))2sG
+                                                                          λ∈G
+                                                                            b
+so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+removal.
+Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+that
+                   X                           σζr σJq
+               sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+                p                        0≤r≤3 r!  q!
+                    A∋p                   0≤q≤Q
+
+The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+I⋆ as R → ∞.
+
+
+
+
+                                                         64
+Proof. For I of cardinality n, tensorizing (67) gives
+
+                                                          Y
+                                          n
+                                ∥f ∥AI ≤ CG,s G
+                                                                (1 − ∆p )sG f              .            (69)
+                                                          p∈I
+                                                                                L2 (GI )
+
+The joint live-pivot polydisc used in Lemma 6.22 exists simultaneously in all pivot coordinates met
+by one owned factor. Multivariable Cauchy therefore bounds the right side of (69) by CW     n
+                                                                                               times the
+corresponding complex-pivot-tube activity majorant; CW depends only on the fixed pivot tube and not on
+Q. Source Cauchy differentiation contributes only the fixed prefactor CQ ≤ C0 Q!ρ−Q
+                                                                                  J  and does not add a
+factor exponential in n. The reference, regular, and irregular input rows retain unused original-support
+exponents. Repeating the proof of (HT5) with pivot charge λ + log CW + log CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg ν
+
+===== (HT5) hit 4 at 267683 =====
+nct mixed optical/source vertices carries the trivial representation.
+After removal of already reported physical cross-core connectors, such a history factorizes into one-core
+expectations or empty-support scalars and is assigned by the exact owner map to the normalized one-core
+references or the pre-existing regular/Gaussian inventory.
+   Every remaining history, including a multi-leg singlet with trivial visible coarse label but nontrivial
+internal flux, has a deterministic visited-set exploration. Order incident half-edges before marking an
+unoriented edge inspected. Discovery edges form a rooted spanning tree; each merger, reconnection, shared
+tail, cycle, seam, reflection, or wrapping edge is a uniquely owned closure edge. The record reconstructs
+the occupied geometric network without duplicating shared continuations.
+
+Proof. Vacuum factorization follows by deleting the reported physical connectors and applying Fubini
+across every trivial compact cut. Otherwise the least mixed cut, least nontrivial representation label, and
+least oriented half-edge choose the root and first edge. Deterministic depth-first exploration then classifies
+every occupied unoriented edge exactly once as a discovery or closure edge. A composite singlet is retained
+whenever any internal separating cut is nontrivial, independently of the visible output label.
+6.5.4 Complete compact collect with the optical field left live
+The local tags (HT1)–(HT5) used in this matching block refer to the reporting and normalization identities
+in Lemma 6.7, Proposition 6.8, Lemma 6.9, and Theorem 6.10; they are proved identities, not additional
+hypotheses.
+Lemma 6.26 (Species-exhaustive one-pivot factorization with full source dependence). During the
+evaluation of one coefficient, condition temporarily on ζ and on nonpivot compact links, but never on
+an active coarse carrier. After exact label recombination, assign every reported physical factor FJ by its
+original fine-link pivot incidence IP (F ) ⊂ P. For each pivot p, let Yp be the canonically owned fresh
+variables appearing only in factors with incidence {p}, and define the complete partial weight
+                                                              
+                             Z            X                   
+            wp,J (Up ; ζ) :=     exp −           FJ (Up , y; ζ) dλp (y),   hp,J := − log wp,J .
+                              Yp    
+                                         IP (F )={p}
+                                                               
+
+With the distinguished active carrier excluded from the reference, the post-integration exponent has the
+disjoint identity                                X
+                         VJ (U, ζ) = H0 (ζ; J) +    hp,J (Up ; ζ) + V≥2,J (UP , ζ),
+                                                       p∈P
+
+
+
+
+                                                         62
+where                                           X                               X
+                                   H0 =               FJ ,         V≥2,J =                 FJ .
+                                          IP (F )=∅                          |IP (F )|≥2
+
+Define                   Z
+            Zp,J (ζ) =        e−hp,J (U ;ζ) dmG (U ),        νp,ζ,J (dU ) = Zp,J (ζ)−1 e−hp,J (U ;ζ) dmG (U ).
+                         G
+Then, with no edgewise quotient and with the full J-dependence retained,
+                         Y                        Y                          O
+              e−VJ (U,ζ)   dmG (Up ) = e−H0 (ζ;J)    Zp,J (ζ)e−V≥2,J (UP ,ζ)   νp,ζ,J (dUp ).                    (59)
+                             p∈P                             p∈P                                  p∈P
+
+A J-derivative marks its assigned factor but does not change its original fine-link incidence, so the same
+trichotomy is exhaustive through every fixed source order used below.
+Proof. The reporting theorem lists every Wilson, reference, chart, coarea, determinant, regular, irregular,
+inherited, cutoff, and source factor before normalization. Exact recombination removes the temporary
+inner/collar/outer labels, and the canonical owner assigns each resulting factor and fresh variable once.
+The three possible incidences are mutually exclusive and exhaustive. The separated pivot buffers make
+the sets Yp disjoint, so Fubini first produces the complete partial weights wp,J and then gives Zp,J and
+νp,ζ,J . The zero-pivot row remains H0 , while every factor meeting at least two pivots remains in V≥2,J .
+Differentiation in J marks factors inside the same owned partial integral and does not change their
+geometric support, proving the final claim.
+   Every Zp,J (ζ) remains in the complete optical integral, and every nonpivot compact variable is
+integrated coefficientwise before the optical connected logarithm.
+   For zA,J = e−VA,J − 1 and pivot incidence n(A), define
+
+                                              eℓn(A) ems diam A ∥DJ≤2 zA,J |J=0 ∥[3] ,
+                                          X
+                            ζz (R) := sup                                                     (60)
+                                            p
+                                                A∋p
+
+                                                      eℓn(A) ems diam A ∥DJ≤2 VA,J |J=0 ∥[3] ,
+                                                X
+                               ζV (R) := sup                                                                     (61)
+                                            p
+                                                A∋p
+
+where ℓ > − log θ⋆ and ms > 0 lies below the unused reference/regular/irregular support exponents. The
+multipivot theorem and ∥e−VA − 1∥ ≤ e∥VA ∥ ∥VA ∥ imply ζz (R) + ζV (R) → 0 uniformly on I⋆ .
+
+Incidence-split product-group nuclear row and cycle-safe compact collect. Fix once and for
+all a finite physical-source order Q < ∞; the boundary-to-center theorem consumes only Q = 2.
+Lemma 6.27 (Fixed-order source upgrade at matching). For every fixed Q < ∞, the matching-stage
+product-tube, one-pivot-score, multipivot-activity, positive-denominator, and regular/irregular recombina-
+tion rows printed above with q ≤ 2 remain valid with q ≤ Q. The constants may depend on Q but are
+independent of cutoff, volume, exterior datum, and preceding weak depth. Original-support exponents and
+pivot-incidence charges are unchanged. With the exponential generating normalization in q, the constants
+are bounded on one common disc |tJ | < ρJ .
+Proof. The physical source enters the exact pre-marginal law through the common analytic species
+tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+corresponding finite local source coefficient norm at the incoming interface. This proves the fixed-Q
+upgrade.
+   For a finite pivot set I, write GI = p∈I Gp . For a scalar or finite-dimensional coefficient-valued
+                                          Q
+
+function f on GI , define the product Fourier–Wiener norm
+                                         X                         Y
+                              ∥f ∥AI :=      dλ ∥fb(λ)∥S1 ,  dλ :=     dλp .                        (62)
+                                          bI
+                                        λ∈G                        p∈I
+
+
+The coefficient norm is the fixed projective norm of the finite marked coefficient space.
+
+
+                                                              63
+Lemma 6.28 (Product Fourier–Wiener calculus). For scalar f ∈ AI , convolution by f on L2 (GI ) is
+trace class and
+                                ∥Kf ∥S1 (L2 (GI )) = ∥f ∥AI .                               (63)
+If I ⊂ I ′ , lifting f by independence of the coordinates in I ′ \ I preserves the norm. Pointwise multiplication
+satisfies
+                                              ∥f g∥AI ≤ ∥f ∥AI ∥g∥AI .                                       (64)
+The same inequalities hold coefficientwise in the declared finite projective marked norm. Left/right
+translations, inversion, and coordinate permutations are isometries.
+Proof. Peter–Weyl decomposes L2 (GI ) into the blocks Vλ ⊗ Vλ∗ . Convolution has block fb(λ) ⊗ I, whose
+trace norm is dλ ∥fb(λ)∥S1 ; summing gives (63). A lifted function has only the trivial Fourier block in
+every added coordinate, proving isometry. The standard coefficient-product formula, complete contraction
+in the unitary Clebsch–Gordan maps, and the projective trace norm give (64). The remaining symmetries
+are unitary changes of Peter–Weyl blocks.
+Lemma 6.29 (One-original-pivot nuclear supplier). Let p be one live original-link pivot and let ρp,η,J =
+dνp,η,J /dmG . Write Kp,η,J for convolution by ρp,η,J on L2 (G) and Qp = I − Pp . There are constants
+Ctr,r,q < ∞, 0 ≤ r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+that
+
+                                                     ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+                                    ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+
+Put
+                             (0)
+                           Ctr := max{1, Ctr,0,0 },            mark
+                                                              Ctr,Q := max Ctr,r,q .
+                                                                        r≤3,q≤Q
+
+                                                                                    (0)
+The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+logarithmic density. Together with (48),
+
+                            ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+
+and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+                                                                          X           d2λ
+              ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+                                                               CG,s   =                         < ∞,        (67)
+                                                                    G
+                                                                                (1 + C2 (λ))2sG
+                                                                          λ∈G
+                                                                            b
+so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+removal.
+Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+that
+                   X                           σζr σJq
+               sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+                p                        0≤r≤3 r!  q!
+                    A∋p                   0≤q≤Q
+
+The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+I⋆ as R → ∞.
+
+
+
+
+                                                         64
+Proof. For I of cardinality n, tensorizing (67) gives
+
+                                                          Y
+                                          n
+                                ∥f ∥AI ≤ CG,s G
+                                                                (1 − ∆p )sG f              .            (69)
+                                                          p∈I
+                                                                                L2 (GI )
+
+The joint live-pivot polydisc used in Lemma 6.22 exists simultaneously in all pivot coordinates met
+by one owned factor. Multivariable Cauchy therefore bounds the right side of (69) by CW     n
+                                                                                               times the
+corresponding complex-pivot-tube activity majorant; CW depends only on the fixed pivot tube and not on
+Q. Source Cauchy differentiation contributes only the fixed prefactor CQ ≤ C0 Q!ρ−Q
+                                                                                  J  and does not add a
+factor exponential in n. The reference, regular, and irregular input rows retain unused original-support
+exponents. Repeating the proof of (HT5) with pivot charge λ + log CW + log CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family 
+
+===== (HT5) hit 5 at 274106 =====
+g normalization in q, the constants
+are bounded on one common disc |tJ | < ρJ .
+Proof. The physical source enters the exact pre-marginal law through the common analytic species
+tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+corresponding finite local source coefficient norm at the incoming interface. This proves the fixed-Q
+upgrade.
+   For a finite pivot set I, write GI = p∈I Gp . For a scalar or finite-dimensional coefficient-valued
+                                          Q
+
+function f on GI , define the product Fourier–Wiener norm
+                                         X                         Y
+                              ∥f ∥AI :=      dλ ∥fb(λ)∥S1 ,  dλ :=     dλp .                        (62)
+                                          bI
+                                        λ∈G                        p∈I
+
+
+The coefficient norm is the fixed projective norm of the finite marked coefficient space.
+
+
+                                                              63
+Lemma 6.28 (Product Fourier–Wiener calculus). For scalar f ∈ AI , convolution by f on L2 (GI ) is
+trace class and
+                                ∥Kf ∥S1 (L2 (GI )) = ∥f ∥AI .                               (63)
+If I ⊂ I ′ , lifting f by independence of the coordinates in I ′ \ I preserves the norm. Pointwise multiplication
+satisfies
+                                              ∥f g∥AI ≤ ∥f ∥AI ∥g∥AI .                                       (64)
+The same inequalities hold coefficientwise in the declared finite projective marked norm. Left/right
+translations, inversion, and coordinate permutations are isometries.
+Proof. Peter–Weyl decomposes L2 (GI ) into the blocks Vλ ⊗ Vλ∗ . Convolution has block fb(λ) ⊗ I, whose
+trace norm is dλ ∥fb(λ)∥S1 ; summing gives (63). A lifted function has only the trivial Fourier block in
+every added coordinate, proving isometry. The standard coefficient-product formula, complete contraction
+in the unitary Clebsch–Gordan maps, and the projective trace norm give (64). The remaining symmetries
+are unitary changes of Peter–Weyl blocks.
+Lemma 6.29 (One-original-pivot nuclear supplier). Let p be one live original-link pivot and let ρp,η,J =
+dνp,η,J /dmG . Write Kp,η,J for convolution by ρp,η,J on L2 (G) and Qp = I − Pp . There are constants
+Ctr,r,q < ∞, 0 ≤ r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+that
+
+                                                     ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+                                    ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+
+Put
+                             (0)
+                           Ctr := max{1, Ctr,0,0 },            mark
+                                                              Ctr,Q := max Ctr,r,q .
+                                                                        r≤3,q≤Q
+
+                                                                                    (0)
+The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+logarithmic density. Together with (48),
+
+                            ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+
+and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+                                                                          X           d2λ
+              ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+                                                               CG,s   =                         < ∞,        (67)
+                                                                    G
+                                                                                (1 + C2 (λ))2sG
+                                                                          λ∈G
+                                                                            b
+so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+removal.
+Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+that
+                   X                           σζr σJq
+               sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+                p                        0≤r≤3 r!  q!
+                    A∋p                   0≤q≤Q
+
+The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+I⋆ as R → ∞.
+
+
+
+
+                                                         64
+Proof. For I of cardinality n, tensorizing (67) gives
+
+                                                          Y
+                                          n
+                                ∥f ∥AI ≤ CG,s G
+                                                                (1 − ∆p )sG f              .            (69)
+                                                          p∈I
+                                                                                L2 (GI )
+
+The joint live-pivot polydisc used in Lemma 6.22 exists simultaneously in all pivot coordinates met
+by one owned factor. Multivariable Cauchy therefore bounds the right side of (69) by CW     n
+                                                                                               times the
+corresponding complex-pivot-tube activity majorant; CW depends only on the fixed pivot tube and not on
+Q. Source Cauchy differentiation contributes only the fixed prefactor CQ ≤ C0 Q!ρ−Q
+                                                                                  J  and does not add a
+factor exponential in n. The reference, regular, and irregular input rows retain unused original-support
+exponents. Repeating the proof of (HT5) with pivot charge λ + log CW + log CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family incidence trace space). For a family F, let U = U (F). Cut every physical
+carrier line at each pivot in U . In every remaining cycle of the physical carrier skeleton choose the least
+closure edge and the least selected pivot on that edge; let Rg (F) be the resulting clean pivot set. Then
+
+                   Rg (F) ∩ U = ∅,        every physical carrier cycle meets U ∪ Rg (F).                  (87)
+
+The actual cut space is                                      O
+                                    Hg,F := L2 (GU ) ⊗                 L2 (G)p .                          (88)
+                                                           p∈Rg (F )
+
+All activity hyperedges are internal to the first product-group convolution operator in (85); no cross-edge
+incidence is declared to be a dimensionless auxiliary flag.
+Lemma 6.37 (Carrier–activity hypergraph coverage and no-reuse allocation). For a connected family
+(g, F) form the finite incidence hypergraph Hg,F whose ordinary edges are the physical carrier segments and
+whose hyperedge A is incident to the selected pivots IP (A). Root the carrier skeleton by the deterministic
+order of Lemma 6.34. Then:
+    (i) cutting every carrier at U (F) ∪ Rg (F) leaves an acyclic carrier graph;
+   (ii) the depth-first first-incidence rule assigns every activity hyperedge A exactly once, at the least
+        incident pivot first reached from the root; its remaining n(A) − 1 incidences are recorded only as
+        possible side branches;
+  (iii) the three payments are disjoint: the product Fourier–Wiener norm pays the tensor-product nuclear
+        cost on U (F), the scalar coverage reserve pays the lost clean-pivot contractions, and the promoted
+        magnitude wA,k(A) is inserted exactly once in the rooted spatial recursion.
+Consequently no same-edge or cross-edge activity, shared carrier tail, closure edge, or cycle-breaking pivot
+is charged twice in (90) or in the recursion (94).
+Proof. By definition, every carrier cycle meeting an activity is cut at all of that activity’s incident pivots,
+and every remaining activity-free carrier cycle is cut at its least closure pivot in Rg (F). Hence a cycle in
+the residual carrier graph would avoid both sets, contradicting (87); this proves (i). On the resulting
+rooted forest, deterministic depth-first exploration gives a total order on first visits to pivots. Assign a
+hyperedge at the first visited member of its incidence set. This assignment is unique, while every other
+incidence can only attach a branch to an already assigned hyperedge, proving (ii). The product-group
+convolution of Lemma 6.35 contains the complete activity factor and all covered one-pivot densities before
+any scalar split. Lemma 6.31 then separates its nuclear loss from the unused scalar incidence reserve.
+The first-incidence exploration retains one and only one copy of the promoted activity magnitude. These
+operations act on distinct factors of the majorant, proving (iii) and the final claim.
+Lemma 6.38 (Multi-pivot nuclear family contraction). Let P = |Pg |, U = |U (F)|, and Rc = |Rg (F)|.
+Before the scalar coverage split and the single denominator are applied, every unmarked family numerator
+satisfies
+                                  |V | (0)
+                                                           Y                 Y
+                ∥Ng,F ∥ ≤ Cend J∗ g (Ctr )U +Rc θ⋆P −U −Rc    ∥e
+                                                               zA,J ∥AIP (A)    e−κcov n(A) .       (89)
+                                                             A∈F                    A∈F
+
+At allocated total passive mark order k ≤ 3 + Q, the same estimate holds with the corresponding fixed
+marked constants and a fixed polynomial in the pivot counts. After applying Lemma 6.31 and the single
+denominator,
+                                                      Rc
+                                             (0)
+                                                                       Y
+                        ∥Ag,F ∥ ≤ Cend Jg,k Ctr eζV /2     θbP −Rc −ℓk   wA,k(A) .               (90)
+                                                                              A∈F
+
+Here A k(A) + kref + kjun = k and 0 ≤ ℓk ≤ k is the number of distinct formerly unmarked pivot
+      P
+payments actually removed by the marks.
+
+
+
+
+                                                      67
+Proof. Work first at finite cutoff. By Lemma 6.35, the pivots in U form one trace-class product-group
+convolution operator KU,F . Tensor it with the clean one-pivot trace-class kernels at Rg (F). Lemma 6.37
+shows that cutting the lines in U ∪ Rg (F) breaks every physical carrier cycle and allocates each activity
+exactly once, so the remaining carrier and junction contraction is a bounded operator on Hg,F . Every
+selected pivot outside the trace set is activity-free and lies on a nontrivial carrier line; integrate it with
+Kp Qp in operator norm and gain θ⋆ . Schatten ideal multiplication and | Tr S| ≤ ∥S∥1 give (89) without a
+cutoff-dimension factor.
+                 (0)
+   The factor (Ctr /θ⋆ )U is paid by (77). Insert the denominator bound exactly once. The remaining
+unmarked factor is
+                                      (0)
+                                                                     Y
+                                   (Ctr eζV /2 )Rc (θ⋆ eζV /2 )P −Rc   wA,0 .
+                                                                           A
+The marked estimate follows coefficientwise from the marked Fourier–Wiener Banach algebra, fixed-order
+Leibniz, and the one denominator quotient rule. Its cutoff-independent right side gives trace-norm cutoff
+removal and dominated convergence.
+  Let ε∞ be the weighted row for a physical discovery edge with no clean trace pivot and let ε1 be the
+row for a clean cycle-breaking edge. Equation (90) gives
+                                                               (0)                 ′
+                       ε∞ ≤ C(1 + N )s θbN ,           ε1 ≤ C(Ctr eζV /2 )(1 + N )s θbN −1 .              (91)
+Activity-hit edges require no separate closure factor: all their incidence pivots belong to the product-group
+nuclear operator, and their nuclear loss is paid by the scalar coverage reserve.
+  For 0 ≤ B ≤ 1 define                            X
+                                    Ξ(B) := sup       ωA,0 (1 + B)n(A)−1 .                                (92)
+                                      
