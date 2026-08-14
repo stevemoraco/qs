@@ -1,0 +1,69 @@
+name: Official statement identity firewall verifier
+
+on:
+  push:
+    branches:
+      - agent/clay-review-monolith-verifier-20260813-gpt56pro
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: ${{ !contains(github.event.head_commit.message, '[receipt-official-id]') }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Trust audit and AXLE replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/official_statement_identity/OfficialStatementIdentityFirewall.lean
+          mkdir -p evidence/official-statement-identity
+          git hash-object "$SRC" > evidence/official-statement-identity/source-git-blob.txt
+          sha256sum "$SRC" > evidence/official-statement-identity/source-sha256.txt
+          python3 - <<'PY'
+          import json, pathlib, re, urllib.request
+          p=pathlib.Path('verification/official_statement_identity/OfficialStatementIdentityFirewall.lean')
+          text=p.read_text()
+          for token in ('sorry','admit','sorryAx','axiom','opaque','unsafe','native_decide','Lean.ofReduceBool'):
+              if re.search(r'(?<![A-Za-z0-9_])'+re.escape(token)+r'(?![A-Za-z0-9_])', text):
+                  raise SystemExit('forbidden source token: '+token)
+          if text.count('#print axioms') != 4:
+              raise SystemExit('expected four axiom reports')
+          payload=json.dumps({'content':text,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=960) as r: result=json.load(r)
+          pathlib.Path('evidence/official-statement-identity/response.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(result,indent=2))
+          lean=result.get('lean_messages',{}); tool=result.get('tool_messages',{})
+          if not result.get('okay') or result.get('failed_declarations') or lean.get('errors') or lean.get('warnings') or tool.get('errors') or tool.get('warnings'):
+              raise SystemExit('verification failed')
+          rendered=json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          PY
+      - name: Write receipt
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, os
+          r=json.load(open('evidence/official-statement-identity/response.json'))
+          infos=r.get('lean_messages',{}).get('infos',[])
+          body='''# Official-statement identity firewall replay\n\n- Result: `SUCCESS`\n- Source commit: `{commit}`\n- Compiler: `AXLE Lean 4.30.0`\n- AXLE okay: `{okay}`\n- Cached: `{cached}`\n- Failed declarations: `{failed}`\n- Lean errors: `{errors}`\n- Lean warnings: `{warnings}`\n- Axiom output: `{infos}`\n\nThis verifies only the finite statement-identity/no-free-lunch firewall. It does not define or prove any official Millennium statement.\n'''.format(commit=os.environ['GITHUB_SHA'],okay=r.get('okay'),cached=r.get('info',{}).get('cached_response'),failed=r.get('failed_declarations',[]),errors=r.get('lean_messages',{}).get('errors',[]),warnings=r.get('lean_messages',{}).get('warnings',[]),infos=infos)
+          pathlib.Path('verification/official_statement_identity/REPLAY_RECEIPT.md').write_text(body)
+          PY
+          git config user.name millennium-replay-bot
+          git config user.email actions@users.noreply.github.com
+          git add verification/official_statement_identity/REPLAY_RECEIPT.md
+          git commit -m '[receipt-official-id] record statement identity replay'
+          git push origin HEAD:${GITHUB_REF_NAME}
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-statement-identity-evidence
+          path: evidence/official-statement-identity/
+          if-no-files-found: error
