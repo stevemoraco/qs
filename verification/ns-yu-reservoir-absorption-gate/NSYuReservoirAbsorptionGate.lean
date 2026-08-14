@@ -59,7 +59,7 @@ theorem reservoirAbsorption_closes
   calc
     V ≤ (1 - eps) * P + B * O := hV
     _ ≤ (1 - eps) * P + B * (kappa * P) := by
-      exact add_le_add_left hBO ((1 - eps) * P)
+      exact add_le_add_right hBO ((1 - eps) * P)
     _ < P := by
       nlinarith
 
