@@ -39,7 +39,8 @@ theorem terminal_degree_three_index
     {R : Type*} [CommRing R] (u p q : R) :
     unitColumnDet p q (q ^ 2 * u ^ 2) (p ^ 2) =
       p ^ 3 - u ^ 2 * q ^ 3 := by
-  simp [unitColumnDet] <;> ring
+  unfold unitColumnDet
+  ring
 
 /-- For a ramified quadratic cusp plus a separate sheet, the multiplication
 coordinates give `p*(q^2-u^3*p^2)`. -/
@@ -47,7 +48,8 @@ theorem degree_two_plus_one_index
     {R : Type*} [CommRing R] (u p q : R) :
     unitColumnDet p q 0 (q ^ 2 - p ^ 2 * u ^ 3) =
       p * (q ^ 2 - u ^ 3 * p ^ 2) := by
-  simp [unitColumnDet] <;> ring
+  unfold unitColumnDet
+  ring
 
 /-- For the square-zero non-Gorenstein `1+2` order, the multiplication
 coordinates give `u*p*q^2-u^2*p^3`. -/
@@ -55,32 +57,37 @@ theorem square_zero_one_plus_two_index
     {R : Type*} [CommRing R] (u p q : R) :
     unitColumnDet p q 0 (q ^ 2 * u - p ^ 2 * u ^ 2) =
       u * p * q ^ 2 - u ^ 2 * p ^ 3 := by
-  simp [unitColumnDet] <;> ring
+  unfold unitColumnDet
+  ring
 
 /-- Discriminant of `Z^3-u^2*W^3`. -/
 theorem terminal_degree_three_discriminant
     {R : Type*} [CommRing R] (u : R) :
     cubicDisc 1 0 0 (-u ^ 2) = -27 * u ^ 4 := by
-  simp [cubicDisc] <;> ring
+  unfold cubicDisc
+  ring
 
 /-- Discriminant of `W*(Z^2-u^3*W^2)`. -/
 theorem degree_two_plus_one_discriminant
     {R : Type*} [CommRing R] (u : R) :
     cubicDisc 0 1 0 (-u ^ 3) = 4 * u ^ 3 := by
-  simp [cubicDisc] <;> ring
+  unfold cubicDisc
+  ring
 
 /-- Discriminant of `u*W*(Z^2-u*W^2)`. -/
 theorem square_zero_one_plus_two_discriminant
     {R : Type*} [CommRing R] (u : R) :
     cubicDisc 0 u 0 (-u ^ 2) = 4 * u ^ 5 := by
-  simp [cubicDisc] <;> ring
+  unfold cubicDisc
+  ring
 
 /-- If the leading coefficient vanishes, the discriminant factors as
 `b^2*(c^2-4*b*d)`. -/
 theorem leading_coefficient_zero_factorization
     {R : Type*} [CommRing R] (b c d : R) :
     cubicDisc 0 b c d = b ^ 2 * (c ^ 2 - 4 * b * d) := by
-  simp [cubicDisc] <;> ring
+  unfold cubicDisc
+  ring
 
 /-- Exact fixed-basis jet expansion for
 `B=b1*v`, `C=c1*v+c2*v^2`, `D=d1*v+d2*v^2+d3*v^3`. -/
@@ -94,7 +101,8 @@ theorem square_zero_vertical_jet_expansion
       b₁ ^ 2 * (c₁ ^ 2 - 4 * b₁ * d₁) * v ^ 4 +
       b₁ ^ 2 * (2 * c₁ * c₂ - 4 * b₁ * d₂) * v ^ 5 +
       b₁ ^ 2 * (c₂ ^ 2 - 4 * b₁ * d₃) * v ^ 6 := by
-  simp [cubicDisc] <;> ring
+  unfold cubicDisc
+  ring
 
 /-- After the order-four coefficient vanishes, the first two remaining
 coefficients are exactly the order-five and order-six jet coefficients. -/
