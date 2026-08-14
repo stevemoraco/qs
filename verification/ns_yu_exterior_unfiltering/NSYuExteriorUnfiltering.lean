@@ -79,7 +79,6 @@ theorem transverse_error_transfer (x y dx dy : ℝ) :
 budget. -/
 theorem crossSq_le_quartic_quadratic_budget
     (a x y b u z eta M : ℝ)
-    (heta : 0 ≤ eta)
     (hv : transverseSq x y ≤ eta ^ 2)
     (hw : transverseSq u z ≤ eta ^ 2)
     (ha : a ^ 2 ≤ M ^ 2)
@@ -185,7 +184,7 @@ theorem filter_dependent_lines_force_exterior_zero
   obtain ⟨a, x, y, b, u, z, hqeq, hv, hw, ha, hb⟩ := hframes eta heta
   rw [hqeq]
   exact crossSq_le_quartic_quadratic_budget
-    a x y b u z eta M (le_of_lt heta) hv hw ha hb
+    a x y b u z eta M hv hw ha hb
 
 #print axioms transverseSq_nonneg
 #print axioms crossSq_nonneg
