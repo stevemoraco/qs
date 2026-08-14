@@ -89,7 +89,7 @@ theorem no_uniform_quartic_bound_from_unitTangent_alone :
 
 theorem quartic_drift_abs_le_of_low_jet_bounds
     (a d b c A D B C : ℝ)
-    (hA0 : 0 ≤ A) (hD0 : 0 ≤ D) (hB0 : 0 ≤ B) (hC0 : 0 ≤ C)
+    (hA0 : 0 ≤ A) (hB0 : 0 ≤ B)
     (ha : |a| ≤ A) (hd : |d| ≤ D) (hb : |b| ≤ B) (hc : |c| ≤ C) :
     |a * b^2 - a^2 * b - a * c + b * d|
       ≤ A * B^2 + A^2 * B + A * C + B * D := by
@@ -105,17 +105,21 @@ theorem quartic_drift_abs_le_of_low_jet_bounds
     mul_le_mul ha hc (abs_nonneg c) hA0
   have h4 : |b| * |d| ≤ B * D :=
     mul_le_mul hb hd (abs_nonneg d) hB0
+  have hre :
+      a * b^2 - a^2 * b - a * c + b * d =
+        a * b^2 + (-(a^2 * b)) + (-(a * c)) + b * d := by
+    ring
+  rw [hre]
   calc
-    |a * b^2 - a^2 * b - a * c + b * d|
-        ≤ |a * b^2| + |a^2 * b| + |a * c| + |b * d| := by
-          calc
-            _ ≤ |a * b^2 - a^2 * b - a * c| + |b * d| := abs_add_le _ _
-            _ ≤ (|a * b^2 - a^2 * b| + |a * c|) + |b * d| := by
-              gcongr
-              exact abs_sub_le _ _
-            _ ≤ ((|a * b^2| + |a^2 * b|) + |a * c|) + |b * d| := by
-              gcongr
-              exact abs_sub_le _ _
+    |a * b^2 + (-(a^2 * b)) + (-(a * c)) + b * d|
+        ≤ |a * b^2 + (-(a^2 * b)) + (-(a * c))| + |b * d| :=
+          abs_add_le _ _
+    _ ≤ (|a * b^2 + (-(a^2 * b))| + |-(a * c)|) + |b * d| := by
+          gcongr
+          exact abs_add_le _ _
+    _ ≤ ((|a * b^2| + |-(a^2 * b)|) + |-(a * c)|) + |b * d| := by
+          gcongr
+          exact abs_add_le _ _
     _ = |a| * |b|^2 + |a|^2 * |b| + |a| * |c| + |b| * |d| := by
           simp [abs_mul, abs_pow]
     _ ≤ A * B^2 + A^2 * B + A * C + B * D := by
