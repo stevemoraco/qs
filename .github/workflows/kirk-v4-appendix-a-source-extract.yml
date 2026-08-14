@@ -1,0 +1,68 @@
+name: Kirk v4 Appendix A source extract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/kirk-v4-appendix-a-source-extract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and verify pinned source
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://zenodo.org/api/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence,%20Mass%20Gap,%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf/content'
+          curl --proto '=https' --tlsv1.2 -fL --retry 8 --retry-all-errors "$url" -o kirk-v4.pdf
+          echo 'c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa  kirk-v4.pdf' | sha256sum -c -
+          pdfinfo kirk-v4.pdf | tee kirk-v4-pdfinfo.txt
+
+      - name: Extract endpoint appendix and nearby theorem pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          pdftotext -layout -f 88 -l 108 kirk-v4.pdf kirk-v4-pages-88-108.txt
+          pdftotext -layout kirk-v4.pdf kirk-v4-full.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('kirk-v4-full.txt').read_text(encoding='utf-8', errors='replace')
+          needles = [
+              'Theorem 10.2', 'Theorem 10.4', 'Theorem 10.5',
+              'A.1 Grounded covariance', 'A.2', 'A.3', 'A.4', 'A.5',
+              'crossing cell', 'cell boundaries', 'terminal shell',
+              'no-crossing', 'total derivatives extend',
+          ]
+          out = []
+          for needle in needles:
+              start = 0
+              count = 0
+              while count < 12:
+                  i = text.find(needle, start)
+                  if i < 0:
+                      break
+                  out.append(
+                      f'=== {needle} hit {count + 1} ===\n' +
+                      text[max(0, i - 2500):min(len(text), i + 12000)] + '\n'
+                  )
+                  start = i + len(needle)
+                  count += 1
+          Path('kirk-v4-appendix-a-contexts.txt').write_text('\n'.join(out), encoding='utf-8')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-appendix-a-source
+          retention-days: 30
+          path: |
+            kirk-v4-pdfinfo.txt
+            kirk-v4-pages-88-108.txt
+            kirk-v4-appendix-a-contexts.txt
