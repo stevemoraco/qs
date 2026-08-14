@@ -18,9 +18,9 @@ theorem downstairs_det_five : chainDet [2, 2, 2, 2] = 5 := by
 after clearing the canonical denominator five. -/
 theorem downstairs_canonical_numerator :
     ((-2 : ℤ) * 8 + 6 = -10) ∧
-    (8 - 2 * 6 + 4 = 0) ∧
-    (6 - 2 * 4 + 2 = 0) ∧
-    (4 - 2 * 2 = 0) := by
+    ((8 : ℤ) - 2 * 6 + 4 = 0) ∧
+    ((6 : ℤ) - 2 * 4 + 2 = 0) ∧
+    ((4 : ℤ) - 2 * 2 = 0) := by
   norm_num
 
 /-- The three node-resolution Hirzebruch--Jung chains all have determinant five
@@ -45,9 +45,9 @@ theorem minimal_cover_unimodular : chainDet [1, 2, 2, 2] = 1 := by
 /-- `(4,3,2,1)` is the integral canonical cycle of the minimal cover graph. -/
 theorem minimal_cover_canonical_cycle :
     ((-4 : ℤ) + 3 = -1) ∧
-    (4 - 2 * 3 + 2 = 0) ∧
-    (3 - 2 * 2 + 1 = 0) ∧
-    (2 - 2 = 0) := by
+    ((4 : ℤ) - 2 * 3 + 2 = 0) ∧
+    ((3 : ℤ) - 2 * 2 + 1 = 0) ∧
+    ((2 : ℤ) - 2 = 0) := by
   norm_num
 
 /-- The first cyclic-cover node has total-pullback valuations `5,3,1`. -/
