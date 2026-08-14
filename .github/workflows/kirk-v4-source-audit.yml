@@ -26,6 +26,7 @@ jobs:
           set -euo pipefail
           mkdir -p evidence
           python3 - <<'PY'
+          import hashlib
           import json
           import pathlib
           import time
@@ -48,13 +49,13 @@ jobs:
                   request = urllib.request.Request(url, headers=local)
                   try:
                       with urllib.request.urlopen(request, timeout=90) as response:
-                          return response.read()
+                          return response.read(), response.geturl()
                   except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
                       last = exc
                       time.sleep(min(2 ** attempt, 30))
               raise RuntimeError(f'failed to fetch {url}: {last}')
 
-          raw = get(api)
+          raw, record_final_url = get(api)
           pathlib.Path('evidence/record.json').write_bytes(raw)
           record = json.loads(raw)
           files = record.get('files', [])
@@ -62,13 +63,23 @@ jobs:
               raise RuntimeError(f'expected one source file, found {len(files)}')
           item = files[0]
           filename = item['key']
-          content_url = item['links']['content']
-          payload = get(content_url, 'application/pdf')
+          links = item.get('links', {})
+          content_url = links.get('content') or links.get('self')
+          if not content_url:
+              raise RuntimeError(f'no usable content link; keys={sorted(links)}')
+          payload, content_final_url = get(content_url, 'application/pdf')
           if not payload.startswith(b'%PDF-'):
               raise RuntimeError('downloaded payload is not a PDF')
+          declared = item.get('checksum', '')
+          actual_md5 = hashlib.md5(payload).hexdigest()
+          if declared.startswith('md5:') and actual_md5 != declared[4:]:
+              raise RuntimeError(
+                  f'checksum mismatch: declared={declared[4:]} actual={actual_md5}')
           out = pathlib.Path('evidence') / filename
           out.write_bytes(payload)
           pathlib.Path('evidence/source-name.txt').write_text(filename + '\n')
+          pathlib.Path('evidence/final-urls.txt').write_text(
+              f'record={record_final_url}\ncontent={content_final_url}\n')
           print(f'downloaded {filename}: {len(payload)} bytes')
           PY
 
@@ -86,9 +97,9 @@ jobs:
           wc -l -w -c evidence/kirk-v4.txt | tee evidence/text-size.txt
           grep -nE '^(Theorem|Lemma|Proposition|Corollary|Assumption|Hypothesis|Definition)[[:space:]]+[0-9]' \
             evidence/kirk-v4.txt > evidence/numbered-results.txt || true
-          grep -nE 'Theorem 5\.5|Theorem 5\.27|O\(u\^4\)|third[- ]jet|finite[- ]volume|wrapp|periodic|Haar|mass gap|Osterwalder' \
+          grep -nE 'Theorem 5\.5|Theorem 5\.27|O\(u\^4\)|third[- ]jet|finite[- ]volume|wrapp|periodic|Haar|mass gap|Osterwalder|Lemma 6\.23|Lemma 6\.30|Lemma 6\.38|Theorem 6\.39' \
             evidence/kirk-v4.txt > evidence/targeted-index.txt || true
-          head -200 evidence/targeted-index.txt | tee evidence/targeted-index-head.txt
+          head -250 evidence/targeted-index.txt | tee evidence/targeted-index-head.txt
 
       - name: Preserve exact source audit artifact
         uses: actions/upload-artifact@v4
