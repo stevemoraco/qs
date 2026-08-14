@@ -1,0 +1,113 @@
+name: NS fixed-cutoff dilation firewall replay
+
+on:
+  push:
+    branches:
+      - verification/ns-fixed-cutoff-dilation-firewall-20260814
+    paths:
+      - 'verification/ns-fixed-cutoff-dilation-firewall/**'
+      - '.github/workflows/ns-fixed-cutoff-dilation-firewall.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check exact canonical blob and trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-fixed-cutoff-dilation-firewall/FixedCutoffDilationCommutatorFirewall.lean
+          test "$(git hash-object "$file")" = ccd9b906818b69c564b79b3a3074137a46d52279
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            exit 1
+          fi
+          sha256sum "$file" | tee verification/ns-fixed-cutoff-dilation-firewall/source-sha256.txt
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/ns-fixed-cutoff-dilation-firewall
+          cat > "$root/lean-toolchain" <<'EOF'
+          leanprover/lean4:v4.32.1
+          EOF
+          cat > "$root/lakefile.toml" <<'EOF'
+          name = "ns-fixed-cutoff-dilation-firewall"
+          version = "0.1.0"
+          defaultTargets = []
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.1"
+          EOF
+          cd "$root"
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+
+      - name: Compile and audit all theorem axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/ns-fixed-cutoff-dilation-firewall
+          lake env lean FixedCutoffDilationCommutatorFirewall.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq "sorryAx|declaration uses 'sorry'|Lean.ofReduceBool|unsolved goals|error:" lean-output.log; then
+            exit 1
+          fi
+          python3 - <<'PY'
+          import pathlib, re
+          out=pathlib.Path('lean-output.log').read_text()
+          names=[
+            'localized_stationarity_residual_decomposition',
+            'localized_stationarity_ledger',
+            'localized_stationarity_with_balanced_commutators',
+            'localized_stationarity_does_not_force_pure_homogeneity',
+            'quotient_saturation_does_not_force_amplitude_euler_pair',
+          ]
+          allowed={'propext','Classical.choice','Quot.sound'}
+          for name in names:
+            prefix=f"'Millennium.NavierStokes.{name}'"
+            reports=re.findall(
+              rf"{re.escape(prefix)} (?:does not depend on any axioms|depends on axioms:\s*\[([^\]]*)\])",
+              out, flags=re.S)
+            if len(reports)!=1:
+              raise SystemExit(f'missing or duplicate axiom report: {name}')
+            if reports[0]:
+              used={x.strip() for x in reports[0].split(',') if x.strip()}
+              if not used <= allowed:
+                raise SystemExit(f'unexpected axioms for {name}: {used-allowed}')
+          print('AXIOM AUDIT PASS: 5 reports; accepted foundations only')
+          PY
+          echo 'VERIFIED fixed-cutoff dilation finite firewall.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-fixed-cutoff-dilation-firewall-evidence
+          path: |
+            verification/ns-fixed-cutoff-dilation-firewall/FixedCutoffDilationCommutatorFirewall.lean
+            verification/ns-fixed-cutoff-dilation-firewall/source-sha256.txt
+            verification/ns-fixed-cutoff-dilation-firewall/lean-output.log
+            verification/ns-fixed-cutoff-dilation-firewall/lean-version.txt
+            verification/ns-fixed-cutoff-dilation-firewall/lake-version.txt
+            verification/ns-fixed-cutoff-dilation-firewall/mathlib-commit.txt
+          if-no-files-found: warn
