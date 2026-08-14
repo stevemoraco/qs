@@ -44,9 +44,12 @@ theorem symbol_kernel_iff (b c : ℝ) :
     symbolNormSq b c = 0 ↔ b = 0 ∧ c = 0 := by
   constructor
   · intro h
-    have hb : b ^ 2 = 0 := by nlinarith [sq_nonneg c]
-    have hc : c ^ 2 = 0 := by nlinarith [sq_nonneg b]
-    exact ⟨sq_eq_zero_iff.mp hb, sq_eq_zero_iff.mp hc⟩
+    change b ^ 2 + c ^ 2 = 0 at h
+    have hb2 : b ^ 2 = 0 := by
+      nlinarith [sq_nonneg b, sq_nonneg c]
+    have hc2 : c ^ 2 = 0 := by
+      nlinarith [sq_nonneg b, sq_nonneg c]
+    exact ⟨sq_eq_zero_iff.mp hb2, sq_eq_zero_iff.mp hc2⟩
   · rintro ⟨rfl, rfl⟩
     norm_num [symbolNormSq]
 
@@ -75,8 +78,9 @@ theorem symbol_bounded_by_full_stress
     symbolNormSq b c ≤
       a ^ 2 + b ^ 2 + c ^ 2 + b ^ 2 + d ^ 2 + e ^ 2 +
       c ^ 2 + e ^ 2 + f ^ 2 := by
-  simp [symbolNormSq]
-  positivity
+  unfold symbolNormSq
+  nlinarith [sq_nonneg a, sq_nonneg b, sq_nonneg c,
+    sq_nonneg d, sq_nonneg e, sq_nonneg f]
 
 #check visible_norm_isometry
 #check symbol_kernel_iff
