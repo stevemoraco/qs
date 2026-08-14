@@ -1,0 +1,63 @@
+name: B2 round62 public Lean replay
+
+on:
+  push:
+    branches:
+      - verification/b2-round62-firewalls-20260813-gpt56
+    paths:
+      - 'verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean'
+      - '.github/workflows/b2-round62-firewalls.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean'
+      - '.github/workflows/b2-round62-firewalls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean'
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then exit 1; fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -nE '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+
+      - name: Submit exact source to Lean compile farm
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, time, urllib.error, urllib.request
+          API='https://lean-compile-farm.replit.app/api'
+          path=pathlib.Path('verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean')
+          def get(req, attempts=12):
+              last=None
+              for i in range(attempts):
+                  try:
+                      with urllib.request.urlopen(req, timeout=120) as r:
+                          return json.load(r)
+                  except Exception as e:
+                      last=e; time.sleep(min(5*(i+1),60))
+              raise RuntimeError(last)
+          req=urllib.request.Request(f'{API}/compile', data=json.dumps({'name':'b2-round62-public','lean_source':path.read_text()}).encode(), headers={'Content-Type':'application/json'}, method='POST')
+          job=get(req); jid=job['id']; print('job',jid,flush=True)
+          for _ in range(180):
+              time.sleep(20)
+              try: job=get(f'{API}/jobs/{jid}', attempts=4)
+              except RuntimeError as e: print('transient',e,flush=True); continue
+              print(json.dumps(job,indent=2),flush=True)
+              if job.get('status') in ('done','failed'):
+                  if job.get('verdict')!='VERIFIED' or job.get('sorry_count')!=0: raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('timeout')
+          PY
