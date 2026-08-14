@@ -1,0 +1,188 @@
+name: Millennium all-refs public verifier
+
+on:
+  push:
+    branches:
+      - agent/millennium-allrefs-public-verifier-20260813-gpt56
+    paths:
+      - 'verification/millennium-allrefs-public/**'
+      - '.github/workflows/millennium-allrefs-public-verifier.yml'
+  pull_request:
+    paths:
+      - 'verification/millennium-allrefs-public/**'
+      - '.github/workflows/millennium-allrefs-public-verifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: millennium-allrefs-public-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact verifier head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch every public branch and pull-request head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --force --prune --no-tags origin \
+            '+refs/heads/*:refs/remotes/origin/*'
+          git fetch --force --prune --no-tags origin \
+            '+refs/pull/*/head:refs/remotes/origin/pr/*'
+          git for-each-ref --format='%(refname)' \
+            refs/heads refs/remotes/origin refs/tags \
+            | sort > verification/millennium-allrefs-public/fetched-refs.txt
+
+      - name: Generate exact public all-ref theorem inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            verification/millennium-allrefs-public/generate_public_allrefs.py
+          python3 verification/millennium-allrefs-public/generate_public_allrefs.py \
+            | tee verification/millennium-allrefs-public/generation.log
+          test -s verification/millennium-allrefs-public/PublicAllRefsEverythingGenerated.lean
+          test -s verification/millennium-allrefs-public/public-allrefs-report.json
+          grep -q 'minimumSevenHundredGate' \
+            verification/millennium-allrefs-public/PublicAllRefsEverythingGenerated.lean
+
+      - name: Pin sources and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          paths = [
+              pathlib.Path('verification/millennium-grand-braid-everything/MillenniumGrandBraidEverythingExecutable.lean'),
+              pathlib.Path('verification/millennium-allrefs-public/PublicAllRefsEverythingGenerated.lean'),
+          ]
+          decl_escape = re.compile(r'(?m)^\s*(?:axiom|opaque|unsafe)\s+[A-Za-z_]')
+          proof_hole = re.compile(r'(?<![A-Za-z0-9_])(sorry|admit|sorryAx)(?![A-Za-z0-9_])')
+          for path in paths:
+              text = path.read_text()
+              if decl_escape.search(text) or proof_hole.search(text):
+                  raise SystemExit(f'trust escape in {path}')
+              for token in ('native_decide', 'Lean.ofReduceBool'):
+                  if token in text:
+                      raise SystemExit(f'{token} in {path}')
+          print('public all-ref trust preflight: clean')
+          PY
+
+      - name: Build one standalone source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path(
+            'verification/millennium-grand-braid-everything/'
+            'MillenniumGrandBraidEverythingExecutable.lean'
+          ).read_text()
+          generated = Path(
+            'verification/millennium-allrefs-public/'
+            'PublicAllRefsEverythingGenerated.lean'
+          ).read_text().splitlines()
+          body = '\n'.join(
+            line for line in generated
+            if line not in ('import Mathlib',
+              'import MillenniumGrandBraidEverythingExecutable')
+          )
+          out = Path('verification/millennium-allrefs-public/everything-standalone.lean')
+          out.write_text(base + '\n\n' + body + '\n')
+          print('standalone lines:', len(out.read_text().splitlines()))
+          print('axiom reports:', out.read_text().count('#print axioms'))
+          PY
+
+      - name: Execute exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          root = pathlib.Path('verification/millennium-allrefs-public')
+          source = (root / 'everything-standalone.lean').read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 2400,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=2460) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+          (root / 'axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          errs = result.get('lean_messages', {}).get('errors', [])
+          warns = result.get('lean_messages', {}).get('warnings', [])
+          terrs = result.get('tool_messages', {}).get('errors', [])
+          twarns = result.get('tool_messages', {}).get('warnings', [])
+          failed = result.get('failed_declarations', [])
+          if not result.get('okay') or errs or warns or terrs or twarns or failed:
+              raise SystemExit('Lean/AXLE failed or warned')
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          print('VERIFIED WARNING-FREE PUBLIC ALL-REF BANK')
+          PY
+
+      - name: Record exact provenance
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=verification/millennium-allrefs-public
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "head=$(git rev-parse HEAD)"
+            echo "runner=${RUNNER_NAME}"
+            echo "environment=lean-4.30.0"
+            sha256sum \
+              verification/millennium-grand-braid-everything/MillenniumGrandBraidEverythingExecutable.lean \
+              "$out/generate_public_allrefs.py" \
+              "$out/PublicAllRefsEverythingGenerated.lean" \
+              "$out/everything-standalone.lean" \
+              "$out/public-allrefs-report.json"
+          } > "$out/replay-metadata.txt"
+          cat "$out/replay-metadata.txt"
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-allrefs-public-evidence
+          path: |
+            verification/millennium-allrefs-public/PublicAllRefsEverythingGenerated.lean
+            verification/millennium-allrefs-public/public-allrefs-report.json
+            verification/millennium-allrefs-public/fetched-refs.txt
+            verification/millennium-allrefs-public/generation.log
+            verification/millennium-allrefs-public/everything-standalone.lean
+            verification/millennium-allrefs-public/axle-response.json
+            verification/millennium-allrefs-public/replay-metadata.txt
+          if-no-files-found: warn
