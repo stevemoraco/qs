@@ -15,7 +15,7 @@ and a corrected inverse-coupling coordinate `phi n` has one-step defect
     |(phi (n+1) - phi n) + 1| <= K * (u n)^2.
 
 Then the total defect up to any crossing index `N` is not of logarithmic size.
-It is bounded by the *finite coupling budget*
+It is bounded by the finite coupling budget
 
     (K / beta) * (u N - u 0).
 
@@ -25,7 +25,7 @@ Consequently, if the trajectory is stopped at a fixed weak-coupling threshold
     |phi N - phi 0 + N| <= (K / beta) * U.
 
 This is the finite summability mechanism needed after extracting the universal
-logarithmic counterterm from a two-loop RG recurrence.  It shows that local
+logarithmic counterterm from a two-loop RG recurrence. It shows that local
 `O(u^2)` corrected-coordinate errors accumulate to `O(1)` because every RG
 step consumes at least a quadratic amount of coupling growth.
 
@@ -58,8 +58,7 @@ theorem sum_range_scaled_forward_differences
       rw [Finset.sum_range_succ, ih]
       ring
 
-/-- Triangle inequality for an arbitrary finite range sum, proved here by
-induction so the later result does not depend on a specialized sum lemma. -/
+/-- Triangle inequality for an arbitrary finite range sum. -/
 theorem abs_sum_range_le_sum_abs
     (f : ℕ → ℝ) (N : ℕ) :
     |∑ n ∈ Finset.range N, f n| ≤ ∑ n ∈ Finset.range N, |f n| := by
@@ -67,10 +66,10 @@ theorem abs_sum_range_le_sum_abs
   | zero => simp
   | succ N ih =>
       rw [Finset.sum_range_succ, Finset.sum_range_succ]
-      exact le_trans (abs_add _ _) (add_le_add ih (le_refl _))
+      exact le_trans (abs_add_le _ _) (add_le_add ih (le_refl _))
 
 /-- Quadratic RG growth converts a local `K u^2` defect into a finite endpoint
-budget.  This is the key summability estimate. -/
+budget. This is the key summability estimate. -/
 theorem quadratic_growth_defect_budget
     (u err : ℕ → ℝ) (N : ℕ)
     {beta K : ℝ}
@@ -92,7 +91,6 @@ theorem quadratic_growth_defect_budget
       |err n| ≤ K * (u n)^2 := hlocal n hnlt
       _ = (K / beta) * (beta * (u n)^2) := by
         field_simp [ne_of_gt hbeta]
-        <;> ring
       _ ≤ (K / beta) * (u (n + 1) - u n) :=
         mul_le_mul_of_nonneg_left (hgrowth n hnlt) hcoef
   calc
