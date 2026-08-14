@@ -22,51 +22,54 @@ jobs:
           fi
       - name: Pin immutable latest source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract complete endpoint appendix and load-bearing contexts
+      - name: Extract Appendix-A theorem contexts and load-bearing phrases
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
 
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
-          # PDF text layout breaks appendix titles across columns/lines.  Use
-          # theorem anchors rather than the table-of-contents strings.
           a1 = text.find('Lemma A.1 (Grounded-torus curvature covariance)')
-          b1 = text.find('Lemma B.1', a1 + 1)
-          if a1 < 0 or b1 < 0 or b1 <= a1:
-              raise SystemExit(f'appendix theorem anchors not found: a1={a1} b1={b1}')
-          start = max(0, a1 - 1200)
-          appendix = text[start:b1]
-          if len(appendix) < 10000:
-              raise SystemExit(f'appendix extraction implausibly short: {len(appendix)} chars')
-          Path('kirk_v4_appendix_A_endpoint_packet_shell.txt').write_text(appendix, encoding='utf-8')
+          if a1 < 0:
+              raise SystemExit('Lemma A.1 anchor not found')
+          tail = text[a1:]
 
-          headings = []
-          for m in re.finditer(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(A\.\d+)\b.*$', appendix):
-              headings.append(' '.join(m.group(0).split()))
-          if len(headings) < 5:
-              raise SystemExit(f'appendix heading inventory implausibly short: {headings!r}')
+          heading_re = re.compile(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(A\.\d+)\b.*$')
+          matches = list(heading_re.finditer(tail))
+          headings = [' '.join(m.group(0).split()) for m in matches]
+          if len(matches) < 5:
+              raise SystemExit(f'Appendix-A heading inventory implausibly short: {headings!r}')
           Path('kirk_v4_appendix_A_headings.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
+
+          # Preserve bounded source contexts around every Appendix-A theorem,
+          # rather than redistributing the full manuscript or depending on
+          # fragile PDF-layout section-title anchors.
+          theorem_contexts=[]
+          for m in matches:
+              s=max(0,m.start()-600)
+              e=min(len(tail),m.start()+9000)
+              theorem_contexts.append('=== ' + ' '.join(m.group(0).split()) + ' ===\n' + tail[s:e])
+          Path('kirk_v4_appendix_A_theorem_contexts.txt').write_text('\n\n'.join(theorem_contexts),encoding='utf-8')
 
           targets = [
               'Theorem 10.4', 'Theorem A.9', 'terminal-shell', 'terminal remainder', 'crossing cell',
               'geometrically summable', 'summable majorant', 'twice-marked',
               'same-owner', 'owner', 'wrapping', 'compact entrance', 'conditional packet',
-              'uniform', 'independent of cutoff', 'independent of volume'
+              'uniform', 'independent of cutoff', 'independent of volume', 'C2', 'C²'
           ]
-          low = appendix.lower()
-          out=[]
+          low=tail.lower(); out=[]
           for target in targets:
               pos=0
-              hits=0
-              while hits < 20:
-                  i=low.find(target.lower(), pos)
-                  if i < 0: break
-                  out.append(f'=== {target} hit {hits+1} ===\n' +
-                             ' '.join(appendix[max(0,i-1800):min(len(appendix),i+4200)].split()) + '\n')
-                  pos=i+len(target); hits+=1
-          Path('kirk_v4_appendix_A_audit_contexts.txt').write_text('\n'.join(out), encoding='utf-8')
-          print(f'Appendix A chars: {len(appendix)}; headings: {len(headings)}')
+              for hit in range(20):
+                  i=low.find(target.lower(),pos)
+                  if i<0: break
+                  out.append(f'=== {target} hit {hit+1} ===\n' +
+                             ' '.join(tail[max(0,i-1800):min(len(tail),i+4200)].split()) + '\n')
+                  pos=i+len(target)
+          if not out:
+              raise SystemExit('no load-bearing contexts extracted')
+          Path('kirk_v4_appendix_A_audit_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
+          print(f'A.1 offset: {a1}; Appendix-A headings: {len(headings)}')
           print('\n'.join(headings))
           PY
       - name: Preserve source-audit certificate
@@ -78,6 +81,6 @@ jobs:
           path: |
             kirk_latest_record.json
             kirk_source_probe_report.json
-            kirk_v4_appendix_A_endpoint_packet_shell.txt
             kirk_v4_appendix_A_headings.txt
+            kirk_v4_appendix_A_theorem_contexts.txt
             kirk_v4_appendix_A_audit_contexts.txt
