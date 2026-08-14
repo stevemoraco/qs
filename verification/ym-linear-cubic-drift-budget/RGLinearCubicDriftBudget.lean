@@ -29,14 +29,16 @@ theorem linear_cubic_drift_weighted_budget
       (D / beta) * (u N - u 0) := by
   have hcoef : 0 ≤ D / beta :=
     div_nonneg hD (le_of_lt hbeta)
-  have htel :
-      Finset.sum (Finset.range N) (fun n => u (n + 1) - u n) =
-        u N - u 0 := by
-    induction N with
+  have htel_all : ∀ M : ℕ,
+      Finset.sum (Finset.range M) (fun n => u (n + 1) - u n) =
+        u M - u 0 := by
+    intro M
+    induction M with
     | zero => simp
-    | succ N ih =>
+    | succ M ih =>
         rw [Finset.sum_range_succ, ih]
         ring
+  have htel := htel_all N
   calc
     Finset.sum (Finset.range N) (fun n => |delta n| * u n)
         ≤ Finset.sum (Finset.range N) (fun n => D * (u n)^2) := by
