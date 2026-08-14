@@ -31,8 +31,8 @@ jobs:
         run: |
           set -euo pipefail
           file=BSDOneLayerExactification.lean
-          test "$(git hash-object "$file")" = "35e190561310612f3fa2e02e9bd7e8092b1160cf"
-          echo "da872b09ac1a8eb082b262c2a73648e30119c7a168a20624cf7577a28b76de30  $file" | sha256sum -c -
+          test "$(git hash-object "$file")" = "6f9f04f514a8d47543de295a78c99dae64905829"
+          echo "f25c2bd9ccd768aef16a9477f8ac4b940affdb8db8755a8304a9043ecb067e2a  $file" | sha256sum -c -
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
