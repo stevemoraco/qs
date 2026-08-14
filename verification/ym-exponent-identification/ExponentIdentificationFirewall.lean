@@ -16,9 +16,12 @@ correlator `G(t) = exp (-m*t)`, every pair `0 < r < m` satisfies
 while `m != r`.
 
 Thus a polymer decay upper bound and a transfer-matrix lower bound can at most
-order the two exponents without an additional sharpness theorem.  This finite
-firewall does not formalize Yang--Mills fields, transfer matrices, polymer
-expansions, continuum limits, or Osterwalder--Schrader reconstruction.
+order the two exponents without an additional sharpness theorem.  In fact the
+spectral rate can overshoot the polymer rate by an arbitrarily prescribed
+factor while preserving bounds of exactly this shape.
+
+This finite firewall does not formalize Yang--Mills fields, transfer matrices,
+polymer expansions, continuum limits, or Osterwalder--Schrader reconstruction.
 -/
 
 namespace Millennium.YangMills
@@ -67,9 +70,28 @@ theorem arbitrary_strict_rate_separation_is_compatible
   · intro t ht
     exact exponential_rate_order_gives_bound r m t (le_of_lt hrm) ht
 
+/-- No regulator-independent upper comparison of a spectral rate by a polymer
+rate follows from bounds of this shape alone.  Given any positive polymer rate
+`r` and any requested overshoot factor `K >= 1`, one may take `m = K*r` and
+`G(t)=exp(-m*t)`.  The same two exponential inequalities hold while
+`K*r <= m`. -/
+theorem arbitrary_spectral_overshoot_is_compatible
+    (r K : ℝ) (hr : 0 < r) (hK : 1 ≤ K) :
+    ∃ (m : ℝ) (G : ℝ → ℝ),
+      K * r ≤ m ∧
+      (∀ t : ℝ, 0 ≤ t → Real.exp (-m * t) ≤ G t) ∧
+      (∀ t : ℝ, 0 ≤ t → G t ≤ Real.exp (-r * t)) := by
+  have hrm : r ≤ K * r := by nlinarith
+  refine ⟨K * r, (fun t : ℝ => Real.exp (-(K * r) * t)), le_rfl, ?_, ?_⟩
+  · intro t ht
+    exact le_rfl
+  · intro t ht
+    exact exponential_rate_order_gives_bound r (K * r) t hrm ht
+
 #print axioms exponential_rate_order_gives_bound
 #print axioms unit_prefactor_exponential_bound_forces_rate_order
 #print axioms two_sided_exponential_bounds_do_not_identify_rates
 #print axioms arbitrary_strict_rate_separation_is_compatible
+#print axioms arbitrary_spectral_overshoot_is_compatible
 
 end Millennium.YangMills
