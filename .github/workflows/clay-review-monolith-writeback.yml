@@ -1,0 +1,167 @@
+name: Clay review monolith replay with durable receipt
+
+on:
+  push:
+    branches:
+      - agent/clay-review-monolith-verifier-20260813-gpt56pro
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-record:
+    if: ${{ !contains(github.event.head_commit.message, '[receipt]') }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Audit and compile exact monolith
+        id: verify
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p evidence/clay-review-monolith-writeback
+          mapfile -t sources < <(find . -type f -name 'MillenniumBraidEverything.lean' -not -path './.git/*' | sort)
+          if [ "${#sources[@]}" -ne 1 ]; then
+            printf '{"okay":false,"stage":"discovery","message":"expected exactly one MillenniumBraidEverything.lean","count":%s}\n' "${#sources[@]}" > evidence/clay-review-monolith-writeback/result.json
+            exit 0
+          fi
+          SRC="${sources[0]}"
+          printf '%s\n' "$SRC" > evidence/clay-review-monolith-writeback/source-path.txt
+          git rev-parse HEAD > evidence/clay-review-monolith-writeback/checked-commit.txt
+          git hash-object "$SRC" > evidence/clay-review-monolith-writeback/source-git-blob.txt
+          sha256sum "$SRC" > evidence/clay-review-monolith-writeback/source-sha256.txt
+          wc -lc "$SRC" > evidence/clay-review-monolith-writeback/source-size.txt
+          python3 - "$SRC" <<'PY'
+          import hashlib, json, pathlib, re, sys, urllib.request
+          src=pathlib.Path(sys.argv[1]); text=src.read_text(encoding='utf-8')
+          # Code-only projection for trust scanning.
+          out=[]; i=0; block=0; line=False; string=False
+          while i < len(text):
+              pair=text[i:i+2]; ch=text[i]
+              if line:
+                  if ch=='\n': line=False; out.append('\n')
+                  else: out.append(' ')
+                  i+=1; continue
+              if block:
+                  if pair=='/-': block+=1; out.extend('  '); i+=2
+                  elif pair=='-/': block-=1; out.extend('  '); i+=2
+                  else: out.append('\n' if ch=='\n' else ' '); i+=1
+                  continue
+              if string:
+                  if ch=='\\' and i+1<len(text): out.extend('  '); i+=2
+                  elif ch=='"': string=False; out.append(' '); i+=1
+                  else: out.append('\n' if ch=='\n' else ' '); i+=1
+                  continue
+              if pair=='--': line=True; out.extend('  '); i+=2
+              elif pair=='/-': block=1; out.extend('  '); i+=2
+              elif ch=='"': string=True; out.append(' '); i+=1
+              else: out.append(ch); i+=1
+          code=''.join(out)
+          forbidden={
+            'proof_holes': re.findall(r'\b(?:sorry|admit|sorryAx)\b',code),
+            'custom_carriers': re.findall(r'(?m)^\s*(?:axiom|constant|opaque)\b',code),
+            'trust_escapes': re.findall(r'\b(?:unsafe|partial|native_decide|Lean\.ofReduceBool|implemented_by|extern|run_cmd|run_elab|run_meta|run_tac|addDeclWithoutChecking|addDeclCore|addAndCompile|skipKernelTC)\b',code),
+          }
+          forbidden={k:sorted(set(v)) for k,v in forbidden.items() if v}
+          theorem_lemma=len(re.findall(r'(?m)^\s*(?:(?:private|protected|local|noncomputable)\s+|@\[[^\n]*\]\s*)*(?:theorem|lemma)\s+[A-Za-z0-9_\'.]+',code))
+          all_decl=len(re.findall(r'(?m)^\s*(?:(?:private|protected|local|noncomputable)\s+|@\[[^\n]*\]\s*)*(?:theorem|lemma|def|abbrev|structure|class|inductive|instance)\b',code))
+          audit={
+            'path':str(src),'sha256':hashlib.sha256(src.read_bytes()).hexdigest(),
+            'git_blob':None,'bytes':len(src.read_bytes()),'lines':text.count('\n')+1,
+            'theorem_lemma_declarations':theorem_lemma,'all_declarations':all_decl,
+            'print_axioms_commands':text.count('#print axioms'),'forbidden':forbidden,
+          }
+          pathlib.Path('evidence/clay-review-monolith-writeback/source-audit.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n')
+          if forbidden or theorem_lemma < 700 or audit['print_axioms_commands'] < 700:
+              result={'okay':False,'stage':'source-audit','audit':audit}
+          else:
+              payload=json.dumps({'content':text,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':1800}).encode()
+              req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+              try:
+                  with urllib.request.urlopen(req,timeout=1860) as response: axle=json.load(response)
+              except Exception as exc:
+                  axle={'okay':False,'request_exception':repr(exc),'lean_messages':{'errors':[],'warnings':[]},'tool_messages':{'errors':[],'warnings':[]},'failed_declarations':[]}
+              pathlib.Path('evidence/clay-review-monolith-writeback/axle-response.json').write_text(json.dumps(axle,indent=2,sort_keys=True)+'\n')
+              lean=axle.get('lean_messages',{}); tool=axle.get('tool_messages',{}); rendered=json.dumps(axle)
+              clean=bool(axle.get('okay')) and not axle.get('failed_declarations') and not lean.get('errors') and not lean.get('warnings') and not tool.get('errors') and not tool.get('warnings') and 'sorryAx' not in rendered and 'Lean.ofReduceBool' not in rendered
+              result={'okay':clean,'stage':'kernel-replay','audit':audit,'compiler':'AXLE Lean 4.30.0','axle':axle}
+          pathlib.Path('evidence/clay-review-monolith-writeback/result.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps({'okay':result.get('okay'),'stage':result.get('stage'),'audit':audit},indent=2))
+          PY
+
+      - name: Render durable receipt
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, os
+          base=pathlib.Path('evidence/clay-review-monolith-writeback')
+          result=json.loads((base/'result.json').read_text())
+          audit=result.get('audit',{})
+          axle=result.get('axle',{})
+          lean=axle.get('lean_messages',{}); tool=axle.get('tool_messages',{})
+          lines=[
+            '# Clay review monolith exact replay receipt','',
+            f"- Workflow source commit: `{os.environ.get('GITHUB_SHA','')}`",
+            f"- Result: `{'SUCCESS' if result.get('okay') else 'FAILURE'}`",
+            f"- Stage: `{result.get('stage','unknown')}`",
+            f"- Exact source path: `{audit.get('path','unknown')}`",
+            f"- Source SHA-256: `{audit.get('sha256','unknown')}`",
+            f"- Source bytes: `{audit.get('bytes','unknown')}`",
+            f"- Source lines: `{audit.get('lines','unknown')}`",
+            f"- Theorem/lemma declarations: `{audit.get('theorem_lemma_declarations','unknown')}`",
+            f"- All syntactic declarations: `{audit.get('all_declarations','unknown')}`",
+            f"- Staged `#print axioms`: `{audit.get('print_axioms_commands','unknown')}`",
+            f"- Source forbidden-token audit: `{audit.get('forbidden',{})}`",
+            f"- Compiler: `{result.get('compiler','not reached')}`",
+            f"- AXLE okay: `{axle.get('okay','not reached')}`",
+            f"- Cached response: `{axle.get('info',{}).get('cached_response','unknown')}`",
+            f"- Request ID: `{axle.get('info',{}).get('request_id','unknown')}`",
+            f"- Failed declarations: `{axle.get('failed_declarations',[])}`",
+            f"- Lean errors: `{lean.get('errors',[])}`",
+            f"- Lean warnings: `{lean.get('warnings',[])}`",
+            f"- Tool errors: `{tool.get('errors',[])}`",
+            f"- Tool warnings: `{tool.get('warnings',[])}`",'',
+            '## Honesty boundary','',
+            'A successful receipt verifies the exact monolithic finite/logical/conditional theorem bank. It does not prove RH, P versus NP, BSD, Hodge, Navier–Stokes, Yang–Mills, or replay Perelman’s full proof. The open native bridges remain explicit.',''
+          ]
+          pathlib.Path('verification/clay_review_monolith').mkdir(parents=True,exist_ok=True)
+          pathlib.Path('verification/clay_review_monolith/REPLAY_RECEIPT.md').write_text('\n'.join(lines))
+          PY
+
+      - name: Commit durable receipt to verifier branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'millennium-replay-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add verification/clay_review_monolith/REPLAY_RECEIPT.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m '[receipt] record exact monolith replay'
+          git push origin HEAD:${GITHUB_REF_NAME}
+
+      - name: Upload complete evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clay-review-monolith-writeback-evidence
+          path: evidence/clay-review-monolith-writeback/
+          if-no-files-found: error
+
+      - name: Enforce successful kernel verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          r=json.load(open('evidence/clay-review-monolith-writeback/result.json'))
+          if not r.get('okay'):
+              raise SystemExit('exact monolith did not pass the full replay gate')
+          PY
