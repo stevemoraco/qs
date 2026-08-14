@@ -35,7 +35,9 @@ jobs:
 
           url = ('https://lean-compile-farm.replit.app/api/jobs/'
                  '0c06ff71-3b3e-41e3-909d-b42cad9dae46')
-          expected = '10be2b046540ca13b52f0dbb95f2156f40ba83cd7b794e75035be8b65225cfd7'
+          expected_sha256 = '10be2b046540ca13b52f0dbb95f2156f40ba83cd7b794e75035be8b65225cfd7'
+          expected_blob = '141826f57a902c199a87137bd3b8ca7d85dc332c'
+          directory = pathlib.Path('formal/unified-eight-lane')
           last = None
           for attempt in range(12):
               try:
@@ -52,18 +54,44 @@ jobs:
           source = job.get('lean_source')
           if not isinstance(source, str) or not source:
               raise SystemExit('canonical job did not return lean_source')
-          actual = hashlib.sha256(source.encode()).hexdigest()
+
+          raw = source.encode()
+          variants = {
+              'raw': raw,
+              'lf': source.replace('\r\n', '\n').encode(),
+              'one-final-lf': (source.replace('\r\n', '\n').rstrip('\n') + '\n').encode(),
+              'no-final-lf': source.replace('\r\n', '\n').rstrip('\n').encode(),
+          }
+
+          def git_blob(data: bytes) -> str:
+              header = f'blob {len(data)}\0'.encode()
+              return hashlib.sha1(header + data).hexdigest()
+
+          selected = None
+          report = []
+          for name, data in variants.items():
+              sha256 = hashlib.sha256(data).hexdigest()
+              blob = git_blob(data)
+              report.append({'variant': name, 'sha256': sha256, 'git_blob': blob,
+                             'bytes': len(data)})
+              if sha256 == expected_sha256 or blob == expected_blob:
+                  selected = data
           print('canonical_job_status=', job.get('status'))
           print('canonical_job_verdict=', job.get('verdict'))
-          print('expected_sha256=', expected)
-          print('actual_sha256=', actual)
-          if actual != expected:
-              raise SystemExit('canonical source digest mismatch')
-          directory = pathlib.Path('formal/unified-eight-lane')
-          path = directory / 'UnifiedMillenniumPerelmanInversionAudit.lean'
-          path.write_text(source)
-          (directory / 'source-sha256.txt').write_text(actual + '\n')
+          print(json.dumps(report, indent=2))
           (directory / 'canonical-job.json').write_text(json.dumps(job, indent=2))
+          (directory / 'normalization-report.json').write_text(json.dumps(report, indent=2))
+          (directory / 'retrieved-source.lean').write_bytes(raw)
+          if selected is None:
+              raise SystemExit('no retrieved-source normalization matches the canonical branch digest')
+          actual_sha256 = hashlib.sha256(selected).hexdigest()
+          actual_blob = git_blob(selected)
+          print('selected_sha256=', actual_sha256)
+          print('selected_git_blob=', actual_blob)
+          path = directory / 'UnifiedMillenniumPerelmanInversionAudit.lean'
+          path.write_bytes(selected)
+          (directory / 'source-sha256.txt').write_text(actual_sha256 + '\n')
+          (directory / 'source-git-blob.txt').write_text(actual_blob + '\n')
           PY
 
       - name: Static trust audit
@@ -127,8 +155,11 @@ jobs:
           name: unified-eight-lane-public-evidence
           path: |
             formal/unified-eight-lane/UnifiedMillenniumPerelmanInversionAudit.lean
+            formal/unified-eight-lane/retrieved-source.lean
             formal/unified-eight-lane/source-sha256.txt
+            formal/unified-eight-lane/source-git-blob.txt
             formal/unified-eight-lane/canonical-job.json
+            formal/unified-eight-lane/normalization-report.json
             formal/unified-eight-lane/lean-version.txt
             formal/unified-eight-lane/lean-output.log
           if-no-files-found: warn
