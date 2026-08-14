@@ -33,17 +33,16 @@ theorem, a Poincare/Korn estimate, Navier--Stokes regularity, or blowup.
 
 namespace NSYuReservoirOptimizationFirewall
 
-/-- Necessity after clearing the positive Young denominator.  Any strict
-coefficient margin `delta^2 + A < delta` forces the discriminant condition
-`4*A < 1`. -/
+/-- Necessity after clearing the Young denominator.  Any strict coefficient
+margin `delta^2 + A < delta` forces the discriminant condition `4*A < 1`.
+The cleared polynomial implication itself does not need a sign assumption. -/
 theorem clearedYoungMargin_forces_quarter
     (A delta : ℝ)
-    (hdelta : 0 < delta)
     (hmargin : delta ^ 2 + A < delta) :
     4 * A < 1 := by
   nlinarith [sq_nonneg (2 * delta - 1)]
 
-/-- The discriminant condition is also sufficient: the explicit choice
+/-- The discriminant condition is also sufficient: the explicit positive choice
 `delta = 1/2` works. -/
 theorem quarterMargin_suffices_at_half
     (A : ℝ)
@@ -57,8 +56,8 @@ theorem existsStrictYoungMargin_iff
     (A : ℝ) :
     (∃ delta : ℝ, 0 < delta ∧ delta ^ 2 + A < delta) ↔ 4 * A < 1 := by
   constructor
-  · rintro ⟨delta, hdelta, hmargin⟩
-    exact clearedYoungMargin_forces_quarter A delta hdelta hmargin
+  · rintro ⟨delta, _hdelta, hmargin⟩
+    exact clearedYoungMargin_forces_quarter A delta hmargin
   · intro hA
     exact ⟨(1 : ℝ) / 2, by norm_num, quarterMargin_suffices_at_half A hA⟩
 
