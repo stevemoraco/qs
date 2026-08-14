@@ -86,7 +86,10 @@ theorem stable_nonzero_of_dvd_error_not_dvd_finite
   apply hfinite
   rcases herror with ⟨q, hq⟩
   refine ⟨-q, ?_⟩
-  omega
+  calc
+    finiteValue = -(0 - finiteValue) := by ring
+    _ = -(modulus * q) := by rw [hq]
+    _ = modulus * (-q) := by ring
 
 /-- A rank lower bound and a signed-Iwasawa upper bound squeeze the rank exactly
 when they coincide. -/
