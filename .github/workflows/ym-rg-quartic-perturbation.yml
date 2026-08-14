@@ -14,27 +14,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble theorem sources with candidate final repair
+      - name: Assemble exact mirrored theorem sources
         shell: bash
         run: |
           set -euo pipefail
           cp verification/ym-rg-quartic-perturbation/RGCubicLocalResidual.lean /tmp/RGCubicLocalResidual.lean
           cp verification/ym-rg-quartic-perturbation/RGQuarticPerturbation.lean /tmp/RGQuarticPerturbation.lean
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('/tmp/RGQuarticPerturbation.lean')
-          s = p.read_text()
-          s = s.replace(
-              '  have hr_lower : -R * u^4 ≤ r := by\n    exact neg_le_of_abs_le hr\n',
-              '  have hr_lower0 := neg_le_of_abs_le hr\n  have hr_lower : -R * u^4 ≤ r := by nlinarith\n')
-          s = s.replace(
-              '  have hr_lower : -R * u^4 ≤ r := neg_le_of_abs_le hr\n',
-              '  have hr_lower0 := neg_le_of_abs_le hr\n  have hr_lower : -R * u^4 ≤ r := by nlinarith\n')
-          s = s.replace(
-              '  unfold cubicRGStep\n  have hcu3 : 0 ≤ c * u^3 := by positivity\n  nlinarith [sq_nonneg u]\n',
-              '  unfold cubicRGStep\n  have hb0 : 0 ≤ b := le_of_lt hb\n  have hcu3 : 0 ≤ c * u^3 := by positivity\n  nlinarith [sq_nonneg u, hb0]\n')
-          p.write_text(s)
-          PY
           grep -v '^import Millennium.YangMills.RGCubicLocalResidual$' /tmp/RGQuarticPerturbation.lean > /tmp/RGQuarticPerturbation.body
           cat /tmp/RGCubicLocalResidual.lean /tmp/RGQuarticPerturbation.body > /tmp/Combined.lean
           for SRC in /tmp/RGCubicLocalResidual.lean /tmp/RGQuarticPerturbation.lean /tmp/Combined.lean; do
