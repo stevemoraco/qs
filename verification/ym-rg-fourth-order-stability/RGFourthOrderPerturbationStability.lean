@@ -130,7 +130,7 @@ theorem reciprocal_coordinate_perturbation_le
 fourth-order perturbation. -/
 theorem log_coordinate_perturbation_le
     (R u w v r : ℝ)
-    (hR : 0 ≤ R) (hu : 0 < u)
+    (hu : 0 < u)
     (hw : u ≤ w) (hv : u / 2 ≤ v)
     (hvr : v = w + r) (hrem : |r| ≤ R * u^4) :
     |Real.log v - Real.log w| ≤ 2 * R * u^3 := by
@@ -171,7 +171,7 @@ theorem correctedCoordinate_perturbation_le_quadratic
   have hrec := reciprocal_coordinate_perturbation_le
       b R u w v r hb hR hu hw hv hvr hrem
   have hlog := log_coordinate_perturbation_le
-      R u w v r hR hu hw hv hvr hrem
+      R u w v r hu hw hv hvr hrem
   unfold fourthOrderCorrectedCoordinate
   dsimp [w, v] at hrec hlog ⊢
   calc
@@ -184,12 +184,18 @@ theorem correctedCoordinate_perturbation_le_quadratic
         + |(c / b^2 - 1) *
             (Real.log (fourthOrderPerturbedStep b c u r) -
               Real.log (fourthOrderReferenceStep b c u))| := by
-          convert abs_add_le
-            (1 / (b * fourthOrderPerturbedStep b c u r) -
-              1 / (b * fourthOrderReferenceStep b c u))
-            ((c / b^2 - 1) *
-              (Real.log (fourthOrderPerturbedStep b c u r) -
-                Real.log (fourthOrderReferenceStep b c u))) using 1 <;> ring
+          have hdecomp :
+              (1 / (b * fourthOrderPerturbedStep b c u r) +
+                  (c / b^2 - 1) * Real.log (fourthOrderPerturbedStep b c u r)) -
+                (1 / (b * fourthOrderReferenceStep b c u) +
+                  (c / b^2 - 1) * Real.log (fourthOrderReferenceStep b c u)) =
+              (1 / (b * fourthOrderPerturbedStep b c u r) -
+                  1 / (b * fourthOrderReferenceStep b c u)) +
+                (c / b^2 - 1) *
+                  (Real.log (fourthOrderPerturbedStep b c u r) -
+                    Real.log (fourthOrderReferenceStep b c u)) := by ring
+          rw [hdecomp]
+          exact abs_add_le _ _
     _ ≤ (2 * R / b) * u^2 +
           |c / b^2 - 1| * (2 * R * u^3) := by
           rw [abs_mul]
