@@ -20,6 +20,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install PDF extraction tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends poppler-utils
+          pdfinfo -v 2>&1 | tee poppler-version.txt
+
       - name: Acquire exact Zenodo record and source PDF
         shell: bash
         run: |
@@ -104,6 +112,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kirk-yang-mills-v4-exact-source
-          path: evidence/
+          path: |
+            evidence/
+            poppler-version.txt
           if-no-files-found: error
           retention-days: 90
