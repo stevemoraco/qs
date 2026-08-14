@@ -28,10 +28,8 @@ jobs:
           from pathlib import Path
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
           targets = [
-            '1.4 External inputs and exact proof boundary',
             'Table 1: External standard inputs and exact proof boundary',
-            'SI–6 Lüscher–Weisz', 'SI–6B Finite lattice BPHZ',
-            'SI–7 Reisz lattice power', 'SI–7M Massless lattice',
+            'SI–6', 'SI–6B', 'SI–7', 'SI–7M',
             'Theorem 6.43', 'Theorem 6.44',
             'Lemma 8.2 (Depth-uniform physical rate floor)',
             'Theorem 8.9', 'Corollary 8.12', 'Lemma 8.13',
@@ -40,16 +38,12 @@ jobs:
             'Theorem 10.2', 'Theorem 10.4', 'Theorem 10.5',
             'Lemma 10.6', 'Corollary 10.7'
           ]
-          low = text.lower()
-          out = []
-          found = {}
+          low = text.lower(); out = []; found = {}
           for target in targets:
-            hits = []
-            start = 0
+            hits = []; start = 0
             for _ in range(16):
               i = low.find(target.lower(), start)
-              if i < 0:
-                break
+              if i < 0: break
               hits.append(i)
               out.append(
                 f'=== {target} hit {len(hits)} ===\n' +
@@ -58,11 +52,11 @@ jobs:
               start = i + len(target)
             found[target] = len(hits)
           required = [
-            '1.4 External inputs and exact proof boundary',
-            'SI–6 Lüscher–Weisz', 'SI–6B Finite lattice BPHZ',
-            'SI–7 Reisz lattice power', 'SI–7M Massless lattice',
+            'Table 1: External standard inputs and exact proof boundary',
+            'SI–6', 'SI–6B', 'SI–7', 'SI–7M',
             'Theorem 6.43', 'Lemma 8.2 (Depth-uniform physical rate floor)',
-            'Corollary 8.12', 'Theorem 10.5', 'Corollary 10.7'
+            'Corollary 8.12', 'Theorem 8.46','Theorem 9.1','Lemma 9.2',
+            'Theorem 10.5', 'Corollary 10.7'
           ]
           missing = [x for x in required if found.get(x, 0) == 0]
           Path('kirk_v4_si_table_correction_contexts.txt').write_text('\n'.join(out), encoding='utf-8')
