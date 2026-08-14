@@ -13,7 +13,7 @@ theorem enlarged_branch_ball_admission
   have hne : J ≠ 0 := ne_of_gt hJ
   have hcalc : J * (1 + 1 / (2 * J)) - 1 = J - (1 / 2 : ℝ) := by
     field_simp [hne]
-    <;> ring
+    ring
   calc
     J * A - 1 ≤ J * (1 + 1 / (2 * J)) - 1 := sub_le_sub_right hmul 1
     _ = J - (1 / 2 : ℝ) := hcalc
