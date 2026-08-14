@@ -1,0 +1,91 @@
+name: Unified everything semantic Lean replay
+
+on:
+  push:
+    branches:
+      - verification/unified-everything-semantic-20260814-gpt56pro
+  pull_request:
+    paths:
+      - 'verification/unified-everything-semantic/**'
+      - '.github/workflows/unified-everything-semantic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and conclusion-carrying escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean')
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|constant|opaque)\b',
+              r'\bunsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in forbidden:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'{p}: forbidden proof device {m.group(0)!r}')
+          PY
+          sha256sum "$file" | tee verification/unified-everything-semantic/source.sha256
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/unified-everything-semantic
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+          lean --version | tee lean-version.txt
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/unified-everything-semantic
+        run: |
+          set -euo pipefail
+          lake env lean UnifiedEverythingSemanticReplay.lean \
+            2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.|\badmit\b' lean-replay.log; then
+            echo 'forbidden placeholder axiom in replay output' >&2
+            exit 1
+          fi
+          grep -F "Millennium.UnifiedEverythingOneStatement.everything_one_gigantic_runnable_statement" lean-replay.log
+          grep -F "Millennium.UnifiedEverythingOneStatement.no_uniform_positive_choice" lean-replay.log
+          grep -F "Millennium.UnifiedEverythingOneStatement.no_uniform_negative_choice" lean-replay.log
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-everything-semantic-evidence
+          path: |
+            verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean
+            verification/unified-everything-semantic/source.sha256
+            verification/unified-everything-semantic/lean-version.txt
+            verification/unified-everything-semantic/lean-replay.log
+          if-no-files-found: warn
