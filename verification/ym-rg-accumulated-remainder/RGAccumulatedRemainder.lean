@@ -40,7 +40,7 @@ namespace Millennium.YangMills
 /-- Forward differences telescope over a finite RG trajectory. -/
 theorem sum_range_forward_differences
     (u : ℕ → ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, (u (n + 1) - u n)) = u N - u 0 := by
+    (∑ n ∈ Finset.range N, (u (n + 1) - u n)) = u N - u 0 := by
   induction N with
   | zero => simp
   | succ N ih =>
@@ -50,7 +50,7 @@ theorem sum_range_forward_differences
 /-- A constant multiple of forward differences telescopes as well. -/
 theorem sum_range_scaled_forward_differences
     (u : ℕ → ℝ) (a : ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, a * (u (n + 1) - u n)) =
+    (∑ n ∈ Finset.range N, a * (u (n + 1) - u n)) =
       a * (u N - u 0) := by
   induction N with
   | zero => simp
@@ -62,7 +62,7 @@ theorem sum_range_scaled_forward_differences
 induction so the later result does not depend on a specialized sum lemma. -/
 theorem abs_sum_range_le_sum_abs
     (f : ℕ → ℝ) (N : ℕ) :
-    |∑ n in Finset.range N, f n| ≤ ∑ n in Finset.range N, |f n| := by
+    |∑ n ∈ Finset.range N, f n| ≤ ∑ n ∈ Finset.range N, |f n| := by
   induction N with
   | zero => simp
   | succ N ih =>
@@ -80,7 +80,7 @@ theorem quadratic_growth_defect_budget
       beta * (u n)^2 ≤ u (n + 1) - u n)
     (hlocal : ∀ n < N,
       |err n| ≤ K * (u n)^2) :
-    (∑ n in Finset.range N, |err n|) ≤
+    (∑ n ∈ Finset.range N, |err n|) ≤
       (K / beta) * (u N - u 0) := by
   have hcoef : 0 ≤ K / beta :=
     div_nonneg hK (le_of_lt hbeta)
@@ -96,8 +96,8 @@ theorem quadratic_growth_defect_budget
       _ ≤ (K / beta) * (u (n + 1) - u n) :=
         mul_le_mul_of_nonneg_left (hgrowth n hnlt) hcoef
   calc
-    (∑ n in Finset.range N, |err n|) ≤
-        ∑ n in Finset.range N, (K / beta) * (u (n + 1) - u n) :=
+    (∑ n ∈ Finset.range N, |err n|) ≤
+        ∑ n ∈ Finset.range N, (K / beta) * (u (n + 1) - u n) :=
       Finset.sum_le_sum hpoint
     _ = (K / beta) * (u N - u 0) :=
       sum_range_scaled_forward_differences u (K / beta) N
@@ -109,7 +109,7 @@ def correctedResidual (phi : ℕ → ℝ) (n : ℕ) : ℝ :=
 /-- The corrected residuals telescope to the crossing-time remainder. -/
 theorem sum_correctedResidual
     (phi : ℕ → ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, correctedResidual phi n) =
+    (∑ n ∈ Finset.range N, correctedResidual phi n) =
       phi N - phi 0 + (N : ℝ) := by
   induction N with
   | zero => simp [correctedResidual]
@@ -123,7 +123,7 @@ absolute one-step residual. -/
 theorem corrected_remainder_le_sum_abs
     (phi : ℕ → ℝ) (N : ℕ) :
     |phi N - phi 0 + (N : ℝ)| ≤
-      ∑ n in Finset.range N, |correctedResidual phi n| := by
+      ∑ n ∈ Finset.range N, |correctedResidual phi n| := by
   rw [← sum_correctedResidual phi N]
   exact abs_sum_range_le_sum_abs (correctedResidual phi) N
 
