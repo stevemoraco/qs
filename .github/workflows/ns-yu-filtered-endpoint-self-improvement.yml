@@ -1,0 +1,94 @@
+name: Verify NS Yu filtered endpoint firewall
+
+on:
+  push:
+    branches:
+      - agent/ns-yu-filtered-endpoint-self-improvement-20260814-run10
+  pull_request:
+    paths:
+      - 'verification/ns-yu-filtered-endpoint-self-improvement/**'
+      - '.github/workflows/ns-yu-filtered-endpoint-self-improvement.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-yu-filtered-endpoint-self-improvement/NSYuFilteredEndpointSelfImprovementFirewall.lean
+          test -s "$SRC"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'forbidden trust carrier found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 7
+          sha256sum "$SRC" | tee source.sha256
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/ns-yu-filtered-endpoint-self-improvement/NSYuFilteredEndpointSelfImprovementFirewall.lean').read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          pathlib.Path('axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response')
+          r = json.loads(p.read_text())
+          errors = r.get('lean_messages', {}).get('errors', [])
+          warnings = r.get('lean_messages', {}).get('warnings', [])
+          tool_errors = r.get('tool_messages', {}).get('errors', [])
+          tool_warnings = r.get('tool_messages', {}).get('warnings', [])
+          failed = r.get('failed_declarations', [])
+          if not r.get('okay') or errors or warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('Lean/AXLE did not return a clean verdict')
+          rendered = json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          print('VERIFIED CLEAN')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-yu-filtered-endpoint-evidence
+          path: |
+            verification/ns-yu-filtered-endpoint-self-improvement/NSYuFilteredEndpointSelfImprovementFirewall.lean
+            source.sha256
+            axle-response.json
