@@ -20,14 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reject proof holes and conclusion-carrying escape hatches
+      - name: Generate corrected replay and reject escape hatches
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean
-          python3 - <<'PY'
-          import pathlib, re
-          p = pathlib.Path('verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean')
+          root=verification/unified-everything-semantic
+          python3 "$root/make_replay_v2.py"
+          for file in \
+            "$root/UnifiedEverythingSemanticReplay.lean" \
+            "$root/UnifiedEverythingSemanticReplayV2.lean"; do
+            python3 - "$file" <<'PY'
+          import pathlib, re, sys
+          p = pathlib.Path(sys.argv[1])
           text = p.read_text()
           text = re.sub(r'/-.*?-/', '', text, flags=re.S)
           text = re.sub(r'--.*$', '', text, flags=re.M)
@@ -43,7 +47,12 @@ jobs:
               if m:
                   raise SystemExit(f'{p}: forbidden proof device {m.group(0)!r}')
           PY
-          sha256sum "$file" | tee verification/unified-everything-semantic/source.sha256
+          done
+          sha256sum \
+            "$root/UnifiedEverythingSemanticReplay.lean" \
+            "$root/make_replay_v2.py" \
+            "$root/UnifiedEverythingSemanticReplayV2.lean" \
+            | tee "$root/source.sha256"
 
       - name: Install Lean
         shell: bash
@@ -68,7 +77,7 @@ jobs:
         working-directory: verification/unified-everything-semantic
         run: |
           set -euo pipefail
-          lake env lean UnifiedEverythingSemanticReplay.lean \
+          lake env lean UnifiedEverythingSemanticReplayV2.lean \
             2>&1 | tee lean-replay.log
           if grep -Eq 'sorryAx|declaration uses .sorry.|\badmit\b' lean-replay.log; then
             echo 'forbidden placeholder axiom in replay output' >&2
@@ -85,6 +94,8 @@ jobs:
           name: unified-everything-semantic-evidence
           path: |
             verification/unified-everything-semantic/UnifiedEverythingSemanticReplay.lean
+            verification/unified-everything-semantic/make_replay_v2.py
+            verification/unified-everything-semantic/UnifiedEverythingSemanticReplayV2.lean
             verification/unified-everything-semantic/source.sha256
             verification/unified-everything-semantic/lean-version.txt
             verification/unified-everything-semantic/lean-replay.log
