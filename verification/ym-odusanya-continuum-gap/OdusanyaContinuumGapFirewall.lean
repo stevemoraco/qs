@@ -108,8 +108,10 @@ theorem shrinkingScale_exponential_has_fixed_nonzero_variation
   · simp
   · have ha : δ / 2 ≠ 0 := ne_of_gt (by positivity)
     rw [neg_div, div_self ha]
-  · have h : Real.exp (-1) < Real.exp 0 := Real.exp_lt_exp.mpr (by norm_num)
-    simpa using sub_pos.mpr h
+  · have h : Real.exp (-1) < (1 : ℝ) := by
+      rw [← Real.exp_zero]
+      exact Real.exp_lt_exp.mpr (by norm_num)
+    exact sub_pos.mpr h
 
 #print axioms finiteVolume_anchor_does_not_give_uniform_half_anchor
 #print axioms twoSided_exponential_bounds_do_not_identify_rate
