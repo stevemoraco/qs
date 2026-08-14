@@ -1,6 +1,6 @@
 # Clay review monolith exact replay receipt
 
-- Workflow source commit: `c81f98f3995a3f8d53907dfbf3f89205d74c0173`
+- Workflow source commit: `4a45e3bb7f3e731a4d73b7a7f2e1f19121601578`
 - Result: `FAILURE`
 - Stage: `discovery`
 - Exact source path: `unknown`
