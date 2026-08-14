@@ -1,0 +1,73 @@
+name: Kirk v4 connector proof audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+    paths:
+      - .github/workflows/kirk-v4-connector-proof-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  connector-proof-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract connector and prerequisite proof contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          targets=[
+            'Theorem 4.30','Theorem 5.1','Lemma 5.20','Theorem 5.8','Lemma 6.12',
+            'Theorem 6.39','Theorem 6.43','Theorem 6.44','Lemma 8.2','Lemma 8.5',
+            'joint Haar','Haar–optical','Haar-optical','optical connector','macrobridge',
+            'strict rooted-support','m_E','equation (103)','(103)','equation (208)','(208)'
+          ]
+          low=text.lower(); out=[]
+          for target in targets:
+              pos=0
+              for hit in range(20):
+                  i=low.find(target.lower(),pos)
+                  if i<0: break
+                  out.append(f'=== {target} hit {hit+1} ===\n'+
+                             text[max(0,i-4200):min(len(text),i+14000)]+'\n')
+                  pos=i+len(target)
+          if not out:
+              raise SystemExit('no connector contexts found')
+          Path('kirk_v4_connector_proof_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
+          print(f'connector contexts: {len(out)}')
+          PY
+      - name: Commit connector proof contexts
+        run: |
+          mkdir -p source_audit/kirk_v4
+          cp kirk_v4_connector_proof_contexts.txt source_audit/kirk_v4/
+          cp kirk_latest_record.json source_audit/kirk_v4/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 connector proof contexts'
+          git push origin HEAD:verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-connector-proof-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_connector_proof_contexts.txt
