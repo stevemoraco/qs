@@ -1,0 +1,220 @@
+g CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family incidence trace space). For a family F, let U = U (F). Cut every physical
+carrier line at each pivot in U . In every remaining cycle of the physical carrier skeleton choose the least
+closure edge and the least selected pivot on that edge; let Rg (F) be the resulting clean pivot set. Then
+
+                   Rg (F) ∩ U = ∅,        every physical carrier cycle meets U ∪ Rg (F).                  (87)
+
+The actual cut space is                                      O
+                                    Hg,F := L2 (GU ) ⊗                 L2 (G)p .                          (88)
+                                                           p∈Rg (F )
+
+All activity hyperedges are internal to the first product-group convolution operator in (85); no cross-edge
+incidence is declared to be a dimensionless auxiliary flag.
+Lemma 6.37 (Carrier–activity hypergraph coverage and no-reuse allocation). For a connected family
+(g, F) form the finite incidence hypergraph Hg,F whose ordinary edges are the physical carrier segments and
+whose hyperedge A is incident to the selected pivots IP (A). Root the carrier skeleton by the deterministic
+order of Lemma 6.34. Then:
+    (i) cutting every carrier at U (F) ∪ Rg (F) leaves an acyclic carrier graph;
+   (ii) the depth-first first-incidence rule assigns every activity hyperedge A exactly once, at the least
+        incident pivot first reached from the root; its remaining n(A) − 1 incidences are recorded only as
+        possible side branches;
+  (iii) the three payments are disjoint: the product Fourier–Wiener norm pays the tensor-product nuclear
+        cost on U (F), the scalar coverage reserve pays the lost clean-pivot contractions, and the promoted
+        magnitude wA,k(A) is inserted exactly once in the rooted spatial recursion.
+Consequently no same-edge or cross-edge activity, shared carrier tail, closure edge, or cycle-breaking pivot
+is charged twice in (90) or in the recursion (94).
+Proof. By definition, every carrier cycle meeting an activity is cut at all of that activity’s incident pivots,
+and every remaining activity-free carrier cycle is cut at its least closure pivot in Rg (F). Hence a cycle in
+the residual carrier graph would avoid both sets, contradicting (87); this proves (i). On the resulting
+rooted forest, deterministic depth-first exploration gives a total order on first visits to pivots. Assign a
+hyperedge at the first visited member of its incidence set. This assignment is unique, while every other
+incidence can only attach a branch to an already assigned hyperedge, proving (ii). The product-group
+convolution of Lemma 6.35 contains the complete activity factor and all covered one-pivot densities before
+any scalar split. Lemma 6.31 then separates its nuclear loss from the unused scalar incidence reserve.
+The first-incidence exploration retains one and only one copy of the promoted activity magnitude. These
+operations act on distinct factors of the majorant, proving (iii) and the final claim.
+Lemma 6.38 (Multi-pivot nuclear family contraction). Let P = |Pg |, U = |U (F)|, and Rc = |Rg (F)|.
+Before the scalar coverage split and the single denominator are applied, every unmarked family numerator
+satisfies
+                                  |V | (0)
+                                                           Y                 Y
+                ∥Ng,F ∥ ≤ Cend J∗ g (Ctr )U +Rc θ⋆P −U −Rc    ∥e
+                                                               zA,J ∥AIP (A)    e−κcov n(A) .       (89)
+                                                             A∈F                    A∈F
+
+At allocated total passive mark order k ≤ 3 + Q, the same estimate holds with the corresponding fixed
+marked constants and a fixed polynomial in the pivot counts. After applying Lemma 6.31 and the single
+denominator,
+                                                      Rc
+                                             (0)
+                                                                       Y
+                        ∥Ag,F ∥ ≤ Cend Jg,k Ctr eζV /2     θbP −Rc −ℓk   wA,k(A) .               (90)
+                                                                              A∈F
+
+Here A k(A) + kref + kjun = k and 0 ≤ ℓk ≤ k is the number of distinct formerly unmarked pivot
+      P
+payments actually removed by the marks.
+
+
+
+
+                                                      67
+Proof. Work first at finite cutoff. By Lemma 6.35, the pivots in U form one trace-class product-group
+convolution operator KU,F . Tensor it with the clean one-pivot trace-class kernels at Rg (F). Lemma 6.37
+shows that cutting the lines in U ∪ Rg (F) breaks every physical carrier cycle and allocates each activity
+exactly once, so the remaining carrier and junction contraction is a bounded operator on Hg,F . Every
+selected pivot outside the trace set is activity-free and lies on a nontrivial carrier line; integrate it with
+Kp Qp in operator norm and gain θ⋆ . Schatten ideal multiplication and | Tr S| ≤ ∥S∥1 give (89) without a
+cutoff-dimension factor.
+                 (0)
+   The factor (Ctr /θ⋆ )U is paid by (77). Insert the denominator bound exactly once. The remaining
+unmarked factor is
+                                      (0)
+                                                    
