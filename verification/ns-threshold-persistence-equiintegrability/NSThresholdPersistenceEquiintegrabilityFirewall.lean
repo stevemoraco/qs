@@ -53,7 +53,6 @@ theorem persistence_and_bounded_overshoot_close_crossing
     {q rho K C D : ℝ}
     (hq : 0 < q)
     (hrho : 0 ≤ rho)
-    (hK : 0 ≤ K)
     (hgap : rho * K < 1)
     (hcrossUpper : C ≤ K * q)
     (hcontract : D ≤ rho * C)
