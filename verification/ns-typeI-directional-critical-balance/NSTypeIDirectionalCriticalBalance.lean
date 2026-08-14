@@ -5,7 +5,7 @@ namespace Millennium.NavierStokes
 /-!
 # Type-I directional roughness critical-balance firewall
 
-Finite exponent arithmetic and a reusable scalar absorption inequality only.
+Finite exponent arithmetic and reusable scalar inequalities only.
 
 The exponent bookkeeping corresponds to the Type-I parabolic scales
 
@@ -14,14 +14,24 @@ The exponent bookkeeping corresponds to the Type-I parabolic scales
 * active volume `~ r^3 ~ tau^(3/2)`.
 
 If the vorticity direction changes by order one across the natural length, then
-`|grad omega|` has exponent `-3/2`.  Consequently palinstrophy and Type-I
-vortex stretching both have exponent `-3/2` after spatial integration.  Thus
+`|grad omega|` has exponent `-3/2`. Consequently palinstrophy and Type-I
+vortex stretching both have exponent `-3/2` after spatial integration. Thus
 power counting alone has no positive exponent margin with which to absorb
-stretching into viscosity.  A successful directional route needs an additional
-coefficient depletion / geometric cancellation theorem, not merely Type-I
-scaling.
+stretching into viscosity.
 
-Nothing here asserts that these scalar exponents are realized by a
+There is a second scaling firewall. If one zooms to `r ~ tau^b`, the vorticity
+amplitude after Navier--Stokes rescaling has Type-I exponent `2*b - 1`. At the
+natural scale `b=1/2` this is neutral. Any strictly smaller physical scale has
+`b>1/2`, hence positive exponent, so the Type-I-sized normalized vorticity tends
+toward zero at the level of power counting. Thus one cannot simply zoom farther
+until the direction is coherent while expecting Type-I scaling alone to retain
+a nontrivial vorticity profile.
+
+A successful directional route therefore needs coefficient depletion,
+geometric cancellation, or a compactness theorem producing coherence at a
+nontrivial normalization scale.
+
+Nothing here asserts that these scalar exponents are realized or saturated by a
 Navier--Stokes solution, and no regularity or blow-up conclusion is encoded.
 -/
 
@@ -64,8 +74,29 @@ theorem typeI_scaling_has_no_positive_depletion_exponent
     ¬ ((-3 / 2 : ℚ) + delta ≤ -3 / 2) := by
   exact equal_exponents_exclude_positive_power_gain hdelta
 
+/-- Under Navier--Stokes scaling at `r ~ tau^b`, a Type-I vorticity amplitude
+`tau^(-1)` becomes `r^2 omega`, with exponent `2*b-1`. At the natural scale
+`b=1/2` this exponent is exactly zero. -/
+theorem typeI_natural_zoom_vorticity_exponent :
+    2 * (1 / 2 : ℚ) - 1 = 0 := by
+  norm_num
+
+/-- Every strictly sub-natural physical zoom `b>1/2` gives a positive exponent
+for the normalized Type-I vorticity scale. -/
+theorem typeI_subnatural_zoom_has_positive_vorticity_exponent
+    {b : ℚ} (hb : 1 / 2 < b) :
+    0 < 2 * b - 1 := by
+  linarith
+
+/-- Conversely, if the normalized Type-I vorticity power is not decaying, the
+zoom exponent cannot be strictly sub-natural. -/
+theorem typeI_nondecaying_vorticity_power_forces_nonsubnatural_zoom
+    {b : ℚ} (hpower : 2 * b - 1 ≤ 0) :
+    b ≤ 1 / 2 := by
+  linarith
+
 /-- What would actually be sufficient at the scalar energy level is a strict
-coefficient depletion.  If stretching is at most `(1-eta) * nu * D`, then the
+coefficient depletion. If stretching is at most `(1-eta) * nu * D`, then the
 net stretching-minus-viscosity contribution retains `eta * nu * D` of
 coercivity. -/
 theorem coefficient_depletion_absorbs
@@ -94,6 +125,9 @@ theorem coefficient_depletion_is_strict
 #print axioms typeI_directional_roughness_is_power_critical
 #print axioms equal_exponents_exclude_positive_power_gain
 #print axioms typeI_scaling_has_no_positive_depletion_exponent
+#print axioms typeI_natural_zoom_vorticity_exponent
+#print axioms typeI_subnatural_zoom_has_positive_vorticity_exponent
+#print axioms typeI_nondecaying_vorticity_power_forces_nonsubnatural_zoom
 #print axioms coefficient_depletion_absorbs
 #print axioms coefficient_depletion_is_strict
 
