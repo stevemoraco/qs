@@ -5,7 +5,7 @@ namespace BSDSignedHigherRankCertificate
 /-- If an approximation error is divisible by `p^e`, while the finite value is
 not, then the stable value is nonzero. -/
 theorem stable_nonzero_of_pow_dvd_error
-    {p e finiteValue stableValue : ℤ}
+    {p finiteValue stableValue : ℤ} {e : ℕ}
     (herror : p ^ e ∣ stableValue - finiteValue)
     (hfinite : ¬ p ^ e ∣ finiteValue) :
     stableValue ≠ 0 := by
