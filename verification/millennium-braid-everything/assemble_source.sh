@@ -23,8 +23,12 @@ done
 
 (
   cd source-xz-b64
-  sha256sum --check --strict SHA256SUMS
+  echo 'actual shard hashes:'
+  sha256sum part-*.b64
+  echo 'actual shard byte counts:'
   wc -c part-*.b64
+  echo 'pinned shard identity check:'
+  sha256sum --check --strict SHA256SUMS
 )
 
 cat "${PARTS[@]}" \
