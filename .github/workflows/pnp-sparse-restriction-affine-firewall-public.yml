@@ -1,0 +1,56 @@
+name: PNP sparse restriction affine firewall public replay
+
+on:
+  push:
+    branches:
+      - agent/auto22-pnp-sparse-restriction-affine-firewall-public-verify-20260814
+    paths:
+      - verification/pnp-sparse-restriction-affine-firewall/**
+      - .github/workflows/pnp-sparse-restriction-affine-firewall-public.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust carriers
+        run: |
+          set -euo pipefail
+          P=verification/pnp-sparse-restriction-affine-firewall/SparseRestrictionAffineDisperserFirewall.lean
+          if grep -nE '(^|[^A-Za-z])(sorry|admit|sorryAx)([^A-Za-z]|$)' "$P"; then exit 1; fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$P"; then exit 1; fi
+          if grep -nE '(Lean\.ofReduceBool|native_decide)' "$P"; then exit 1; fi
+
+      - name: Install pinned Lean
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+
+      - name: Fetch Mathlib cache
+        working-directory: verification/pnp-sparse-restriction-affine-firewall
+        run: lake exe cache get
+
+      - name: Kernel replay
+        working-directory: verification/pnp-sparse-restriction-affine-firewall
+        run: |
+          set -euo pipefail
+          lake env lean SparseRestrictionAffineDisperserFirewall.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
+            echo 'Lean trust gate failed.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED sparse restriction affine-disperser finite firewall.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-sparse-restriction-affine-firewall-public-evidence
+          path: verification/pnp-sparse-restriction-affine-firewall/lean-output.log
+          if-no-files-found: warn
