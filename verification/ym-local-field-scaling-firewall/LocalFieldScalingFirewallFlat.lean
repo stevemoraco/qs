@@ -1,6 +1,5 @@
 import Mathlib
 
--- Fresh replay nonce: 2026-08-14T10:15Z; theorem content unchanged.
 namespace Millennium.YangMills
 
 theorem plaquette_defect_three_scalings (a : ℝ) (ha : a ≠ 0) :
@@ -71,9 +70,13 @@ theorem fifth_order_normalized_defect_arbitrary_undershoot
   rw [hscale]
   exact haeps
 
+/-- Harmless fresh-replay declaration; not used by the substantive theorems. -/
+theorem localFieldScaling_replay_marker_20260814 : (37 : ℝ) = 37 := rfl
+
 #print axioms plaquette_defect_three_scalings
 #print axioms inverse_scale_plaquette_defect_three_scalings
 #print axioms third_order_normalized_defect_arbitrary_overshoot
 #print axioms fifth_order_normalized_defect_arbitrary_undershoot
+#print axioms localFieldScaling_replay_marker_20260814
 
 end Millennium.YangMills
