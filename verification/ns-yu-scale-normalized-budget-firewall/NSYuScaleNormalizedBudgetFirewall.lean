@@ -60,9 +60,14 @@ theorem geometric_physical_mass_prefix_bound
     (∑ k ∈ Finset.range n, r0 * q ^ k) ≤ r0 / (1 - q) := by
   have hden : 0 < 1 - q := sub_pos.mpr hq1
   have hpow : 0 ≤ q ^ n := pow_nonneg hq0 n
+  have hqne : q ≠ 1 := ne_of_lt hq1
+  have hgeomEq :
+      (∑ k ∈ Finset.range n, q ^ k) = (1 - q ^ n) / (1 - q) := by
+    simpa using
+      (geom_sum_Ico' (x := q) hqne (m := 0) (n := n) (Nat.zero_le n))
   have hgeom :
       (∑ k ∈ Finset.range n, q ^ k) ≤ 1 / (1 - q) := by
-    rw [geom_sum_of_lt_one hq1]
+    rw [hgeomEq]
     apply (div_le_div_iff₀ hden).2
     nlinarith
   calc
