@@ -1,9 +1,9 @@
-name: Verify NS Yu multifilter unfiltering firewall
+name: Verify NS Yu pointwise-limit collinearity
 
 on:
   push:
     branches:
-      - agent/ns-yu-multifilter-unfiltering-20260814-run22
+      - verification/ns-yu-pointwise-limit-collinearity-20260814-gpt56pro
     paths:
       - 'verification/ns-yu-multifilter-unfiltering/**'
       - '.github/workflows/ns-yu-multifilter-unfiltering.yml'
@@ -33,7 +33,7 @@ jobs:
             echo 'forbidden trust carrier found' >&2
             exit 1
           fi
-          test "$(grep -c '^#print axioms ' "$SRC")" = 5
+          test "$(grep -c '^#print axioms ' "$SRC")" = 10
           sha256sum "$SRC" | tee source.sha256
 
       - name: Execute AXLE Lean 4.30
@@ -98,7 +98,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ns-yu-multifilter-unfiltering-evidence
+          name: ns-yu-pointwise-limit-collinearity-evidence
           path: |
             verification/ns-yu-multifilter-unfiltering/NSYuMultifilterUnfilteringFirewall.lean
             source.sha256

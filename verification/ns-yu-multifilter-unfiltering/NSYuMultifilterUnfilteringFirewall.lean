@@ -1,10 +1,13 @@
 import Mathlib
 
+open Filter Topology
+
 /-!
 # Yu fixed-filter unfiltering firewall
 
-Finite real algebra only.  These statements isolate one exact obstruction and
-one reusable diagonal-selection inequality for the filtered-vorticity route.
+Finite real algebra and elementary sequential topology only.  These statements
+isolate one exact obstruction, one reusable diagonal-selection inequality, and
+the closedness of pairwise collinearity under pointwise filter removal.
 
 They do **not** formalize Runlong Yu's PDE estimates, mollifier convergence,
 Giga--Miura's Type-I theorem, ancient-profile extraction, Navier--Stokes
@@ -61,10 +64,108 @@ theorem fixed_constant_can_be_absorbed_stagewise
       C * (delta / (2 * C)) = delta / 2 := by field_simp [hC0]
       _ < delta := hhalf
 
+/-- A vanishing planar minor is preserved by coordinatewise sequential limits.
+This is the exact closedness statement needed when a sequence of filtered vector
+pairs converges to the corresponding unfiltered pair. -/
+theorem planar_minor_closed_under_limits
+    (x1 y1 x2 y2 : ℕ → ℝ)
+    (X1 Y1 X2 Y2 : ℝ)
+    (hx1 : Tendsto x1 atTop (𝓝 X1))
+    (hy1 : Tendsto y1 atTop (𝓝 Y1))
+    (hx2 : Tendsto x2 atTop (𝓝 X2))
+    (hy2 : Tendsto y2 atTop (𝓝 Y2))
+    (hminor : ∀ n, x1 n * y2 n - y1 n * x2 n = 0) :
+    X1 * Y2 - Y1 * X2 = 0 := by
+  have hlim :
+      Tendsto (fun n => x1 n * y2 n - y1 n * x2 n) atTop
+        (𝓝 (X1 * Y2 - Y1 * X2)) :=
+    (hx1.mul hy2).sub (hy1.mul hx2)
+  have hlim0 :
+      Tendsto (fun _ : ℕ => (0 : ℝ)) atTop
+        (𝓝 (X1 * Y2 - Y1 * X2)) := by
+    simpa only [hminor] using hlim
+  exact tendsto_nhds_unique hlim0 tendsto_const_nhds
+
+/-- Pointwise limits preserve all pairwise coordinate minors, even when the
+one-dimensional line containing the filtered field is allowed to vary with the
+filter index.  No common direction across filters is assumed. -/
+theorem pairwise_minors_closed_under_pointwise_limits
+    {α ι : Type*}
+    (ω : ℕ → α → ι → ℝ)
+    (Ω : α → ι → ℝ)
+    (hconv : ∀ x i, Tendsto (fun n => ω n x i) atTop (𝓝 (Ω x i)))
+    (hminor : ∀ n x y i j,
+      ω n x i * ω n y j - ω n x j * ω n y i = 0) :
+    ∀ x y i j,
+      Ω x i * Ω y j - Ω x j * Ω y i = 0 := by
+  intro x y i j
+  exact planar_minor_closed_under_limits
+    (fun n => ω n x i)
+    (fun n => ω n x j)
+    (fun n => ω n y i)
+    (fun n => ω n y j)
+    (Ω x i) (Ω x j) (Ω y i) (Ω y j)
+    (hconv x i) (hconv x j) (hconv y i) (hconv y j)
+    (fun n => hminor n x y i j)
+
+/-- Vanishing minors against one nonzero anchor identify the scalar multiple
+exactly. -/
+theorem scalar_multiple_of_anchor_of_minors
+    {ι : Type*}
+    (a v : ι → ℝ) (k : ι)
+    (hak : a k ≠ 0)
+    (hminor : ∀ i, a k * v i - a i * v k = 0) :
+    ∀ i, v i = (v k / a k) * a i := by
+  intro i
+  have hcross : a k * v i = a i * v k := by
+    linarith [hminor i]
+  calc
+    v i = (a i * v k) / a k := by
+      apply (eq_div_iff hak).2
+      nlinarith
+    _ = (v k / a k) * a i := by ring
+
+/-- Pairwise-minor vanishing and one nonzero anchor force the whole field into
+one common line, with an explicit scalar coefficient at every point. -/
+theorem common_line_from_nonzero_anchor
+    {α ι : Type*}
+    (Ω : α → ι → ℝ)
+    (x0 : α) (k : ι)
+    (hanchor : Ω x0 k ≠ 0)
+    (hminor : ∀ x i,
+      Ω x0 k * Ω x i - Ω x0 i * Ω x k = 0) :
+    ∀ x i, Ω x i = (Ω x k / Ω x0 k) * Ω x0 i := by
+  intro x i
+  exact scalar_multiple_of_anchor_of_minors
+    (Ω x0) (Ω x) k hanchor (hminor x) i
+
+/-- Full deterministic unfiltering geometry: exact pairwise collinearity at
+every filter level, coordinatewise pointwise convergence, and one nonzero limit
+anchor imply that the unfiltered limit lies in one explicit common line. -/
+theorem pointwise_limit_has_common_line_from_nonzero_anchor
+    {α ι : Type*}
+    (ω : ℕ → α → ι → ℝ)
+    (Ω : α → ι → ℝ)
+    (hconv : ∀ x i, Tendsto (fun n => ω n x i) atTop (𝓝 (Ω x i)))
+    (hminor : ∀ n x y i j,
+      ω n x i * ω n y j - ω n x j * ω n y i = 0)
+    (x0 : α) (k : ι)
+    (hanchor : Ω x0 k ≠ 0) :
+    ∀ x i, Ω x i = (Ω x k / Ω x0 k) * Ω x0 i := by
+  apply common_line_from_nonzero_anchor Ω x0 k hanchor
+  intro x i
+  exact pairwise_minors_closed_under_pointwise_limits
+    ω Ω hconv hminor x0 x k i
+
 #print axioms exact_coarse_average_is_axis_aligned
 #print axioms unresolved_fine_pair_is_not_collinear
 #print axioms unresolved_transverse_energy_survives
 #print axioms perfect_fixed_filter_alignment_does_not_force_fine_alignment
 #print axioms fixed_constant_can_be_absorbed_stagewise
+#print axioms planar_minor_closed_under_limits
+#print axioms pairwise_minors_closed_under_pointwise_limits
+#print axioms scalar_multiple_of_anchor_of_minors
+#print axioms common_line_from_nonzero_anchor
+#print axioms pointwise_limit_has_common_line_from_nonzero_anchor
 
 end NSYuMultifilterUnfilteringFirewall
