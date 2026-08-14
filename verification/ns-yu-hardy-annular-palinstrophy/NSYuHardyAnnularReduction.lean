@@ -21,9 +21,13 @@ Primary-source motivation:
 
   i.e. the discrete coefficient corresponding to a Hardy weight.
 
-* The second/third theorems expose the exact additional bridge needed after a
+* The absorption theorems expose the exact additional bridge needed after a
   spatial Hardy estimate: exterior filtered palinstrophy must itself be charged
   to the core dissipative budget with a strict coefficient margin.
+
+* The final two lemmas record a mesoscopic split used in the human PDE audit:
+  if the core radius is `r = s^3` and one cuts the exterior at radius `s`, then
+  the raw coefficient `r / s^2` is exactly the small factor `s`.
 
 These are reusable arithmetic interfaces, not PDE claims.
 -/
@@ -92,9 +96,33 @@ theorem no_universal_core_only_control :
   have hbad := hC 1 0 (by norm_num) (by norm_num)
   norm_num at hbad
 
+/-- Cubic mesoscopic split: choosing physical cutoff radius `rho=s` at core
+    radius `r=s^3` leaves exactly the small factor `r/rho^2=s`. -/
+theorem cubic_mesoscopic_split_factor
+    {s : ℝ} (hs : s ≠ 0) :
+    s ^ 3 / s ^ 2 = s := by
+  field_simp [hs]
+
+/-- Once the PDE estimate has reduced a far-tail reservoir to `C*s*E`, a
+    uniform nonnegative dissipation budget `E <= M` preserves the small factor
+    `s`.  This is the finite scalar endgame of the mesoscopic tail split. -/
+theorem mesoscopic_tail_charge
+    {tail C s E M : ℝ}
+    (hC : 0 ≤ C)
+    (hs : 0 ≤ s)
+    (hE : 0 ≤ E)
+    (hEM : E ≤ M)
+    (htail : tail ≤ C * s * E) :
+    tail ≤ C * M * s := by
+  have hCs : 0 ≤ C * s := mul_nonneg hC hs
+  have h := mul_le_mul_of_nonneg_left hEM hCs
+  nlinarith
+
 #print axioms shell_weight_is_hardy_weight
 #print axioms hardy_exterior_absorption
 #print axioms hardy_exterior_strict_margin
 #print axioms no_universal_core_only_control
+#print axioms cubic_mesoscopic_split_factor
+#print axioms mesoscopic_tail_charge
 
 end NSYuHardyAnnularReduction
