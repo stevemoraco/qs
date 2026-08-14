@@ -1,0 +1,251 @@
+                         δG (Mj ) ≤ uj ,
+the tuned orbit obeys
+                                                11 CA (G) log 2 2
+                                  uj+1 = uj +                  uj + OG (u3j ).
+                                                    24π 2
+Proof. U1 follows by composing the model-specific normal chart with permanent support closure, exact
+coarea ownership, the summed replica–BKAR theorem, and output recertification on the common hybrid
+domain.
+   For U2, the centered analytic graph theorem gives the full remainder with an initially named graph
+coefficient. The scheme-universality theorem identifies that coefficient with 11 CA (G) log 2/(24π 2 ) without
+assuming the direct ASC2 shell comparison. The rooted finite-volume comparison supplies the combined
+localized-wrapping and massless acoustic finite-size term.
+   The Wick associated-graded theorem, permanent envelope, localization/collect dichotomy, macrostep
+contraction, and graph transform give U3. The bad-seed and rooted irregular-transfer theorems give U4.
+The bi-graded marked theorem gives U5. Exact algebra, reflected section, ownership, and recombination
+give U6. Finally, U2, U3, domain compactness, and the directed schedule give U7.
+
+6     Directed handoff and higher-order Peter–Weyl landing
+The purpose of this section is to replace the phrase “fixed compact first-crossing section” by a quantitative
+object and to print the exact norm bound consumed by the compact-group macrobridge. Fix once and
+for all
+                                 1
+                       0 < ū < u⋆ ,       Σ⋆ := {(u, ϱ) : u = ū, ∥ϱ∥⋆;a;3,N ≤ K ū3 }.                 (30)
+                                 2
+Thus the crossing functional is
+                                              χ(u, ϱ) := u − ū,                                         (31)
+and an outgoing crossing means χ(uj , ϱj ) < 0 ≤ χ(uj+1 , ϱj+1 ). No geometric section is left implicit.
+6.1     Directed volume schedule and scalar transversality
+For a trajectory of n weak dyadic steps, choose a terminal coarse torus of side Mout and put
+                                      Mj = 2n−j Mout ,        0 ≤ j ≤ n.                                   (32)
+Lemma 6.1 (Admissible directed periodic-volume schedule). Assume the centered weak step satisfies, on
+the invariant cone,
+                                         uj+1 ≤ uj + Bu2j
+with B independent of volume, cutoff, and preceding weak depth. There is a finite M∗ , independent of n,
+such that every choice Mout ≥ M∗ and every backward weak orbit ending at un = ū obey
+                                       δG (Mj ) ≤ uj ,      0 ≤ j ≤ n.                                     (33)
+Consequently the finite-size quadratic row satisfies δG (Mj )u2j ≤ u3j at every step. The same choice retains
+the separate exponentially localized wrapping bound e−σMj ≤ CG uj .
+Proof. Put k = n − j. After decreasing u⋆ once, backward iteration gives
+                                                         1
+                                             uj ≥              .
+                                                    ū−1 + 2Bk
+For Mj = 2k Mout ,
+                          CG                                                                       k
+ (ū−1 + 2Bk)δG (Mj ) ≤    2   (ū−1 + 2Bk)4−k [1 + log(2 + Mout ) + k log 2] + CG (ū−1 + 2Bk)e−σ2 Mout .
+                          Mout
+The supremum over k ≥ 0 is finite and tends to zero as Mout → ∞. Choose M∗ so that it is at most one.
+This proves the displayed condition and its cubic consequence.
+Corollary 6.2 (Cofinal thermodynamic volume schedule). Let Mout (n) ≥ M∗ be any integer sequence,
+rounded to the fixed m⋆ divisibility class, with Mout (n) → ∞. The shooting and first-crossing construction
+                                                 (n)
+remains admissible for every n. Writing a0 = 2−n ℓ⋆ for the microscopic spacing of the depth-n
+                                             (n) (n)
+trajectory, its physical periodic side is M0 a0 = Mout (n)ℓ⋆ → ∞. Thus the same directed sequence
+sends microscopic spacing to zero and physical periodic volume to infinity.
+
+
+                                                      52
+   For a fixed admissible schedule, restrict the exact weak map to the slaved centered trajectory. Denote
+the resulting nonautonomous scalar maps by
+                                                                            11 CA (G) log 2
+                           Fj (u) = u + b⋆ u2 + rj (u),             b⋆ =                    .            (34)
+                                                                                24π 2
+The common marked C 3 ultraviolet theorem, the finite-volume two-jet comparison, and the exactly
+recombined flat charged row give, after reducing u⋆ once,
+           |rj (u)| ≤ C⋆ u3 + δG (Mj )u2 ,     |rj′ (u)| ≤ C⋆ u2 + δG (Mj )u , 0 ≤ u ≤ ū,  (35)
+                                                                           
+
+with one constant independent of j, n, volume, and cutoff. On every admissible orbit, (33) reduces these
+rows to |rj (uj )| ≤ 2C⋆ u3j and |rj′ (uj )| ≤ 2C⋆ u2j .
+Lemma 6.3 (Uniform outgoing transversality). Decrease ū and then enlarge M∗ once, if necessary, so
+that δG is decreasing on [M∗ , ∞) and
+                                              C⋆ ū + δG (M∗ ) ≤ b⋆ /4.                             (36)
+                                                              
+
+Then every scheduled reduced map satisfies
+                                      b⋆ 2
+                         Fj (u) − u ≥   u ,     Fj′ (u) ≥ 1 + b⋆ u, 0 < u ≤ ū.                   (37)
+                                      2
+In particular, every crossing of Σ⋆ is outgoing and transverse, and Fj has a unique increasing inverse
+branch on the interval needed below.
+Proof. For every admitted schedule, Mj ≥ Mout ≥ M∗ , hence δG (Mj ) ≤ δG (M∗ ). The first estimate
+follows from Fj (u) − u = b⋆ u2 + rj (u) and
+                                        |rj (u)| ≤ C⋆ u + δG (Mj ) u2 .
+                                                                  
+
+The second follows from Fj′ (u) = 1 + 2b⋆ u + rj′ (u) and
+                                         |rj′ (u)| ≤ C⋆ u + δG (Mj ) u.
+                                                                    
+
+The smallness condition (36) leaves more than the stated margin in both rows.
+
+6.2    Exact backward shooting and dimensional transmutation
+Theorem 6.4 (Scheduled dyadic shooting to the printed section). For every integer n ≥ 1 and every
+                                                                             (n)
+admissible choice Mout ≥ M∗ in (32), there is a unique microscopic coupling u0 ∈ (0, ū) such that
+                                             (n)                      (n)
+                        Fn−1 ◦ · · · ◦ F0 (u0 ) = ū,            0 < uj     < ū   (0 ≤ j < n).          (38)
+The corresponding centered interaction rows remain in
+                                                   ∥ϱj ∥⋆;a;3,N ≤ Ku3j
+and the endpoint lies in the explicit section Σ⋆ . The schedule need not be unique; the microscopic coupling
+is unique after schedule fixation.
+   Moreover,
+                                            1           1
+                                           (n)
+                                               = b⋆ n + + O(log n),                                     (39)
+                                          u             ū
+                                             0
+where the implicit constant is independent of the schedule within the admissible class.
+Proof. By Lemma 6.3, Fj is strictly increasing, Fj (0) = 0, and Fj (ū) > ū. Hence ū lies in the range of a
+unique inverse branch Ij , with 0 < Ij (v) < v for 0 < v ≤ ū. Backward composition
+                                         (n)
+                                        uj       = Ij ◦ Ij+1 ◦ · · · ◦ In−1 (ū)
+constructs the orbit and proves uniqueness. Forward invariance of the centered cone supplies the interaction
+bound.
+  Along the orbit, Lemma 6.1 and (35) give rj (uj ) = O(u3j ), hence
+                                             1     1
+                                                −      = b⋆ + O(uj ).
+                                             uj   uj+1
+                                                                                                  Pn−1
+The resulting two-sided recurrence gives uj ≍ (n − j + A)−1 , uniformly in n, and therefore        j=0 uj =
+O(log n). Summing the reciprocal identity proves (39).
+
+
+                                                            53
+Corollary 6.5 (Fixed physical matching length). For a prescribed matching length ℓ∗ > 0, set
+                                                         (n)
+                                                        a0     = 2−n ℓ∗ .                                        (40)
+       (n)            (n)
+Then a0      → 0, 2n a0     = ℓ∗ exactly, and
+                                                                                           !
+                                              ℓ∗         log 2                       1
+                                       log    (n)
+                                                    =          (n)
+                                                                     + O log         (n)
+                                                                                               .                 (41)
+                                             a0         b⋆ u0                       u0
+
+All first-crossing and finite-macrobridge constants below are independent of n.
+Proof. The first two assertions follow from the definition. Substitute (39) into n log 2 to obtain the final
+row.
+
+6.3       Two-scale weak-to-Haar landing
+Let PYM be the normalized marginal activity and let R⋆ (u) be the invariant irrelevant graph. Fix
+
+                                             I⋆ = [ū, ū + Ccr ū2 ] ⋐ (0, u⋆ )
+
+and 0 < a0 < a. The weak output radius is
+
+                       Mwk := sup u∥PYM ∥a;3,N + ∥R⋆ (u)∥⋆;a;3,N + Ku3 .
+                                                                     
+                                      u∈I⋆
+
+This is a bound on the interaction relative to the scale-normalized Gaussian reference. It is not a
+Haar-relative oscillation bound.
+  Let F⋆ be the exact first-crossing family
+
+                      Φ(u, ϱ) = uPYM + R⋆ (u) + ϱ,                     u ∈ I⋆ ,            ∥ϱ∥⋆;a;3,N ≤ Ku3 ,
+
+and let
+                                                                     Ba0 ,2,N
+                                                    C⋆ = F⋆                     .
+Theorem 6.6 (Compact weak first-crossing class). The class C⋆ is compact in Ba0 ,2,N and every member
+satisfies the weak-reference row bounded by Mwk , uniformly in finite volume, cutoff, exterior configuration,
+and preceding weak depth. No Haar-relative smallness is asserted by this theorem.
+Proof. The family is bounded in the stronger Ba,3,N topology. The support reserve e−(a−a0 )|X| and
+Arzelà–Ascoli on the finitely many bounded rooted shapes give compactness from C 3 to C 2 .
+Lemma 6.7 (Reporting completeness and depth telescoping). Let µj be the exact retained measure after
+j weak steps, before the next logarithm is taken. For every finite depth n there is an exact representation
+                                                   reg
+                             dµj = Zj−1 exp{−Qref
+                                              j − Rj } dHj + Ij ,                                  0 ≤ j ≤ n,   (HT1)
+
+where dHj is product Haar on the retained links, Qref  j is the complete allocated scalar/two-jet reference,
+Rjreg is the collected regular residual, and Ij is the recombined irregular operator. Every pre-logarithmic
+factor of the exact step occurs in exactly one of these three rows, and the scalar normalizations satisfy
+                                                                                    n−1
+                                                                                    Y
+                                        Zj+1 = Zj zj ,                Zn = Z0              zj ,                 (HT2)
+                                                                                    j=0
+
+with no zj reappearing as a nonempty-support activity. The representation and its zero/one/two marked
+versions are uniform in depth.
+Proof. The assertion is proved by induction on j. At j = 0, the Wilson–Haar measure and the exact
+inner/collar/outer partition give (HT1): the complete quadratic reference is Qref
+                                                                              0 , the post-two-jet inner
+density is the regular row, and the recombined collar/outer/curvature labels are I0 .
+   Assume (HT1) at step j. Apply the exact joint Gaussian/Karcher disintegration before taking a
+connected logarithm. DAS3 retains the scalar normalization of that one joint law once at the exterior
+endpoint; call it zj . The empty-support part therefore multiplies Zj and gives (HT2). All nonempty
+factors are first reported on their actual local support or on the canonical hull of their exponential
+
+
+                                                                54
+connector. The factor inventory is exhaustive: Wilson words, product-Haar coordinate factors, coarea
+and normal returns, gauge-coordinate endpoints, Gaussian/Schur endpoints, inherited activities, cutoffs,
+and source leaves are exactly the ownership inventory in row (U1) of Theorem 5.27, implemented by
+the one-step maps (E1)–(E6), together with the labelled inner/collar/outer partition. The labels sum
+pointwise to one before logarithms, so an atlas-boundary factor cannot be lost between branches.
+   Definition 3.22 assigns every reported nonempty factor to precisely one of the regular, one-core, or
+cross rows; Lemma 3.25 does the same for every connected determinant word. Exact collect then replaces
+each history by one canonical hull. The history-compatibility theorem computes the next allocation only
+from this collected output, so neither a factor nor its scalar normalization is copied at a later depth. This
+gives (HT1) at j + 1. The normalized structural/source marks commute with the finite induction and are
+bounded by the same permanent rows, proving depth uniformity.
+Proposition 6.8 (Reconstruction of the compact Haar reference). At every endpoint in C⋆ , the exact
+Wilson–Haar identity, the ownership theorem, and the connected-logarithm admission give three families
+of scale-normalized factors:
+   (i) reference factors qA  ref
+                                 (u) containing the Gaussian precision, its compact Haar completion, and the
+       complete allocated two-jet;
+  (ii) regular residual activities rA (u);
+ (iii) irregular core operators bX (u) after exact label recombination.
+There are mref , areg , airr > 0 and fixed constants such that, with zero, one, or two exterior/source marks,
+                                     X
+                                 sup     emref diam A ∥qA
+                                                        ref
+                                                            (u)∥C 2sG ≤ Cref (u−1 + 1),                  (42)
+                             e
+                                 A∋e
+                                       X
+                                 sup         eareg |A| ∥rA (u)∥C 2sG ≤ Creg (uω0 + u3 ),                (43)
+                                  e
+                                       A∋e
+                                       X
+                                 sup         eairr |X| ∥bX (u)∥[2sG ] ≤ Cirr u−p e−c/u .                (44)
+                                  e
+                                       X∋e
+
+All constants are uniform in the microscopic depth.
+
+Proof. Apply Lemma 6.7 at the directed crossing depth. Equation (HT2) places the product of all empty-
+support Gaussian, coarea, and chart normalizations in the single scalar Zn ; it is therefore absent from
+every rooted row. The nonempty complete two-jets collected into Qref n have the explicit depth-uniform
+form
+                                 n =u
+                               Qref     −1
+                                            Qtempl + Qtail
+                                                       n,opt + Qn,fin ,
+                                                                 tail
+                                                                                                  (HT4)
+                                                            
+                                              opt
+
+where the fixed optical template and both tail families have uniformly summable exponential rows with
+their first two marks. The prefactor u−1 occurs once, not once per weak depth: (HT2) has already
+removed all empty-support normalizations, and DAS2 uses the same scale-normalized optical template at
+every step. Restoring product Haar measure converts the physical link logarithm only at the final scale.
+The optical precision and its first two marked derivatives lie in the exponential matrix algebra. Summing
+the finite-template incidences gives (42).
+   The regular factors in (HT1) are 
