@@ -29,7 +29,8 @@ jobs:
           for file in \
             "$root/UnifiedEverythingSemanticReplay.lean" \
             "$root/UnifiedEverythingSemanticReplayV2.lean" \
-            "$root/UnifiedEverythingSemanticReplayV3.lean"; do
+            "$root/UnifiedEverythingSemanticReplayV3.lean" \
+            "$root/UnifiedEverythingSemanticReplayV4.lean"; do
             python3 - "$file" <<'PY'
           import pathlib, re, sys
           p = pathlib.Path(sys.argv[1])
@@ -54,6 +55,7 @@ jobs:
             "$root/make_replay_v2.py" \
             "$root/UnifiedEverythingSemanticReplayV2.lean" \
             "$root/UnifiedEverythingSemanticReplayV3.lean" \
+            "$root/UnifiedEverythingSemanticReplayV4.lean" \
             | tee "$root/source.sha256"
 
       - name: Install Lean
@@ -79,15 +81,15 @@ jobs:
         working-directory: verification/unified-everything-semantic
         run: |
           set -euo pipefail
-          lake env lean UnifiedEverythingSemanticReplayV3.lean \
+          lake env lean UnifiedEverythingSemanticReplayV4.lean \
             2>&1 | tee lean-replay.log
           if grep -Eq 'sorryAx|declaration uses .sorry.|\badmit\b' lean-replay.log; then
             echo 'forbidden placeholder axiom in replay output' >&2
             exit 1
           fi
+          grep -F "Millennium.CrossProblem.summable_steps_exact_equation_nontrivial" lean-replay.log
           grep -F "Millennium.UnifiedEverythingOneStatement.everything_one_gigantic_runnable_statement" lean-replay.log
-          grep -F "Millennium.UnifiedEverythingOneStatement.no_uniform_positive_choice" lean-replay.log
-          grep -F "Millennium.UnifiedEverythingOneStatement.no_uniform_negative_choice" lean-replay.log
+          grep -F "Millennium.UnifiedEverythingOneStatementV2.everything_one_gigantic_runnable_statement_v2" lean-replay.log
 
       - name: Upload exact evidence
         if: always()
@@ -99,6 +101,7 @@ jobs:
             verification/unified-everything-semantic/make_replay_v2.py
             verification/unified-everything-semantic/UnifiedEverythingSemanticReplayV2.lean
             verification/unified-everything-semantic/UnifiedEverythingSemanticReplayV3.lean
+            verification/unified-everything-semantic/UnifiedEverythingSemanticReplayV4.lean
             verification/unified-everything-semantic/source.sha256
             verification/unified-everything-semantic/lean-version.txt
             verification/unified-everything-semantic/lean-replay.log
