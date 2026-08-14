@@ -41,7 +41,7 @@ theorem reserveChoiceRadius_pays_quarter
       field_simp [hne]
       <;> ring
     rw [hid]
-    positivity
+    nlinarith
 
 /-- Spending at most one quarter of the reserve leaves at least half of the
 reserve in the exponent `2*Lambda - mu*c*R`. -/
