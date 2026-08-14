@@ -29,13 +29,9 @@ of those conclusions.
 
 namespace Millennium.Hodge.R3Q1A7G1F1VerticalModuliCore
 
-/-- Discriminant of `a X^3 + b X^2 Y + c X Y^2 + d Y^3`. -/
 def binaryCubicDisc (a b c d : ℤ) : ℤ :=
   b^2 * c^2 - 4*a*c^3 - 4*b^3*d - 27*a^2*d^2 + 18*a*b*c*d
 
-/-- The finite class ledger behind the ruled-surface pinning.  If the section
-has class parameter `n`, the bisection has parameter `m`, their sum has
-parameter three, and their intersection is one, then `n=0,m=3`. -/
 theorem g1_component_class_ledger
     (m n : ℤ)
     (hsum : m + n = 3)
@@ -43,47 +39,34 @@ theorem g1_component_class_ledger
     n = 0 ∧ m = 3 := by
   omega
 
-/-- Self-intersection arithmetic for `Q=2s+3f` on `F_1`, using `s^2=-1`,
-`s.f=1`, `f^2=0`. -/
 theorem q_self_intersection_ledger :
     4 * (-1 : ℤ) + 12 = 8 := by
   norm_num
 
-/-- Canonical-intersection arithmetic for `Q=2s+3f` and
-`K=-2s-3f` on `F_1`. -/
 theorem q_canonical_intersection_ledger :
     4 - 6 - 6 = (-8 : ℤ) := by
   norm_num
 
-/-- Adjunction numerator for `Q=2s+3f`: `Q^2+Q.K=0`, hence the arithmetic
- genus is one after the standard surface adjunction bridge. -/
 theorem q_adjunction_numerator_zero :
     (8 : ℤ) + (-8) = 0 := by
   norm_num
 
-/-- If a vertical cubic factors as
-`x(C x^2 + B x y + A y^2)`, then its discriminant is the square of the
-linear/quadratic resultant factor times the quadratic discriminant. -/
 theorem linear_times_quadratic_cubic_disc
     (A B C : ℤ) :
     binaryCubicDisc C B A 0 = A^2 * (B^2 - 4*A*C) := by
   simp [binaryCubicDisc]
   ring
 
-/-- Integer-scaled coefficients for the explicit one-parameter vertical
-bisection family. -/
 def A (u : ℤ) : ℤ := 4 * (u - 1)
 def B (t : ℤ) : ℤ := 4 * t
 def C (u t : ℤ) : ℤ := -(u^3 + t^2*u^2 + t^2*u + t^2)
 
-/-- Exact quadratic discriminant of the explicit family. -/
 theorem family_quadratic_discriminant (u t : ℤ) :
     B t ^ 2 - 4 * A u * C u t
       = 16 * u^3 * (u - 1 + t^2) := by
   simp [A, B, C]
   ring
 
-/-- Exact full cubic discriminant of the explicit family. -/
 theorem family_full_cubic_discriminant (u t : ℤ) :
     binaryCubicDisc (C u t) (B t) (A u) 0
       = 256 * u^3 * (u - 1)^2 * (u - 1 + t^2) := by
@@ -92,24 +75,18 @@ theorem family_full_cubic_discriminant (u t : ℤ) :
   simp [A]
   ring
 
-/-- Collision specialization: `t=0` merges the residual simple branch with
- the doubled resultant point. -/
 theorem collision_specialization (u : ℤ) :
     binaryCubicDisc (C u 0) (B 0) (A u) 0
       = 256 * u^3 * (u - 1)^3 := by
   rw [family_full_cubic_discriminant]
   ring
 
-/-- Separated specialization: `t=2` gives residual factors at `u=1` and
-`u=-3`. -/
 theorem separated_specialization (u : ℤ) :
     binaryCubicDisc (C u 2) (B 2) (A u) 0
       = 256 * u^3 * (u - 1)^2 * (u + 3) := by
   rw [family_full_cubic_discriminant]
   ring
 
-/-- In the parameter formula `b=1-t^2`, the residual branch equals the fixed
-resultant location `r=1` exactly when `t=0`. -/
 theorem branch_resultant_collision_iff (t : ℤ) :
     1 - t^2 = 1 ↔ t = 0 := by
   constructor
@@ -123,30 +100,20 @@ theorem branch_resultant_collision_iff (t : ℤ) :
     subst t
     norm_num
 
-/-- Residual affine degree-two map used in the local `3 -> 1` model.  The
-parameter `a` is its first-order coefficient at the child `z=0`. -/
 def residualMap (a z : ℤ) : ℤ := z^2 + a*z
 
-/-- Every member of the local residual family sends the child `z=0` to the
-same target value. -/
 theorem residual_map_child_value (a : ℤ) :
     residualMap a 0 = 0 := by
   simp [residualMap]
 
-/-- Exact first-jet decomposition at the child.  Geometrically, after the
-external ruled-surface/proximity bridge, `a=0` is the ramified model while a
-nonzero `a` gives a nonzero first jet. -/
 theorem residual_map_first_jet (a z : ℤ) :
     residualMap a z - residualMap a 0 - a*z = z^2 := by
   simp [residualMap]
-  ring
 
-/-- Collision-model first-jet coefficient. -/
 theorem collision_local_first_jet_coefficient :
     (0 : ℤ) = 0 := by
   rfl
 
-/-- Separation-model first-jet coefficient. -/
 theorem separated_local_first_jet_coefficient :
     (1 : ℤ) ≠ 0 := by
   norm_num
