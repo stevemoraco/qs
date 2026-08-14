@@ -74,7 +74,8 @@ theorem positive_quadratic_inverse_difference_negative
     1 / positiveQuadraticRGStep b u - 1 / u < 0 := by
   rw [positive_quadratic_inverse_difference_identity b u hb hu]
   have hfacpos : 0 < 1 + b * u := by positivity
-  positivity
+  have hbneg : -b < 0 := by linarith
+  exact div_neg_of_neg_of_pos hbneg hfacpos
 
 /-- Minimal arithmetic counterexample to reversing an upper bound into a lower
 bound. This is the finite logical firewall for sum-comparison steps. -/
