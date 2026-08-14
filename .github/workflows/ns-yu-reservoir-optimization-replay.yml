@@ -1,0 +1,89 @@
+name: NS Yu reservoir optimization replay
+
+on:
+  push:
+    branches:
+      - agent/ns-yu-reservoir-optimization-replay-20260814
+  pull_request:
+    paths:
+      - 'verification/ns-yu-reservoir-optimization/NSYuReservoirOptimizationFirewall.lean'
+      - '.github/workflows/ns-yu-reservoir-optimization-replay.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-yu-reservoir-optimization/NSYuReservoirOptimizationFirewall.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'Forbidden trust token found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 5
+
+      - name: Execute exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-yu-reservoir-optimization/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          srcp = pathlib.Path('verification/ns-yu-reservoir-optimization/NSYuReservoirOptimizationFirewall.lean')
+          out = pathlib.Path('verification/ns-yu-reservoir-optimization/evidence')
+          src = srcp.read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 600,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type':'application/json'},
+              method='POST')
+          with urllib.request.urlopen(req, timeout=660) as response:
+              result = json.load(response)
+          (out/'axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          errs = result.get('lean_messages',{}).get('errors',[])
+          warns = result.get('lean_messages',{}).get('warnings',[])
+          terrs = result.get('tool_messages',{}).get('errors',[])
+          twarns = result.get('tool_messages',{}).get('warnings',[])
+          failed = result.get('failed_declarations',[])
+          if not result.get('okay') or errs or warns or terrs or twarns or failed:
+              raise SystemExit('AXLE/Lean failed or warned')
+          rendered = json.dumps(result)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          PY
+
+      - name: Record exact source identity
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p verification/ns-yu-reservoir-optimization/evidence
+          sha256sum verification/ns-yu-reservoir-optimization/NSYuReservoirOptimizationFirewall.lean \
+            | tee verification/ns-yu-reservoir-optimization/evidence/source-sha256.txt
+          echo "commit=${GITHUB_SHA}" \
+            | tee verification/ns-yu-reservoir-optimization/evidence/commit.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-yu-reservoir-optimization-evidence
+          path: verification/ns-yu-reservoir-optimization/evidence/
+          if-no-files-found: error
