@@ -68,7 +68,7 @@ theorem geometric_physical_mass_prefix_bound
   have hgeom :
       (∑ k ∈ Finset.range n, q ^ k) ≤ 1 / (1 - q) := by
     rw [hgeomEq]
-    apply (div_le_div_iff₀ hden).2
+    apply (div_le_div_iff₀ hden hden).2
     nlinarith
   calc
     (∑ k ∈ Finset.range n, r0 * q ^ k) =
