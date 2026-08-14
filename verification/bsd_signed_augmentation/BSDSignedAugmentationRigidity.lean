@@ -97,7 +97,7 @@ theorem positive_factor_count_le_total_order :
       · simp [he]
         omega
       · have he0 : e = 0 := Nat.eq_zero_of_not_pos he
-        simp [he, he0, ih]
+        simp [he0, ih]
 
 /-- Total X-order one permits at most one positive X-primary elementary
 factor. -/
