@@ -37,6 +37,17 @@ structure ParabolicJet4 where
   cubic : ℝ
   quartic : ℝ
 
+/-- Two fourth-order jets are equal when their three nonlinear coefficients are
+equal. -/
+@[ext]
+theorem parabolicJet4_ext {x y : ParabolicJet4}
+    (hquad : x.quad = y.quad)
+    (hcubic : x.cubic = y.cubic)
+    (hquartic : x.quartic = y.quartic) : x = y := by
+  rcases x with ⟨xq, xc, xk⟩
+  rcases y with ⟨yq, yc, yk⟩
+  simp_all
+
 /-- Fourth-order composition law for unit-tangent scalar jets. -/
 def parabolicJet4Comp (outer inner : ParabolicJet4) : ParabolicJet4 where
   quad := outer.quad + inner.quad
@@ -58,7 +69,7 @@ theorem parabolicJet4_comp_inv (j : ParabolicJet4) :
     parabolicJet4Comp j (parabolicJet4Inv j) =
       { quad := 0, cubic := 0, quartic := 0 } := by
   rcases j with ⟨a, d, e⟩
-  apply ParabolicJet4.ext
+  apply parabolicJet4_ext
   · simp [parabolicJet4Comp, parabolicJet4Inv]
   · simp [parabolicJet4Comp, parabolicJet4Inv]
     ring
@@ -77,7 +88,7 @@ theorem unitTangent_conjugacy_fourJet_formula
       { quad := b,
         cubic := c,
         quartic := k + a * b^2 - a^2 * b - a * c + b * d } := by
-  apply ParabolicJet4.ext
+  apply parabolicJet4_ext
   · simp [parabolicJet4Comp, parabolicJet4Inv]
   · simp [parabolicJet4Comp, parabolicJet4Inv]
     ring
@@ -114,6 +125,7 @@ theorem unitTangent_conjugacy_quartic_drift
   simp [parabolicJet4Comp, parabolicJet4Inv]
   ring
 
+#print axioms parabolicJet4_ext
 #print axioms parabolicJet4_comp_inv
 #print axioms unitTangent_conjugacy_fourJet_formula
 #print axioms unitTangent_conjugacy_quartic_drift_independent_of_change_quartic
