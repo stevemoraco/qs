@@ -45,15 +45,17 @@ theorem abs_log_sub_log_le_two_mul_abs_sub_div
       exact Real.log_le_sub_one_of_pos hratio
     have hfrac : v / w - 1 = (v - w) / w := by
       field_simp [hwpos.ne']
-      ring
     have hdiff : 0 ≤ v - w := sub_nonneg.mpr hwv
     have hdiv : (v - w) / w ≤ (v - w) / u := by
       exact div_le_div_of_nonneg_left hdiff hu hw
     have habs : |v - w| = v - w := abs_of_nonneg hdiff
+    have hnonneg : 0 ≤ (v - w) / u := div_nonneg hdiff (le_of_lt hu)
     rw [hfrac] at hlog
     rw [habs]
-    have hnonneg : 0 ≤ (v - w) / u := div_nonneg hdiff (le_of_lt hu)
-    nlinarith
+    calc
+      Real.log v - Real.log w ≤ (v - w) / u := le_trans hlog hdiv
+      _ ≤ 2 * ((v - w) / u) := by nlinarith
+      _ = 2 * (v - w) / u := by ring
   · have hlog_nonneg : 0 ≤ Real.log w - Real.log v := by
       exact sub_nonneg.mpr (Real.log_le_log hvpos hvw)
     have habslog : |Real.log v - Real.log w| = Real.log w - Real.log v := by
@@ -67,7 +69,6 @@ theorem abs_log_sub_log_le_two_mul_abs_sub_div
       exact Real.log_le_sub_one_of_pos hratio
     have hfrac : w / v - 1 = (w - v) / v := by
       field_simp [hvpos.ne']
-      ring
     have hdiff : 0 ≤ w - v := sub_nonneg.mpr hvw
     have hvhalfpos : 0 < u / 2 := half_pos hu
     have hdiv : (w - v) / v ≤ (w - v) / (u / 2) := by
@@ -75,13 +76,11 @@ theorem abs_log_sub_log_le_two_mul_abs_sub_div
     have habs : |v - w| = w - v := by
       rw [abs_of_nonpos (sub_nonpos.mpr hvw)]
       ring
-    rw [hfrac] at hlog
-    rw [habs]
     have hrewrite : (w - v) / (u / 2) = 2 * (w - v) / u := by
       field_simp [hu.ne']
-      ring
-    rw [hrewrite] at hdiv
-    exact le_trans hlog hdiv
+    rw [hfrac] at hlog
+    rw [habs]
+    exact le_trans hlog (hdiv.trans_eq hrewrite)
 
 /-- A quartic perturbation small on a fixed weak-coupling interval cannot push
 the cubic step below half the incoming coupling. -/
@@ -92,7 +91,6 @@ theorem quartic_perturbation_keeps_half_lower_bound
     (hR : 0 ≤ R) (hr : |r| ≤ R * u^4)
     (hsmall : R * U^3 ≤ 1 / 2) :
     u / 2 ≤ cubicRGStep b c u + r := by
-  have hU : 0 < U := lt_of_lt_of_le hu huU
   have hstep : u ≤ cubicRGStep b c u := by
     unfold cubicRGStep
     have hnonneg : 0 ≤ b * u + c * u^2 := by positivity
@@ -104,13 +102,11 @@ theorem quartic_perturbation_keeps_half_lower_bound
       R * u^3 ≤ R * U^3 := mul_le_mul_of_nonneg_left hu3 hR
       _ ≤ 1 / 2 := hsmall
   have hquartic : R * u^4 ≤ u / 2 := by
-    have hu0 : 0 ≤ u := le_of_lt hu
     have hid : R * u^4 = (R * u^3) * u := by ring
     rw [hid]
     nlinarith
   have hr_lower : -R * u^4 ≤ r := by
-    have := neg_le_of_abs_le hr
-    nlinarith
+    exact neg_le_of_abs_le hr
   nlinarith
 
 /-- The reciprocal part of the corrected coordinate changes by `O(u^2)` under
@@ -137,34 +133,34 @@ theorem quartic_perturbation_reciprocal_le_quadratic
   have hwpos : 0 < w := lt_of_lt_of_le hu hw
   have hvpos : 0 < v := by linarith
   have hvwprod : u^2 / 2 ≤ v * w := by
-    have hu0 : 0 ≤ u := le_of_lt hu
-    nlinarith [mul_le_mul hvhalf hw (by positivity : 0 ≤ u / 2) (by positivity : 0 ≤ w)]
-  have hprodpos : 0 < v * w := mul_pos hvpos hwpos
+    have hm : (u / 2) * u ≤ v * w :=
+      mul_le_mul hvhalf hw (le_of_lt hu) (le_of_lt hvpos)
+    nlinarith
   have hdiff : |v - w| = |r| := by
     dsimp [v]
     ring_nf
   have hfrac_identity :
       1 / (b * v) - 1 / (b * w) = (w - v) / (b * v * w) := by
     field_simp [hb.ne', hvpos.ne', hwpos.ne']
-    ring
   rw [hfrac_identity, abs_div, abs_mul, abs_mul]
-  have hbabs : |b| = b := abs_of_pos hb
-  have hvabs : |v| = v := abs_of_pos hvpos
-  have hwabs : |w| = w := abs_of_pos hwpos
-  rw [hbabs, hvabs, hwabs]
+  rw [abs_of_pos hb, abs_of_pos hvpos, abs_of_pos hwpos]
   have hnum : |w - v| = |r| := by
     rw [abs_sub_comm]
     exact hdiff
   rw [hnum]
   have hden : 0 < b * v * w := by positivity
   rw [div_le_iff₀ hden]
-  have hr' : |r| ≤ R * u^4 := hr
-  have htarget_nonneg : 0 ≤ (2 * R / b) * u^2 := by positivity
-  have hb0 : 0 ≤ b := le_of_lt hb
-  have hR0 : 0 ≤ R := hR
-  have hu0 : 0 ≤ u := le_of_lt hu
-  have hmul := mul_le_mul_of_nonneg_left hvwprod hb0
-  nlinarith [sq_nonneg u]
+  have hdenlower : b * (u^2 / 2) ≤ b * (v * w) :=
+    mul_le_mul_of_nonneg_left hvwprod (le_of_lt hb)
+  have hcoef : 0 ≤ (2 * R / b) * u^2 := by positivity
+  have hmul := mul_le_mul_of_nonneg_left hdenlower hcoef
+  have hid : (2 * R / b) * u^2 * (b * (u^2 / 2)) = R * u^4 := by
+    field_simp [hb.ne']
+  calc
+    |r| ≤ R * u^4 := hr
+    _ = (2 * R / b) * u^2 * (b * (u^2 / 2)) := hid.symm
+    _ ≤ (2 * R / b) * u^2 * (b * (v * w)) := hmul
+    _ = (2 * R / b) * u^2 * (b * v * w) := by ring
 
 /-- The logarithmic part of the corrected coordinate changes by `O(u^3)`,
 hence by `O(u^2)` on a fixed interval. -/
@@ -194,17 +190,24 @@ theorem quartic_perturbation_log_le_quadratic
   rw [hdiff] at hlog
   have hru : |r| / u ≤ R * u^3 := by
     rw [div_le_iff₀ hu]
-    have hr' := hr
-    nlinarith [sq_nonneg u]
+    calc
+      |r| ≤ R * u^4 := hr
+      _ = (R * u^3) * u := by ring
+  have htwo : 2 * (|r| / u) ≤ 2 * (R * u^3) :=
+    mul_le_mul_of_nonneg_left hru (by norm_num)
   have huU' : u^3 ≤ U * u^2 := by
-    have hu0 : 0 ≤ u := le_of_lt hu
     nlinarith [sq_nonneg u]
+  have hscale : 2 * R * u^3 ≤ 2 * R * (U * u^2) := by
+    exact mul_le_mul_of_nonneg_left huU' (mul_nonneg (by norm_num) hR)
   calc
     |Real.log (cubicRGStep b c u + r) - Real.log (cubicRGStep b c u)|
         = |Real.log v - Real.log w| := by rfl
     _ ≤ 2 * |r| / u := hlog
-    _ ≤ 2 * (R * u^3) := by nlinarith
-    _ ≤ (2 * R * U) * u^2 := by nlinarith
+    _ = 2 * (|r| / u) := by ring
+    _ ≤ 2 * (R * u^3) := htwo
+    _ = 2 * R * u^3 := by ring
+    _ ≤ 2 * R * (U * u^2) := hscale
+    _ = (2 * R * U) * u^2 := by ring
 
 /-- Main perturbation theorem: an `O(u^4)` error preserves the local `O(u^2)`
 residual of the two-loop corrected coordinate. -/
@@ -256,7 +259,6 @@ theorem cubic_corrected_coordinate_quartic_perturbation_le_quadratic
           exact add_le_add hrec
             (mul_le_mul_of_nonneg_left hlog (abs_nonneg _))
     _ = 2 * R * (1 / b + |c / b^2 - 1| * U) * u^2 := by
-          field_simp [hb.ne']
           ring
 
 /-- Quartic perturbations preserve a definite quadratic increase if their
@@ -268,16 +270,13 @@ theorem quartic_perturbation_preserves_quadratic_growth
     (hR : 0 ≤ R) (hr : |r| ≤ R * u^4)
     (hgrowth : R * U^2 ≤ b / 2) :
     (b / 2) * u^2 ≤ cubicRGStep b c u + r - u := by
-  have hU : 0 < U := lt_of_lt_of_le hu huU
   have hu2 : u^2 ≤ U^2 := by
     exact pow_le_pow_left₀ (le_of_lt hu) huU 2
   have hRu2 : R * u^2 ≤ b / 2 := by
     calc
       R * u^2 ≤ R * U^2 := mul_le_mul_of_nonneg_left hu2 hR
       _ ≤ b / 2 := hgrowth
-  have hr_lower : -R * u^4 ≤ r := by
-    have := neg_le_of_abs_le hr
-    nlinarith
+  have hr_lower : -R * u^4 ≤ r := neg_le_of_abs_le hr
   unfold cubicRGStep
   have hcu3 : 0 ≤ c * u^3 := by positivity
   nlinarith [sq_nonneg u]
