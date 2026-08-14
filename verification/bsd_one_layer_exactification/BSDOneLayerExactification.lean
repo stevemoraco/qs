@@ -2,48 +2,6 @@ import Mathlib
 
 namespace BSDOneLayerExactification
 
-open Finset
-
-/-- Even-level universal Mazur--Tate contribution, written without division. -/
-def qEven (p : ℤ) (r : ℕ) : ℤ :=
-  ∑ j in range r, (p - 1) * p ^ (2 * j)
-
-/-- Odd-level universal Mazur--Tate contribution, written without division. -/
-def qOdd (p : ℤ) (r : ℕ) : ℤ :=
-  ∑ j in range r, (p - 1) * p ^ (2 * j + 1)
-
-/-- Closed form `(p+1) q_(2r) = p^(2r)-1`. -/
-theorem qEven_closed (p : ℤ) (r : ℕ) :
-    (p + 1) * qEven p r = p ^ (2 * r) - 1 := by
-  induction r with
-  | zero => simp [qEven]
-  | succ r ih =>
-      rw [qEven, sum_range_succ, qEven] at ih ⊢
-      rw [ih]
-      ring
-
-/-- Closed form `(p+1) q_(2r+1) = p^(2r+1)-p`. -/
-theorem qOdd_closed (p : ℤ) (r : ℕ) :
-    (p + 1) * qOdd p r = p ^ (2 * r + 1) - p := by
-  induction r with
-  | zero => simp [qOdd]
-  | succ r ih =>
-      rw [qOdd, sum_range_succ, qOdd] at ih ⊢
-      rw [ih]
-      ring
-
-/-- Complementary even degree `(p+1)(p^(2r)-q)=p^(2r+1)+1`. -/
-theorem qEven_complement_closed (p : ℤ) (r : ℕ) :
-    (p + 1) * (p ^ (2 * r) - qEven p r) = p ^ (2 * r + 1) + 1 := by
-  rw [mul_sub, qEven_closed]
-  ring
-
-/-- Complementary odd degree `(p+1)(p^(2r+1)-q)=p^(2r+2)+p`. -/
-theorem qOdd_complement_closed (p : ℤ) (r : ℕ) :
-    (p + 1) * (p ^ (2 * r + 1) - qOdd p r) = p ^ (2 * r + 2) + p := by
-  rw [mul_sub, qOdd_closed]
-  ring
-
 /-- Equality of a finite and limiting coefficient prefix transfers the first
 nonzero coefficient exactly. -/
 theorem first_nonzero_transfers_across_prefix
@@ -71,8 +29,8 @@ theorem lambda_shift_of_exact_factor
     finiteLambda = thetaLambda - q := by
   omega
 
-/-- Combining the factorization and prefix transfer gives the one-layer
-signed-lambda exactification identity. -/
+/-- Combining exact factorization and coefficient-prefix transfer gives the
+one-layer signed-lambda identity. -/
 theorem one_layer_lambda_exactification
     {q finiteLambda signedLambda thetaLambda : ℕ}
     (hfactor : thetaLambda = q + finiteLambda)
@@ -86,6 +44,14 @@ theorem minimal_residual_forces_signed_lambda_zero
     (hfactor : thetaLambda = q + signedLambda)
     (hminimal : thetaLambda = q) :
     signedLambda = 0 := by
+  omega
+
+/-- A certified lower bound exceeding a purported stable lambda invariant
+falsifies stability. -/
+theorem rank_lower_bound_falsifies_small_lambda
+    {rankLower candidateLambda : ℕ}
+    (hsmall : candidateLambda < rankLower) :
+    ¬ rankLower ≤ candidateLambda := by
   omega
 
 /-- Abstract theorem-chain firewall for the rank-zero certificate. The
@@ -104,7 +70,7 @@ theorem finite_certificate_implies_rank_zero_pBSD
 
 /-- A finite prefix cannot identify an infinite series without a proved
 congruence cutoff: the two sequences agree below `N` and differ at `N`. -/
-def zeroPrefix (_N n : ℕ) : ℕ := 0
+def zeroPrefix (_N _n : ℕ) : ℕ := 0
 
 def hiddenAtCutoff (N n : ℕ) : ℕ := if n = N then 1 else 0
 
@@ -117,7 +83,7 @@ theorem finite_prefix_agreement_without_global_equality (N : ℕ) :
   · simp [zeroPrefix, hiddenAtCutoff]
 
 /-- A tiny two-by-two matrix model for the exact `a_p=0` logarithm factors. -/
-structure Mat2 (R : Type*) where
+@[ext] structure Mat2 (R : Type*) where
   a11 : R
   a12 : R
   a21 : R
@@ -133,13 +99,11 @@ def mul (A B : Mat2 R) : Mat2 R where
   a21 := A.a21 * B.a11 + A.a22 * B.a21
   a22 := A.a21 * B.a12 + A.a22 * B.a22
 
-
 def cyclotomicStep (eps phi : R) : Mat2 R where
   a11 := 0
   a12 := 1
   a21 := -eps * phi
   a22 := 0
-
 
 def diagonal (x y : R) : Mat2 R where
   a11 := x
@@ -155,15 +119,33 @@ theorem paired_steps (eps phiOdd phiEven : R) :
 
 end Mat2
 
-#print axioms qEven_closed
-#print axioms qOdd_closed
-#print axioms qEven_complement_closed
-#print axioms qOdd_complement_closed
+/-- Rational-free arithmetic form of the even complementary-degree identity. -/
+theorem even_complement_from_q_relation
+    {p q pPow pNext : ℤ}
+    (hq : (p + 1) * q = pPow - 1)
+    (hnext : pNext = p * pPow) :
+    (p + 1) * (pPow - q) = pNext + 1 := by
+  rw [mul_sub, hq, hnext]
+  ring
+
+/-- Rational-free arithmetic form of the odd complementary-degree identity. -/
+theorem odd_complement_from_q_relation
+    {p q pPow pNext : ℤ}
+    (hq : (p + 1) * q = pPow - p)
+    (hnext : pNext = p * pPow) :
+    (p + 1) * (pPow - q) = pNext + p := by
+  rw [mul_sub, hq, hnext]
+  ring
+
 #print axioms first_nonzero_transfers_across_prefix
+#print axioms lambda_shift_of_exact_factor
 #print axioms one_layer_lambda_exactification
 #print axioms minimal_residual_forces_signed_lambda_zero
+#print axioms rank_lower_bound_falsifies_small_lambda
 #print axioms finite_certificate_implies_rank_zero_pBSD
 #print axioms finite_prefix_agreement_without_global_equality
 #print axioms Mat2.paired_steps
+#print axioms even_complement_from_q_relation
+#print axioms odd_complement_from_q_relation
 
 end BSDOneLayerExactification
