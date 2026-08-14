@@ -115,8 +115,7 @@ theorem admissibleFilterPenalty_lowerBound
   have hs0 : sigma ≠ 0 := ne_of_gt hsigma
   have hr0 : rho ≠ 0 := ne_of_gt hrhopos
   rw [show (rho / sigma) ^ 5 * (1 / rho) ^ 3 = rho ^ 2 / sigma ^ 5 by
-    field_simp [hs0, hr0]
-    ring] at hbase
+    field_simp [hs0, hr0]] at hbase
   exact hbase
 
 /-! ## Critical finite-energy normalization firewall -/
