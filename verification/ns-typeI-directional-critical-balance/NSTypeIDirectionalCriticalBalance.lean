@@ -108,8 +108,35 @@ theorem coefficient_depletion_absorbs
       sub_le_sub_right hstretch _
     _ = -(eta * nu * D) := by ring
 
+/-- The coefficient margin survives a localization/forcing error that consumes
+at most a `theta` fraction of the nominal depletion margin. -/
+theorem coefficient_depletion_survives_relative_error
+    {nu eta D stretching E theta : ℝ}
+    (hstretch : stretching ≤ (1 - eta) * nu * D + E)
+    (hE : E ≤ theta * eta * nu * D) :
+    stretching - nu * D ≤ -((1 - theta) * eta * nu * D) := by
+  calc
+    stretching - nu * D ≤ ((1 - eta) * nu * D + E) - nu * D :=
+      sub_le_sub_right hstretch _
+    _ ≤ ((1 - eta) * nu * D + theta * eta * nu * D) - nu * D := by
+      exact sub_le_sub_right (add_le_add_left hE _) _
+    _ = -((1 - theta) * eta * nu * D) := by ring
+
+/-- If the error uses a strict fraction `theta<1` of a positive depletion
+margin, strict absorption remains. -/
+theorem coefficient_depletion_with_error_is_strict
+    {nu eta D stretching E theta : ℝ}
+    (hnu : 0 < nu) (heta : 0 < eta) (hD : 0 < D) (htheta : theta < 1)
+    (hstretch : stretching ≤ (1 - eta) * nu * D + E)
+    (hE : E ≤ theta * eta * nu * D) :
+    stretching < nu * D := by
+  have hthetaPos : 0 < 1 - theta := by linarith
+  have hmargin : 0 < (1 - theta) * eta * nu * D := by positivity
+  have h := coefficient_depletion_survives_relative_error hstretch hE
+  linarith
+
 /-- With strictly positive viscosity, depletion fraction and dissipation, the
-same coefficient estimate gives a genuinely strict absorption margin. -/
+zero-error coefficient estimate gives a genuinely strict absorption margin. -/
 theorem coefficient_depletion_is_strict
     {nu eta D stretching : ℝ}
     (hnu : 0 < nu) (heta : 0 < eta) (hD : 0 < D)
@@ -129,6 +156,8 @@ theorem coefficient_depletion_is_strict
 #print axioms typeI_subnatural_zoom_has_positive_vorticity_exponent
 #print axioms typeI_nondecaying_vorticity_power_forces_nonsubnatural_zoom
 #print axioms coefficient_depletion_absorbs
+#print axioms coefficient_depletion_survives_relative_error
+#print axioms coefficient_depletion_with_error_is_strict
 #print axioms coefficient_depletion_is_strict
 
 end Millennium.NavierStokes
