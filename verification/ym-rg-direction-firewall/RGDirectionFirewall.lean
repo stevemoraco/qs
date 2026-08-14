@@ -14,10 +14,12 @@ transports a lattice spectral gap to a continuum physical mass scale.
    growth lower bound on every fixed weak-coupling interval once its constant
    is small relative to the leading coefficient.
 3. An upper envelope `x ≤ y` cannot be reversed into the lower bound `y ≤ x`.
+4. Pointwise positivity of a family of gaps is logically weaker than a
+   regulator/volume-uniform positive lower bound.
 
 These are deliberately elementary firewall lemmas. They are useful for
-checking the orientation of a claimed RG recurrence and the direction of a
-sum comparison. They do not formalize any source paper, do not prove a
+checking the orientation of a claimed RG recurrence and the quantifiers of a
+spectral-gap argument. They do not formalize any source paper, do not prove a
 Yang--Mills beta function, do not prove a mass gap, and do not establish an
 Osterwalder--Schrader continuum limit.
 -/
@@ -120,6 +122,21 @@ theorem upper_envelope_does_not_reverse :
     (1 / 4 : ℝ) ≤ 1 / 2 ∧ ¬ ((1 / 2 : ℝ) ≤ 1 / 4) := by
   norm_num
 
+/-- Scalar countermodel for the quantifier jump from pointwise positivity to a
+uniform positive lower bound: the family `gap(x)=x` is positive at every
+positive parameter but has no positive lower bound over all positive
+parameters. -/
+theorem pointwise_positive_gap_not_uniform :
+    (∀ x : ℝ, 0 < x → 0 < x) ∧
+      ¬ ∃ c : ℝ, 0 < c ∧ ∀ x : ℝ, 0 < x → c ≤ x := by
+  constructor
+  · intro x hx
+    exact hx
+  · rintro ⟨c, hc, huniform⟩
+    have hx : 0 < c / 2 := by linarith
+    have hbad := huniform (c / 2) hx
+    linarith
+
 #print axioms positive_quadratic_rg_step_strictly_increases
 #print axioms positive_quadratic_rg_step_not_nonincreasing
 #print axioms positive_quadratic_with_small_remainder_strictly_increases
@@ -128,5 +145,6 @@ theorem upper_envelope_does_not_reverse :
 #print axioms positive_quadratic_inverse_difference_identity
 #print axioms positive_quadratic_inverse_difference_negative
 #print axioms upper_envelope_does_not_reverse
+#print axioms pointwise_positive_gap_not_uniform
 
 end Millennium.YangMills
