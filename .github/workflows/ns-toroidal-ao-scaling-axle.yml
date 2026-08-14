@@ -1,0 +1,62 @@
+name: NS toroidal AO scaling AXLE replay
+
+on:
+  push:
+    branches:
+      - verification/ns-toroidal-ao-scaling-20260814
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re
+          p=pathlib.Path('verification/ns-toroidal-ao/ToroidalAOScalingCore.lean')
+          t=p.read_text()
+          t=re.sub(r'/-.*?-/', '', t, flags=re.S); t=re.sub(r'--.*$', '', t, flags=re.M)
+          if re.search(r'^\s*(axiom|opaque|unsafe)\b',t,flags=re.M): raise SystemExit('trust escape')
+          if re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx)([^A-Za-z0-9_]|$)',t): raise SystemExit('proof hole')
+          if 'native_decide' in t or 'Lean.ofReduceBool' in t: raise SystemExit('proof shortcut')
+          print('trust preflight clean')
+          PY
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-toroidal-ao/evidence
+          python3 - <<'PY'
+          import json,pathlib,urllib.request
+          p=pathlib.Path('verification/ns-toroidal-ao/ToroidalAOScalingCore.lean')
+          payload=json.dumps({'content':p.read_text(),'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':1200}).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=1260) as r: result=json.load(r)
+          pathlib.Path('verification/ns-toroidal-ao/evidence/axle-response.json').write_text(json.dumps(result,indent=2,sort_keys=True))
+          summary={'okay':result.get('okay'),'failed_declarations':result.get('failed_declarations',[]),'lean_errors':result.get('lean_messages',{}).get('errors',[]),'tool_errors':result.get('tool_messages',{}).get('errors',[])}
+          print(json.dumps(summary,indent=2))
+          if not result.get('okay') or summary['failed_declarations'] or summary['lean_errors'] or summary['tool_errors']: raise SystemExit(1)
+          PY
+      - name: Record exact source identity
+        shell: bash
+        run: |
+          sha256sum verification/ns-toroidal-ao/ToroidalAOScalingCore.lean | tee verification/ns-toroidal-ao/evidence/source.sha256
+          git hash-object verification/ns-toroidal-ao/ToroidalAOScalingCore.lean | tee verification/ns-toroidal-ao/evidence/source.git-blob
+          git rev-parse HEAD | tee verification/ns-toroidal-ao/evidence/commit.txt
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-toroidal-ao-scaling-evidence
+          path: verification/ns-toroidal-ao/evidence/
+          if-no-files-found: warn
