@@ -20,6 +20,11 @@ the same hypotheses, with `u <= U`, give
     |Phi(v)-Phi(w)|
       <= (2R/b + 2|p| R U) u^2.
 
+Consequently any base one-step clock residual bounded by `K u^2` remains
+quadratic after the quartic perturbation, with the explicit enlarged constant
+
+    K + 2R/b + 2|p| R U.
+
 Thus a genuine fourth-order recurrence error contributes only `O(u^2)` to
 the compensated inverse-coupling clock, exactly the summable order required
 by the previously banked crossing-time theorem.
@@ -170,7 +175,45 @@ theorem corrected_coordinate_difference_le_quartic
       add_le_add hrec hpLog
     _ = (2 * R / b + 2 * |p| * R * U) * u^2 := by ring
 
+/-- Once an unperturbed one-step corrected-coordinate residual is `O(u^2)`,
+a quartic perturbation preserves that summable order with an explicit
+constant. -/
+theorem corrected_coordinate_residual_stable_under_quartic
+    (b p u U v w r R K : ℝ)
+    (hb : 0 < b)
+    (hu : 0 < u)
+    (huU : u ≤ U)
+    (hw : u ≤ w)
+    (hv : u / 2 ≤ v)
+    (hvw : v = w + r)
+    (hR : 0 ≤ R)
+    (hr : |r| ≤ R * u^4)
+    (hbase :
+      |quarticCorrectedCoordinate b p w - quarticCorrectedCoordinate b p u + 1|
+        ≤ K * u^2) :
+    |quarticCorrectedCoordinate b p v - quarticCorrectedCoordinate b p u + 1|
+      ≤ (K + 2 * R / b + 2 * |p| * R * U) * u^2 := by
+  have hpert :=
+    corrected_coordinate_difference_le_quartic b p u U v w r R
+      hb hu huU hw hv hvw hR hr
+  have hdecomp :
+      quarticCorrectedCoordinate b p v - quarticCorrectedCoordinate b p u + 1 =
+        (quarticCorrectedCoordinate b p v - quarticCorrectedCoordinate b p w) +
+          (quarticCorrectedCoordinate b p w - quarticCorrectedCoordinate b p u + 1) := by
+    ring
+  rw [hdecomp]
+  calc
+    |(quarticCorrectedCoordinate b p v - quarticCorrectedCoordinate b p w) +
+        (quarticCorrectedCoordinate b p w - quarticCorrectedCoordinate b p u + 1)|
+        ≤ |quarticCorrectedCoordinate b p v - quarticCorrectedCoordinate b p w| +
+            |quarticCorrectedCoordinate b p w - quarticCorrectedCoordinate b p u + 1| :=
+          abs_add_le _ _
+    _ ≤ (2 * R / b + 2 * |p| * R * U) * u^2 + K * u^2 :=
+      add_le_add hpert hbase
+    _ = (K + 2 * R / b + 2 * |p| * R * U) * u^2 := by ring
+
 #print axioms log_difference_le_two_quartic
 #print axioms corrected_coordinate_difference_le_quartic
+#print axioms corrected_coordinate_residual_stable_under_quartic
 
 end Millennium.YangMills
