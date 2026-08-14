@@ -87,8 +87,43 @@ theorem no_uniform_quartic_bound_from_unitTangent_alone :
   obtain ⟨a, ha⟩ := normalized_unitTangent_quartic_unbounded C hC
   exact (not_lt_of_ge (hbound a)) ha
 
+theorem quartic_drift_abs_le_of_low_jet_bounds
+    (a d b c A D B C : ℝ)
+    (hA0 : 0 ≤ A) (hD0 : 0 ≤ D) (hB0 : 0 ≤ B) (hC0 : 0 ≤ C)
+    (ha : |a| ≤ A) (hd : |d| ≤ D) (hb : |b| ≤ B) (hc : |c| ≤ C) :
+    |a * b^2 - a^2 * b - a * c + b * d|
+      ≤ A * B^2 + A^2 * B + A * C + B * D := by
+  have hb2 : |b|^2 ≤ B^2 :=
+    pow_le_pow_left₀ (abs_nonneg b) hb 2
+  have ha2 : |a|^2 ≤ A^2 :=
+    pow_le_pow_left₀ (abs_nonneg a) ha 2
+  have h1 : |a| * |b|^2 ≤ A * B^2 :=
+    mul_le_mul ha hb2 (sq_nonneg |b|) hA0
+  have h2 : |a|^2 * |b| ≤ A^2 * B :=
+    mul_le_mul ha2 hb (abs_nonneg b) (sq_nonneg A)
+  have h3 : |a| * |c| ≤ A * C :=
+    mul_le_mul ha hc (abs_nonneg c) hA0
+  have h4 : |b| * |d| ≤ B * D :=
+    mul_le_mul hb hd (abs_nonneg d) hB0
+  calc
+    |a * b^2 - a^2 * b - a * c + b * d|
+        ≤ |a * b^2| + |a^2 * b| + |a * c| + |b * d| := by
+          calc
+            _ ≤ |a * b^2 - a^2 * b - a * c| + |b * d| := abs_add_le _ _
+            _ ≤ (|a * b^2 - a^2 * b| + |a * c|) + |b * d| := by
+              gcongr
+              exact abs_sub_le _ _
+            _ ≤ ((|a * b^2| + |a^2 * b|) + |a * c|) + |b * d| := by
+              gcongr
+              exact abs_sub_le _ _
+    _ = |a| * |b|^2 + |a|^2 * |b| + |a| * |c| + |b| * |d| := by
+          simp [abs_mul, abs_pow]
+    _ ≤ A * B^2 + A^2 * B + A * C + B * D := by
+          linarith
+
 #print axioms normalized_unitTangent_conjugacy_quartic
 #print axioms normalized_unitTangent_quartic_unbounded
 #print axioms no_uniform_quartic_bound_from_unitTangent_alone
+#print axioms quartic_drift_abs_le_of_low_jet_bounds
 
 end Millennium.YangMills
