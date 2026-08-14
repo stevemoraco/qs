@@ -44,8 +44,8 @@ jobs:
               raise SystemExit(f'{p}: custom axiom declaration')
           if 'Lean.ofReduceBool' in text or 'native_decide' in text:
               raise SystemExit(f'{p}: forbidden proof shortcut')
-          if text.count('#print axioms') != 10:
-              raise SystemExit(f'{p}: expected ten axiom reports')
+          if text.count('#print axioms') != 12:
+              raise SystemExit(f'{p}: expected twelve axiom reports')
           print(f'{p}: trust preflight clean')
           PY
 
