@@ -101,15 +101,19 @@ theorem charged_weight_transfer
     Real.exp_le_exp.mpr hexponent
   have hsource0 : 0 ≤ Real.exp (m * d) * v :=
     mul_nonneg (le_of_lt (Real.exp_pos _)) hv
+  have hfactor :
+      Real.exp (lambda * n + a * d) =
+        Real.exp (lambda * n + a * d - m * d) *
+          Real.exp (m * d) := by
+    rw [← Real.exp_add]
+    congr 1
+    ring
   calc
     Real.exp (lambda * n + a * d) * v
-        = Real.exp (lambda * n + a * d - m * d) *
-            (Real.exp (m * d) * v) := by
-          have harg :
-              lambda * n + a * d =
-                (lambda * n + a * d - m * d) + m * d := by
-            ring
-          rw [harg, Real.exp_add, mul_assoc]
+        = (Real.exp (lambda * n + a * d - m * d) *
+            Real.exp (m * d)) * v := by rw [hfactor]
+    _ = Real.exp (lambda * n + a * d - m * d) *
+          (Real.exp (m * d) * v) := by ring
     _ ≤ Real.exp (2 * lambda - (m - a) * c * R) * B := by
       exact mul_le_mul hexp hB hsource0
         (le_of_lt (Real.exp_pos _))
