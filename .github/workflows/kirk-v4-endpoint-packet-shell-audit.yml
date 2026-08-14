@@ -29,17 +29,14 @@ jobs:
           import re
 
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
-          # The appendix title also occurs in the table of contents. Anchor on
-          # the first substantive Appendix-A theorem and walk backward to the
-          # nearest title, then forward to Appendix B.
+          # PDF text layout breaks appendix titles across columns/lines.  Use
+          # theorem anchors rather than the table-of-contents strings.
           a1 = text.find('Lemma A.1 (Grounded-torus curvature covariance)')
-          if a1 < 0:
-              raise SystemExit('Lemma A.1 anchor not found')
-          start = text.rfind('A Endpoint packet-shell verification', 0, a1 + 1)
-          end = text.find('B Root data and representation normalization', a1 + 1)
-          if start < 0 or end < 0 or end <= start:
-              raise SystemExit(f'appendix boundaries not found: start={start} a1={a1} end={end}')
-          appendix = text[start:end]
+          b1 = text.find('Lemma B.1', a1 + 1)
+          if a1 < 0 or b1 < 0 or b1 <= a1:
+              raise SystemExit(f'appendix theorem anchors not found: a1={a1} b1={b1}')
+          start = max(0, a1 - 1200)
+          appendix = text[start:b1]
           if len(appendix) < 10000:
               raise SystemExit(f'appendix extraction implausibly short: {len(appendix)} chars')
           Path('kirk_v4_appendix_A_endpoint_packet_shell.txt').write_text(appendix, encoding='utf-8')
