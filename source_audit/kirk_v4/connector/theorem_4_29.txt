@@ -1,4 +1,14 @@
-ts of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
+nd recertification.
+Lemma 4.28 (Finite uniform module constants). On the common weak tube,
+                             chart
+                            Km        coa
+                                   , Km      loc
+                                          , Km      hull
+                                                 , Km       rec
+                                                         , Km   < ∞,      0 ≤ m ≤ 3,
+with constants uniform under the standing convention.
+Proof. The finite-volume normal fiber equation has a uniform contraction parameter η < 1; its derivatives
+are finite products of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
 coarea logarithm is the finite-volume analytic matrix logarithm of I + DN P , whose inverse is bounded
 by (1 − η)−1 .
    The localization projector has a finite template norm polynomial in the support radius. The reported
@@ -183,4 +193,62 @@ The graph transform on weighted C 2 graphs has Lipschitz constant q + C v̄ < 1.
 gives the graph, and the mean-value theorem gives centered contraction.
 
 5.2     Standard-scheme conjugacy and coefficient
-The coef
+The coefficient is extracted from a local background renormalization condition on the full weak measure.
+The background is not inserted as a freely translatable factor in an unrestricted Haar integral, and no
+global gauge section or equality of globally gauge-fixed partition functions is asserted.
+5.2.1 The exact marginal map on the invariant graph
+Let
+                                       R(u, R) = f (u, R), Φ(u, R)
+                                                                   
+
+be the infinite-volume canonically rescaled exact Karcher step on the common analytic weak tube. On
+the centered invariant graph put
+                                          FK (u) = f u, R⋆ (u) .
+                                                              
+
+Lemma 5.2 (Invariant-graph marginal coefficient). The reduced map is analytic and
+                                        FK (u) = u + b⋆ u2 + OG (u3 ).
+                                                                  e = u + O(u2 ).
+The number b⋆ is invariant under every analytic reparametrization u
+Proof. Substitute R⋆ (u) = uH1 + O(u2 ) into the complete quadratic Taylor expansion of f . If h(u) =
+u + cu2 + OG (u3 ), direct substitution in h ◦ FK ◦ h−1 leaves the quadratic coefficient unchanged.
+5.2.2 A nonexceptional background coordinate on weak measures
+For a finite lattice spacing a, let µa;u,R denote the full weak Wilson measure with interaction R, before
+any Karcher conditioning. Fix a retained acoustic background B in the common weak tube and write, on
+a based local background slice,
+                               U = Va (B)eA ,      d∗B,a A = 0,     A(v0 ) = 0.
+Let χ(A) be one fixed smooth cutoff equal to one on the smaller weak tube and supported in the larger
+tube. Define                           Z
+                                                             A
+                    Wa (B; µ) := − log     χ(A) e−Sµ (Va (B)e ) JB,a (A) ∆B,a (A) dA.             (7)
+                                          SB,a
+
+Here Sµ is the logarithmic density of the full weak measure, JB,a is the local exponential/coarea density,
+and ∆B,a is the local based Faddeev–Popov determinant. The integral is a based-slice renormalization
+functional; it is not used as a global representation of µ.
+    Fix m⋆ ≥ 16 and q⋆ = (2π/m⋆ , 0, 0, 0) at the retained scale. On periodic sides divisible by m⋆ , let
+P⋆ be the signed-hypercubic-orbit average of the transverse background Hessian at q⋆ , divided by |b      q⋆ |2
+and averaged over color polarizations. The directed sides are rounded upward to such multiples, a
+bounded refinement that preserves every wrapping estimate. Fix a compact orbit neighborhood Q⋆ with
+inf q∈Q⋆ |b
+          q | =: ρ⋆ > 0. Define ga (µ) as the inverse of P⋆ DB
+                                                             2
+                                                               Wa (0; µ) after the same canonical rescaling of
+lattice and profile at both ends of a step. The pure quadratic Wilson Hessian gives ga = u. Thus this is
+one scale-normalized nonexceptional momentum-subtraction coordinate; no derivative at q = 0 is used.
+
+
+                                                      40
+Lemma 5.3 (Nonexceptional slice coordinate with finite-order flat complement). On the common weak
+domain, the nonexceptional background coordinate evaluated on the full normalized weak measure, including
+exact irregular-label recombination, extends as a C 3 function of (u, R) to u = 0 and satisfies
+
+                                    ga (µa;u,R ) = u + O(u2 + u∥R∥ + ∥R∥2 ).                               (8)
+
+Changing the based local slice, cutoff, or finite local gauge fermion changes ga by one scale-normalized
+C 3 unit-tangent reparametrization. If ϵirr denotes the contribution of the charged complement, then for
+0 ≤ k ≤ 3 and the two background marks used by ga ,
+
+                                    |∂uk ϵirr (u, R)| ≤ Ck u−pk e−c/u ,         u > 0,
+
+so its extension at u = 0 is C 3 and has vanishi

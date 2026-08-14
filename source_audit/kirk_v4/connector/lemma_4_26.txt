@@ -1,4 +1,12 @@
-cell Karcher mean, and an inverse of one of the matrices
+derivative in an unscaled physical unit direction.
+Lemma 4.25 (One common analytic species tube). There is a radius ηcom > 0, independent of volume
+and preceding weak depth, on which the Wilson word, exponential-coordinate Haar density, Karcher
+normal return, coarea logarithm, and finite Schur endpoint are simultaneously holomorphic. On the closed
+half-radius tube, their derivatives through structural order three and every fixed passive-source order have
+finite fixed-template suprema.
+
+Proof. Each species is a finite composition of multiplication, inversion, exponential, logarithm, the
+finite-cell Karcher mean, and an inverse of one of the matrices
 
                                          I + DN P,          Hopt + B(A).
 
@@ -163,4 +171,72 @@ Theorem 4.30 (Local/nonlocal separation). Assume:
    Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
                                            ∥DΦL (0)|stable ∥ < 1.
 No upper bound of the form maxm Km < 4 is required.
-Proof. Fix
+Proof. Fix the finite number Γ. Choose D so that
+                                                  δD > Γ + 2.
+On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+equivalent finite-dimensional norm with
+                                      ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+Choose ϵL = L−1 . Thus
+                                                 ∥JL ∥ ≤ 2L−1 .
+  The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+depending only on the fixed D, L, never on volume or weak depth. Since
+                                                  δD − Γ > 2,
+the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+one finite L such that
+                             2L−1 + Clong
+                                     ′
+                                          L−3 + CD′
+                                                    (1 + R(L))pD LΓ−δD < 1.
+This gives the strict macrostep contraction.
+Lemma 4.31 (Finite one-step supplier bound). Let
+                             SRBK      chart       coarea       loc          hull      rec
+                            Km    ,   Km     ,    Km      ,    Km   ,       Km    ,   Km
+be the rooted one-step constants supplied respectively by the summed replica-BKAR logarithm, normal
+fiber return, coarea logarithm, localization, canonical hull assignment, and output recertification. If each
+is finite and uniform in volume and weak depth, then one may take
+                                   SRBK chart coarea loc hull rec
+                             Km ≤ Km   Km Km        Km Km Km < ∞.
+
+
+                                                       38
+Proof. Compose the six bounded maps in the declared rooted marked norm and apply the chain rule
+through order m. Replacing the product by the finite Bell-polynomial sum only changes the right side by
+a finite m-dependent combinatorial factor.
+
+5       Invariant graph and universal coefficient
+The marginal coordinate is u = g 2 . Inputs SI–6, SI–6B, SI–7, and SI–7M are used only to compute
+the local perturbative Taylor coefficient of the complete fine Wilson vector-minus-ghost quotient. The
+coefficient of the exact Karcher map is identified internally by evaluating one local standard background
+coordinate on the two equal measures related by the exact Karcher pushforward, followed by unit-tangent
+conjugacy on the centered invariant family. No unrestricted Haar-translated background functional, global
+background-gauge section, or application of Reisz power counting to the optical conditional covariance is
+consumed.
+   In the canonical squared-coupling normalization,
+
+                                                       11 CA (G) log 2
+                                               bAF =                   .
+                                                           24π 2
+The factor log 2 is the physical scale-two interval. The complete coordinate-intertwining theorem is
+printed after the centered invariant graph, where exact measure equality and parabolic conjugacy identify
+the one-step coefficient.
+5.1     Centered invariant graph
+Let
+                                         R(u, R) = f (u, R), Φ(u, R)
+                                                                    
+
+be C 3 on a uniform Banach ball. Assume
+
+                            DR f (0, 0) = 0,      DR Φ(0, 0) = L,          ∥L∥ ≤ q < 1.
+
+Write
+                             f (u, R) = u + b0 u2 + u m(R) + q(R, R) + O3 (u, R)
+and
+                          Φ(u, R) = LR + uS1 + u2 S2 + uAR + B(R, R) + O3 (u, R).
+Theorem 5.1 (Centered graph with the slaved coefficient). Define
+
+                                                H1 = (I − L)−1 S1 ,
+
+                                        b⋆ = b0 + m(H1 ) + q(H1 , H1 ),
+and
+                              H2 = (I − L)−1 [S2 + AH1 + B(H1 , H1 ) − 

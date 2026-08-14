@@ -1,4 +1,16 @@
-the finite-volume analytic normal section into the local Wilson,
+I|!
+                                                  X∋e              |I|≤N
+
+The active structural order is three; the passive source order N is arbitrary but fixed.
+  Let                                                 X
+                                        Aκ (F ) = sup     eκτ (X) βX
+                                                          e
+                                                              X∋e
+
+be the complete-species regulator-allocation cone.
+
+The six one-step maps.          The exact regular step is organized in the following order.
+(E1) Normal chart return. Substitute the finite-volume analytic normal section into the local Wilson,
      Haar, inherited, and source factors.
 
 
@@ -160,4 +172,75 @@ shortest connector paths and finite collars preserve exponent κ. Canonical hull
 history once.
    For a post-localization output RP , put
                              gP = ∥DRP (0)∥,           hP = sup ∥D2 RP (η + itθ)∥.
-     
+                                                                η,θ,t
+
+Then
+                                                           1
+                                                 βPout =     (gP + hP )
+                                                           2
+is a valid nonnegative output allocation and
+                                       X                   1
+                                   sup     eκτ (P ) βPout ≤ [Rout ]∂,C;κ .
+                                     e                     2
+                                          P ∋e
+
+Thus the allocation cone is reproduced from the actual output.
+
+Six-factor composition.
+Theorem 4.29 (Permanent one-step envelope). For every prescribed finite source order N , there are
+finite constants
+                                 Km < ∞,       0 ≤ m ≤ 3,
+independent of volume, microscopic cutoff, and preceding weak depth, such that the exact regular one-step
+map satisfies
+                                         ∥Dm Φreg ∥κ;3,N ≤ Km
+on one reproduced weak ball.
+   More explicitly,
+                                 chart    coa    BKAR    loc    hull    rec
+                                                                            
+                        Km ≤ Bm K≤m    , K≤m  , K≤m   , K≤m  , K≤m   , K≤m    ,
+where Bm is the finite multivariable Bell polynomial supplied by the chain rule through order m.
+Proof. Compose the six bounded maps. Through order three, the chain rule contains only finitely
+many partitions. Every term is bounded in the same permanent κ-weighted norm and carries the same
+active/source inventory.
+   The input allocation cone is an assumption of the weak activity ball; the output cone is derived after
+the exact connected output by recertification. Choose the ball so
+                                                  C(uω + r) ≤ b∗
+and the derived output allocation is at most b∗ . This is an invariant ball inequality, not circular use of
+the output theorem as an input.
+
+
+                                                           37
+4.7    Macrostep contraction
+Let ΦL be the exact L = 2s macrostep map after vacuum, Yang–Mills, and declared local-jet extraction.
+Split its stable derivative as
+                                      DΦL |stable = JL + NL ,
+where JL is the finite local jet block and NL contains all reported nonlocal rows.
+Theorem 4.30 (Local/nonlocal separation). Assume:
+1. the one-step rooted marked supplier bounds are finite:
+                                          Km < ∞,             0 ≤ m ≤ 3,
+   uniformly under the standing convention;
+2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+   associated-graded diagonal is
+                                                     L4−∆ ;
+3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+   unmarked scalar degree is six;
+4. for
+                                     Γ = log2 max{Km , 1} + ε,
+                                                       m
+   the nonlocal rows obey
+                                ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+   where
+                                                   Γ+3
+                                                                       
+                                            R(L) =     log L
+                                                    κ
+   and δD → ∞.
+   Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+                                           ∥DΦL (0)|stable ∥ < 1.
+No upper bound of the form maxm Km < 4 is required.
+Proof. Fix the finite number Γ. Choose D so that
+                                                  δD > Γ + 2.
+On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+equivalent finite-dimensional norm with
+                           

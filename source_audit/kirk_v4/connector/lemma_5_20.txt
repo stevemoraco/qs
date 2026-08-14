@@ -1,4 +1,11 @@
-rable density F ,
+compact embedding
+                                           C N (KX ) ⋐ C N −1 (KX )
+follows from Arzela–Ascoli in finitely many coordinate charts. A diagonal subsequence converges on
+all shapes of size at most L. Letting L increase and using the uniform tail estimate proves relative
+compactness in Ba′ ,N −1 .
+Theorem 5.19 (Exact fiber-chart invariance). Let Ψ1 (w, z1 ) and Ψ2 (w, z2 ) be two exact C 1 fiber charts
+for the same finite-dimensional submersion B(U ) = w. Suppose their images agree on the integration
+region and their transition map is orientation preserving. Then, for every integrable density F ,
                       Z                                   Z
                          F (Ψ1 (w, z1 )) J1 (w, z1 ) dz1 = F (Ψ2 (w, z2 )) J2 (w, z2 ) dz2 .
 
@@ -161,4 +168,69 @@ estimates.
 
 5.6     Ultraviolet closure theorem
 Fix an arbitrary passive-source order N < ∞. Activities carry at most three active structural derivatives,
-source derivatives through order N , and zer
+source derivatives through order N , and zero, one, or two passive exterior roots.
+Theorem 5.27 (Uniform centered ultraviolet renormalization). There are a rooted support exponent
+a > 0, a uniformly equivalent one-step norm ∥ · ∥⋆ , constants
+
+                                   u⋆ , K, σ, cN , pN > 0,       0 < ρ < 1,
+
+and a domain D(a; 3, N ), independent of finite volume, microscopic cutoff, and preceding weak depth,
+such that the exact forty-nine-path weighted Karcher step has the following properties.
+   Write
+                                           Rphys = R⋆ (u) + ϱ.
+ (U1) The normalized conditional logarithm exists on one common hybrid domain, has an exact connected
+      rooted activity decomposition, and owns every vacuum, pressure, determinant, coarea, gauge-
+      coordinate, source, and history normalization exactly once.
+ (U2)
+                                             11 CA (G) log 2 2
+                                    u+ = u +                u + r(u, ϱ; M ),
+                                                  24π 2
+      with
+                        |r(u, ϱ; M )| ≤ CN u3 + u2 ∥ϱ∥⋆ + u∥ϱ∥2⋆ + ∥ϱ∥3⋆ + δG (M )u2 .
+                                                                                   
+
+ (U3)
+                                ∥ϱ+ ∥⋆;a;3,N ≤ ρ∥ϱ∥⋆;a;3,N ,       ∥ϱ∥⋆;a;3,N ≤ Ku3
+      is a forward-invariant cone.
+ (U4) The exact irregular component obeys
+
+                               ∥Eirr ∥⋆;a;3,N + ∥DR Eirr ∥⋆;a;3,N ≤ CN u−pN e−cN /u .
+
+      The derivative includes both inherited-vertex hits and bad-core-operator hits.
+ (U5) The same domain controls the zero-, one-, and two-root connector rows, three active structural
+      derivatives, and every prescribed finite passive source order N .
+ (U6) Gauge covariance, signed-hypercubic covariance, the corrected aligned-reflection schedule, reflection-
+      positive recombination, and exact fiber/coarea ownership are preserved.
+ (U7) For every prescribed number of weak dyadic steps, the wrapping estimate admits a directed periodic-
+      volume schedule. On every such fixed schedule the reduced scalar map is C 1 on the centered cone,
+      with the cubic value and derivative rows consumed by the scheduled shooting theorem below.
+
+
+
+
+                                                     51
+    Along a schedule satisfying
+                                                δG (Mj ) ≤ uj ,
+the tuned orbit obeys
+                                                11 CA (G) log 2 2
+                                  uj+1 = uj +                  uj + OG (u3j ).
+                                                    24π 2
+Proof. U1 follows by composing the model-specific normal chart with permanent support closure, exact
+coarea ownership, the summed replica–BKAR theorem, and output recertification on the common hybrid
+domain.
+   For U2, the centered analytic graph theorem gives the full remainder with an initially named graph
+coefficient. The scheme-universality theorem identifies that coefficient with 11 CA (G) log 2/(24π 2 ) without
+assuming the direct ASC2 shell comparison. The rooted finite-volume comparison supplies the combined
+localized-wrapping and massless acoustic finite-size term.
+   The Wick associated-graded theorem, permanent envelope, localization/collect dichotomy, macrostep
+contraction, and graph transform give U3. The bad-seed and rooted irregular-transfer theorems give U4.
+The bi-graded marked theorem gives U5. Exact algebra, reflected section, ownership, and recombination
+give U6. Finally, U2, U3, domain compactness, and the directed schedule give U7.
+
+6     Directed handoff and higher-order Peter–Weyl landing
+The purpose of this section is to replace the phrase “fixed compact first-crossing section” by a quantitative
+object and to print the exact norm bound consumed by the compact-group macrobridge. Fix once and
+for all
+                                 1
+                       0 < ū < u⋆ ,       Σ⋆ := {(u, ϱ) : u = ū, ∥ϱ∥⋆;a;3,N ≤ K ū3 }.                 (30)
+                               

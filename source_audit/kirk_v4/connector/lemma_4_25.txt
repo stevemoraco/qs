@@ -1,4 +1,14 @@
-           X           X
+decay exponent
+µ > 0, and the normal chart, inverse trees, coarea logarithm, and fixed local atlas have positive exponential
+locality exponents
+                                      mchart , minv , mcoa , matlas > 0.
+Choose
+                                0 < κ < min{µ, mchart , minv , mcoa , matlas }.
+Then all six maps act in the same κ-weighted rooted support space. No per-step weakening of κ is required.
+
+Proof. For a BKAR tree, report every covariance edge by a shortest path and every hard-core edge by its
+fixed collar. The geometric reporting inequality gives
+                                        X           X
                                τ (P ) ≤   τ (Si ) +    de + Cgeo (n − 1).
                                            i            e∈Tcov
 
@@ -160,4 +170,72 @@ active/source inventory.
    The input allocation cone is an assumption of the weak activity ball; the output cone is derived after
 the exact connected output by recertification. Choose the ball so
                                                   C(uω + r) ≤ b∗
-and the derived output allocation is at most
+and the derived output allocation is at most b∗ . This is an invariant ball inequality, not circular use of
+the output theorem as an input.
+
+
+                                                           37
+4.7    Macrostep contraction
+Let ΦL be the exact L = 2s macrostep map after vacuum, Yang–Mills, and declared local-jet extraction.
+Split its stable derivative as
+                                      DΦL |stable = JL + NL ,
+where JL is the finite local jet block and NL contains all reported nonlocal rows.
+Theorem 4.30 (Local/nonlocal separation). Assume:
+1. the one-step rooted marked supplier bounds are finite:
+                                          Km < ∞,             0 ≤ m ≤ 3,
+   uniformly under the standing convention;
+2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+   associated-graded diagonal is
+                                                     L4−∆ ;
+3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+   unmarked scalar degree is six;
+4. for
+                                     Γ = log2 max{Km , 1} + ε,
+                                                       m
+   the nonlocal rows obey
+                                ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+   where
+                                                   Γ+3
+                                                                       
+                                            R(L) =     log L
+                                                    κ
+   and δD → ∞.
+   Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+                                           ∥DΦL (0)|stable ∥ < 1.
+No upper bound of the form maxm Km < 4 is required.
+Proof. Fix the finite number Γ. Choose D so that
+                                                  δD > Γ + 2.
+On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+equivalent finite-dimensional norm with
+                                      ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+Choose ϵL = L−1 . Thus
+                                                 ∥JL ∥ ≤ 2L−1 .
+  The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+depending only on the fixed D, L, never on volume or weak depth. Since
+                                                  δD − Γ > 2,
+the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+one finite L such that
+                             2L−1 + Clong
+                                     ′
+                                          L−3 + CD′
+                                                    (1 + R(L))pD LΓ−δD < 1.
+This gives the strict macrostep contraction.
+Lemma 4.31 (Finite one-step supplier bound). Let
+                             SRBK      chart       coarea       loc          hull      rec
+                            Km    ,   Km     ,    Km      ,    Km   ,       Km    ,   Km
+be the rooted one-step constants supplied respectively by the summed replica-BKAR logarithm, normal
+fiber return, coarea logarithm, localization, canonical hull assignment, and output recertification. If each
+is finite and uniform in volume and weak depth, then one may take
+                                   SRBK chart coarea loc hull rec
+                             Km ≤ Km   Km Km        Km Km Km < ∞.
+
+
+                                                       38
+Proof. Compose the six bounded maps in the declared rooted marked norm and apply the chain rule
+through order m. Replacing the product by the finite Bell-polynomial sum only changes the right side by
+a finite m-dependent combinatorial factor.
+
+5       Invariant graph and universal coefficient
+The marginal coordinate is u = g 2 . Inputs SI–6, SI–6B, SI–7, and SI–7M are used only to compute
+the local perturbative Taylor coefficient o

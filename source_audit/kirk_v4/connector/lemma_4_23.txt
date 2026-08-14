@@ -1,4 +1,13 @@
-                                      ≤ Cm LΓ e−κR(L) ≤ Cm L−3 .
+                                                        33
+Proof. For the long sector,
+                                              [m]                                               [m]
+                                   X                                            X
+                         sup                  cL (Y ) ≤ e−κR(L) sup                    eκτL (Y ) cL (Y )
+                          b                                                b
+                                    Y ∋b                                        Y ∋b
+                               τL (Y )>R(L)
+
+                                                        ≤ Cm LΓ e−κR(L) ≤ Cm L−3 .
 
    For the short sector, first apply exact collect and then the local projector. Linearity and absolute
 convergence make this identical to localizing each history and collecting by its canonical hull. Every
@@ -160,4 +169,67 @@ three rows have the same explicit power. Indeed, on the common tube,
 For the last line write the finite endpoint as log det(I + Copt B(A)Copt ); after the complete two-jet
 is removed, the matrix-logarithm integral remainder is cubic, while ∥Copt ∥ ≤ 1/2 and B(A) = O(A)
 uniformly. Substitution of ∥A∥phys ≤ u1/2−ϵ gives u3/2−3ϵ for all three rows. The convention (SN) gives
-the same power after 
+the same power after up to three structural marks, because every marked direction carries the same factor
+u1/2−ϵ .
+   The incoming activity and regulator allocation enter linearly in their declared rooted rows. Multiplica-
+tion by the finite incidence constant and summation of the exponential connector row give (6). Cauchy
+differentiation on the same closed tube changes only the finite template constants.
+   Let Calloc be the operator constant that maps the species rows to ∥ α∈I Bα ∥, and let Ctree include
+                                                                           P
+the fixed hard-core incidence, the unused exponential support margin, the factor 8 from the Pruefer
+identity, and the Cauchy factor σ −2 . Define
+                                                       1          1
+                                                                     
+                                  δBKAR := min                ,          .
+                                                  8∥C∥Calloc 2Ctree
+Lemma 4.27 (Uniform BKAR input with a printed threshold). If
+
+                                       Catom (uω0 + r + b) ≤ δBKAR ,
+
+then
+                                       X             1                         1
+                                4∥C∥         Bα ≤      ,    χeff (u, r, b) ≤     .
+                                                     2                         2
+                                       α∈I
+
+
+                                                      36
+The summed replica–BKAR logarithm therefore converges absolutely, and
+                                         BKAR
+                                        Km    < ∞,               0 ≤ m ≤ 3,
+uniformly in volume, replica number, forest parameters, and preceding weak depth.
+Proof. Proposition 4.26 bounds the complete species mass by δBKAR . The definition of Calloc gives the
+first inequality. The Gram replica estimate removes replica-number growth, and the exact Pruefer identity
+pays the labelled-tree degree factorials. After the fixed support and Cauchy costs, every parent-normalized
+child sum is bounded by Ctree ηatom ≤ 1/2. The connected tree series and its first three marked derivatives
+are therefore bounded by the first three derivatives of (1 − χeff )−1 at χeff ≤ 1/2.
+
+Chart, coarea, localization, hull, and recertification.
+Lemma 4.28 (Finite uniform module constants). On the common weak tube,
+                             chart
+                            Km        coa
+                                   , Km      loc
+                                          , Km      hull
+                                                 , Km       rec
+                                                         , Km   < ∞,      0 ≤ m ≤ 3,
+with constants uniform under the standing convention.
+Proof. The finite-volume normal fiber equation has a uniform contraction parameter η < 1; its derivatives
+are finite products of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
+coarea logarithm is the finite-volume analytic matrix logarithm of I + DN P , whose inverse is bounded
+by (1 − η)−1 .
+   The localization projector has a finite template norm polynomial in the support radius. The reported
+shortest connector paths and finite collars preserve exponent κ. Canonical hull ownership assigns each
+history once.
+   For a post-localization output RP , put
+                             gP = ∥DRP (0)∥,           hP = sup ∥D2 RP (η + itθ)∥.
+                                                                η,θ,t
+
+Then
+                                                           1
+                                                 βPout =     (gP + hP )
+                                                           2
+is a valid nonnegative output allocation and
+                                       X                   1
+                                   sup     eκτ (P ) βPout ≤ [Rout ]∂,C;κ .
+                                     e                     2
+                                 

@@ -1,4 +1,11 @@
-t the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+ in the tree estimate, every additional nonreference vertex
+     pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+     scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+     weak/irregular recombination has a summable rooted remainder.
+(R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+     macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+     are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
      Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
      common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
      acoustic reference channel beyond the exact owner-map inventory.
@@ -134,4 +141,56 @@ If v(A, B) belongs to the terminal matching logarithm, call the history a matchi
 scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
 recursively generated tree, not a choice made after absolute values or bounds have been applied.
 Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
-the disj
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources wi

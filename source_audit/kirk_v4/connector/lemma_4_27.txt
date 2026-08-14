@@ -1,4 +1,14 @@
-ix-logarithm integral remainder is cubic, while ∥Copt ∥ ≤ 1/2 and B(A) = O(A)
+is O(u3/2−3ϵ ). The remaining
+three rows have the same explicit power. Indeed, on the common tube,
+                                              (≥3)
+                          (≥3)
+                         Rcoa  (A) [3] + Rchart (A) [3] ≤ (Ccoa + Cchart )∥A∥3phys ,
+                                              (≥3)
+                                             RSch (A) [3] ≤ CSch ∥A∥3phys .
+
+                                                                  1/2          1/2
+For the last line write the finite endpoint as log det(I + Copt B(A)Copt ); after the complete two-jet
+is removed, the matrix-logarithm integral remainder is cubic, while ∥Copt ∥ ≤ 1/2 and B(A) = O(A)
 uniformly. Substitution of ∥A∥phys ≤ u1/2−ϵ gives u3/2−3ϵ for all three rows. The convention (SN) gives
 the same power after up to three structural marks, because every marked direction carries the same factor
 u1/2−ϵ .
@@ -163,4 +173,85 @@ consumed.
    In the canonical squared-coupling normalization,
 
                                                        11 CA (G) log 2
-                                          
+                                               bAF =                   .
+                                                           24π 2
+The factor log 2 is the physical scale-two interval. The complete coordinate-intertwining theorem is
+printed after the centered invariant graph, where exact measure equality and parabolic conjugacy identify
+the one-step coefficient.
+5.1     Centered invariant graph
+Let
+                                         R(u, R) = f (u, R), Φ(u, R)
+                                                                    
+
+be C 3 on a uniform Banach ball. Assume
+
+                            DR f (0, 0) = 0,      DR Φ(0, 0) = L,          ∥L∥ ≤ q < 1.
+
+Write
+                             f (u, R) = u + b0 u2 + u m(R) + q(R, R) + O3 (u, R)
+and
+                          Φ(u, R) = LR + uS1 + u2 S2 + uAR + B(R, R) + O3 (u, R).
+Theorem 5.1 (Centered graph with the slaved coefficient). Define
+
+                                                H1 = (I − L)−1 S1 ,
+
+                                        b⋆ = b0 + m(H1 ) + q(H1 , H1 ),
+and
+                              H2 = (I − L)−1 [S2 + AH1 + B(H1 , H1 ) − b⋆ H1 ] .
+Then, after decreasing the common ball, there is a unique invariant graph
+
+                                       R⋆ (u) = uH1 + u2 H2 + OG (u3 ).
+
+In a tangent-to-identity marginal coordinate v and the centered irrelevant coordinate
+                                                 e = R − R⋆ (u),
+                                                 R
+
+the exact map satisfies
+                                           v+ = v + b⋆ v 2 + OG (v 3 )
+on the graph and
+                                       ∥R
+                                        e+ ∥ ≤ ρ⋆ ∥R∥,
+                                                   e            q < ρ⋆ < 1.
+                                                       3
+All constants are uniform whenever the input C and contraction rows are uniform.
+Proof. Comparing powers of u in
+
+                                        R⋆ (f (u, R⋆ (u))) = Φ(u, R⋆ (u))
+
+gives the displayed equations for H1 , H2 and b⋆ .
+
+
+                                                           39
+  After the shift
+                                           R = uH1 + u2 H2 + ρ,
+the marginal row is
+                                u+ = u + b⋆ u2 + u c(ρ) + q(ρ, ρ) + O3 (u, ρ),
+where
+                                             c = m + 2q(H1 , ·).
+The cohomological equations
+                                     α − αL = c,       d − d(L·, L·) = q
+have convergent Neumann-series solutions because ∥L∥ < 1. The coordinate
+                                          v = u + uα(ρ) + d(ρ, ρ)
+removes the uρ and ρ2 marginal feeding through second order.
+  The centered irrelevant row has the form
+                                     ρ+ = Lρ + O(v∥ρ∥ + ∥ρ∥2 + v 3 ).
+The exponentially flat irregular term is absorbed in the same cubic row after shrinking the weak interval.
+The graph transform on weighted C 2 graphs has Lipschitz constant q + C v̄ < 1. Its unique fixed point
+gives the graph, and the mean-value theorem gives centered contraction.
+
+5.2     Standard-scheme conjugacy and coefficient
+The coefficient is extracted from a local background renormalization condition on the full weak measure.
+The background is not inserted as a freely translatable factor in an unrestricted Haar integral, and no
+global gauge section or equality of globally gauge-fixed partition functions is asserted.
+5.2.1 The exact marginal map on the invariant graph
+Let
+                                       R(u, R) = f (u, R), Φ(u, R)
+                                                                   
+
+be the infinite-volume canonically rescaled exact Karcher step on the common analytic weak tube. On
+the centered invariant graph put
+                                          FK (u) = f u, R⋆ (u) .
+                                                              
+
+Lemma 5.2 (Invariant-graph marginal coefficient). The reduced map is analytic and
+                                        FK (u) = u + b⋆ u2 + OG (
