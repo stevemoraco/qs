@@ -10,7 +10,7 @@ macrostep derivative magnitudes satisfy the standard scalar chain-rule
 majorants, then after `n` compositions the order-`m` magnitude is bounded by
 `(6 B)^(m n)` for `m = 1,2,3`.
 
-This is deliberately a scalar/envelope theorem.  To apply it to a rooted
+This is deliberately a scalar/envelope theorem. To apply it to a rooted
 polymer norm one must separately prove that the normed derivatives satisfy the
 three displayed recurrence inequalities without a volume factor or loss of the
 support exponent.
@@ -33,7 +33,6 @@ theorem macrostep_fixed_order_exponential_envelope
       d2 n ≤ (6 * B) ^ (2 * n) ∧
       d3 n ≤ (6 * B) ^ (3 * n) := by
   have hB0 : 0 ≤ B := le_trans (by norm_num) hB
-  have hC0 : 0 ≤ 6 * B := by positivity
   have hBB : B ≤ B ^ 2 := by
     have haux : 0 ≤ B * (B - 1) := mul_nonneg hB0 (sub_nonneg.mpr hB)
     nlinarith
@@ -67,14 +66,11 @@ theorem macrostep_fixed_order_exponential_envelope
           d1 n * d2 n ≤ (6 * B) ^ n * (6 * B) ^ (2 * n) :=
         mul_le_mul ih1 ih2 (hpos2 n) hp1
       have hcube : (d1 n) ^ 3 ≤ ((6 * B) ^ n) ^ 3 := by
-        have hsum :
-            0 ≤ ((6 * B) ^ n) ^ 2 + (6 * B) ^ n * d1 n + (d1 n) ^ 2 := by
-          positivity
-        have hprod :
-            0 ≤ (((6 * B) ^ n) - d1 n) *
-              (((6 * B) ^ n) ^ 2 + (6 * B) ^ n * d1 n + (d1 n) ^ 2) :=
-          mul_nonneg (sub_nonneg.mpr ih1) hsum
-        nlinarith
+        calc
+          (d1 n) ^ 3 = d1 n * (d1 n) ^ 2 := by ring
+          _ ≤ (6 * B) ^ n * (((6 * B) ^ n) ^ 2) :=
+            mul_le_mul ih1 hsq (sq_nonneg (d1 n)) hp1
+          _ = ((6 * B) ^ n) ^ 3 := by ring
       have hpow_sq : ((6 * B) ^ n) ^ 2 = (6 * B) ^ (2 * n) := by
         rw [pow_two, ← pow_add]
         congr 1
@@ -109,13 +105,25 @@ theorem macrostep_fixed_order_exponential_envelope
             mul_le_mul_of_nonneg_right hcoef2 hp2
           _ = (6 * B) ^ (2 * (n + 1)) := by
             rw [show 2 * (n + 1) = 2 + 2 * n by omega, pow_add]
-      · calc
+      · have ht1 : B * d3 n ≤ B * (6 * B) ^ (3 * n) :=
+          mul_le_mul_of_nonneg_left ih3 hB0
+        have ht2 :
+            3 * B * d1 n * d2 n ≤
+              3 * B * ((6 * B) ^ n * (6 * B) ^ (2 * n)) := by
+          calc
+            3 * B * d1 n * d2 n = (3 * B) * (d1 n * d2 n) := by ring
+            _ ≤ (3 * B) * ((6 * B) ^ n * (6 * B) ^ (2 * n)) :=
+              mul_le_mul_of_nonneg_left hprod12 (by positivity)
+            _ = 3 * B * ((6 * B) ^ n * (6 * B) ^ (2 * n)) := by ring
+        have ht3 : B * (d1 n) ^ 3 ≤ B * (((6 * B) ^ n) ^ 3) :=
+          mul_le_mul_of_nonneg_left hcube hB0
+        calc
           d3 (n + 1) ≤
               B * d3 n + 3 * B * d1 n * d2 n + B * (d1 n) ^ 3 := hstep3 n
           _ ≤ B * (6 * B) ^ (3 * n) +
                 3 * B * ((6 * B) ^ n * (6 * B) ^ (2 * n)) +
-                B * (((6 * B) ^ n) ^ 3) := by
-            gcongr
+                B * (((6 * B) ^ n) ^ 3) :=
+            add_le_add (add_le_add ht1 ht2) ht3
           _ = 5 * B * (6 * B) ^ (3 * n) := by
             rw [hpow_prod, hpow_cube]
             ring
@@ -139,7 +147,7 @@ theorem macrostep_envelope_is_polynomial_in_dyadic_length
   calc
     (6 * B) ^ (m * n) ≤ ((2 : ℝ) ^ q) ^ (m * n) := hpow
     _ = (2 : ℝ) ^ (q * (m * n)) := by rw [← pow_mul]
-    _ = (2 : ℝ) ^ (n * (m * q)) := by congr 1 <;> omega
+    _ = (2 : ℝ) ^ (n * (m * q)) := by congr 1 <;> ring
     _ = ((2 : ℝ) ^ n) ^ (m * q) := by rw [pow_mul]
 
 #print axioms macrostep_fixed_order_exponential_envelope
