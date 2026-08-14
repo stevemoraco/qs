@@ -1,0 +1,106 @@
+name: B2 round62 AXLE replay
+
+on:
+  push:
+    branches:
+      - verification/b2-round62-firewalls-20260813-gpt56
+    paths:
+      - 'verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean'
+      - '.github/workflows/b2-round62-axle.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean'
+      - '.github/workflows/b2-round62-axle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(stripped)
+          if m: raise SystemExit(f'forbidden token: {m.group(2)}')
+          if 'Lean.ofReduceBool' in stripped or 'native_decide' in stripped:
+              raise SystemExit('forbidden proof shortcut')
+          if stripped.count('#print axioms') != 6:
+              raise SystemExit('expected exactly six axiom reports')
+          print('trust preflight clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean')
+          payload = json.dumps({
+              'content': p.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type':'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          out = pathlib.Path('verification/b2_round62/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          summary = {
+              'okay': result.get('okay'),
+              'failed_declarations': result.get('failed_declarations', []),
+              'lean_errors': result.get('lean_messages', {}).get('errors', []),
+              'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+              'tool_errors': result.get('tool_messages', {}).get('errors', []),
+              'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+          }
+          print(json.dumps(summary, indent=2))
+          if not result.get('okay'): raise SystemExit(1)
+          if result.get('failed_declarations'): raise SystemExit(1)
+          if result.get('lean_messages', {}).get('errors'): raise SystemExit(1)
+          if result.get('tool_messages', {}).get('errors'): raise SystemExit(1)
+          PY
+
+      - name: Record exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean \
+            | tee verification/b2_round62/source.sha256
+          git rev-parse HEAD | tee verification/b2_round62/commit.txt
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2-round62-axle-evidence
+          path: |
+            verification/b2_round62/B2Round62OperatorSparseFiniteSetNonzeroStationarityScale.lean
+            verification/b2_round62/axle-response.json
+            verification/b2_round62/source.sha256
+            verification/b2_round62/commit.txt
+          if-no-files-found: warn
