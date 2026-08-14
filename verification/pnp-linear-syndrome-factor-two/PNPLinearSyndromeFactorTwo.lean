@@ -13,9 +13,13 @@ For `U = 𝔽₂^m` and a syndrome in `𝔽₂^r`, cardinality therefore forces
 the exact finite witness showing that the generic `2 log₂ M + O(1)` linear
 fingerprint bound can be asymptotically sharp.
 
-This file proves only finite additive/linear algebra.  It does not formalize
-Boolean circuit complexity, the Chen--Li--Yang construction, `P`, `NP`, or a
-Millennium statement.
+The final section proves the hostile correction: the same family has a direct
+fan-in-two classifier with `2m-1` gates.  Thus linear identification rank is not
+an unrestricted decision-circuit lower-bound currency.
+
+This file proves only finite additive/linear/Boolean algebra.  It does not
+formalize the Chen--Li--Yang construction, general circuit lower bounds, `P`,
+`NP`, or a Millennium statement.
 -/
 
 namespace PNPLinearSyndromeFactorTwo
@@ -109,6 +113,49 @@ theorem factor_two_log_rewrite (m : ℕ) :
     2 * m = 2 * (m + 1) - 2 := by
   omega
 
+/-! ## Direct nonlinear classifier firewall -/
+
+/-- A right-associated OR tree that uses no OR gate on a singleton list. -/
+def orTree : List Bool → Bool
+  | [] => false
+  | [b] => b
+  | b :: c :: bs => b || orTree (c :: bs)
+
+/-- The OR tree is false exactly when every input bit is false. -/
+theorem orTree_eq_false_iff_all_false :
+    ∀ xs : List Bool, orTree xs = false ↔ ∀ b ∈ xs, b = false := by
+  intro xs
+  induction xs with
+  | nil => simp [orTree]
+  | cons a xs ih =>
+      cases xs with
+      | nil => simp [orTree]
+      | cons b bs => simp [orTree, ih]
+
+/-- Direct membership test for the union of two Boolean coordinate axes:
+accept exactly when at least one whole block is zero. -/
+def blockAxesClassifier (x y : List Bool) : Bool :=
+  !(orTree x && orTree y)
+
+/-- Exact semantics of the direct classifier. -/
+theorem blockAxesClassifier_eq_true_iff (x y : List Bool) :
+    blockAxesClassifier x y = true ↔
+      (∀ b ∈ x, b = false) ∨ (∀ b ∈ y, b = false) := by
+  simp [blockAxesClassifier, orTree_eq_false_iff_all_false]
+
+/-- Gate ledger for two nonempty OR trees followed by one NAND. -/
+def blockAxesGateCount (x y : List Bool) : ℕ :=
+  (x.length - 1) + (y.length - 1) + 1
+
+/-- Two equal nonempty `m`-bit blocks require exactly `2m-1` gates in this
+explicit OR/OR/NAND architecture. -/
+theorem blockAxesGateCount_equal_length
+    {x y : List Bool} {m : ℕ}
+    (hx : x.length = m) (hy : y.length = m) (hm : 1 ≤ m) :
+    blockAxesGateCount x y = 2 * m - 1 := by
+  simp [blockAxesGateCount, hx, hy]
+  omega
+
 #print axioms every_vector_is_axis_difference
 #print axioms eq_zero_of_map_eq_zero
 #print axioms injective_of_injOn_axes
@@ -116,5 +163,8 @@ theorem factor_two_log_rewrite (m : ℕ) :
 #print axioms f2_power_lower
 #print axioms f2_output_bits_lower
 #print axioms factor_two_log_rewrite
+#print axioms orTree_eq_false_iff_all_false
+#print axioms blockAxesClassifier_eq_true_iff
+#print axioms blockAxesGateCount_equal_length
 
 end PNPLinearSyndromeFactorTwo
