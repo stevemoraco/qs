@@ -1,0 +1,105 @@
+name: Verify NS Yu L2 work-compactness core
+
+on:
+  push:
+    branches:
+      - verification/ns-yu-energy-compactness-dichotomy-20260814-run25
+    paths:
+      - 'verification/ns-yu-energy-compactness-dichotomy/**'
+      - '.github/workflows/ns-yu-energy-compactness-dichotomy.yml'
+  pull_request:
+    paths:
+      - 'verification/ns-yu-energy-compactness-dichotomy/**'
+      - '.github/workflows/ns-yu-energy-compactness-dichotomy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-yu-energy-compactness-dichotomy/NSYuL2WorkCompactness.lean
+          test -s "$SRC"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'forbidden trust carrier found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 6
+          sha256sum "$SRC" | tee source.sha256
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/ns-yu-energy-compactness-dichotomy/NSYuL2WorkCompactness.lean').read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          pathlib.Path('axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('axle-response.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE response')
+          r = json.loads(p.read_text())
+          lean = r.get('lean_messages', {})
+          tool = r.get('tool_messages', {})
+          compact = {
+              'okay': r.get('okay'),
+              'lean_errors': lean.get('errors', []),
+              'lean_warnings': lean.get('warnings', []),
+              'tool_errors': tool.get('errors', []),
+              'tool_warnings': tool.get('warnings', []),
+              'failed_declarations': r.get('failed_declarations', []),
+          }
+          rendered_full = json.dumps(r)
+          compact['forbidden_postcompile'] = ('sorryAx' in rendered_full or 'Lean.ofReduceBool' in rendered_full)
+          bad = (not compact['okay'] or compact['lean_errors'] or compact['lean_warnings'] or
+                 compact['tool_errors'] or compact['tool_warnings'] or
+                 compact['failed_declarations'] or compact['forbidden_postcompile'])
+          if bad:
+              msg = json.dumps(compact, sort_keys=True)
+              print('::error title=AXLE compact diagnostic::' + msg.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
+              raise SystemExit(1)
+          print('VERIFIED CLEAN')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-yu-energy-compactness-dichotomy-evidence
+          path: |
+            verification/ns-yu-energy-compactness-dichotomy/NSYuL2WorkCompactness.lean
+            source.sha256
+            axle-response.json
