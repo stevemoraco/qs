@@ -29,7 +29,7 @@ jobs:
           test "$(git hash-object "$root/Millennium/UnifiedMillenniumBraidLive.lean")" = \
             27e74a5433c2d07007a45e444e58a40f481ae544
           test "$(git hash-object "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean")" = \
-            13ea4c229ed90a4d89e68a8dd122c632d8076740
+            01956adc44d7e39541ea2903ebad3e80920b08f3
           git hash-object "$root/Millennium/UnifiedMillenniumCorpusAll.lean" \
             | tee "$root/stub-blob.txt"
           sha256sum \
