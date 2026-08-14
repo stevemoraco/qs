@@ -36,7 +36,6 @@ noncomputable def transitionLevel (m : ℕ) : ℝ :=
 theorem transition_level_sq (m : ℕ) :
     transitionLevel m ^ 2 = defectLevel m := by
   simp [transitionLevel, defectLevel]
-  ring
 
 /-- Across `m^2` equal rungs, the total defect budget is exactly one. -/
 theorem total_defect_is_one
@@ -52,8 +51,7 @@ theorem total_transition_is_m
     {m : ℕ} (hm : 0 < m) :
     (((m * m : ℕ) : ℝ) * transitionLevel m) = (m : ℝ) := by
   have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hm)
-  simp [transitionLevel, Nat.cast_mul]
-  field_simp [hm0]
+  simp [transitionLevel, Nat.cast_mul, hm0]
 
 /-- There is no universal transition bound obtainable from the unit defect
 budget in this scalar model: for every requested finite bound, choose one more
