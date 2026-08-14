@@ -55,6 +55,25 @@ theorem pointwise_limit_preserves_variable_decay_with_uniform_floor
         nlinarith [hm n]
   · exact hconv t
 
+theorem nearby_time_decay_from_monotone_grid
+    (C : ℝ → ℝ) (A m s t δ : ℝ)
+    (hA : 0 ≤ A) (hm : 0 ≤ m)
+    (hts : t ≤ s + δ)
+    (hmono : C t ≤ C s)
+    (hgrid : C s ≤ A * Real.exp (-m * s)) :
+    C t ≤ A * Real.exp (m * δ - m * t) := by
+  have hnonneg : 0 ≤ s + δ - t := by
+    linarith
+  have hprod : 0 ≤ m * (s + δ - t) := mul_nonneg hm hnonneg
+  have hexp : Real.exp (-m * s) ≤ Real.exp (m * δ - m * t) := by
+    apply Real.exp_le_exp.mpr
+    nlinarith
+  calc
+    C t ≤ C s := hmono
+    _ ≤ A * Real.exp (-m * s) := hgrid
+    _ ≤ A * Real.exp (m * δ - m * t) :=
+      mul_le_mul_of_nonneg_left hexp hA
+
 theorem positive_regulator_rates_need_not_have_uniform_floor :
     ∃ m : ℝ → ℝ,
       (∀ a, 0 < a → 0 < m a) ∧
@@ -70,6 +89,7 @@ theorem positive_regulator_rates_need_not_have_uniform_floor :
 #print axioms limit_preserves_uniform_upper_bound
 #print axioms pointwise_limit_preserves_common_exponential_decay
 #print axioms pointwise_limit_preserves_variable_decay_with_uniform_floor
+#print axioms nearby_time_decay_from_monotone_grid
 #print axioms positive_regulator_rates_need_not_have_uniform_floor
 
 end Millennium.YangMills
