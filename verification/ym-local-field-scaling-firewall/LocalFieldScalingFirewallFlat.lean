@@ -11,6 +11,7 @@ theorem plaquette_defect_three_scalings (a : ℝ) (ha : a ≠ 0) :
     ring
   constructor
   · field_simp [ha]
+    ring
   · field_simp [ha]
     ring
 
