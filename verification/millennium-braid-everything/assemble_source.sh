@@ -31,6 +31,41 @@ done
   sha256sum --check --strict SHA256SUMS
 )
 
+python3 - <<'PY'
+from pathlib import Path
+
+parts = [
+    'source-xz-b64/part-00.b64',
+    'source-xz-b64/part-01.b64',
+    'source-xz-b64/part-02.b64',
+    'source-xz-b64/part-03.b64',
+    'source-xz-b64/part-04.b64',
+    'source-xz-b64/part-05-06.b64',
+    'source-xz-b64/part-07-08.b64',
+    'source-xz-b64/part-09-10.b64',
+    'source-xz-b64/part-11-12.b64',
+    'source-xz-b64/part-13.b64',
+]
+alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
+all_clean = []
+invalid = []
+offset = 0
+for part in parts:
+    raw = Path(part).read_text()
+    clean = ''.join(ch for ch in raw if not ch.isspace())
+    bad = [(i, ch, ord(ch)) for i, ch in enumerate(clean) if ch not in alphabet]
+    print(f'{part}: raw={len(raw)} clean={len(clean)} mod4={len(clean)%4} invalid={len(bad)}')
+    for i, ch, code in bad[:20]:
+        print(f'  invalid local={i} global={offset+i} char={ch!r} codepoint={code}')
+    invalid.extend((part, i, ch, code) for i, ch, code in bad)
+    all_clean.append(clean)
+    offset += len(clean)
+joined = ''.join(all_clean)
+print(f'joined_clean_length={len(joined)} mod4={len(joined)%4} invalid_total={len(invalid)}')
+if invalid:
+    raise SystemExit('invalid base64 characters detected')
+PY
+
 cat "${PARTS[@]}" \
   | tr -d '\n\r\t ' \
   | base64 --decode \
