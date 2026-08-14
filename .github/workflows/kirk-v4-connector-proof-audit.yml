@@ -33,14 +33,16 @@ jobs:
           import re
           text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
           targets=[
-            ('corollary_4_14','Corollary 4.14'),
-            ('lemma_4_21','Lemma 4.21'),('lemma_4_22','Lemma 4.22'),
-            ('lemma_4_23','Lemma 4.23'),('lemma_4_24','Lemma 4.24'),
-            ('lemma_4_25','Lemma 4.25'),('lemma_4_26','Lemma 4.26'),
-            ('lemma_4_27','Lemma 4.27'),('lemma_4_28','Lemma 4.28'),
-            ('theorem_4_29','Theorem 4.29'),('theorem_4_30','Theorem 4.30'),
-            ('theorem_5_1','Theorem 5.1'),('lemma_5_20','Lemma 5.20'),
-            ('theorem_5_8','Theorem 5.8'),('lemma_6_12','Lemma 6.12'),
+            ('corollary_4_14','Corollary 4.14'),('lemma_4_21','Lemma 4.21'),
+            ('lemma_4_22','Lemma 4.22'),('lemma_4_23','Lemma 4.23'),
+            ('lemma_4_24','Lemma 4.24'),('lemma_4_25','Lemma 4.25'),
+            ('lemma_4_26','Lemma 4.26'),('lemma_4_27','Lemma 4.27'),
+            ('lemma_4_28','Lemma 4.28'),('theorem_4_29','Theorem 4.29'),
+            ('theorem_4_30','Theorem 4.30'),('theorem_5_1','Theorem 5.1'),
+            ('lemma_5_20','Lemma 5.20'),('theorem_5_8','Theorem 5.8'),
+            ('lemma_6_12','Lemma 6.12'),('lemma_6_28','Lemma 6.28'),
+            ('lemma_6_29','Lemma 6.29'),('lemma_6_30','Lemma 6.30'),
+            ('lemma_6_31','Lemma 6.31'),('lemma_6_32','Lemma 6.32'),
             ('lemma_6_34','Lemma 6.34'),('lemma_6_35','Lemma 6.35'),
             ('lemma_6_36','Lemma 6.36'),('lemma_6_37','Lemma 6.37'),
             ('lemma_6_38','Lemma 6.38'),('theorem_6_39','Theorem 6.39'),
@@ -56,12 +58,12 @@ jobs:
                   summary.append(f'{target}: NOT FOUND')
                   continue
               start=max(0,m.start()-1800); end=min(len(text),m.start()+13000)
-              chunk=text[start:end]
-              (outdir/f'{slug}.txt').write_text(chunk,encoding='utf-8')
-              summary.append(f'{target}: offset {m.start()}, chars {len(chunk)}')
-          phrases=['condition (84)','(84)','condition (95)','(95)','condition (96)','(96)',
+              (outdir/f'{slug}.txt').write_text(text[start:end],encoding='utf-8')
+              summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          phrases=['equation (77)','(77)','coverage reserve','Fourier–Wiener','trace norm','Peter–Weyl cutoff',
+                   'condition (84)','(84)','condition (95)','(95)','condition (96)','(96)',
                    'qsp','q_sp','nuclear cost','incidence reserve','covered-pivot','coverage word',
-                   'physical cycles','shared tails','multi-pivot','nonlocal rows obey','Clong','δD','deltaD']
+                   'physical cycles','shared tails','multi-pivot']
           ledger=[]; low=text.lower()
           for phrase in phrases:
               pos=0
@@ -81,7 +83,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk v4 compact nuclear collect spine'
+          git commit -m 'audit(ym): expose compact Fourier-Wiener coverage prerequisites'
           git push origin HEAD:verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
       - uses: actions/upload-artifact@v4
         with:
