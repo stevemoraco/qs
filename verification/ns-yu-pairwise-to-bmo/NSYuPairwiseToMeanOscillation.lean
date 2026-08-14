@@ -19,7 +19,10 @@ theorem biaxial_plane_has_circle_of_maximizers
     (a x1 x2 : ℝ)
     (hunit : x1 ^ 2 + x2 ^ 2 = 1) :
     a * x1 ^ 2 + a * x2 ^ 2 + (-2 * a) * (0 : ℝ) ^ 2 = a := by
-  nlinarith
+  calc
+    a * x1 ^ 2 + a * x2 ^ 2 + (-2 * a) * (0 : ℝ) ^ 2 =
+        a * (x1 ^ 2 + x2 ^ 2) := by ring
+    _ = a := by rw [hunit]; ring
 
 /-- Two orthogonal directions are simultaneous maximizers of the same biaxial
 trace-free strain.  This is the smallest countermodel to the shortcut
@@ -41,14 +44,26 @@ theorem planar_direction_difference_controls_line_defect
     (x1 * y2 - x2 * y1) ^ 2 ≤ eps := by
   let d : ℝ := x1 * y1 + x2 * y2
   have hcross : (x1 * y2 - x2 * y1) ^ 2 = 1 - d ^ 2 := by
-    dsimp [d]
-    nlinarith [hx, hy]
+    calc
+      (x1 * y2 - x2 * y1) ^ 2 =
+          (x1 ^ 2 + x2 ^ 2) * (y1 ^ 2 + y2 ^ 2) - d ^ 2 := by
+            dsimp [d]
+            ring
+      _ = 1 - d ^ 2 := by rw [hx, hy]; ring
   have hdist : (x1 - y1) ^ 2 + (x2 - y2) ^ 2 = 2 - 2 * d := by
-    dsimp [d]
-    nlinarith [hx, hy]
-  have hsquare : 0 ≤ (1 - d) ^ 2 := sq_nonneg (1 - d)
-  rw [hcross, hdist] at hdiff ⊢
-  nlinarith
+    calc
+      (x1 - y1) ^ 2 + (x2 - y2) ^ 2 =
+          (x1 ^ 2 + x2 ^ 2) + (y1 ^ 2 + y2 ^ 2) - 2 * d := by
+            dsimp [d]
+            ring
+      _ = 2 - 2 * d := by rw [hx, hy]; ring
+  have hgeom : 1 - d ^ 2 ≤ 2 - 2 * d := by
+    nlinarith [sq_nonneg (1 - d)]
+  calc
+    (x1 * y2 - x2 * y1) ^ 2 = 1 - d ^ 2 := hcross
+    _ ≤ 2 - 2 * d := hgeom
+    _ = (x1 - y1) ^ 2 + (x2 - y2) ^ 2 := hdist.symm
+    _ ≤ eps := hdiff
 
 /-- Exact two-point version of the standard mean-oscillation-from-pairwise-
 difference inequality.  It is the finite model behind the passage from a
@@ -58,9 +73,8 @@ theorem two_point_mean_oscillation_eq_pairwise
     |x - (x + y) / 2| + |y - (x + y) / 2| = |x - y| := by
   have hx : x - (x + y) / 2 = (x - y) / 2 := by ring
   have hy : y - (x + y) / 2 = -(x - y) / 2 := by ring
-  rw [hx, hy, abs_neg]
-  rw [abs_div, abs_div]
-  norm_num
+  rw [hx, hy]
+  simp [abs_div]
 
 /-- On a high-vorticity core, Yu's magnitude weight
 `|Omega(x)|^2 |Omega(y)|` dominates the uniform lower weight `Lambda^3`.
@@ -73,11 +87,8 @@ theorem high_vorticity_strips_yu_magnitude_weights
     (hay : Lambda ≤ ay)
     (hdefect : 0 ≤ defect) :
     Lambda ^ 3 * defect ≤ ax ^ 2 * ay * defect := by
-  have haxnon : 0 ≤ ax := le_trans hLambda hax
-  have hsqprod : 0 ≤ (ax - Lambda) * (ax + Lambda) := by
-    exact mul_nonneg (sub_nonneg.mpr hax) (by linarith)
   have hsq : Lambda ^ 2 ≤ ax ^ 2 := by
-    nlinarith
+    nlinarith [sq_nonneg (ax - Lambda), hLambda, hax]
   have hcubic : Lambda ^ 3 ≤ ax ^ 2 * ay := by
     calc
       Lambda ^ 3 = Lambda ^ 2 * Lambda := by ring
@@ -85,10 +96,29 @@ theorem high_vorticity_strips_yu_magnitude_weights
       _ ≤ ax ^ 2 * ay := mul_le_mul_of_nonneg_left hay (sq_nonneg ax)
   exact mul_le_mul_of_nonneg_right hcubic hdefect
 
+/-- Quantitative inversion of the previous weight stripping: on a strictly
+positive high-vorticity core, a small weighted angular defect forces the raw
+direction defect to be small by `Lambda^{-3}`. -/
+theorem weighted_defect_controls_raw_direction
+    (Lambda ax ay defect eps : ℝ)
+    (hLambda : 0 < Lambda)
+    (hax : Lambda ≤ ax)
+    (hay : Lambda ≤ ay)
+    (hdefect : 0 ≤ defect)
+    (hweighted : ax ^ 2 * ay * defect ≤ eps) :
+    defect ≤ eps / Lambda ^ 3 := by
+  have hstrip : Lambda ^ 3 * defect ≤ ax ^ 2 * ay * defect :=
+    high_vorticity_strips_yu_magnitude_weights
+      Lambda ax ay defect (le_of_lt hLambda) hax hay hdefect
+  have hbound : Lambda ^ 3 * defect ≤ eps := le_trans hstrip hweighted
+  have hcubepos : 0 < Lambda ^ 3 := pow_pos hLambda 3
+  exact (le_div_iff₀ hcubepos).2 (by simpa [mul_comm] using hbound)
+
 #print axioms biaxial_plane_has_circle_of_maximizers
 #print axioms orthogonal_maximizers_do_not_select_a_line
 #print axioms planar_direction_difference_controls_line_defect
 #print axioms two_point_mean_oscillation_eq_pairwise
 #print axioms high_vorticity_strips_yu_magnitude_weights
+#print axioms weighted_defect_controls_raw_direction
 
 end NSYuPairwiseToMeanOscillation
