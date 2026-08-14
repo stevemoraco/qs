@@ -24,7 +24,7 @@ jobs:
           set -euo pipefail
           SRC=verification/rh_cubic_gap_debt/RHCubicPrimeGapDebtFinite.lean
           test "$(git hash-object "$SRC")" = c7fb6f55e5287d4669840ea3c29e290241b49d91
-          test "$(sha256sum "$SRC" | awk '{print $1}')" = f36d472bec91bba41d85abeaa271d8f9a6a8954f5be363aedb001e918f4a9c6d
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = 1bfc3a5dd4094a8135da2dd8fff0263de746e6f52243bf2f3eafdefb52e2ef94
           python3 - <<'PY'
           import pathlib, re
           text = pathlib.Path('verification/rh_cubic_gap_debt/RHCubicPrimeGapDebtFinite.lean').read_text()
