@@ -1,0 +1,62 @@
+name: YM perturbed two-loop crossing remainder
+
+on:
+  push:
+    branches:
+      - verification/ym-rg-quartic-perturbation-20260814-gpt56
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble exact mirrored theorem chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=verification/ym-rg-quartic-perturbation
+          cp "$ROOT/RGCubicLocalResidual.lean" /tmp/01.lean
+          grep -v '^import ' "$ROOT/RGQuarticPerturbation.lean" > /tmp/02.lean
+          grep -v '^import ' "$ROOT/RGAccumulatedRemainder.lean" > /tmp/03.lean
+          grep -v '^import ' "$ROOT/RGPerturbedCrossingRemainder.lean" > /tmp/04.lean
+          cat /tmp/01.lean /tmp/02.lean /tmp/03.lean /tmp/04.lean > /tmp/Combined.lean
+          for SRC in "$ROOT/RGCubicLocalResidual.lean" "$ROOT/RGQuarticPerturbation.lean" \
+                     "$ROOT/RGAccumulatedRemainder.lean" "$ROOT/RGPerturbedCrossingRemainder.lean" \
+                     /tmp/Combined.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+          done
+          sha256sum "$ROOT/RGCubicLocalResidual.lean" "$ROOT/RGQuarticPerturbation.lean" \
+                    "$ROOT/RGAccumulatedRemainder.lean" "$ROOT/RGPerturbedCrossingRemainder.lean" \
+                    /tmp/Combined.lean
+      - name: AXLE Lean 4.30 replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=/tmp/Combined.lean python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          source = pathlib.Path(os.environ['SRC']).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check', data=payload,
+              headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          assert result.get('okay')
+          assert not result.get('failed_declarations', [])
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          assert not lean.get('errors', []) and not lean.get('warnings', [])
+          assert not tool.get('errors', []) and not tool.get('warnings', [])
+          assert 'sorryAx' not in json.dumps(result)
+          PY
