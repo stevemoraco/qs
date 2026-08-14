@@ -28,7 +28,7 @@ jobs:
             echo 'Forbidden trust carrier found'
             exit 1
           fi
-          test "$(grep -c '^#print axioms ' "$SRC")" = 11
+          test "$(grep -c '^#print axioms ' "$SRC")" = 13
           sha256sum "$SRC" | tee verification/ns-typeI-directional-critical-balance/source.sha256
 
       - name: Execute AXLE Lean 4.30
