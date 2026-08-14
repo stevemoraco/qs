@@ -22,6 +22,7 @@ theorem cleared_signed_derivative_identity
     _ = (alpha - 1) ^ 2 * (alpha * sharp + flat) -
         (alpha + 1) ^ 2 * (-alpha * sharp + flat) := by
           rw [hAlpha, hBeta]
+    _ = 2 * alpha * ((alpha ^ 2 + 1) * sharp - 2 * flat) := by ring
     _ = -2 * alpha * ((p - 1) * sharp + 2 * flat) := by
           rw [hSquare]
           ring
@@ -69,12 +70,14 @@ theorem weighted_stable_nonzero_of_component_errors
     ring
   calc
     (p - 1) * finiteSharp + 2 * finiteFlat =
-      -((p - 1) * (stableSharp - finiteSharp) +
-          2 * (stableFlat - finiteFlat)) := by
-        rw [hStable]
-        ring
+      ((p - 1) * stableSharp + 2 * stableFlat) -
+        ((p - 1) * (stableSharp - finiteSharp) +
+          2 * (stableFlat - finiteFlat)) := by ring
+    _ = 0 - ((p - 1) * (stableSharp - finiteSharp) +
+          2 * (stableFlat - finiteFlat)) := by rw [hStable]
     _ = -(modulus * ((p - 1) * qSharp + 2 * qFlat)) := by
       rw [hWeighted]
+      ring
     _ = modulus * (-((p - 1) * qSharp + 2 * qFlat)) := by ring
 
 /-- Even-level conversion from signed derivatives to two adjacent raw
