@@ -50,34 +50,21 @@ jobs:
           section(r'Proposition 6\.8\s*\(', r'Lemma 6\.9\s*\(', 'PROPOSITION_6_8_EXACT.txt')
 
           patterns = [
-            r'define[^\n]{0,100}diam', r'diameter', r'tree length', r'tree-length',
-            r'τ\s*\(', r'active set', r'active carrier', r'active paths',
-            r'number of active', r'cardinality[^\n]{0,100}active', r'source order',
-            r'independent of Q', r'cp > 0', r'c_p > 0'
+            r'Qtail', r'qA[^\n]{0,40}ref', r'reference factor', r'reference factors',
+            r'canonical connector', r'shortest connector', r'connector path',
+            r'exponential matrix algebra', r'matrix algebra', r'Qopt', r'Qtempl',
+            r'diam A', r'τ\s*\(', r'active set', r'active paths',
+            r'independent of Q', r'fixed Q', r'source order', r'physical-source mark',
+            r'fixed finite active', r'every finite active'
           ]
           ledger=[]
           for pat in patterns:
             hits=list(re.finditer(pat,text,re.I))
             ledger.append(f'### {pat} hits={len(hits)}')
-            for i,m in enumerate(hits[:80],1):
-              ledger.append(f'\n=== hit {i} offset {m.start()} ===\n')
-              ledger.append(text[max(0,m.start()-3500):min(len(text),m.start()+7000)])
-          (out/'DEFINITION_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
-
-          # Keep prior broad contexts too.
-          broad=[]
-          for pat in [r'Lemma 6\.30',r'HT5',r'diam A or \|A\|',r'selected pivot',r'multipivot']:
-            hits=list(re.finditer(pat,text,re.I))
-            broad.append(f'### {pat} HITS {len(hits)}')
-            for j,m in enumerate(hits[:40],1):
-              broad.append(f'\n=== hit {j} offset {m.start()} ===\n')
-              broad.append(text[max(0,m.start()-5000):min(len(text),m.start()+10000)])
-          (out/'TARGETED_CONTEXTS.txt').write_text('\n'.join(broad),encoding='utf-8')
-          (out/'SUMMARY.txt').write_text(
-              f"lemma_6_30_hits={len(re.findall(r'Lemma 6\\.30',text))}\n"
-              f"HT5_hits={len(re.findall(r'HT5',text))}\n"
-              f"support_bound_hits={len(re.findall(r'diam A or \\|A\\|',text))}\n",
-              encoding='utf-8')
+            for i,m in enumerate(hits[:100],1):
+              ledger.append(f'\n=== {pat} hit {i} offset {m.start()} ===\n')
+              ledger.append(text[max(0,m.start()-6000):min(len(text),m.start()+12000)])
+          (out/'REFERENCE_REPORTING_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
           PY
       - name: Preserve immutable contexts
         run: |
@@ -86,5 +73,5 @@ jobs:
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/lemma630_geometry
-          git commit -m 'audit(ym): preserve exact Lemma 6.17/6.30 geometry sections'
+          git commit -m 'audit(ym): preserve reference-factor reporting contexts'
           git push origin HEAD:verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
