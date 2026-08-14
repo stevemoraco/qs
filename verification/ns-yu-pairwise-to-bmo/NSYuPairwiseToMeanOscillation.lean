@@ -122,10 +122,8 @@ point lies within that radius, then the value at that point remains at least
 and `L` is a bound for `|∇Omega_ell|`. -/
 theorem high_peak_plus_lipschitz_yields_core
     (Lambda peak L s d value : ℝ)
-    (hLambda : 0 ≤ Lambda)
     (hpeak : 2 * Lambda ≤ peak)
     (hL : 0 ≤ L)
-    (hd : 0 ≤ d)
     (hds : d ≤ s)
     (hLs : L * s ≤ Lambda)
     (hlower : peak - L * d ≤ value) :
@@ -141,7 +139,6 @@ theorem loss_of_high_core_forces_large_lipschitz_budget
     (Lambda peak L s d value : ℝ)
     (hpeak : 2 * Lambda ≤ peak)
     (hL : 0 ≤ L)
-    (hd : 0 ≤ d)
     (hds : d ≤ s)
     (hlower : peak - L * d ≤ value)
     (hlow : value < Lambda) :
