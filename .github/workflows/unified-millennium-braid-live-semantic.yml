@@ -1,0 +1,169 @@
+name: Unified Millennium braid semantic replay
+
+on:
+  push:
+    branches:
+      - verification/unified-millennium-braid-live-semantic-20260813
+    paths:
+      - 'verification/unified-millennium-braid-live/**'
+      - '.github/workflows/unified-millennium-braid-live-semantic.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical source byte identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/unified-millennium-braid-live
+          test "$(git hash-object "$root/Millennium/UnifiedMillenniumBraidLive.lean")" = \
+            27e74a5433c2d07007a45e444e58a40f481ae544
+          test "$(git hash-object "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean")" = \
+            13ea4c229ed90a4d89e68a8dd122c632d8076740
+          git hash-object "$root/Millennium/UnifiedMillenniumCorpusAll.lean" \
+            | tee "$root/stub-blob.txt"
+          sha256sum \
+            "$root/Millennium/UnifiedMillenniumBraidLive.lean" \
+            "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean" \
+            "$root/Millennium/UnifiedMillenniumCorpusAll.lean" \
+            | tee "$root/source-sha256.txt"
+
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('verification/unified-millennium-braid-live')
+          patterns=[
+            r'^\s*(sorry|admit)\b', r'\bsorryAx\b', r'^\s*axiom\b',
+            r'^\s*opaque\b', r'^\s*unsafe\b', r'\bnative_decide\b',
+            r'\bLean\.ofReduceBool\b'
+          ]
+          for path in root.rglob('*.lean'):
+            text=path.read_text()
+            stripped=re.sub(r'/-.*?-/', '', text, flags=re.S)
+            stripped=re.sub(r'--.*$', '', stripped, flags=re.M)
+            for pattern in patterns:
+              if re.search(pattern, stripped, flags=re.M):
+                raise SystemExit(f'{path}: forbidden token matching {pattern}')
+          PY
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/unified-millennium-braid-live
+          cat > "$root/lean-toolchain" <<'EOF'
+          leanprover/lean4:v4.32.1
+          EOF
+          cat > "$root/lakefile.toml" <<'EOF'
+          name = "unified-millennium-braid-live-semantic"
+          version = "0.1.0"
+          defaultTargets = []
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.32.1"
+          EOF
+          cd "$root"
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+
+      - name: Compile, fresh-check, and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/unified-millennium-braid-live
+          cd "$root"
+          : > lean-output.log
+          compile() {
+            local file="$1"
+            local out="${file%.lean}.olean"
+            echo "=== $file ===" | tee -a lean-output.log
+            lake env lean "$file" -R . -o "$out" 2>&1 | tee -a lean-output.log
+            test -s "$out"
+          }
+          compile Millennium/UnifiedMillenniumCorpusAll.lean
+          compile Millennium/CrossProblem/UnconditionalGeometricConvergence.lean
+          compile Millennium/UnifiedMillenniumBraidLive.lean
+          lake env leanchecker --fresh Millennium.UnifiedMillenniumBraidLive \
+            2>&1 | tee leanchecker-fresh.log
+          if grep -Eq "sorryAx|declaration uses 'sorry'|Lean.ofReduceBool|unsolved goals|error:" \
+              lean-output.log leanchecker-fresh.log; then
+            exit 1
+          fi
+          python3 - <<'PY'
+          import pathlib, re
+          out=pathlib.Path('lean-output.log').read_text()
+          expected={
+            'Millennium.UnifiedGeneratedAudit': ['generated_corpus_reached_end'],
+            'Millennium.CrossProblem': [
+              'geometric_steps_tendsto', 'summable_steps_tendsto',
+              'geometric_steps_tendsto_in_closed',
+              'summable_steps_tendsto_in_closed',
+              'geometric_real_lower_margin', 'dyadic_steps_tendsto'],
+            'Millennium.UnifiedBraidLive': [
+              'fires_length', 'seven_frontiers_iff_targets',
+              'nonempty_prizeRoute_iff',
+              'nonempty_sharedCertificate_iff_allSeven',
+              'no_common_local_witness', 'no_global_prefix_witness',
+              'exclusivity_does_not_prove_target',
+              'survivor_from_exhaustiveness',
+              'unique_survivor_from_exhaustiveness',
+              'one_lane_does_not_close_bundle',
+              'everything_discovered_one_gigantic_runnable_statement',
+              'bell_condition_iff_six_targets']}
+          allowed={'propext','Classical.choice','Quot.sound'}
+          count=0
+          for namespace,names in expected.items():
+            for name in names:
+              pattern=(rf"'{re.escape(namespace)}\.{name}' "
+                       rf"(?:does not depend on any axioms|depends on axioms:\s*\[([^\]]*)\])")
+              matches=re.findall(pattern,out,flags=re.S)
+              if len(matches)!=1:
+                raise SystemExit(f'missing or duplicate axiom report: {namespace}.{name}')
+              if matches[0]:
+                used={x.strip() for x in matches[0].split(',') if x.strip()}
+                if not used <= allowed:
+                  raise SystemExit(f'unexpected axioms: {namespace}.{name}: {used-allowed}')
+              count += 1
+          print(f'AXIOM AUDIT PASS: {count} reports; accepted foundations only')
+          PY
+          echo 'VERIFIED unified Millennium braid semantic root and convergence core.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-live-semantic-evidence
+          path: |
+            verification/unified-millennium-braid-live/lean-output.log
+            verification/unified-millennium-braid-live/leanchecker-fresh.log
+            verification/unified-millennium-braid-live/lean-version.txt
+            verification/unified-millennium-braid-live/lake-version.txt
+            verification/unified-millennium-braid-live/mathlib-commit.txt
+            verification/unified-millennium-braid-live/source-sha256.txt
+            verification/unified-millennium-braid-live/stub-blob.txt
+            verification/unified-millennium-braid-live/Millennium/*.lean
+            verification/unified-millennium-braid-live/Millennium/CrossProblem/*.lean
+          if-no-files-found: warn
