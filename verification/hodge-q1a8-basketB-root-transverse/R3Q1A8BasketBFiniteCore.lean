@@ -1,5 +1,7 @@
 import Mathlib
 
+-- Public hostile replay revision: basketB-root-transverse-r2-20260814.
+
 /-!
 Finite arithmetic shadow of the q=1,a=8 basket-B root-transverse reduction in
 `stevemoraco/RH#536`.
