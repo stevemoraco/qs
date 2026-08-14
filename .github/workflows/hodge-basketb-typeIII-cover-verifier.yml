@@ -23,7 +23,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/hodge_basketb_typeIII_cover/HodgeBasketBTypeIIICoverFinite.lean
-          test "$(git hash-object "$SRC")" = 5732d1f505cc7c945bd338bcc32ee7083aca79f4
+          test "$(git hash-object "$SRC")" = 2065f525ab2e8998163bd81e23e6c1d1350a30cc
           python3 - <<'PY'
           import pathlib, re
           text = pathlib.Path('verification/hodge_basketb_typeIII_cover/HodgeBasketBTypeIIICoverFinite.lean').read_text()
