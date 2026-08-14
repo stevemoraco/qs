@@ -56,11 +56,31 @@ theorem nonzero_work_requires_visible_component
   rw [null_component_does_not_contribute work dev iso hiso] at hne
   exact hne
 
+/-- Exact three-eigenvalue anisotropy identity.  The left side is the squared
+size of the diagonal deviator after subtracting the mean; the right side is the
+pairwise eigenvalue-gap form. -/
+theorem threeEigenvalueAnisotropyIdentity (a b c : ℝ) :
+    let m := (a + b + c) / 3
+    (a - m) ^ 2 + (b - m) ^ 2 + (c - m) ^ 2 =
+      ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 3 := by
+  dsimp
+  ring
+
+/-- Equal covariance eigenvalues have zero deviatoric anisotropy even when the
+common covariance level is nonzero. -/
+theorem isotropicCovariance_has_zero_anisotropy (q : ℝ) :
+    let m := (q + q + q) / 3
+    (q - m) ^ 2 + (q - m) ^ 2 + (q - m) ^ 2 = 0 := by
+  dsimp
+  ring
+
 #print axioms quadraticMass_exact
 #print axioms cubicMass_exact
 #print axioms quarticMass_exact
 #print axioms subquartic_vs_quartic_exact
 #print axioms null_component_does_not_contribute
 #print axioms nonzero_work_requires_visible_component
+#print axioms threeEigenvalueAnisotropyIdentity
+#print axioms isotropicCovariance_has_zero_anisotropy
 
 end NSCommutatorAnisotropyCompactnessFirewall
