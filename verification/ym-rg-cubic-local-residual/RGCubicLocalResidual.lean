@@ -35,6 +35,7 @@ theorem log_one_add_sub_frac_nonneg
   have hlo := Real.one_sub_inv_le_log_of_pos hpos
   have hid : x / (1 + x) = 1 - (1 + x)⁻¹ := by
     field_simp [ne_of_gt hpos]
+    ring
   rw [hid]
   linarith
 
@@ -108,7 +109,6 @@ theorem cubic_corrected_residual_le_quadratic
       ≤ (|c / b^2 - 1| * (b + c * U)^2 + c^2 / b^2) * u^2 := by
   let D : ℝ := 1 + b * u + c * u^2
   let x : ℝ := b * u + c * u^2
-  let p : ℝ := c / b^2 - 1
   have hU : 0 < U := lt_of_lt_of_le hu huU
   have hx : 0 ≤ x := by
     dsimp [x]
@@ -150,9 +150,8 @@ theorem cubic_corrected_residual_le_quadratic
   have hsecond : (c^2 / b^2) * (u^2 / D) ≤
       (c^2 / b^2) * u^2 := by
     have hD_ge_one : 1 ≤ D := by
-      dsimp [D]
-      positivity
-    have hu2 : 0 ≤ u^2 := sq_nonneg u
+      rw [hD_eq]
+      linarith
     have hdiv : u^2 / D ≤ u^2 := by
       rw [div_le_iff₀ hD]
       nlinarith [sq_nonneg u]
@@ -166,14 +165,20 @@ theorem cubic_corrected_residual_le_quadratic
             ((1 + b * u + c * u^2) - 1) /
               (1 + b * u + c * u^2))
         + (c^2 / b^2) * (u^2 / (1 + b * u + c * u^2))|
-      ≤ |c / b^2 - 1| *
+      ≤ |(c / b^2 - 1) *
+          (Real.log (1 + b * u + c * u^2) -
+            ((1 + b * u + c * u^2) - 1) /
+              (1 + b * u + c * u^2))|
+        + |(c^2 / b^2) * (u^2 / (1 + b * u + c * u^2))| :=
+          abs_add_le _ _
+    _ ≤ |c / b^2 - 1| *
           |Real.log (1 + b * u + c * u^2) -
             ((1 + b * u + c * u^2) - 1) /
               (1 + b * u + c * u^2)|
         + (c^2 / b^2) * (u^2 / (1 + b * u + c * u^2)) := by
-          rw [abs_add_le]
-          rw [abs_mul]
-          rw [abs_of_nonneg hsecond_nonneg]
+          exact add_le_add
+            (le_of_eq (abs_mul _ _))
+            (le_of_eq (by simpa [D] using abs_of_nonneg hsecond_nonneg))
     _ ≤ |c / b^2 - 1| * ((b + c * U)^2 * u^2)
         + (c^2 / b^2) * u^2 := by
           have hg' :
