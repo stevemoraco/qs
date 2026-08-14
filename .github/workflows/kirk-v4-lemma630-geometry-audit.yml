@@ -1,0 +1,86 @@
+name: Kirk v4 Lemma 6.30 geometry audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
+    paths:
+      - .github/workflows/kirk-v4-lemma630-geometry-audit.yml
+      - tools/probe_kirk_latest_source.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin latest immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract Lemma 6.30 and every named geometric dependency
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('kirk_latest.txt').read_text(encoding='utf-8', errors='replace')
+          out = Path('source_audit/kirk_v4/lemma630_geometry')
+          out.mkdir(parents=True, exist_ok=True)
+
+          patterns = [
+            r'Lemma 6\.30', r'\(HT5\)', r'HT5',
+            r'diam A or \|A\|', r'n\(A\)', r'pivot incidence',
+            r'selected pivot', r'original-link pivot', r'multipivot',
+            r'cp R', r'c_p R', r'Lemma 6\.22', r'Lemma 6\.23',
+            r'Lemma 6\.28', r'Lemma 6\.29', r'Lemma 6\.31',
+            r'Proposition 6\.8', r'Lemma 6\.7'
+          ]
+          ledger=[]
+          for pat in patterns:
+            hits=list(re.finditer(pat,text,re.I))
+            ledger.append(f'### PATTERN {pat} HITS {len(hits)}')
+            for j,m in enumerate(hits[:40],1):
+              ledger.append(f'\n=== {pat} hit {j} offset {m.start()} ===\n')
+              ledger.append(text[max(0,m.start()-5000):min(len(text),m.start()+10000)])
+          (out/'TARGETED_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
+
+          # Extract every theorem/lemma/proposition whose proof body contains HT5
+          # or the exact support-incidence lower-bound phrase, using generous local windows.
+          key_hits=[]
+          for pat in [r'HT5', r'diam A or \|A\|', r'c.?p\s*R\s*\(n\(A\)\s*[-−]\s*1\)']:
+            key_hits.extend(re.finditer(pat,text,re.I))
+          key_hits=sorted(key_hits,key=lambda m:m.start())
+          chunks=[]
+          for i,m in enumerate(key_hits,1):
+            chunks.append(f'\n===== KEY HIT {i} offset {m.start()} =====\n')
+            chunks.append(text[max(0,m.start()-14000):min(len(text),m.start()+18000)])
+          (out/'KEY_GEOMETRY_CONTEXTS.txt').write_text('\n'.join(chunks),encoding='utf-8')
+
+          summary = {
+            'lemma_6_30_hits': len(re.findall(r'Lemma 6\.30', text)),
+            'HT5_hits': len(re.findall(r'HT5', text)),
+            'support_bound_hits': len(re.findall(r'diam A or \|A\|', text)),
+            'selected_pivot_hits': len(re.findall(r'selected pivot', text, re.I)),
+            'multipivot_hits': len(re.findall(r'multipivot', text, re.I)),
+          }
+          (out/'SUMMARY.txt').write_text('\n'.join(f'{k}={v}' for k,v in summary.items())+'\n',encoding='utf-8')
+          print(summary)
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/lemma630_geometry/
+          cp kirk_source_probe_report.json source_audit/kirk_v4/lemma630_geometry/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/lemma630_geometry
+          git commit -m 'audit(ym): preserve Lemma 6.30 geometry contexts'
+          git push origin HEAD:verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
