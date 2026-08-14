@@ -1,0 +1,61 @@
+name: YM dense-core spectral-gap transport
+
+on:
+  push:
+    branches:
+      - verification/ym-dense-core-spectral-gap-20260814-gpt56
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact flattened Lean theorem source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-dense-core-spectral-gap/DenseCoreSpectralGapTransportFlat.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+          SRC="$SRC" python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          source = pathlib.Path(os.environ['SRC']).read_text()
+          payload = json.dumps({
+              'content': source,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check', data=payload,
+              headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=960) as response:
+              result = json.load(response)
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+              not result.get('okay')
+              or bool(result.get('failed_declarations', []))
+              or bool(lean.get('errors', []))
+              or bool(lean.get('warnings', []))
+              or bool(tool.get('errors', []))
+              or bool(tool.get('warnings', []))
+              or 'sorryAx' in json.dumps(result)
+          )
+          if bad:
+              detail = json.dumps({
+                  'okay': result.get('okay'),
+                  'failed_declarations': result.get('failed_declarations', []),
+                  'lean_messages': lean,
+                  'tool_messages': tool,
+              }, separators=(',', ':'))
+              detail = detail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::error title=AXLE Lean verification::{detail}')
+              raise SystemExit(1)
+          PY
