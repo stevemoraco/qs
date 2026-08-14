@@ -32,10 +32,9 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import re
-          text = Path('kirk_latest.txt').read_text(encoding='utf-8', errors='replace')
+          text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
           out = Path('source_audit/kirk_v4/lemma630_geometry')
           out.mkdir(parents=True, exist_ok=True)
-
           patterns = [
             r'Lemma 6\.30', r'\(HT5\)', r'HT5',
             r'diam A or \|A\|', r'n\(A\)', r'pivot incidence',
@@ -52,9 +51,6 @@ jobs:
               ledger.append(f'\n=== {pat} hit {j} offset {m.start()} ===\n')
               ledger.append(text[max(0,m.start()-5000):min(len(text),m.start()+10000)])
           (out/'TARGETED_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
-
-          # Extract every theorem/lemma/proposition whose proof body contains HT5
-          # or the exact support-incidence lower-bound phrase, using generous local windows.
           key_hits=[]
           for pat in [r'HT5', r'diam A or \|A\|', r'c.?p\s*R\s*\(n\(A\)\s*[-−]\s*1\)']:
             key_hits.extend(re.finditer(pat,text,re.I))
@@ -64,7 +60,6 @@ jobs:
             chunks.append(f'\n===== KEY HIT {i} offset {m.start()} =====\n')
             chunks.append(text[max(0,m.start()-14000):min(len(text),m.start()+18000)])
           (out/'KEY_GEOMETRY_CONTEXTS.txt').write_text('\n'.join(chunks),encoding='utf-8')
-
           summary = {
             'lemma_6_30_hits': len(re.findall(r'Lemma 6\.30', text)),
             'HT5_hits': len(re.findall(r'HT5', text)),
