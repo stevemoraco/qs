@@ -1,0 +1,125 @@
+pattern=independent of Q
+hits=1
+
+=== hit 1 offset 272359 ===
+r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+that
+
+                                                     ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+                                    ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+
+Put
+                             (0)
+                           Ctr := max{1, Ctr,0,0 },            mark
+                                                              Ctr,Q := max Ctr,r,q .
+                                                                        r≤3,q≤Q
+
+                                                                                    (0)
+The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+logarithmic density. Together with (48),
+
+                            ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+
+and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+                                                                          X           d2λ
+              ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+                                                               CG,s   =                         < ∞,        (67)
+                                                                    G
+                                                                                (1 + C2 (λ))2sG
+                                                                          λ∈G
+                                                                            b
+so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+removal.
+Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+that
+                   X                           σζr σJq
+               sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+                p                        0≤r≤3 r!  q!
+                    A∋p                   0≤q≤Q
+
+The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+I⋆ as R → ∞.
+
+
+
+
+                                                         64
+Proof. For I of cardinality n, tensorizing (67) gives
+
+                                                          Y
+                                          n
+                                ∥f ∥AI ≤ CG,s G
+                                                                (1 − ∆p )sG f              .            (69)
+                                                          p∈I
+                                                                                L2 (GI )
+
+The joint live-pivot polydisc used in Lemma 6.22 exists simultaneously in all pivot coordinates met
+by one owned factor. Multivariable Cauchy therefore bounds the right side of (69) by CW     n
+                                                                                               times the
+corresponding complex-pivot-tube activity majorant; CW depends only on the fixed pivot tube and not on
+Q. Source Cauchy differentiation contributes only the fixed prefactor CQ ≤ C0 Q!ρ−Q
+                                                                                  J  and does not add a
+factor exponential in n. The reference, regular, and irregular input rows retain unused original-support
+exponents. Repeating the proof of (HT5) with pivot charge λ + log CW + log CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed pas

@@ -1,0 +1,1339 @@
+pattern=Qopt
+hits=11
+
+=== hit 1 offset 71277 ===
+tic domain without a bad cutoff. Cauchy and the
+trial lower bound control its normalized derivatives. Bell-polynomial differentiation of G−1  X preserves
+only per-core polynomial/exponential losses, which are absorbed when multiplied by the bad numerator
+estimate.
+
+Lemma 3.21 (Concrete one-core insertion). Define
+                                                Z
+                         (TX F )(η) = GX (η) −1
+                                                  F (z, η) dλbad
+                                                             X (z; η).
+
+
+Then, in the weakened exterior regulator,
+
+                                        ∥TX F ∥[3] ≤ Cbu (X)∥F ∥[3] .
+
+Proof. Differentiate by Leibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .        
+=== hit 2 offset 71967 ===
+eibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                        
+=== hit 3 offset 72156 ===
+cores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, aft
+=== hit 4 offset 72969 ===
+define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is use
+=== hit 5 offset 73054 ===
+                                S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is used: the absolute-value allocation
+                                                    
+=== hit 6 offset 109545 ===
+                                          1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+
+=== hit 7 offset 109631 ===
+                    σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so th
+=== hit 8 offset 110319 ===
+                                 8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) 
+=== hit 9 offset 110633 ===
+    .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                     
+=== hit 10 offset 111319 ===
+ives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-ro
+=== hit 11 offset 111659 ===
+                                     1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge cova

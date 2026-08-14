@@ -1,0 +1,233 @@
+pattern=canonical connector
+hits=2
+
+=== hit 1 offset 74554 ===
+ompatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is used: the absolute-value allocation
+                                                    1
+                               |⟨yX , KXY yY ⟩| ≤     ∥KXY ∥(∥yX ∥2 + ∥yY ∥2 )
+                                                    2
+assigns a nonnegative quadratic regulator to the two incident vertices. The weighted block row makes
+the sum of those regulator matrices at every replica vertex at most Cκ. After enlarging RG so 4Cκ < 1,
+Corollary 4.2 bounds all Gaussian exponential moments uniformly in the replica matrix and in the number
+of cores. The geometric reporting lemma assigns each differentiated tree to its connected core hull. The
+exact 1/n! and Lemma 4.3 absorb the vertex factorials. The resulting rooted tree series has link mass at
+most 4κ and gives the same denominator as the determinant words.
+   A structural or source derivative either differentiates one block of K, one exterior mean, or one one-core
+score. Leibniz distributes at most three marks, producing the fourth power in (2). Finally, replacing dγX
+by a normalized one-core reference changes only the single-core vertices and normalization scores. Their
+assumed upper/lower and score bounds are paid per vertex and do not alter the cross-link mass. The
+connected logarithm removes every empty-support scalar once. This proves the stated uniform row in
+exactly the marked norm consumed downstream.
+
+
+                                                            20
+Lemma 3.27 (Model-specific admission to the marked Gaussian block-polymer theorem). For the actual
+constrained Karcher precision and every admitted exte
+=== hit 2 offset 117754 ===
+       −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the reported support. The first statement is Corollary 4.10
+with finite support sums. On the unique tree path between the two roots, the triangle inequality makes the
+sum of edge distances at least the root separation. The remaining branches are summed by the unused
+rooted smallness margin. Fixed marks promote finitely many vertices and change only the constant.
+4.4      Wick-stable jet block
+Coordinate choice. Use the grounded covariances and harmonic extensions constructed in Section 4.3.
+Thus, before the scale-j conditional expectation,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+
+where Cj = Cjd is the exact detail covariance and the second term is the embedded remaining covariance.
+After canonical scale-two identification, Cjc is denoted C≥j+1 . For every finite-degree local gauge-complete
+jet P , define
+                                                          1
+                                                                 
+                                        : P : C≥j = exp − ∆C≥j P.
+                                                          2
+The contraction exponential terminates at finite degree.
+   Let Πext extract:
+1. the vacuum coordinate;
+2. the tangent-normalized reflection-even Yang–Mills coordinate;
+3. every declared marked/contact jet of degree below five;
+4. total differences, Bianchi descendants, and the reflection-odd scalar sector.
+   Put
+                                                       Πirr = I − Πext
+on the jet truncation through degree eight. The stable marked fiber begins at degree five; its unmarked
+scalar subfiber begins at degree six.
+Lemma 4.15 (Marked Gaussian Wick martingale). For every finite-degree gauge-complete jet, with zero,
+one, or two active background marks and every fixed finite family of passive source leaves,
+
+                                  ECj : P (Jj W + ζ) : C≥j =: (P ◦ Jj )(W ) : Cjc .
+
+After the canonical scale-two identification this is the stated passage from scale j to scale j +1. Conditional
+Gaussian expectation therefore preserves homogeneous Wick chaos exactly and creates no lower-chaos
+contraction path.
+Proof. This is Corollary 4.12. Explicitly,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+so the commuting contraction operators give
+                             1          − 12 ∆C≥j                     − 21 ∆C c
+                           e 2 ∆C j e               P (Jj W + ·) 0 = e        j   (P ◦ Jj )(W ).
+The covariance is fixed rather than background dependent. Background and passive-source derivatives
+therefore commute with the contraction operators. Wick contraction is applied to the complete gauge-
+invariant tensor, so gauge, signed-hypercubic, and aligned-reflection covariance are preserved.
+
+Exact forty-nine-path symbol jet.          For ϑ = 7/8, the exact centered linear block symbol is
+                                                                          
+                                                 kµ             Y
+                                 Mµµ (k) = 2 cos     ϑ + (1 − ϑ)    cos kλ  ,
+                                                  2
+                                                                           λ̸=µ
+
+and, for µ ̸= ν,
+                                 1−ϑ            kν
+                    Mµν (k) =        sin kµ sin    [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                                  3             2
+   Let
+                                                                 1
+                                                       N (k) =     M (k)
+                                                                 2
+be the canonically normalized connection symbol.
+
+
+                                                              30
+Lemma 4.16 (Exact low-momentum jet). The printed symbol satisfies:
+                                        N (0) = I,         DN (0) = 0,
+and every total-order-three derivative at zero vanishes. The nonzero quadratic derivatives are generated by
+                                             1                         1
+                              ∂µ2 Nµµ (0) = − ,      ∂λ2 Nµµ (0) = −        (λ ̸= µ),
+                                             4                         8
+and
+                                                    1
+                                        ∂µ ∂ν Nµν (0) = (µ ̸= ν).
+                                                   16
+Consequently the block correction raises engineering degree by an even positive amount. It has no
+same-degree off-diagonal part.
+Proof. For the diagonal entry,
+                                                                                
+                                                                   Y
+                               Nµµ (k) = cos(kµ /2) ϑ + (1 − ϑ)           cos kλ  .
+                                                                   λ̸=µ
+
+It is even in every variable, so all first and third t
