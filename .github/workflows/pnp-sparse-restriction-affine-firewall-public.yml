@@ -21,10 +21,11 @@ jobs:
       - name: Reject placeholders and custom trust carriers
         run: |
           set -euo pipefail
-          P=verification/pnp-sparse-restriction-affine-firewall/SparseRestrictionAffineDisperserFirewall.lean
-          if grep -nE '(^|[^A-Za-z])(sorry|admit|sorryAx)([^A-Za-z]|$)' "$P"; then exit 1; fi
-          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$P"; then exit 1; fi
-          if grep -nE '(Lean\.ofReduceBool|native_decide)' "$P"; then exit 1; fi
+          for P in verification/pnp-sparse-restriction-affine-firewall/*.lean; do
+            if grep -nE '(^|[^A-Za-z])(sorry|admit|sorryAx)([^A-Za-z]|$)' "$P"; then exit 1; fi
+            if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$P"; then exit 1; fi
+            if grep -nE '(Lean\.ofReduceBool|native_decide)' "$P"; then exit 1; fi
+          done
 
       - name: Install pinned Lean
         run: |
@@ -47,12 +48,16 @@ jobs:
         working-directory: verification/pnp-sparse-restriction-affine-firewall
         run: |
           set -euo pipefail
-          lake env lean SparseRestrictionAffineDisperserFirewall.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          for P in SparseRestrictionAffineDisperserFirewall.lean CLYTripleRelationCarrier.lean; do
+            echo "===== $P =====" | tee -a lean-output.log
+            lake env lean "$P" 2>&1 | tee -a lean-output.log
+          done
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
             echo 'Lean trust gate failed.' >&2
             exit 1
           fi
-          echo 'VERIFIED sparse restriction affine-disperser finite firewall.'
+          echo 'VERIFIED both PNP sparse-carrier finite cores.'
 
       - name: Upload evidence
         if: always()
