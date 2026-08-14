@@ -1,4 +1,4 @@
-name: YM Kirk v4 pivot-incidence absorption
+name: YM Kirk v4 pivot-incidence geometry
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/ym-kirk-v4-pivot-incidence-absorption.yml
       - verification/ym-kirk-v4-pivot-incidence-absorption/KirkV4PivotIncidenceAbsorption.lean
+      - verification/ym-kirk-v4-pivot-incidence-absorption/KirkV4ReferenceDiameterFirewall.lean
 
 permissions:
   contents: read
@@ -17,13 +18,16 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Verify flattened Lean theorem sources
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/ym-kirk-v4-pivot-incidence-absorption/KirkV4PivotIncidenceAbsorption.lean
-          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
-          SRC="$SRC" python3 - <<'PY'
+          for SRC in \
+            verification/ym-kirk-v4-pivot-incidence-absorption/KirkV4PivotIncidenceAbsorption.lean \
+            verification/ym-kirk-v4-pivot-incidence-absorption/KirkV4ReferenceDiameterFirewall.lean
+          do
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+            SRC="$SRC" python3 - <<'PY'
           import json, os, pathlib, urllib.request
           path = pathlib.Path(os.environ['SRC'])
           payload = json.dumps({
@@ -38,6 +42,7 @@ jobs:
               headers={'Content-Type':'application/json'}, method='POST')
           with urllib.request.urlopen(req, timeout=960) as response:
               result = json.load(response)
+          print(path.name)
           print(json.dumps(result, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
@@ -52,6 +57,7 @@ jobs:
           )
           if bad:
               diag = {
+                  'source': str(path),
                   'okay': result.get('okay'),
                   'failed_declarations': result.get('failed_declarations', []),
                   'lean_messages': lean,
@@ -61,3 +67,4 @@ jobs:
               print('::error::AXLE_DIAG=' + json.dumps(diag, separators=(',', ':'))[:6000])
               raise SystemExit(1)
           PY
+          done
