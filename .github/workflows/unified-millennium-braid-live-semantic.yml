@@ -95,18 +95,24 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           root=verification/unified-millennium-braid-live
           cd "$root"
+          BASE_LEAN_PATH="$(lake env printenv LEAN_PATH)"
+          ACTIVE_LEAN_PATH="$PWD:$BASE_LEAN_PATH"
           : > lean-output.log
+          run_lean() {
+            lake env env LEAN_PATH="$ACTIVE_LEAN_PATH" lean "$@"
+          }
           compile() {
             local file="$1"
             local out="${file%.lean}.olean"
             echo "=== $file ===" | tee -a lean-output.log
-            lake env lean "$file" -R . -o "$out" 2>&1 | tee -a lean-output.log
+            run_lean "$file" -R . -o "$out" 2>&1 | tee -a lean-output.log
             test -s "$out"
           }
           compile Millennium/UnifiedMillenniumCorpusAll.lean
           compile Millennium/CrossProblem/UnconditionalGeometricConvergence.lean
           compile Millennium/UnifiedMillenniumBraidLive.lean
-          lake env leanchecker --fresh Millennium.UnifiedMillenniumBraidLive \
+          lake env env LEAN_PATH="$ACTIVE_LEAN_PATH" \
+            leanchecker --fresh Millennium.UnifiedMillenniumBraidLive \
             2>&1 | tee leanchecker-fresh.log
           if grep -Eq "sorryAx|declaration uses 'sorry'|Lean.ofReduceBool|unsolved goals|error:" \
               lean-output.log leanchecker-fresh.log; then
