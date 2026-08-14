@@ -1,0 +1,63 @@
+name: B2 round60 public Lean verifier
+
+on:
+  push:
+    branches:
+      - verification/b2-round60-boundary-uniformity-scale-20260813
+    paths:
+      - 'verification/B2Round60BoundaryUniformityScaleFirewalls.lean'
+      - '.github/workflows/b2-round60-verifier.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/B2Round60BoundaryUniformityScaleFirewalls.lean'
+      - '.github/workflows/b2-round60-verifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/B2Round60BoundaryUniformityScaleFirewalls.lean'
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then exit 1; fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -nE '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+
+      - name: Verify exact source on compile farm
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, time, urllib.error, urllib.request
+          API='https://lean-compile-farm.replit.app/api'
+          p=pathlib.Path('verification/B2Round60BoundaryUniformityScaleFirewalls.lean')
+          def get(req, attempts=12):
+              last=None
+              for i in range(attempts):
+                  try:
+                      with urllib.request.urlopen(req, timeout=120) as r:
+                          return json.load(r)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
+                      last=e; time.sleep(min(5*(i+1),60))
+              raise RuntimeError(last)
+          req=urllib.request.Request(f'{API}/compile',data=json.dumps({'name':'b2-round60-public','lean_source':p.read_text()}).encode(),headers={'Content-Type':'application/json'},method='POST')
+          job=get(req); jid=job['id']; print('job',jid,flush=True)
+          for _ in range(180):
+              time.sleep(20)
+              try: job=get(f'{API}/jobs/{jid}',4)
+              except Exception as e: print('transient',e,flush=True); continue
+              print(json.dumps(job,indent=2),flush=True)
+              if job.get('status') in ('done','failed'):
+                  if job.get('verdict')!='VERIFIED' or job.get('sorry_count')!=0: raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('timeout')
+          PY
