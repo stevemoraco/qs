@@ -1,0 +1,75 @@
+name: YM Kirk v4 official short-distance audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-official-short-distance-audit-20260814-gpt56pro
+    paths:
+      - 'source_audit/kirk_v4_official_short_distance/**'
+      - '.github/workflows/ym-kirk-v4-official-short-distance-audit.yml'
+  pull_request:
+    paths:
+      - 'source_audit/kirk_v4_official_short_distance/**'
+      - '.github/workflows/ym-kirk-v4-official-short-distance-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PDF text extractor
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+
+      - name: Download exact published v4 PDF twice and pin bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://zenodo.org/api/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence,%20Mass%20Gap,%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf/content'
+          curl -fL --retry 5 --retry-all-errors "$URL" -o kirk-v4-a.pdf
+          sleep 2
+          curl -fL --retry 5 --retry-all-errors "$URL" -o kirk-v4-b.pdf
+          cmp kirk-v4-a.pdf kirk-v4-b.pdf
+          test "$(sha256sum kirk-v4-a.pdf | awk '{print $1}')" = \
+            'c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          stat -c '%s' kirk-v4-a.pdf | tee pdf-size.txt
+          sha256sum kirk-v4-a.pdf | tee pdf-sha256.txt
+
+      - name: Extract full text and exact scope contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          pdftotext -layout kirk-v4-a.pdf kirk-v4.txt
+          python3 source_audit/kirk_v4_official_short_distance/extract_kirk_v4_official_scope.py \
+            | tee extractor-output.json
+          sha256sum kirk-v4.txt | tee text-sha256.txt
+          wc -l -c kirk-v4.txt | tee text-size.txt
+
+      - name: Preserve audit evidence
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p audit-evidence
+          cp pdf-size.txt pdf-sha256.txt text-sha256.txt text-size.txt \
+            official-scope-summary.json extractor-output.json audit-evidence/ 2>/dev/null || true
+          cp -r extracted audit-evidence/ 2>/dev/null || true
+          cp kirk-v4.txt audit-evidence/ 2>/dev/null || true
+          git rev-parse HEAD > audit-evidence/commit.txt
+
+      - name: Upload exact source audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-official-short-distance-audit
+          path: audit-evidence/
+          if-no-files-found: error
+          retention-days: 90
