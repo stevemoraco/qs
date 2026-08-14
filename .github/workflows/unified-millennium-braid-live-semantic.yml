@@ -27,7 +27,7 @@ jobs:
           set -euo pipefail
           root=verification/unified-millennium-braid-live
           test "$(git hash-object "$root/Millennium/UnifiedMillenniumBraidLive.lean")" = \
-            27e74a5433c2d07007a45e444e58a40f481ae544
+            25fdfcb5e1cea9f267f5298ba99896749526fa22
           test "$(git hash-object "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean")" = \
             01956adc44d7e39541ea2903ebad3e80920b08f3
           git hash-object "$root/Millennium/UnifiedMillenniumCorpusAll.lean" \
