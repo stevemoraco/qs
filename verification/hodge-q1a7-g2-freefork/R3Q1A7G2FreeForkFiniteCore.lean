@@ -2,7 +2,8 @@ import Mathlib
 
 /-!
 Finite algebra/arithmetic shadow of the q=1,a=7 `G2` free-fork elimination in
-`stevemoraco/RH#401`.
+`stevemoraco/RH#401`, with the first exact polynomial gate for the surviving
+`G3` satellite branch.
 
 Formalized here only:
 * the exact binary-cubic discriminant polynomial;
@@ -11,14 +12,17 @@ Formalized here only:
   `Disc(t W(t W^2-Z^2)) = 4*t^5`;
 * the factorization of the discriminant of a reduced `2+1` vertical cubic
   `ell W(beta Z^2+c ZW+d W^2)`;
+* if that cubic has zero discriminant and `ell,beta` are nonzero, its residual
+  quadratic has zero discriminant `c^2=4*beta*d`;
 * elementary self-intersection monotonicity used after rational blowdowns.
 
 NOT formalized here:
 Miranda/Faenzi--Stipins triple-cover geometry, the analytic splitting lemma,
 normal surface isolatedness, ADE or simple-elliptic classification, Laufer or
-Saito theory, the identification of the G2 Stein resolution graph, K3
-geometry, algebraic cycles, or the Hodge conjecture. No axiom below carries
-any of those conclusions.
+Saito theory, the identification of the G2/G3 Stein resolution graphs, the
+geometric implication that the G3 coefficient-two satellite makes the whole
+vertical divisor a discriminant component, K3 geometry, algebraic cycles, or
+the Hodge conjecture. No axiom below carries any of those conclusions.
 -/
 
 namespace Millennium.Hodge.R3Q1A7G2FreeForkFiniteCore
@@ -52,6 +56,22 @@ theorem reduced_two_one_discriminant_factor
   simp [binaryCubicDisc]
   ring
 
+/-- Finite polynomial gate used by the surviving G3 satellite branch: away
+from the degenerate cases `ell=0` and `beta=0`, vanishing of the cubic
+discriminant forces the residual quadratic discriminant to vanish.  The
+geometric step making the vertical cubic discriminant vanish identically is
+NOT formalized here. -/
+theorem vanishing_cubic_disc_forces_residual_quadratic_disc_zero
+    (ell beta c d : ℤ)
+    (hell : ell ≠ 0) (hbeta : beta ≠ 0)
+    (hdisc : binaryCubicDisc 0 (ell*beta) (ell*c) (ell*d) = 0) :
+    c^2 = 4*beta*d := by
+  rw [reduced_two_one_discriminant_factor] at hdisc
+  have hp : ell^4 * beta^2 ≠ 0 :=
+    mul_ne_zero (pow_ne_zero 4 hell) (pow_ne_zero 2 hbeta)
+  have hres : c^2 - 4*beta*d = 0 := (mul_eq_zero.mp hdisc).resolve_left hp
+  exact sub_eq_zero.mp hres
+
 /-- The two local index-cubic discriminant exponents differ by one. -/
 theorem local_discriminant_exponent_gap :
     (5 : ℤ) - 4 = 1 := by
@@ -83,6 +103,7 @@ theorem at_least_minus_two_stays_above_minus_three
 #check unramified_index_cubic_discriminant
 #check ramified_index_cubic_discriminant
 #check reduced_two_one_discriminant_factor
+#check vanishing_cubic_disc_forces_residual_quadratic_disc_zero
 #check local_discriminant_exponent_gap
 #check elliptic_minus_two_to_minus_one_ledger
 #check minus_two_cannot_become_minus_three_by_nonnegative_increase
@@ -91,6 +112,7 @@ theorem at_least_minus_two_stays_above_minus_three
 #print axioms unramified_index_cubic_discriminant
 #print axioms ramified_index_cubic_discriminant
 #print axioms reduced_two_one_discriminant_factor
+#print axioms vanishing_cubic_disc_forces_residual_quadratic_disc_zero
 #print axioms local_discriminant_exponent_gap
 #print axioms elliptic_minus_two_to_minus_one_ledger
 #print axioms minus_two_cannot_become_minus_three_by_nonnegative_increase
