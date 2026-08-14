@@ -83,11 +83,64 @@ theorem exact_rank_of_matching_bounds
     rank = lower := by
   omega
 
+/-- Elementary-divisor shadow of the inequality
+`rank(M / X M) ≤ ord_X(char(M))`: the number of positive X-primary
+multiplicities is at most their total multiplicity. -/
+theorem positive_factor_count_le_total_order :
+    ∀ multiplicities : List ℕ,
+      (multiplicities.filter fun e => 0 < e).length ≤ multiplicities.sum := by
+  intro multiplicities
+  induction multiplicities with
+  | nil => simp
+  | cons e es ih =>
+      by_cases he : 0 < e
+      · simp [he]
+        omega
+      · have he0 : e = 0 := Nat.eq_zero_of_not_pos he
+        simp [he, he0, ih]
+
+/-- Total X-order one permits at most one positive X-primary elementary
+factor. -/
+theorem at_most_one_positive_factor_of_total_order_one
+    {multiplicities : List ℕ}
+    (htotal : multiplicities.sum = 1) :
+    (multiplicities.filter fun e => 0 < e).length ≤ 1 := by
+  calc
+    (multiplicities.filter fun e => 0 < e).length ≤ multiplicities.sum :=
+      positive_factor_count_le_total_order multiplicities
+    _ = 1 := htotal
+
+/-- A non-torsion-point lower bound and a level-zero control upper bound force
+both Mordell–Weil rank and classical Selmer corank to be exactly one. -/
+theorem rank_one_from_point_and_control
+    {mordellWeilRank selmerCorank : ℕ}
+    (hpoint : 1 ≤ mordellWeilRank)
+    (hkummer : mordellWeilRank ≤ selmerCorank)
+    (hcontrol : selmerCorank ≤ 1) :
+    mordellWeilRank = 1 ∧ selmerCorank = 1 := by
+  constructor <;> omega
+
+/-- Abstract final implication chain after the arithmetic input has proved
+Selmer corank one and finite p-primary Sha. -/
+theorem rank_one_pBSD_chain
+    {SelmerOne ShaFinite AnalyticRankOne PrimaryBSD : Prop}
+    (hpConverse : SelmerOne → ShaFinite → AnalyticRankOne)
+    (hpBSD : AnalyticRankOne → PrimaryBSD)
+    (hselmer : SelmerOne)
+    (hsha : ShaFinite) :
+    AnalyticRankOne ∧ PrimaryBSD := by
+  have hanalytic := hpConverse hselmer hsha
+  exact ⟨hanalytic, hpBSD hanalytic⟩
+
 #print axioms value_stable_of_transition
 #print axioms all_values_equal_initial
 #print axioms all_critical_values_equal_initial
 #print axioms nonzero_of_equal_finite_value
 #print axioms unit_of_equal_finite_value
 #print axioms exact_rank_of_matching_bounds
+#print axioms positive_factor_count_le_total_order
+#print axioms at_most_one_positive_factor_of_total_order_one
+#print axioms rank_one_from_point_and_control
+#print axioms rank_one_pBSD_chain
 
 end BSDSignedAugmentationRigidity
