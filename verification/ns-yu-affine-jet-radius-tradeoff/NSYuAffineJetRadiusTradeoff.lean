@@ -35,8 +35,7 @@ leaves the exact net factor `s^4`. -/
 theorem fixed_filter_radius_enlargement_net_factor
     {s : ℝ} (hs : s ≠ 0) :
     s ^ 5 * (1 / s) = s ^ 4 := by
-  field_simp [hs]
-  ring
+  field_simp [hs] <;> ring
 
 /-- The dyadic version of the same tradeoff at one shell step: a factor `2^5`
 from the fixed-filter near-field loss and a factor `1/2` from the annular kernel
