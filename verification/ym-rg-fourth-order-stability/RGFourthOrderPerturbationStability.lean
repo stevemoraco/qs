@@ -43,7 +43,7 @@ theorem abs_log_sub_log_le_of_lower_bound
     intro z hz
     have hzpos : 0 < z := lt_of_lt_of_le hm hz
     rw [Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hzpos), one_div]
-    exact inv_le_inv₀ hm hz
+    exact (inv_le_inv₀ hzpos hm).2 hz
   have h := (convex_Ici m).norm_image_sub_le_of_norm_hasDerivWithin_le
       hder hbound hx hy
   simpa [Real.norm_eq_abs] using h
@@ -61,7 +61,7 @@ theorem referenceStep_ge_input
 when its dimensionless size satisfies `R u^3 ≤ 1/2`. -/
 theorem perturbedStep_ge_half_input
     (b c R u r : ℝ)
-    (hb : 0 < b) (hc : 0 ≤ c) (hR : 0 ≤ R) (hu : 0 < u)
+    (hb : 0 < b) (hc : 0 ≤ c) (hu : 0 < u)
     (hrem : |r| ≤ R * u^4)
     (hsmall : R * u^3 ≤ 1 / 2) :
     u / 2 ≤ fourthOrderPerturbedStep b c u r := by
@@ -79,7 +79,7 @@ theorem perturbedStep_ge_half_input
 has a uniform quadratic growth floor. -/
 theorem perturbedStep_quadratic_growth
     (b c R u r : ℝ)
-    (hb : 0 < b) (hc : 0 ≤ c) (hR : 0 ≤ R) (hu : 0 < u)
+    (hc : 0 ≤ c) (hu : 0 < u)
     (hrem : |r| ≤ R * u^4)
     (hsmall : R * u^2 ≤ b / 2) :
     (b / 2) * u^2 ≤ fourthOrderPerturbedStep b c u r - u := by
@@ -117,7 +117,6 @@ theorem reciprocal_coordinate_perturbation_le
     simpa [abs_neg] using hrem
   have hid : 1 / (b * v) - 1 / (b * w) = (w - v) / (b * v * w) := by
     field_simp [ne_of_gt hb, ne_of_gt hvpos, ne_of_gt hwpos]
-    ring
   rw [hid, abs_div, abs_of_pos hden]
   rw [div_le_iff₀ hden]
   have hbne : b ≠ 0 := ne_of_gt hb
@@ -126,7 +125,6 @@ theorem reciprocal_coordinate_perturbation_le
     _ ≤ 2 * R * u^2 * (v * w) := hscaled
     _ = ((2 * R / b) * u^2) * (b * v * w) := by
       field_simp [hbne]
-      ring
 
 /-- Logarithmic part of the corrected coordinate is stable under the same
 fourth-order perturbation. -/
@@ -146,7 +144,6 @@ theorem log_coordinate_perturbation_le
       exact mul_le_mul_of_nonneg_left hrem (by positivity)
     _ = 2 * R * u^3 := by
       field_simp [ne_of_gt hu]
-      ring
 
 /-- Main local fourth-order stability theorem. An `O(u^4)` perturbation of the
 cubic recurrence changes the two-loop corrected coordinate by only `O(u^2)`.
@@ -168,14 +165,13 @@ theorem correctedCoordinate_perturbation_le_quadratic
   have hw : u ≤ w := by
     simpa [w] using referenceStep_ge_input b c u hb hc hu
   have hv : u / 2 ≤ v := by
-    simpa [v] using perturbedStep_ge_half_input b c R u r hb hc hR hu hrem hsmall
+    simpa [v] using perturbedStep_ge_half_input b c R u r hb hc hu hrem hsmall
   have hvr : v = w + r := by
     simp [v, w, fourthOrderPerturbedStep]
   have hrec := reciprocal_coordinate_perturbation_le
       b R u w v r hb hR hu hw hv hvr hrem
   have hlog := log_coordinate_perturbation_le
       R u w v r hR hu hw hv hvr hrem
-  have hU : 0 < U := lt_of_lt_of_le hu huU
   unfold fourthOrderCorrectedCoordinate
   dsimp [w, v] at hrec hlog ⊢
   calc
@@ -204,10 +200,11 @@ theorem correctedCoordinate_perturbation_le_quadratic
           have hu3 : u^3 ≤ U * u^2 := by
             nlinarith [sq_nonneg u]
           have hcoef : 0 ≤ 2 * R := by positivity
-          have htmp : 2 * R * u^3 ≤ 2 * R * U * u^2 :=
-            mul_le_mul_of_nonneg_left hu3 hcoef
-          exact add_le_add_left
-            (mul_le_mul_of_nonneg_left htmp (abs_nonneg _)) _
+          have htmp : 2 * R * u^3 ≤ 2 * R * U * u^2 := by
+            have := mul_le_mul_of_nonneg_left hu3 hcoef
+            nlinarith
+          exact add_le_add (le_refl _)
+            (mul_le_mul_of_nonneg_left htmp (abs_nonneg _))
     _ = (2 * R / b + 2 * |c / b^2 - 1| * R * U) * u^2 := by
           ring
 
