@@ -1,0 +1,146 @@
+name: Hodge r3 global Tschirnhausen replay
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'verification/hodge-r3-global-tschirnhausen/*.lean'
+      - '.github/workflows/hodge-r3-global-tschirnhausen-replay.yml'
+  push:
+    branches:
+      - verification/hodge-r3-global-tschirnhausen-ledger-20260814
+    paths:
+      - 'verification/hodge-r3-global-tschirnhausen/*.lean'
+      - '.github/workflows/hodge-r3-global-tschirnhausen-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact replay branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/hodge-r3-global-tschirnhausen/HodgeR3GlobalTschirnhausenLedger.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(text)
+          if m:
+              raise SystemExit(f'{p}: forbidden token {m.group(2)}')
+          if re.search(r'(?m)^\s*axiom\s+[A-Za-z_]', text):
+              raise SystemExit(f'{p}: custom axiom declaration')
+          if 'Lean.ofReduceBool' in text or 'native_decide' in text:
+              raise SystemExit(f'{p}: forbidden proof shortcut')
+          if text.count('#print axioms') != 10:
+              raise SystemExit(f'{p}: expected ten axiom reports')
+          print(f'{p}: trust preflight clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30 on exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/hodge-r3-global-tschirnhausen/HodgeR3GlobalTschirnhausenLedger.lean')
+          out = p.parent / 'evidence'
+          out.mkdir(exist_ok=True)
+          payload = json.dumps({
+              'content': p.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+          (out / 'axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          summary = {
+              'okay': result.get('okay'),
+              'failed_declarations': result.get('failed_declarations', []),
+              'lean_errors': result.get('lean_messages', {}).get('errors', []),
+              'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+              'tool_errors': result.get('tool_messages', {}).get('errors', []),
+              'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+              'request_exception': result.get('request_exception'),
+          }
+          (out / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
+          print(json.dumps(summary, indent=2))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/hodge-r3-global-tschirnhausen/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "environment=lean-4.30.0"
+            sha256sum verification/hodge-r3-global-tschirnhausen/*.lean
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload compiler evidence before verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-r3-global-tschirnhausen-evidence
+          path: verification/hodge-r3-global-tschirnhausen/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/hodge-r3-global-tschirnhausen/evidence/summary.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE summary evidence')
+          result = json.loads(p.read_text())
+          if not result.get('okay'):
+              raise SystemExit('AXLE did not return okay=true')
+          if result.get('failed_declarations'):
+              raise SystemExit('failed declarations')
+          if result.get('lean_errors') or result.get('lean_warnings'):
+              raise SystemExit('Lean errors or warnings')
+          if result.get('tool_errors') or result.get('tool_warnings'):
+              raise SystemExit('tool errors or warnings')
+          if result.get('request_exception'):
+              raise SystemExit('request exception')
+          print('HODGE R3 GLOBAL TSCHIRNHAUSEN LEDGER: VERIFIED WARNING-FREE')
+          PY
