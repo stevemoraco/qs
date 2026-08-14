@@ -26,41 +26,51 @@ jobs:
           fi
       - name: Pin immutable latest source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract connector and prerequisite proof contexts
+      - name: Extract connector and prerequisite theorem contexts
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
           targets=[
-            'Theorem 4.30','Theorem 5.1','Lemma 5.20','Theorem 5.8','Lemma 6.12',
-            'Theorem 6.39','Theorem 6.43','Theorem 6.44','Lemma 8.2','Lemma 8.5',
-            'joint Haar','Haar–optical','Haar-optical','optical connector','macrobridge',
-            'strict rooted-support','m_E','equation (103)','(103)','equation (208)','(208)'
-          ]
-          low=text.lower(); out=[]
-          for target in targets:
+            ('theorem_4_30','Theorem 4.30'),('theorem_5_1','Theorem 5.1'),
+            ('lemma_5_20','Lemma 5.20'),('theorem_5_8','Theorem 5.8'),
+            ('lemma_6_12','Lemma 6.12'),('theorem_6_39','Theorem 6.39'),
+            ('theorem_6_43','Theorem 6.43'),('theorem_6_44','Theorem 6.44'),
+            ('lemma_8_2','Lemma 8.2'),('lemma_8_5','Lemma 8.5')]
+          outdir=Path('source_audit/kirk_v4/connector'); outdir.mkdir(parents=True,exist_ok=True)
+          summary=[]
+          for slug,target in targets:
+              m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+              if not m:
+                  raise SystemExit(f'{target} substantive heading not found')
+              start=max(0,m.start()-2500); end=min(len(text),m.start()+26000)
+              chunk=text[start:end]
+              (outdir/f'{slug}.txt').write_text(chunk,encoding='utf-8')
+              summary.append(f'{target}: offset {m.start()}, chars {len(chunk)}')
+          phrases=['joint Haar','Haar–optical','Haar-optical','optical connector','macrobridge',
+                   'strict rooted-support','m_E','equation (103)','(103)','equation (208)','(208)',
+                   'exterior configuration','preceding weak depth','uniform in volume']
+          ledger=[]; low=text.lower()
+          for phrase in phrases:
               pos=0
-              for hit in range(20):
-                  i=low.find(target.lower(),pos)
+              for hit in range(12):
+                  i=low.find(phrase.lower(),pos)
                   if i<0: break
-                  out.append(f'=== {target} hit {hit+1} ===\n'+
-                             text[max(0,i-4200):min(len(text),i+14000)]+'\n')
-                  pos=i+len(target)
-          if not out:
-              raise SystemExit('no connector contexts found')
-          Path('kirk_v4_connector_proof_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
-          print(f'connector contexts: {len(out)}')
+                  ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-1200):min(len(text),i+3200)]+'\n')
+                  pos=i+len(phrase)
+          (outdir/'phrase_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (outdir/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
           PY
       - name: Commit connector proof contexts
         run: |
-          mkdir -p source_audit/kirk_v4
-          cp kirk_v4_connector_proof_contexts.txt source_audit/kirk_v4/
           cp kirk_latest_record.json source_audit/kirk_v4/
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk v4 connector proof contexts'
+          git commit -m 'audit(ym): preserve focused Kirk v4 connector theorem contexts'
           git push origin HEAD:verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
       - uses: actions/upload-artifact@v4
         with:
@@ -70,4 +80,4 @@ jobs:
           path: |
             kirk_latest_record.json
             kirk_source_probe_report.json
-            kirk_v4_connector_proof_contexts.txt
+            source_audit/kirk_v4/connector/
