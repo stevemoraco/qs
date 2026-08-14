@@ -16,12 +16,12 @@ theorem card_lower_of_every_fiber_nonempty
     intro a ha
     obtain ⟨b, hb⟩ := h a
     exact Finset.mem_image.mpr ⟨(a, b), hb, rfl⟩
+  have himage : (S.image (fun x : α × β => x.1)).card ≤ S.card := by
+    exact Finset.card_image_le
   calc
     Fintype.card α = Finset.univ.card := by simp
     _ ≤ I.card := Finset.card_le_card huniv
-    _ ≤ S.card := by
-      simpa [I] using
-        (Finset.card_image_le (f := fun x : α × β => x.1) S)
+    _ ≤ S.card := by simpa [I] using himage
 
 theorem missing_fiber_of_card_lt
     {α β : Type*}
