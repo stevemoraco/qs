@@ -1,0 +1,129 @@
+name: YM Kirk v4 reference path geometry
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-reference-path-geometry-20260814-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-reference-path-geometry.yml
+
+permissions:
+  contents: write
+
+jobs:
+  source-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-reference-path-geometry-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin source and extract geometry contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, time, urllib.request, urllib.error
+
+          UA='millennium-braid-reference-path-audit/1.0'
+          def get(url, tries=7):
+              last=None
+              for i in range(tries):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'*/*'})
+                      with urllib.request.urlopen(req,timeout=60) as r:
+                          return r.read(), r.geturl()
+                  except (urllib.error.HTTPError, urllib.error.URLError) as e:
+                      last=e
+                      if isinstance(e, urllib.error.HTTPError) and e.code not in (429,500,502,503,504):
+                          raise
+                      time.sleep(min(2**i,32))
+              raise last
+
+          base_raw, base_url = get('https://zenodo.org/api/records/21765806')
+          base=json.loads(base_raw)
+          latest_url=base.get('links',{}).get('latest')
+          if latest_url:
+              latest_raw, latest_final=get(latest_url)
+              rec=json.loads(latest_raw)
+          else:
+              rec=base; latest_raw=base_raw; latest_final=base_url
+          Path('kirk_reference_geometry_record.json').write_bytes(latest_raw)
+          pdfs=[f for f in rec.get('files',[]) if str(f.get('key','')).lower().endswith('.pdf')]
+          if len(pdfs)!=1:
+              raise RuntimeError(f'expected one PDF, got {len(pdfs)}')
+          entry=pdfs[0]
+          furl=entry.get('links',{}).get('content') or entry.get('links',{}).get('self')
+          pdf_raw,pdf_final=get(furl)
+          Path('kirk_reference_geometry.pdf').write_bytes(pdf_raw)
+          sha=hashlib.sha256(pdf_raw).hexdigest()
+          print('record_id',rec.get('id'))
+          print('version',rec.get('metadata',{}).get('version'))
+          print('modified',rec.get('modified'))
+          print('pdf_sha256',sha)
+          print('pdf_final',pdf_final)
+          PY
+          pdftotext -layout kirk_reference_geometry.pdf kirk_reference_geometry.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          text=Path('kirk_reference_geometry.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/reference_path_geometry'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            ('prop_6_8','Proposition 6.8'),('lemma_6_12','Lemma 6.12'),
+            ('lemma_6_22','Lemma 6.22'),('lemma_6_23','Lemma 6.23'),
+            ('lemma_6_30','Lemma 6.30'),('ht5','(HT5)'),
+          ]
+          summary=[]
+          for slug,target in targets:
+              hits=list(re.finditer(re.escape(target),text,re.I))
+              summary.append(f'{target}: {len(hits)} hits')
+              chunks=[]
+              for j,m in enumerate(hits[:12],1):
+                  chunks.append(f'===== {target} hit {j} at {m.start()} =====\n'+text[max(0,m.start()-7000):min(len(text),m.end()+16000)])
+              (out/f'{slug}.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+          phrases=[
+            'active straight macro-path','straight macro-path','finite family of active',
+            'reference factor','reference factors','diam A','selected pivot incidence',
+            'I_P(A)','IP (A)','pivot incidence','owner','owned factor','HT5',
+            'at most','number of paths','path family','macro-paths','macro paths',
+            'one path','same path','single path','reference row','m_ref','diameter'
+          ]
+          ledger=[]
+          low=text.lower()
+          for phrase in phrases:
+              pos=0; count=0
+              while True:
+                  i=low.find(phrase.lower(),pos)
+                  if i<0: break
+                  count+=1
+                  if count<=20:
+                      ledger.append(f'===== {phrase} hit {count} at {i} =====\n'+text[max(0,i-3200):min(len(text),i+9000)])
+                  pos=i+max(1,len(phrase))
+              summary.append(f'phrase {phrase!r}: {count} hits')
+          (out/'PHRASE_LEDGER.txt').write_text('\n\n'.join(ledger),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit source contexts
+        run: |
+          mkdir -p source_audit/kirk_v4/reference_path_geometry
+          cp kirk_reference_geometry_record.json source_audit/kirk_v4/reference_path_geometry/
+          printf 'sha256  ' > source_audit/kirk_v4/reference_path_geometry/PDF_SHA256.txt
+          sha256sum kirk_reference_geometry.pdf | awk '{print $1}' >> source_audit/kirk_v4/reference_path_geometry/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reference_path_geometry
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): pin Kirk reference path geometry contexts'
+          git push origin HEAD:verification/ym-kirk-v4-reference-path-geometry-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-reference-path-geometry
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/reference_path_geometry/

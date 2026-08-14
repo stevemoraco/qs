@@ -1,0 +1,296 @@
+and principal-submatrix anchor inverse are holomorphic. Their
+derivatives are bounded on the compact closure of each local template tube. There are only finitely many
+bulk and aligned-reflection local templates; periodic wrapping does not change a rooted local template.
+Summing the finite local row/column incidence bounds gives the displayed estimate.
+Lemma 3.13 (Complex Wilson-sector reserve). For h in the fixed exterior tube,
+
+                                                 1
+                           Re AX (z; η + h) ≥      AX (z; η) − Cu qRX (h) + |X| .
+                                                                               
+                                                 2
+
+By Proposition 3.6, on the curvature-bad support,
+                                                                 |X|
+                                             AX (z; η) ≥ c∗ χ2       ,
+                                                                 νov
+and therefore
+                                                     c∗ χ2 |X|
+                          u−1 Re AX (z; η + h) ≥               − CqRX (h) − C|X|.
+                                                     2 u νov
+Proof. For one normalized fixed-G Wilson word, put w(U ) = wG,ρ (U ). The zero of w is nondegenerate
+at the identity. On a small identity tube, Taylor expansion in a tangent increment H gives
+
+                     |∂w(U )[H]| ≤ CG w(U ) ∥H∥,        |∂ 2 w(U )[H, H]| ≤ CG ∥H∥2 .
+                                       p
+
+
+Away from that tube, w has a positive compact minimum, while its first two derivatives are bounded;
+enlarging CG gives the same inequalities on the complete fixed complex tube. The inequality 2ab ≤ a2 + b2 ,
+followed by the finite word-transport estimate, gives the component bound. Proposition 3.6 gives the
+second display.
+Lemma 3.14 (Fixed-atlas residual). After removing the scalar, complete retained two-jet, and allo-
+cated local determinant endpoint, the sum of Wilson, Haar, inverse-coordinate, coarea, anchor-return,
+determinant-remainder, and finite Schur-connector terms satisfies
+
+                         Re Lfixed
+                             X     (z; η + h) ≤ C|X| + Cuωfix (qRX (η) + qRX (h))
+
+on a smaller fixed tube, for some ωfix > 0.
+Proof. Each fixed local factor has vanishing Taylor coefficients through order two after allocation. Its
+third-order integral remainder is bounded by
+
+                               C∥z∥3phys ,      ∥z∥phys ≤ u1/2−ϵ ,       ϵ < 1/6.
+
+The corresponding complex Hessian is O(u1/2−ϵ ). More explicitly, after their true scalar and quadratic
+splits,
+                                              (≥3)          (≥3)
+                              (≥3)
+                            ∥Rcoa  ∥[3] + ∥Rchart ∥[3] + ∥Rdet ∥[3] ≤ Cu3/2−3ϵ ,
+
+
+                                                      15
+                                                               (≥3)
+                                           X
+                                     sup         em diam A ∥RSch,A ∥[3] ≤ Cu3/2−3ϵ .
+                                      e
+                                           A∋e
+
+The Schur row follows by expanding the finite matrix logarithm around the fixed optical precision and
+using the uniform optical inverse; convolution of its exponential kernels preserves a positive exponent m.
+Rooted local incidence gives the result with
+                                                          1
+                                                 ωfix =     − ϵ > 0,
+                                                          2
+the smaller exponent being the complex-Hessian cost used by the exterior regulator rather than the
+zero-row cubic remainder.
+Lemma 3.15 (Inherited sectorial lifting). Let the incoming regular interaction be holomorphic on the
+permanent tube, real on the real slice, and satisfy
+
+                                                  [R]∂,C;a;3 ≤ r.
+
+Then the inherited terms owned by X obey
+
+                           Re Rinh
+                               X (η + h) ≤ Cr|X| + CrqRX (η) + CrqRX (h).
+
+Proof. Taylor expansion first on the real segment and then on the imaginary segment gives
+                                                                            
+       Re RY (η + ih) ≤ RY (0) + C∥DRY (0)∥2 + C 1 + sup ∥D2 RY (η + ith)∥ qY (η) + qY (h) .
+                                                                                          
+                                                                  t
+
+The linear imaginary term has zero real part because RY is real on the real slice. Rooted support
+summation over the activities owned by X gives the result without a raw volume incidence factor.
+Theorem 3.16 (Exterior tube and analytic residual). Assume the incoming regular interaction lies in
+the reproduced regular complex domain and
+
+                                             C (uωfix + r) < b1 .
+
+Then the curvature-bad density is holomorphic on one fixed exterior/source tube and its complete post-
+two-jet residual satisfies
+
+                            Re Lan
+                                X (z; η + h) ≤ C|X| + b1 qRX (η) + Cδ qRX (h).
+
+Together with the Wilson-sector reserve,
+
+                                                      χ2 |X|
+      Z                                                                                     
+         |ρX (z; η + h)| dµX (z) ≤ [Cu ]
+           curv                        −p C|X|
+                                               exp −c        + b1 qRX (η) + Cδ qRX (h) + C|X| .
+                                                      u νov
+Proof. Holomorphy follows from the fixed-domain component chart, the finite word transport lemma, and
+the reproduced regular complex tube. Add the fixed-atlas and inherited residual bounds. The smallness
+condition absorbs their quadratic coefficient into b1 . Combining with the Wilson-sector reserve and taking
+absolute values before integration gives the final estimate.
+
+3.4    Component plateau and denominator
+Let X be a bad seed with integration core I(X), reported hull H(X), and exterior ring RX = H(X)\I(X).
+Let W be its retained field and η the regular ring datum. All X-owned Haar, coordinate, coarea,
+determinant, and inherited factors are included in the reference density ρref
+                                                                          X (z; η), and
+                                               Z
+                                      GX (η) = ρrefX (z; η) dµX (z).
+
+
+Lemma 3.17 (Exact component section). There are ctr , Ctr > 0, independent of X, scale, volume, weak
+depth, wrapping, and reflected template, such that the exact fiber over (W, η) contains an analytic section
+sX (W, η) satisfying
+                           ∥sX (W, η)∥∞ ≤ Ctr Rg ,      AI(X) (sX ) ≤ Ctr uRg2 |X|.
+                                                            √
+A product ball in the fresh detail coordinates of radius ctr u about sX remains in the same exact fiber.
+
+
+                                                          16
+Proof. Use the model-specific normal coordinates of Proposition 2.9 on every fixed component cell. Start
+from the canonical weak prolongation of W : split each coarse logarithm equally between the two straight
+fine links, set transverse details to zero, and interpolate across the fixed-width boundary templates to the
+actual weak ring datum η. This gives a globally consistent configuration with the displayed pointwise
+and action bounds.
+   The component-owned anchor problem is a principal subproblem of the simultaneous selected-anchor
+map. Theorem 3.3 supplies a uniform lower Lipschitz bound and inverse derivative with the ring anchors
+fixed. It therefore gives a unique component anchor correction with constants independent of shape and
+topology. Fresh details√are the remaining fiber coordinates. The finite incidence and inverse bounds show
+that a ball of radius c u remains inside the common coordinate tube and on the same exact fiber.
+Lemma 3.18 (Good-cutoff plateau). If
+
+                                        χ2
+                                           ≥ K Rg2 + 1 + log u−1
+                                                                 
+                                        u
+with K sufficiently large, then, after shrinking the common weak threshold, every owned good cutoff is
+identically one throughout the ball of Lemma 3.17.
+Proof. Finite-word Taylor bounds on the section and the detail ball give, on each owned cell,
+
+                                         DQ + TQ ≤ CuRg2 + Cu.
+
+The displayed dominance condition makes this less than both χ2 /8 and tch /8 after one common threshold
+reduction. By the cutoff definitions in Section 3, χin
+                                                    Q = 1 on the complete ball.
+
+Lemma 3.19 (Reference trial plateau). There are fixed d0 < ∞, c, C > 0 such that
+                                                   h             2
+                                                                         i|X|
+                               eb0 qRX (η) GX (η) ≥ cud0 /2 e−C(Rg +1+r)      .
+
+All constants are uniform under the standing convention and in X.
+Proof. Integrate only over the plateau ball. Its number of real coordinates is at most d0 |X|, hence its
+product volume is bounded below by (cud0 /2 )|X| . On that ball the Wilson action divided by u costs at
+most CRg2 |X|. Every fixed Haar, coordinate, coarea, determinant, and anchor-return factor is bounded
+above and below on the common finite atlas. The reproduced regular interaction and the cutoff-free
+boundary reserve of the exterior-tube theorem cost at most
+
+                                         C(1 + r)|X| + b0 qRX (η).
+
+All good cutoffs equal one by Lemma 3.18. Multiplying the bounds and moving the exterior regulator to
+the left gives the result.
+
+3.5    Hybrid bad seeds
+Let X be a connected bad seed with fixed selected-anchor integration core I(X), reported hull H(X),
+and exterior ring RX = H(X) \ I(X). Assume
+
+                                  |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|.
+
+Let dµX be the fixed product base measure of the component chart and let
+                                          Z
+                                  GX (η) = ρrefX (z; η) dµX (z) > 0.
+
+
+  Split the exact bad density into curvature, transition-collar, and outer-anchor labels:
+
+                                         X = ρX
+                                        ρbad       + ρcol
+                                                      X + ρX .
+                                              curv         out
+
+
+Theorem 3.20 (Absolute bad-seed and core-variation ledger). Assume the exterior tube and analytic
+residual theorem of the preceding section and the common dominance condition
+
+                                        χ2
+                                           ≥ K Rg2 + 1 + log u−1
+                                                                 
+                                        u
+
+                                                     17
+with K sufficiently large. Use the exact labelled partition of Section 3 and the component reference of
+Section 3.4.
+   Then there are b1 > b0 , c, p, C > 0, uniform under the standing convention, such that
+                                              h         2
+                                                            i|X|/νov
+                                      bu (X) = Cu−p e−cχ /u
+
+and, for every compact-variable derivative |β| ≤ 2sG and every total exterior/structural mark order
+q + |α| ≤ 3,
+
+                                     β    q
+              e−b1 qRX (η) GX (η)−1 Dpiv Dext  α
+                                              Dmark  X (·; η)
+                                                    λbad             ≤ Cβ,q,α (1 + u−pβ )bu (X),
+                                                                TV
+
+
+where pβ < ∞ is fixed for each |β| ≤ 2sG . Here Dpiv denotes differentiation in any fixed left-invariant
+frame of a compact group variable occurring in the core. It is independent of the three structural/exterior
+marks used by the weak renormalization-group norm. The curvature-bad term obeys the same estimate
+uniformly on a smaller complex exterior tube.
+
+Proof. For the curvature-bad term, take absolute values before integration. The sector estimate and
+Proposition 3.6 give
+                                               c∗ χ2 |X|
+                        u−1 Re AX (z; η + h) ≥           − CqRX (h) − C|X|.
+                                               2 u νov
+Together with the residual row and the linear hull-size bound, this yields
+
+                                                          χ2 |X|
+      Z                                                                                           
+         |ρcurv
+           X    (z; η + h)| dµX (z) ≤ [Cu  ]
+                                         −p C|X|
+                                                 exp   −c        + b 0 q RX
+                                                                            (η) + CqR X
+                                                                                        (h) + C|X|   .
+                                                          u νov
+
+For a fixed Cauchy polydisc and b1 > b0 , choose ε > 0 with (1 + ε)b0 < b1 . Then
+
+                                  b0 qRX (η + Re h) ≤ b1 qRX (η) + Cε,δ |X|.
+
+Cauchy’s formula on the fixed domain therefore gives the differentiated total-variation rows without using
+an equal-weight growth improvement.
+   For collar and outer labels, differentiate under the real finite-dimensional integral. Lemma 3.5 shows
+that every derivative of a splice cutoff remains supported on the charged annulus or outer event. All
+remaining terms are finite Bell polynomials in fixed-template derivatives. By Lemma 3.1, the same
+statement holds after any |β| ≤ 2sG compact-variable derivatives. Such derivatives add only a fixed
+polynomial in u−1 , χ−1 , and |X|; they do not alter the charged support. These polynomial losses multiply
+the same action exponential and are absorbed after decreasing its constant c.
+   Lemma 3.19 divides out the reference denominator. Its ud0 |X|/2 , Rg2 |X|, and finite chart losses are
+absorbed by the assumed action dominance after decreasing c. The finite label sum changes only C.
+   The reference density has the same fixed analytic domain without a bad cutoff. Cauchy and the
+trial lower bound control its normalized derivatives. Bell-polynomial differentiation of G−1  X preserves
+only per-core polynomial/exponential losses, which are absorbed when multiplied by the bad numerator
+estimate.
+
+Lemma 3.21 (Concrete one-core insertion). Define
+                                                Z
+                         (TX F )(η) = GX (η) −1
+                                                  F (z, η) dλbad
+                                                             X (z; η).
+
+
+Then, in the weakened exterior regulator,
+
+                                        ∥TX F ∥[3] ≤ Cbu (X)∥F ∥[3] .
+
+Proof. Differentiate by Leibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction
