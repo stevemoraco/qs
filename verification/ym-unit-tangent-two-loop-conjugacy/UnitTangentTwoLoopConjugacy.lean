@@ -29,34 +29,53 @@ continuum theory or mass gap.
 
 namespace Millennium.YangMills
 
+/-- Nonlinear coefficients `(quadratic, cubic)` of a scalar third-order jet
+whose linear coefficient is one. -/
 abbrev ParabolicJet3 := ℝ × ℝ
 
+/-- Third-order composition law for unit-tangent scalar jets. -/
 def parabolicJet3Comp (outer inner : ParabolicJet3) : ParabolicJet3 :=
   (outer.1 + inner.1,
     outer.2 + inner.2 + 2 * outer.1 * inner.1)
 
+/-- Third-order inverse of a unit-tangent scalar jet. -/
 def parabolicJet3Inv (j : ParabolicJet3) : ParabolicJet3 :=
   (-j.1, 2 * j.1^2 - j.2)
 
+/-- The displayed inverse jet cancels through cubic order. -/
 theorem parabolicJet3_comp_inv (j : ParabolicJet3) :
     parabolicJet3Comp j (parabolicJet3Inv j) = (0, 0) := by
   rcases j with ⟨a, d⟩
-  ext <;> simp [parabolicJet3Comp, parabolicJet3Inv] <;> ring
+  apply Prod.ext
+  · simp [parabolicJet3Comp, parabolicJet3Inv]
+  · simp [parabolicJet3Comp, parabolicJet3Inv]
+    ring
 
+/-- Unit-tangent scalar third-order jets commute.  This is special to the
+third-order truncation and is exactly what makes the first two nonlinear
+coefficients conjugacy invariants. -/
 theorem parabolicJet3_comp_comm (j k : ParabolicJet3) :
     parabolicJet3Comp j k = parabolicJet3Comp k j := by
   rcases j with ⟨a, d⟩
   rcases k with ⟨b, c⟩
   ext <;> simp [parabolicJet3Comp] <;> ring
 
+/-- Conjugation by any unit-tangent cubic jet preserves the complete parabolic
+third-order jet, hence preserves both the quadratic and cubic RG coefficients. -/
 theorem unitTangent_conjugacy_preserves_twoLoopJet
     (change rg : ParabolicJet3) :
     parabolicJet3Comp change
       (parabolicJet3Comp rg (parabolicJet3Inv change)) = rg := by
   rcases change with ⟨a, d⟩
   rcases rg with ⟨b, c⟩
-  ext <;> simp [parabolicJet3Comp, parabolicJet3Inv] <;> ring
+  apply Prod.ext
+  · simp [parabolicJet3Comp, parabolicJet3Inv]
+  · simp [parabolicJet3Comp, parabolicJet3Inv]
+    ring
 
+/-- Coefficient-level form: if the standard coupling has quadratic coefficient
+`b` and cubic coefficient `c`, then a unit-tangent cubic coordinate change
+cannot alter either coefficient through conjugation. -/
 theorem unitTangent_conjugacy_preserves_coefficients
     (a d b c : ℝ) :
     parabolicJet3Comp (a, d)
