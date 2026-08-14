@@ -1,0 +1,65 @@
+name: PNP nonlinear fingerprint diagnostics v2
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-nonlinear-fingerprint-firewall/**'
+      - '.github/workflows/pnp-nonlinear-fingerprint-diagnostics-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lean
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Resolve Mathlib
+        working-directory: verification/pnp-nonlinear-fingerprint-firewall
+        run: |
+          lake update
+          lake exe cache get
+      - name: Compile and expose first error
+        id: lean
+        working-directory: verification/pnp-nonlinear-fingerprint-firewall
+        run: |
+          set +e
+          lake env lean PNPNonlinearFingerprintFirewall.lean > lean-diagnostic-v2.log 2>&1
+          status=$?
+          first=$(grep -m1 -E 'error:' lean-diagnostic-v2.log || true)
+          if [ -z "$first" ]; then first="no-error-line-status-$status"; fi
+          printf '%s\n' "$first" > first-error.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Commit first error summary
+        if: steps.lean.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          src=verification/pnp-nonlinear-fingerprint-firewall/first-error.txt
+          first=$(tr '\n' ' ' < "$src" | cut -c1-180)
+          content=$(base64 -w 0 "$src")
+          path=verification/pnp-nonlinear-fingerprint-firewall/first-error.txt
+          current=$(gh api "repos/$REPO/contents/$path?ref=$HEAD_REF" --jq .sha 2>/dev/null || true)
+          msg="LeanDiag: $first"
+          if [ -n "$current" ]; then
+            gh api --method PUT "repos/$REPO/contents/$path" \
+              -f message="$msg" -f content="$content" \
+              -f branch="$HEAD_REF" -f sha="$current" >/dev/null
+          else
+            gh api --method PUT "repos/$REPO/contents/$path" \
+              -f message="$msg" -f content="$content" \
+              -f branch="$HEAD_REF" >/dev/null
+          fi
+      - name: Enforce success
+        run: test "${{ steps.lean.outputs.status }}" = 0
