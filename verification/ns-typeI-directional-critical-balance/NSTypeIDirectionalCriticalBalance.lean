@@ -35,70 +35,57 @@ Nothing here asserts that these scalar exponents are realized or saturated by a
 Navier--Stokes solution, and no regularity or blow-up conclusion is encoded.
 -/
 
-/-- Natural Type-I enstrophy exponent:
-`omega^2 * volume ~ tau^(-2 + 3/2) = tau^(-1/2)`. -/
+/-- Natural Type-I enstrophy exponent. -/
 theorem typeI_enstrophy_exponent :
     (-2 : ℚ) + 3 / 2 = -1 / 2 := by
   norm_num
 
-/-- Order-one directional variation at natural scale gives
-`grad omega ~ tau^(-1-1/2)`, hence integrated palinstrophy exponent `-3/2`. -/
+/-- Natural-scale roughness-induced integrated palinstrophy exponent. -/
 theorem typeI_palinstrophy_exponent :
     2 * ((-1 : ℚ) - 1 / 2) + 3 / 2 = -3 / 2 := by
   norm_num
 
-/-- Under a Type-I strain scale `|S| ~ tau^(-1)`, integrated vortex stretching
-`S omega omega * volume` also has exponent `-3/2`. -/
+/-- Type-I integrated vortex-stretching exponent. -/
 theorem typeI_stretching_exponent :
     (-1 : ℚ) + 2 * (-1) + 3 / 2 = -3 / 2 := by
   norm_num
 
-/-- The two load-bearing terms are exactly power-critical with respect to one
-another at the natural Type-I scale. -/
+/-- The two load-bearing terms are exactly power-critical with respect to one another. -/
 theorem typeI_directional_roughness_is_power_critical :
     2 * ((-1 : ℚ) - 1 / 2) + 3 / 2 =
       (-1 : ℚ) + 2 * (-1) + 3 / 2 := by
   norm_num
 
-/-- Equality of power exponents cannot by itself manufacture any strictly
-positive power gain. -/
+/-- Equal powers cannot manufacture a strictly positive power gain. -/
 theorem equal_exponents_exclude_positive_power_gain
     {a delta : ℚ} (hdelta : 0 < delta) :
     ¬ (a + delta ≤ a) := by
   linarith
 
-/-- Specialized firewall: no positive `tau^delta` depletion follows from the
-Type-I power count alone, because both terms sit at exponent `-3/2`. -/
+/-- No positive depletion exponent follows from the Type-I power count alone. -/
 theorem typeI_scaling_has_no_positive_depletion_exponent
     {delta : ℚ} (hdelta : 0 < delta) :
     ¬ ((-3 / 2 : ℚ) + delta ≤ -3 / 2) := by
   exact equal_exponents_exclude_positive_power_gain hdelta
 
-/-- Under Navier--Stokes scaling at `r ~ tau^b`, a Type-I vorticity amplitude
-`tau^(-1)` becomes `r^2 omega`, with exponent `2*b-1`. At the natural scale
-`b=1/2` this exponent is exactly zero. -/
+/-- Natural Type-I zoom has neutral normalized-vorticity exponent. -/
 theorem typeI_natural_zoom_vorticity_exponent :
     2 * (1 / 2 : ℚ) - 1 = 0 := by
   norm_num
 
-/-- Every strictly sub-natural physical zoom `b>1/2` gives a positive exponent
-for the normalized Type-I vorticity scale. -/
+/-- Every strictly sub-natural physical zoom has positive normalized-vorticity exponent. -/
 theorem typeI_subnatural_zoom_has_positive_vorticity_exponent
     {b : ℚ} (hb : 1 / 2 < b) :
     0 < 2 * b - 1 := by
   linarith
 
-/-- Conversely, if the normalized Type-I vorticity power is not decaying, the
-zoom exponent cannot be strictly sub-natural. -/
+/-- Nondecaying Type-I vorticity power forces a non-sub-natural zoom exponent. -/
 theorem typeI_nondecaying_vorticity_power_forces_nonsubnatural_zoom
     {b : ℚ} (hpower : 2 * b - 1 ≤ 0) :
     b ≤ 1 / 2 := by
   linarith
 
-/-- What would actually be sufficient at the scalar energy level is a strict
-coefficient depletion. If stretching is at most `(1-eta) * nu * D`, then the
-net stretching-minus-viscosity contribution retains `eta * nu * D` of
-coercivity. -/
+/-- Strict coefficient depletion leaves the exact nominal coercive margin. -/
 theorem coefficient_depletion_absorbs
     {nu eta D stretching : ℝ}
     (hstretch : stretching ≤ (1 - eta) * nu * D) :
@@ -108,8 +95,7 @@ theorem coefficient_depletion_absorbs
       sub_le_sub_right hstretch _
     _ = -(eta * nu * D) := by ring
 
-/-- The coefficient margin survives a localization/forcing error that consumes
-at most a `theta` fraction of the nominal depletion margin. -/
+/-- The coefficient margin survives an error consuming a `theta` fraction of it. -/
 theorem coefficient_depletion_survives_relative_error
     {nu eta D stretching E theta : ℝ}
     (hstretch : stretching ≤ (1 - eta) * nu * D + E)
@@ -122,28 +108,31 @@ theorem coefficient_depletion_survives_relative_error
       exact sub_le_sub_right (add_le_add_left hE _) _
     _ = -((1 - theta) * eta * nu * D) := by ring
 
-/-- If the error uses a strict fraction `theta<1` of a positive depletion
-margin, strict absorption remains. -/
+/-- A strict fractional error budget preserves strict absorption. -/
 theorem coefficient_depletion_with_error_is_strict
     {nu eta D stretching E theta : ℝ}
     (hnu : 0 < nu) (heta : 0 < eta) (hD : 0 < D) (htheta : theta < 1)
     (hstretch : stretching ≤ (1 - eta) * nu * D + E)
     (hE : E ≤ theta * eta * nu * D) :
     stretching < nu * D := by
-  have hthetaPos : 0 < 1 - theta := by linarith
-  have hmargin : 0 < (1 - theta) * eta * nu * D := by positivity
-  have h := coefficient_depletion_survives_relative_error hstretch hE
+  have hone : 0 < 1 - theta := sub_pos.mpr htheta
+  have hmargin : 0 < (1 - theta) * eta * nu * D :=
+    mul_pos (mul_pos (mul_pos hone heta) hnu) hD
+  have hnet := coefficient_depletion_survives_relative_error hstretch hE
+  have hstrict : stretching - nu * D < 0 :=
+    lt_of_le_of_lt hnet (neg_lt_zero.mpr hmargin)
   linarith
 
-/-- With strictly positive viscosity, depletion fraction and dissipation, the
-zero-error coefficient estimate gives a genuinely strict absorption margin. -/
+/-- Zero-error strict absorption. -/
 theorem coefficient_depletion_is_strict
     {nu eta D stretching : ℝ}
     (hnu : 0 < nu) (heta : 0 < eta) (hD : 0 < D)
     (hstretch : stretching ≤ (1 - eta) * nu * D) :
     stretching < nu * D := by
-  have hmargin : 0 < eta * nu * D := by positivity
-  have h := coefficient_depletion_absorbs hstretch
+  have hmargin : 0 < eta * nu * D := mul_pos (mul_pos heta hnu) hD
+  have hnet := coefficient_depletion_absorbs hstretch
+  have hstrict : stretching - nu * D < 0 :=
+    lt_of_le_of_lt hnet (neg_lt_zero.mpr hmargin)
   linarith
 
 #print axioms typeI_enstrophy_exponent
