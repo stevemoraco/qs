@@ -11,7 +11,8 @@ It records only the exact torsion arithmetic used by the human geometric reducti
 namespace Millennium.Hodge.BasketAExact9TangentCore
 
 private theorem nine_smul_zero (q : ZMod 9) : (9 : ZMod 9) * q = 0 := by
-  have h9 : (9 : ZMod 9) = 0 := by norm_num
+  have h9 : (9 : ZMod 9) = 0 :=
+    (ZMod.natCast_eq_zero_iff 9 9).2 (dvd_refl 9)
   rw [h9, zero_mul]
 
 /-- In Z/9Z, an element not killed by 3 is an exact order-9 shadow. Setting
