@@ -28,23 +28,41 @@ jobs:
           from pathlib import Path
           text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
           targets=[
+            '1.4 External inputs and exact proof boundary',
+            'Table 1: External standard inputs and exact proof boundary',
             'Theorem 6.39','Theorem 6.43','Theorem 6.44',
+            'Lemma 8.2 (Depth-uniform physical rate floor)','Theorem 8.9',
+            'Corollary 8.12','Lemma 8.13','Theorem 8.45','Theorem 8.46',
+            'Theorem 9.1','Lemma 9.2',
             'Proposition 8.21','Theorem 8.24','Theorem 8.26','Lemma 8.41',
             'Theorem 10.2','Theorem 10.4','Theorem 10.5','Lemma 10.6','Corollary 10.7',
-            'Appendix F','dependency map','SI–6','SI–6B','SI–7M','SI-6','SI-6B','SI-7M',
+            'Appendix A','Appendix F','dependency map',
+            'SI–6','SI–6B','SI–7','SI–7M','SI-6','SI-6B','SI-7','SI-7M',
             'finite interval','first crossing','matching length','m_E','m⋆','m_star'
           ]
-          out=[]; low=text.lower()
+          out=[]; low=text.lower(); counts={}
           for target in targets:
-            start=0
-            for hit in range(12):
+            start=0; count=0
+            for hit in range(16):
               i=low.find(target.lower(),start)
               if i<0: break
-              s=' '.join(text[max(0,i-1800):min(len(text),i+4800)].split())
+              count += 1
+              s=' '.join(text[max(0,i-2200):min(len(text),i+6200)].split())
               out.append(f'=== {target} hit {hit+1} ===\n{s}\n')
               start=i+len(target)
+            counts[target]=count
+          required=[
+            '1.4 External inputs and exact proof boundary','Theorem 6.43',
+            'Lemma 8.2 (Depth-uniform physical rate floor)','Corollary 8.12',
+            'Theorem 10.5','Corollary 10.7','SI–6','SI–6B','SI–7','SI–7M'
+          ]
+          missing=[x for x in required if counts.get(x,0)==0]
           Path('kirk_v4_load_bearing_spine.txt').write_text('\n'.join(out),encoding='utf-8')
-          print('\n'.join(out))
+          Path('kirk_v4_load_bearing_spine_counts.txt').write_text(
+            '\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing:
+            raise SystemExit('missing required substantive anchors: '+', '.join(missing))
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -55,3 +73,4 @@ jobs:
             kirk_latest_record.json
             kirk_source_probe_report.json
             kirk_v4_load_bearing_spine.txt
+            kirk_v4_load_bearing_spine_counts.txt
