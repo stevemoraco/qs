@@ -4,20 +4,25 @@ import Mathlib
 # A sharp factor-two lower bound for linear candidate syndromes
 
 Let `U` be an additive group and consider the candidate family consisting of
-both coordinate axes in `U × U`.  Any additive syndrome map that is injective
+both coordinate axes in `U × U`. Any additive syndrome map that is injective
 on this family is automatically injective on the whole product, because every
 product vector is a difference of one point on each axis.
 
 For `U = 𝔽₂^m` and a syndrome in `𝔽₂^r`, cardinality therefore forces
-`2 * m ≤ r`.  The axis family has `2^(m+1)-1` distinct candidates, so this is
+`2 * m ≤ r`. The axis family has `2^(m+1)-1` distinct candidates, so this is
 the exact finite witness showing that the generic `2 log₂ M + O(1)` linear
 fingerprint bound can be asymptotically sharp.
 
-The final section proves the hostile correction: the same family has a direct
-fan-in-two classifier with `2m-1` gates.  Thus linear identification rank is not
-an unrestricted decision-circuit lower-bound currency.
+The later sections prove the hostile correction. The same family has both:
 
-This file proves only finite additive/linear/Boolean algebra.  It does not
+* a direct fan-in-two classifier with `2m-1` gates; and
+* an injective nonlinear `m+1`-bit fingerprint, also with a `2m-1`-gate
+  implementation on the candidate family.
+
+Thus linear identification rank is not an unrestricted decision or encoding
+circuit lower-bound currency.
+
+This file proves only finite additive/linear/Boolean algebra. It does not
 formalize the Chen--Li--Yang construction, general circuit lower bounds, `P`,
 `NP`, or a Millennium statement.
 -/
@@ -156,6 +161,64 @@ theorem blockAxesGateCount_equal_length
   simp [blockAxesGateCount, hx, hy]
   omega
 
+/-! ## Optimal-length nonlinear fingerprint firewall -/
+
+/-- The branch bit says whether the right-axis coordinate is nonzero; the
+payload is the coordinate sum. This map is nonlinear because of the branch
+bit. -/
+def axisNonlinearFingerprint {m : ℕ}
+    (p : F2Vec m × F2Vec m) : Bool × F2Vec m :=
+  (decide (p.2 ≠ 0), p.1 + p.2)
+
+/-- The nonlinear `(m+1)`-bit fingerprint is injective on the axis family. -/
+theorem axisNonlinearFingerprint_injOn (m : ℕ) :
+    Set.InjOn (axisNonlinearFingerprint (m := m))
+      (axes (U := F2Vec m)) := by
+  intro p hp q hq hfpq
+  change p.2 = 0 ∨ p.1 = 0 at hp
+  change q.2 = 0 ∨ q.1 = 0 at hq
+  have hbit : decide (p.2 ≠ 0) = decide (q.2 ≠ 0) :=
+    congrArg Prod.fst hfpq
+  have hsum : p.1 + p.2 = q.1 + q.2 :=
+    congrArg Prod.snd hfpq
+  rcases hp with hpR | hpL
+  · rcases hq with hqR | hqL
+    · apply Prod.ext
+      · simpa [hpR, hqR] using hsum
+      · simpa [hpR, hqR]
+    · have hqR : q.2 = 0 := by
+        by_contra hne
+        simp [hpR, hne] at hbit
+      have hpL : p.1 = 0 := by
+        simpa [hpR, hqL, hqR] using hsum
+      ext <;> simp [hpR, hpL, hqR, hqL]
+  · rcases hq with hqR | hqL
+    · have hpR : p.2 = 0 := by
+        by_contra hne
+        simp [hne, hqR] at hbit
+      have hqL : q.1 = 0 := by
+        simpa [hpL, hpR, hqR] using hsum
+      ext <;> simp [hpL, hpR, hqR, hqL]
+    · apply Prod.ext
+      · simpa [hpL, hqL]
+      · simpa [hpL, hqL] using hsum
+
+/-- The nonlinear fingerprint codomain has exactly `2^(m+1)` values. -/
+theorem axisNonlinearFingerprint_output_card (m : ℕ) :
+    Fintype.card (Bool × F2Vec m) = 2 ^ (m + 1) := by
+  simp [F2Vec, pow_succ, mul_comm]
+
+/-- Compute one right-block OR and `m` coordinate XORs. -/
+def axisNonlinearFingerprintGateCount (m : ℕ) : ℕ :=
+  (m - 1) + m
+
+/-- The explicit nonlinear encoder uses exactly `2m-1` gates for `m≥1`. -/
+theorem axisNonlinearFingerprintGateCount_eq
+    {m : ℕ} (hm : 1 ≤ m) :
+    axisNonlinearFingerprintGateCount m = 2 * m - 1 := by
+  simp [axisNonlinearFingerprintGateCount]
+  omega
+
 #print axioms every_vector_is_axis_difference
 #print axioms eq_zero_of_map_eq_zero
 #print axioms injective_of_injOn_axes
@@ -166,5 +229,8 @@ theorem blockAxesGateCount_equal_length
 #print axioms orTree_eq_false_iff_all_false
 #print axioms blockAxesClassifier_eq_true_iff
 #print axioms blockAxesGateCount_equal_length
+#print axioms axisNonlinearFingerprint_injOn
+#print axioms axisNonlinearFingerprint_output_card
+#print axioms axisNonlinearFingerprintGateCount_eq
 
 end PNPLinearSyndromeFactorTwo
