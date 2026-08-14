@@ -62,7 +62,7 @@ theorem hardy_exterior_absorption
     mul_le_mul_of_nonneg_left hDext hKH
   calc
     mu ≤ eta * Dcore + K * A2 := hmu
-    _ ≤ eta * Dcore + K * (H * Dext) := add_le_add_left h1 _
+    _ ≤ eta * Dcore + K * (H * Dext) := by nlinarith [h1]
     _ = eta * Dcore + (K * H) * Dext := by ring
     _ ≤ eta * Dcore + (K * H) * (theta * Dcore) := by nlinarith [h2]
     _ = (eta + K * H * theta) * Dcore := by ring
