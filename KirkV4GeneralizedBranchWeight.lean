@@ -16,6 +16,14 @@ theorem generalized_branch_value_weight_le
       apply pow_le_pow_left₀ hq0
       nlinarith
 
+private theorem nat_le_two_pow (n : ℕ) : n ≤ 2 ^ n := by
+  induction n with
+  | zero => norm_num
+  | succ n ih =>
+      rw [pow_succ]
+      have hpos : 0 < 2 ^ n := pow_pos (by norm_num) n
+      omega
+
 /-- The generalized derivative branch weight is dominated by the same fixed
 geometric incidence weight. -/
 theorem generalized_branch_derivative_weight_le
@@ -24,8 +32,8 @@ theorem generalized_branch_derivative_weight_le
       (2 * (1 + B)) ^ n := by
   have hq1 : 1 ≤ 1 + B := by linarith
   have hq0 : 0 ≤ 1 + B := by linarith
-  have hnNat : n - 1 ≤ 2 ^ n := by
-    exact le_trans (Nat.sub_le n 1) (Nat.le_of_lt (Nat.lt_two_pow n))
+  have hnNat : n - 1 ≤ 2 ^ n :=
+    le_trans (Nat.sub_le n 1) (nat_le_two_pow n)
   have hn : ((n - 1 : ℕ) : ℝ) ≤ (2 : ℝ) ^ n := by
     exact_mod_cast hnNat
   have hp : (1 + B) ^ (n - 2) ≤ (1 + B) ^ n :=
