@@ -1,16 +1,16 @@
-name: Unified Millennium braid v2 AXLE replay
+name: Unified Millennium braid v3 AXLE replay
 
 on:
   push:
     branches:
       - verification/unified-millennium-braid-v2-axle-20260813-gpt56
     paths:
-      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean'
+      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean'
       - '.github/workflows/unified-millennium-braid-v2-axle.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean'
+      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean'
       - '.github/workflows/unified-millennium-braid-v2-axle.yml'
   workflow_dispatch:
 
@@ -32,12 +32,10 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import pathlib, re
-          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean')
+          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean')
           text = p.read_text()
           stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
           stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
-          # Reject actual trust-extending declarations, not ordinary prose/string
-          # occurrences such as `#print axioms` or metadata saying "no hidden axiom".
           declaration_escape = re.compile(r'^\s*(axiom|opaque|unsafe)\b', flags=re.M)
           m = declaration_escape.search(stripped)
           if m: raise SystemExit(f'forbidden declaration: {m.group(1)}')
@@ -55,10 +53,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p verification/unified-millennium-braid-v2/evidence
+          mkdir -p verification/unified-millennium-braid-v2/evidence-v3
           python3 - <<'PY'
           import json, pathlib, urllib.request
-          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean')
+          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean')
           payload = json.dumps({
               'content': p.read_text(),
               'environment': 'lean-4.30.0',
@@ -74,7 +72,7 @@ jobs:
           )
           with urllib.request.urlopen(req, timeout=1260) as response:
               result = json.load(response)
-          out = pathlib.Path('verification/unified-millennium-braid-v2/evidence/axle-response.json')
+          out = pathlib.Path('verification/unified-millennium-braid-v2/evidence-v3/axle-response.json')
           out.write_text(json.dumps(result, indent=2, sort_keys=True))
           summary = {
               'okay': result.get('okay'),
@@ -95,16 +93,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean \
-            | tee verification/unified-millennium-braid-v2/evidence/source.sha256
-          git hash-object verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean \
-            | tee verification/unified-millennium-braid-v2/evidence/source.git-blob
-          git rev-parse HEAD | tee verification/unified-millennium-braid-v2/evidence/commit.txt
+          sha256sum verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean \
+            | tee verification/unified-millennium-braid-v2/evidence-v3/source.sha256
+          git hash-object verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV3.lean \
+            | tee verification/unified-millennium-braid-v2/evidence-v3/source.git-blob
+          test "$(cat verification/unified-millennium-braid-v2/evidence-v3/source.git-blob)" = "2c1d399f5deb48059bb2d65ea8869484f5e6d20e"
+          git rev-parse HEAD | tee verification/unified-millennium-braid-v2/evidence-v3/commit.txt
 
       - name: Upload replay evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unified-millennium-braid-v2-axle-evidence
-          path: verification/unified-millennium-braid-v2/evidence/
+          name: unified-millennium-braid-v3-axle-evidence
+          path: verification/unified-millennium-braid-v2/evidence-v3/
           if-no-files-found: warn
