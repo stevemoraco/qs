@@ -1,0 +1,74 @@
+name: Verify BSD one-layer exactification core
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_one_layer_exactification/**"
+      - ".github/workflows/verify-bsd-one-layer-exactification.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_one_layer_exactification/**"
+      - ".github/workflows/verify-bsd-one-layer-exactification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_one_layer_exactification
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify exact source and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=BSDOneLayerExactification.lean
+          test "$(git hash-object "$file")" = "35e190561310612f3fa2e02e9bd7e8092b1160cf"
+          echo "da872b09ac1a8eb082b262c2a73648e30119c7a168a20624cf7577a28b76de30  $file" | sha256sum -c -
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean BSDOneLayerExactification.lean 2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-one-layer-exactification-replay
+          path: |
+            verification/bsd_one_layer_exactification/BSDOneLayerExactification.lean
+            verification/bsd_one_layer_exactification/lean-output.txt
+          if-no-files-found: warn
