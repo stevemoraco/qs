@@ -3,7 +3,8 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent
 src = root / "UnifiedEverythingSemanticReplay.lean"
-out = root / "UnifiedEverythingSemanticReplayV2.lean"
+out_v2 = root / "UnifiedEverythingSemanticReplayV2.lean"
+out_v3 = root / "UnifiedEverythingSemanticReplayV3.lean"
 text = src.read_text(encoding="utf-8")
 
 # Failed-first repair 1: use the unscoped topology name accepted by the pinned toolchain.
@@ -36,6 +37,25 @@ new_result = (
 if text.count(old_result) != 1:
     raise SystemExit(f"expected exactly one theorem-result marker, found {text.count(old_result)}")
 text = text.replace(old_result, new_result)
+out_v2.write_text(text, encoding="utf-8")
 
-out.write_text(text, encoding="utf-8")
-print(out)
+# Failed-first repair 3: uniqueness of limits needs a Hausdorff target.
+# The two occurrences are the native theorem block and the GiantReceipt field.
+if text.count("[PseudoMetricSpace Y]") != 2:
+    raise SystemExit(
+        "expected exactly two pseudometric target markers, found "
+        f"{text.count('[PseudoMetricSpace Y]')}"
+    )
+text = text.replace(
+    "[PseudoMetricSpace Y]",
+    "[PseudoMetricSpace Y] [T2Space Y]",
+)
+old_intro = "  · intro X Y instX instComplete instY u d hstep hsum F hF y hres"
+new_intro = "  · intro X Y instX instComplete instY instT2 u d hstep hsum F hF y hres"
+if text.count(old_intro) != 1:
+    raise SystemExit(f"expected exactly one equation intro marker, found {text.count(old_intro)}")
+text = text.replace(old_intro, new_intro)
+out_v3.write_text(text, encoding="utf-8")
+
+print(out_v2)
+print(out_v3)
