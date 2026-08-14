@@ -16,13 +16,10 @@ theorem affine_step_preserves_ball
     (hC : C ≤ (1 - q) * M) :
     q * x + C ≤ M := by
   have hqx : q * x ≤ q * M := mul_le_mul_of_nonneg_left hx hq
-  calc
-    q * x + C ≤ q * M + C := add_le_add_right hqx C
-    _ ≤ q * M + (1 - q) * M := add_le_add_left hC (q * M)
-    _ = M := by ring
+  nlinarith
 
 /-- Explicit invariant radius for contraction `q` and forcing `C`. -/
-def explicitForcingRadius (q C : ℝ) : ℝ :=
+noncomputable def explicitForcingRadius (q C : ℝ) : ℝ :=
   C / (1 - q) + 1
 
 /-- The explicit radius pays the forcing budget. -/
@@ -37,7 +34,6 @@ theorem forcing_budget_at_explicit_radius
       (1 - q) * explicitForcingRadius q C = C + (1 - q) := by
     unfold explicitForcingRadius
     field_simp [hne]
-    <;> ring
   rw [hcalc]
   linarith
 
@@ -79,8 +75,8 @@ theorem triangular_affine_forcing_bounded
         intro i _hi
         exact ih i
       have hreplace :
-          q * x k n + forcing k n ≤ q * x k n + C k :=
-        add_le_add_left hforce (q * x k n)
+          q * x k n + forcing k n ≤ q * x k n + C k := by
+        nlinarith
       have hball : q * x k n + C k ≤ M k :=
         affine_step_preserves_ball q (C k) (M k) (x k n)
           hq (ih k) (hbudget k)
