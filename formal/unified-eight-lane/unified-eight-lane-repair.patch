@@ -1,0 +1,55 @@
+--- UnifiedMillenniumPerelmanInversionAudit.lean
++++ UnifiedMillenniumPerelmanInversionAudit.lean
+@@ -404,7 +404,6 @@
+       + (diffTriad p q k).2.1
+       + (diffTriad p q k).2.2 = 0 := by
+   simp [diffTriad]
+-  abel
+ 
+ /-- On the triad plane, the seventh-object difference transform squares to
+ minus three times the identity. -/
+@@ -417,8 +416,10 @@
+         (diffTriad p q k).2.2 =
+       (-p - p - p, -q - q - q, -k - k - k) := by
+   have hk : k = -p - q := by
+-    have h := congrArg (fun x => x - p - q) hsum
+-    simpa [sub_eq_add_neg] using h
++    calc
++      k = (p + q + k) - p - q := by abel
++      _ = 0 - p - q := by rw [hsum]
++      _ = -p - q := by simp
+   subst k
+   simp [diffTriad]
+   constructor
+@@ -441,13 +442,16 @@
+   rw [diffTriad_sq p q k hsum]
+   have hsum2 :
+       (-p - p - p) + (-q - q - q) + (-k - k - k) = 0 := by
+-    have h3 := congrArg (fun x => x + x + x) hsum
+-    simpa using h3
++    calc
++      (-p - p - p) + (-q - q - q) + (-k - k - k) =
++          -(p + q + k) - (p + q + k) - (p + q + k) := by abel
++      _ = -0 - 0 - 0 := by rw [hsum]
++      _ = 0 := by simp
+   rw [diffTriad_sq (-p - p - p) (-q - q - q)
+       (-k - k - k) hsum2]
+-  constructor
++  apply Prod.ext
+   · abel
+-  · constructor <;> abel
++  · apply Prod.ext <;> abel
+ 
+ /-! ## Yang--Mills finite core -/
+ 
+@@ -486,8 +490,8 @@
+         mul_le_mul_of_nonneg_left ih hρ
+       calc
+         E (n + 1) ≤ ρ * E n + ε * margin := hstep n
+-        _ ≤ ρ * margin + ε * margin :=
+-          add_le_add_right hρE (ε * margin)
++        _ ≤ ρ * margin + ε * margin := by
++          simpa [add_comm] using add_le_add_right hρE (ε * margin)
+         _ = (ρ + ε) * margin := by ring
+         _ ≤ 1 * margin :=
+           mul_le_mul_of_nonneg_right hbudget hmargin
