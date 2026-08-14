@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - agent/unified-millennium-federated-public-pr-corpus-20260813-gpt56pro
+      - verification/unified-millennium-braid-federated-semantic-20260814
     paths:
       - 'verification/federated-public-pr-bank/**'
       - 'verification/unified-exhaustive-bank/**'
+      - 'verification/unified-millennium-braid-live/**'
       - '.github/workflows/unified-federated-public-pr-bank.yml'
   pull_request:
     paths:
       - 'verification/federated-public-pr-bank/**'
       - 'verification/unified-exhaustive-bank/**'
+      - 'verification/unified-millennium-braid-live/**'
       - '.github/workflows/unified-federated-public-pr-bank.yml'
   workflow_dispatch:
 
@@ -26,6 +29,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Verify exact private-root mirrors
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/unified-millennium-braid-live
+          test "$(git hash-object "$root/Millennium/UnifiedMillenniumBraidLive.lean")" = \
+            25fdfcb5e1cea9f267f5298ba99896749526fa22
+          test "$(git hash-object "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean")" = \
+            01956adc44d7e39541ea2903ebad3e80920b08f3
+          sha256sum \
+            "$root/Millennium/UnifiedMillenniumBraidLive.lean" \
+            "$root/Millennium/CrossProblem/UnconditionalGeometricConvergence.lean" \
+            "$root/Millennium/UnifiedMillenniumCorpusAll.lean" \
+            | tee "$root/source-sha256.txt"
 
       - name: Fetch every public pull-request head
         shell: bash
@@ -89,6 +107,19 @@ jobs:
           ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' \
             ../federated-public-pr-bank/run/generated/unified-compile.log
 
+      - name: Require the giant semantic theorem inside the 700-plus kernel bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_file=verification/federated-public-pr-bank/run/generated/UnifiedMillenniumPublicBank.lean
+          log_file=verification/federated-public-pr-bank/run/generated/unified-compile.log
+          grep -Fq 'Millennium.UnifiedBraidLive.everything_discovered_one_gigantic_runnable_statement' \
+            "$source_file"
+          grep -Fq 'bundled ' "$log_file"
+          grep -Fq 'acceptedCorpusKernelBundle' "$log_file"
+          echo 'Giant semantic theorem is a direct leaf of acceptedCorpusKernelBundle.' \
+            | tee verification/federated-public-pr-bank/semantic-bundle-membership.txt
+
       - name: Enforce the foundation-only axiom boundary
         shell: bash
         run: |
@@ -137,6 +168,8 @@ jobs:
             verification/federated-public-pr-bank/federated-pr-manifest.json
             verification/federated-public-pr-bank/lean-version.txt
             verification/federated-public-pr-bank/axiom-report.txt
+            verification/federated-public-pr-bank/semantic-bundle-membership.txt
             verification/federated-public-pr-bank/run/generated/**
+            verification/unified-millennium-braid-live/source-sha256.txt
           if-no-files-found: warn
           retention-days: 90
