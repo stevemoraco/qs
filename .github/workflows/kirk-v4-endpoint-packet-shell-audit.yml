@@ -1,0 +1,76 @@
+name: Kirk v4 endpoint packet-shell audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/kirk-v4-endpoint-packet-shell-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: read
+
+jobs:
+  endpoint-packet-shell:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract complete endpoint appendix and load-bearing contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
+          start = text.find('\nA Endpoint packet-shell verification')
+          end = text.find('\nB Root data and representation normalization', start + 1)
+          if start < 0 or end < 0 or end <= start:
+              raise SystemExit(f'appendix boundaries not found: start={start} end={end}')
+          appendix = text[start:end]
+          Path('kirk_v4_appendix_A_endpoint_packet_shell.txt').write_text(appendix, encoding='utf-8')
+
+          headings = []
+          for m in re.finditer(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(A\.\d+)\b.*$', appendix):
+              headings.append(' '.join(m.group(0).split()))
+          Path('kirk_v4_appendix_A_headings.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
+
+          targets = [
+              'Theorem 10.4', 'terminal-shell', 'terminal remainder', 'crossing cell',
+              'geometrically summable', 'summable majorant', 'twice-marked',
+              'same-owner', 'owner', 'wrapping', 'compact entrance', 'conditional packet',
+              'uniform', 'independent of cutoff', 'independent of volume'
+          ]
+          low = appendix.lower()
+          out=[]
+          for target in targets:
+              pos=0
+              hits=0
+              while hits < 20:
+                  i=low.find(target.lower(), pos)
+                  if i < 0: break
+                  out.append(f'=== {target} hit {hits+1} ===\n' +
+                             ' '.join(appendix[max(0,i-1800):min(len(appendix),i+4200)].split()) + '\n')
+                  pos=i+len(target); hits+=1
+          Path('kirk_v4_appendix_A_audit_contexts.txt').write_text('\n'.join(out), encoding='utf-8')
+          print(f'Appendix A chars: {len(appendix)}; headings: {len(headings)}')
+          print('\n'.join(headings))
+          PY
+      - name: Preserve source-audit certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-endpoint-packet-shell-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_appendix_A_endpoint_packet_shell.txt
+            kirk_v4_appendix_A_headings.txt
+            kirk_v4_appendix_A_audit_contexts.txt
