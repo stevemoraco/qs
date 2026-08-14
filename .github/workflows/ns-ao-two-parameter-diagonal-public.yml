@@ -1,4 +1,4 @@
-name: NS one-generation master diagonal inherited replay
+name: NS one-generation finite-core inherited replay
 
 on:
   push:
@@ -20,11 +20,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f=verification/ns-onegen-master-diagonal/NSOneGenMasterDiagonal.lean
-          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$f"; then exit 1; fi
-          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$f"; then exit 1; fi
-          git hash-object "$f"
-          sha256sum "$f"
+          for f in \
+            verification/ns-onegen-master-diagonal/NSOneGenMasterDiagonal.lean \
+            verification/ns-onegen-master-diagonal/NSClockNoAccel.lean
+          do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$f"; then exit 1; fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$f"; then exit 1; fi
+            git hash-object "$f"
+            sha256sum "$f"
+          done
 
       - name: Install pinned Lean
         shell: bash
@@ -52,14 +56,17 @@ jobs:
           lake exe cache get
           lean --version
 
-      - name: Compile exact mirrored source and audit axioms
+      - name: Compile exact mirrored sources and audit axioms
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           cp verification/ns-onegen-master-diagonal/NSOneGenMasterDiagonal.lean /tmp/ns-onegen-master/NSOneGenMasterDiagonal.lean
+          cp verification/ns-onegen-master-diagonal/NSClockNoAccel.lean /tmp/ns-onegen-master/NSClockNoAccel.lean
           cd /tmp/ns-onegen-master
-          lake env lean NSOneGenMasterDiagonal.lean 2>&1 | tee lean-output.log
+          : > lean-output.log
+          lake env lean NSOneGenMasterDiagonal.lean 2>&1 | tee -a lean-output.log
+          lake env lean NSClockNoAccel.lean 2>&1 | tee -a lean-output.log
           if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then exit 1; fi
           python3 - <<'PY'
           import re, pathlib
@@ -67,8 +74,8 @@ jobs:
           allowed={'propext','Classical.choice','Quot.sound'}
           reports=re.findall(r"'([^']+)' depends on axioms:\s*\[(.*?)\]",text,re.S)
           reports += [(x,'') for x in re.findall(r"'([^']+)' does not depend on any axioms",text)]
-          if len(reports) < 4:
-              raise SystemExit(f'expected >=4 axiom reports, found {len(reports)}')
+          if len(reports) < 6:
+              raise SystemExit(f'expected >=6 axiom reports, found {len(reports)}')
           for th,payload in reports:
               deps={x.strip() for x in payload.split(',') if x.strip()}
               extra=deps-allowed
