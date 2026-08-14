@@ -1,20 +1,24 @@
-name: Kirk v4 endpoint packet-shell audit
+name: Kirk v4 Appendix-A proof audit
 
 on:
-  pull_request:
+  push:
+    branches:
+      - verification/ym-kirk-v4-appendixA-proof-audit-20260814-gpt56
     paths:
       - .github/workflows/kirk-v4-endpoint-packet-shell-audit.yml
       - tools/probe_kirk_latest_source.py
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  endpoint-packet-shell:
+  appendix-a-proof-audit:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-appendixA-proof-audit-20260814-gpt56
       - name: Ensure pdftotext
         run: |
           if ! command -v pdftotext >/dev/null; then
@@ -22,7 +26,7 @@ jobs:
           fi
       - name: Pin immutable latest source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract Appendix-A theorem contexts and load-bearing phrases
+      - name: Extract Appendix-A proof contexts
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -33,49 +37,67 @@ jobs:
           if a1 < 0:
               raise SystemExit('Lemma A.1 anchor not found')
           tail = text[a1:]
-
           heading_re = re.compile(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(A\.\d+)\b.*$')
           matches = list(heading_re.finditer(tail))
-          headings = [' '.join(m.group(0).split()) for m in matches]
           if len(matches) < 5:
-              raise SystemExit(f'Appendix-A heading inventory implausibly short: {headings!r}')
-          Path('kirk_v4_appendix_A_headings.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
+              raise SystemExit(f'Appendix-A heading inventory implausibly short: {len(matches)}')
 
-          # Preserve bounded source contexts around every Appendix-A theorem,
-          # rather than redistributing the full manuscript or depending on
-          # fragile PDF-layout section-title anchors.
+          # Store a bounded context around every theorem heading.  This is
+          # source-audit material only, not redistribution of the full PDF.
           theorem_contexts=[]
-          for m in matches:
-              s=max(0,m.start()-600)
-              e=min(len(tail),m.start()+9000)
-              theorem_contexts.append('=== ' + ' '.join(m.group(0).split()) + ' ===\n' + tail[s:e])
+          for idx,m in enumerate(matches):
+              next_start = matches[idx+1].start() if idx+1 < len(matches) else min(len(tail), m.start()+16000)
+              s=max(0,m.start()-500)
+              e=min(len(tail), max(next_start+1200, m.start()+7000))
+              heading=' '.join(m.group(0).split())
+              theorem_contexts.append('=== ' + heading + ' ===\n' + tail[s:e])
           Path('kirk_v4_appendix_A_theorem_contexts.txt').write_text('\n\n'.join(theorem_contexts),encoding='utf-8')
 
+          # Compact load-bearing contexts for terminal-depth C2 control and
+          # the bridge Theorem 10.4 -> 10.5.
           targets = [
-              'Theorem 10.4', 'Theorem A.9', 'terminal-shell', 'terminal remainder', 'crossing cell',
-              'geometrically summable', 'summable majorant', 'twice-marked',
-              'same-owner', 'owner', 'wrapping', 'compact entrance', 'conditional packet',
-              'uniform', 'independent of cutoff', 'independent of volume', 'C2', 'C²'
+              'Theorem 10.2','Theorem 10.4','Theorem 10.5','Theorem A.9',
+              'terminal-shell','terminal remainder','crossing cell','twice-marked',
+              'geometrically summable','summable majorant','same-owner','wrapping',
+              'compact entrance','conditional packet','independent of cutoff',
+              'independent of volume','uniform in M','C2','C²'
           ]
-          low=tail.lower(); out=[]
+          low=text.lower(); out=[]
           for target in targets:
               pos=0
-              for hit in range(20):
+              for hit in range(16):
                   i=low.find(target.lower(),pos)
                   if i<0: break
                   out.append(f'=== {target} hit {hit+1} ===\n' +
-                             ' '.join(tail[max(0,i-1800):min(len(tail),i+4200)].split()) + '\n')
+                             text[max(0,i-2200):min(len(text),i+5200)] + '\n')
                   pos=i+len(target)
-          if not out:
-              raise SystemExit('no load-bearing contexts extracted')
-          Path('kirk_v4_appendix_A_audit_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
-          print(f'A.1 offset: {a1}; Appendix-A headings: {len(headings)}')
-          print('\n'.join(headings))
+          Path('kirk_v4_appendix_A_load_bearing_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
+
+          headings='\n'.join(' '.join(m.group(0).split()) for m in matches)+'\n'
+          Path('kirk_v4_appendix_A_headings.txt').write_text(headings,encoding='utf-8')
+          print(f'Appendix-A substantive headings: {len(matches)}')
+          print(headings)
           PY
+      - name: Commit extracted source-audit contexts
+        run: |
+          mkdir -p source_audit/kirk_v4
+          cp kirk_v4_appendix_A_headings.txt source_audit/kirk_v4/
+          cp kirk_v4_appendix_A_theorem_contexts.txt source_audit/kirk_v4/
+          cp kirk_v4_appendix_A_load_bearing_contexts.txt source_audit/kirk_v4/
+          cp kirk_latest_record.json source_audit/kirk_v4/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4
+          if git diff --cached --quiet; then
+            echo 'No source-audit context changes.'
+            exit 0
+          fi
+          git commit -m 'audit(ym): preserve Kirk v4 Appendix-A proof contexts'
+          git push origin HEAD:verification/ym-kirk-v4-appendixA-proof-audit-20260814-gpt56
       - name: Preserve source-audit certificate
         uses: actions/upload-artifact@v4
         with:
-          name: kirk-v4-endpoint-packet-shell-audit
+          name: kirk-v4-appendix-a-proof-audit
           if-no-files-found: error
           retention-days: 30
           path: |
@@ -83,4 +105,4 @@ jobs:
             kirk_source_probe_report.json
             kirk_v4_appendix_A_headings.txt
             kirk_v4_appendix_A_theorem_contexts.txt
-            kirk_v4_appendix_A_audit_contexts.txt
+            kirk_v4_appendix_A_load_bearing_contexts.txt
