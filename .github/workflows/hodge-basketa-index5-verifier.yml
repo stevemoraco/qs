@@ -23,8 +23,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/hodge_basketa_index5/HodgeBasketAIndex5Finite.lean
-          test "$(git hash-object "$SRC")" = 81fd9c752b2794bdd1c323c5b6f885ce17739714
-          test "$(sha256sum "$SRC" | awk '{print $1}')" = d475d809387105ba7995384418deb183a85484c783e96889583330bf1a02d589
+          test "$(git hash-object "$SRC")" = 15ea362c138562f7aade3931e9282cc2308db069
+          test "$(sha256sum "$SRC" | awk '{print $1}')" = e0d57e217b705ebd2bc3f52a76f8c1c86d2de530b273b74812d95827ed28d226
           python3 - <<'PY'
           import pathlib, re
           text = pathlib.Path('verification/hodge_basketa_index5/HodgeBasketAIndex5Finite.lean').read_text()
