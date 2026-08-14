@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - agent/ns-onegen-master-diagonal-public-20260814
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
