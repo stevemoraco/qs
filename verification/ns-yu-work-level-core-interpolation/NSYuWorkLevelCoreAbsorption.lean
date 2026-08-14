@@ -88,7 +88,7 @@ theorem work_level_absorption
         (4 * eta * M) *
           (eta * D + (C ^ 2 * M / (2 * eta)) * A2) := by
     field_simp [ne_of_gt heta]
-    <;> ring
+    ring
   rw [heq] at hclear
   nlinarith
 
