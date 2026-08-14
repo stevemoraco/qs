@@ -5,6 +5,7 @@ on:
     branches:
       - agent/unified-millennium-federated-public-pr-corpus-20260813-gpt56pro
       - verification/unified-millennium-braid-federated-semantic-20260814
+      - automation/federated-700-safe-manifest-20260814
     paths:
       - 'verification/federated-public-pr-bank/**'
       - 'verification/unified-exhaustive-bank/**'
@@ -92,18 +93,23 @@ jobs:
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           export BANK_BASE_LEAN_PATH="$(lake env printenv LEAN_PATH)"
+          export FEDERATED_SAFE_REPORT_DIR="../federated-public-pr-bank/run/generated"
           mkdir -p "$RUNNER_TEMP/empty-legacy-rh"
-          python3 generate_bank.py \
+          python3 -m py_compile generate_bank.py generate_bank_safe.py
+          python3 generate_bank_safe.py \
             --current-root ../.. \
             --legacy-root "$RUNNER_TEMP/empty-legacy-rh" \
             --out ../federated-public-pr-bank/run \
             --timeout-per-file 60 \
             --timeout-aggregate 7200
           cat ../federated-public-pr-bank/run/generated/summary.env
+          cat ../federated-public-pr-bank/run/generated/syntax-safe-theorem-manifest-report.txt
           source ../federated-public-pr-bank/run/generated/summary.env
           test "$jointly_imported_modules" -gt 0
           test "$source_theorem_syntax" -ge 700
           test "$imported_bank_theorems" -ge 700
+          grep -Fq 'required_giant_present=true' \
+            ../federated-public-pr-bank/run/generated/syntax-safe-theorem-manifest-report.txt
           ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' \
             ../federated-public-pr-bank/run/generated/unified-compile.log
 
