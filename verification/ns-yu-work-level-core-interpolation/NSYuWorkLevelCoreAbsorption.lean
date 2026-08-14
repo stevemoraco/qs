@@ -83,15 +83,14 @@ theorem work_level_absorption
     mu <= eta * D + (C ^ 2 * M / (2 * eta)) * A2 := by
   have hclear := work_level_absorption_cleared hM heta hq2 hX2 hmu
   have hpos : 0 < 4 * eta * M := by positivity
-  apply (mul_le_mul_left hpos).mp
-  calc
-    (4 * eta * M) * mu <=
-        4 * eta ^ 2 * M * D + 2 * C ^ 2 * M ^ 2 * A2 := by
-      nlinarith
-    _ = (4 * eta * M) *
-        (eta * D + (C ^ 2 * M / (2 * eta)) * A2) := by
-      field_simp [ne_of_gt heta]
-      <;> ring
+  have heq :
+      4 * eta ^ 2 * M * D + 2 * C ^ 2 * M ^ 2 * A2 =
+        (4 * eta * M) *
+          (eta * D + (C ^ 2 * M / (2 * eta)) * A2) := by
+    field_simp [ne_of_gt heta]
+    <;> ring
+  rw [heq] at hclear
+  nlinarith
 
 /-- If the annular weighted square currency is zero, the same work-level
 mechanism leaves only the arbitrarily chosen absorbable `eta*D` term. -/
