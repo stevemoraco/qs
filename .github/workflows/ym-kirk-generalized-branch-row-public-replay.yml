@@ -1,0 +1,94 @@
+name: YM Kirk generalized branch-row public replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-kirk-generalized-branch-row/KirkV4GeneralizedBranchRow.lean'
+      - '.github/workflows/ym-kirk-generalized-branch-row-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/ym-kirk-generalized-branch-row/KirkV4GeneralizedBranchRow.lean'
+          if grep -nE '\b(sorry|admit|sorryAx|native_decide|Lean\.ofReduceBool)\b|^[[:space:]]*(axiom|opaque|unsafe)\b' "$file"; then
+            echo 'Forbidden proof escape found'
+            exit 1
+          fi
+
+      - name: Verify byte digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum verification/ym-kirk-generalized-branch-row/KirkV4GeneralizedBranchRow.lean
+
+      - name: Submit to Lean compile farm
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          path = pathlib.Path('verification/ym-kirk-generalized-branch-row/KirkV4GeneralizedBranchRow.lean')
+          source = path.read_text()
+
+          def read_json(request_or_url, attempts=12, timeout=120):
+              last = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=timeout) as response:
+                          return json.load(response)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
+                      last = error
+                      time.sleep(min(5 * attempt, 60))
+              raise RuntimeError(f'compile-farm retry budget exhausted: {last}')
+
+          request = urllib.request.Request(
+              f'{API}/compile',
+              data=json.dumps({
+                  'name': 'ym-kirk-generalized-branch-row-public',
+                  'lean_source': source,
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          job = read_json(request)
+          job_id = job['id']
+          print('job', job_id, flush=True)
+
+          for poll in range(180):
+              time.sleep(20)
+              try:
+                  job = read_json(f'{API}/jobs/{job_id}', attempts=4, timeout=120)
+              except RuntimeError as error:
+                  print(f'poll {poll}: transient failure: {error}', flush=True)
+                  continue
+              print(f"poll {poll}: {job.get('status')} {job.get('verdict')}", flush=True)
+              if job.get('status') in ('done', 'failed'):
+                  print(json.dumps(job, indent=2), flush=True)
+                  if job.get('verdict') != 'VERIFIED':
+                      raise SystemExit(1)
+                  if job.get('sorry_count') != 0:
+                      raise SystemExit(1)
+                  if job.get('failed_declarations') not in (None, []):
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('compile farm did not return a verdict before timeout')
+          PY
