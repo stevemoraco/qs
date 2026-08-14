@@ -33,6 +33,8 @@ done
 
 python3 - <<'PY'
 from pathlib import Path
+import base64
+import hashlib
 
 parts = [
     'source-xz-b64/part-00.b64',
@@ -47,29 +49,48 @@ parts = [
     'source-xz-b64/part-13.b64',
 ]
 alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
-all_clean = []
-invalid = []
-offset = 0
+clean_parts = []
 for part in parts:
     raw = Path(part).read_text()
     clean = ''.join(ch for ch in raw if not ch.isspace())
     bad = [(i, ch, ord(ch)) for i, ch in enumerate(clean) if ch not in alphabet]
-    print(f'{part}: raw={len(raw)} clean={len(clean)} mod4={len(clean)%4} invalid={len(bad)}')
-    for i, ch, code in bad[:20]:
-        print(f'  invalid local={i} global={offset+i} char={ch!r} codepoint={code}')
-    invalid.extend((part, i, ch, code) for i, ch, code in bad)
-    all_clean.append(clean)
-    offset += len(clean)
-joined = ''.join(all_clean)
-print(f'joined_clean_length={len(joined)} mod4={len(joined)%4} invalid_total={len(invalid)}')
-if invalid:
-    raise SystemExit('invalid base64 characters detected')
-PY
+    if bad:
+        raise SystemExit(f'{part}: invalid base64 character(s): {bad[:20]}')
+    print(f'{part}: raw={len(raw)} clean={len(clean)} mod4={len(clean)%4}')
+    clean_parts.append(clean)
 
-cat "${PARTS[@]}" \
-  | tr -d '\n\r\t ' \
-  | base64 --decode \
-  > MillenniumBraidEverything.lean.xz
+# Failed hosted reconstruction isolated exactly one malformed shard.  The
+# intended shard schedule has five 8,000-character shards, four combined
+# 16,000-character shards, and one 7,164-character tail.  part-02 contains the
+# correct 8,000-character shard followed by an accidental 1,861-character
+# duplicate tail.  We drop only that tail, record its digest, and then require
+# the reconstructed compressed payload and Lean source to match their original
+# independently pinned hashes below.  A wrong repair cannot pass those hashes.
+assert len(clean_parts[0]) == 8000
+assert len(clean_parts[1]) == 8000
+assert len(clean_parts[2]) == 9861
+assert len(clean_parts[3]) == 8000
+assert len(clean_parts[4]) == 8000
+assert all(len(clean_parts[i]) == 16000 for i in range(5, 9))
+assert len(clean_parts[9]) == 7164
+
+part02_prefix = clean_parts[2][:8000]
+part02_extra = clean_parts[2][8000:]
+print(f'part-02 retained_length={len(part02_prefix)}')
+print(f'part-02 dropped_duplicate_tail_length={len(part02_extra)}')
+print('part-02 dropped_duplicate_tail_sha256=' +
+      hashlib.sha256(part02_extra.encode()).hexdigest())
+clean_parts[2] = part02_prefix
+
+joined = ''.join(clean_parts)
+print(f'joined_clean_length={len(joined)} mod4={len(joined)%4}')
+assert len(joined) == 111164
+assert len(joined) % 4 == 0
+payload = base64.b64decode(joined, validate=True)
+Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
+print(f'decoded_xz_bytes={len(payload)}')
+print('decoded_xz_sha256=' + hashlib.sha256(payload).hexdigest())
+PY
 
 echo '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578  MillenniumBraidEverything.lean.xz' \
   | sha256sum --check --strict
