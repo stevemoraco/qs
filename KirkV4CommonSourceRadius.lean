@@ -6,15 +6,15 @@ namespace Millennium.YangMills
 # Cauchy coefficient bounds give one common positive source radius
 
 The manuscript's marked coefficient norm already divides the order-`k`
-derivative by `k!`.  Thus a Cauchy estimate on one source tube has the form
+derivative by `k!`. Thus a Cauchy estimate on one source tube has the form
 
   |a k| <= C / rho^k
 
-for the normalized coefficients.  This file proves that every strictly smaller
+for the normalized coefficients. This file proves that every strictly smaller
 radius gives an absolutely summable weighted coefficient series, and in
 particular that the half-radius is one common positive radius.
 
-This is real infinite-series algebra.  It does not instantiate Kirk's polymer
+This is real infinite-series algebra. It does not instantiate Kirk's polymer
 coefficients or prove Yang--Mills, a mass gap, or a Clay theorem.
 -/
 
@@ -23,7 +23,6 @@ strictly smaller nonnegative radius. -/
 theorem cauchy_coefficients_summable_at_smaller_radius
     (a : ℕ → ℝ)
     (C r rho : ℝ)
-    (hC : 0 ≤ C)
     (hr : 0 ≤ r)
     (hrho : 0 < rho)
     (hrrho : r < rho)
@@ -54,7 +53,6 @@ theorem cauchy_coefficients_summable_at_smaller_radius
 theorem cauchy_coefficients_have_common_positive_radius
     (a : ℕ → ℝ)
     (C rho : ℝ)
-    (hC : 0 ≤ C)
     (hrho : 0 < rho)
     (ha : ∀ k : ℕ, |a k| ≤ C / rho ^ k) :
     ∃ r : ℝ,
@@ -62,15 +60,14 @@ theorem cauchy_coefficients_have_common_positive_radius
       Summable (fun k : ℕ => |a k| * r ^ k) := by
   refine ⟨rho / 2, by linarith, by linarith, ?_⟩
   exact cauchy_coefficients_summable_at_smaller_radius
-    a C (rho / 2) rho hC (by linarith) hrho (by linarith) ha
+    a C (rho / 2) rho (by linarith) hrho (by linarith) ha
 
-/-- The same theorem for a family sharing one Cauchy constant and one tube
-radius: the chosen positive radius is uniform in the family index. -/
+/-- A family sharing one Cauchy constant and one tube radius has one uniform
+positive source radius. -/
 theorem uniform_cauchy_family_has_common_positive_radius
     {ι : Type*}
     (a : ι → ℕ → ℝ)
     (C rho : ℝ)
-    (hC : 0 ≤ C)
     (hrho : 0 < rho)
     (ha : ∀ i : ι, ∀ k : ℕ, |a i k| ≤ C / rho ^ k) :
     ∃ r : ℝ,
@@ -79,7 +76,7 @@ theorem uniform_cauchy_family_has_common_positive_radius
   refine ⟨rho / 2, by linarith, by linarith, ?_⟩
   intro i
   exact cauchy_coefficients_summable_at_smaller_radius
-    (a i) C (rho / 2) rho hC (by linarith) hrho (by linarith) (ha i)
+    (a i) C (rho / 2) rho (by linarith) hrho (by linarith) (ha i)
 
 #print axioms cauchy_coefficients_summable_at_smaller_radius
 #print axioms cauchy_coefficients_have_common_positive_radius
