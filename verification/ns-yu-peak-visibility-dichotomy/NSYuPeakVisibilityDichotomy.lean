@@ -40,7 +40,7 @@ theorem peak_visibility_forces_macroscopic_core_scale
       r ^ 2 * (kappa * r * L) = kappa * (r ^ 3 * L) := by ring
       _ ≤ C * (r ^ 2 * peak) := hchain
       _ = r ^ 2 * (C * peak) := by ring
-  exact (mul_le_mul_left hr2).mp hscaled
+  nlinarith [hscaled]
 
 /-- Once the preceding scale inequality holds, any radius no larger than the
 fixed fraction `kappa*r/(2*C)` lies inside the half-peak Lipschitz core. -/
@@ -59,7 +59,7 @@ theorem fixed_fraction_radius_fits_half_peak_core
       _ ≤ (kappa * r) * L := hmul
       _ = kappa * r * L := by ring
       _ ≤ C * peak := hscale
-  exact (mul_le_mul_left hC).mp hchain
+  nlinarith [hchain]
 
 /-- A Lipschitz lower estimate plus the half-peak radius condition gives a
 uniform high-vorticity core. -/
