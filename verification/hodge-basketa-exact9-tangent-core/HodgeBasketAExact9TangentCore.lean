@@ -10,7 +10,11 @@ It records only the exact torsion arithmetic used by the human geometric reducti
 
 namespace Millennium.Hodge.BasketAExact9TangentCore
 
-/-- In Z/9Z, an element not killed by 3 is an exact order-9 shadow.  Setting
+private theorem nine_smul_zero (q : ZMod 9) : (9 : ZMod 9) * q = 0 := by
+  have h9 : (9 : ZMod 9) = 0 := by norm_num
+  rw [h9, zero_mul]
+
+/-- In Z/9Z, an element not killed by 3 is an exact order-9 shadow. Setting
 `p=4q` gives the divisor relation `2p+q=0`, the nonzero 3-torsion difference
 `p-q=3q`, and shows `p` is not a flex-shadow (`3p != 0`). -/
 theorem exact9_root_pair_arithmetic
@@ -22,15 +26,22 @@ theorem exact9_root_pair_arithmetic
     (3 * (p - q) = 0) ∧
     (3 * p ≠ 0) := by
   dsimp
+  have h9q := nine_smul_zero q
   constructor
-  · ring_nf
+  · calc
+      2 * (4 * q) + q = 9 * q := by ring
+      _ = 0 := h9q
   constructor
-  · ring_nf
+  · ring
   constructor
-  · ring_nf
+  · calc
+      3 * (4 * q - q) = 9 * q := by ring
+      _ = 0 := h9q
   · intro hp
     apply h3
-    simpa using hp
+    calc
+      3 * q = 3 * (4 * q) - 9 * q := by ring
+      _ = 0 := by rw [hp, h9q]; simp
 
 /-- The residual tangent point is distinct from the tangency point: `p=q`
 would force the nonzero 3-torsion class to vanish. -/
@@ -40,11 +51,9 @@ theorem root_points_distinct
     4 * q ≠ q := by
   intro h
   apply h3
-  have : (3 : ZMod 9) * q = 0 := by
-    calc
-      (3 : ZMod 9) * q = 4 * q - q := by ring
-      _ = 0 := sub_eq_zero.mpr h
-  exact this
+  calc
+    (3 : ZMod 9) * q = 4 * q - q := by ring
+    _ = 0 := sub_eq_zero.mpr h
 
 /-- The difference `p-q=3q` is a nonzero 3-torsion class. -/
 theorem difference_is_nonzero_three_torsion
@@ -53,7 +62,10 @@ theorem difference_is_nonzero_three_torsion
     let delta : ZMod 9 := 3 * q
     delta ≠ 0 ∧ 3 * delta = 0 := by
   dsimp
-  exact ⟨h3, by ring_nf⟩
+  refine ⟨h3, ?_⟩
+  calc
+    3 * (3 * q) = 9 * q := by ring
+    _ = 0 := nine_smul_zero q
 
 #print axioms exact9_root_pair_arithmetic
 #print axioms root_points_distinct
