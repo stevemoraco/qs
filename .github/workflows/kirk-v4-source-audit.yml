@@ -35,13 +35,12 @@ jobs:
 
           record_id = '21765806'
           api = f'https://zenodo.org/api/records/{record_id}'
-          headers = {
+          base_headers = {
               'User-Agent': 'stevemoraco-qs-mathematical-source-audit/1.0',
-              'Accept': 'application/json',
           }
 
           def get(url, accept=None):
-              local = dict(headers)
+              local = dict(base_headers)
               if accept is not None:
                   local['Accept'] = accept
               last = None
@@ -55,7 +54,7 @@ jobs:
                       time.sleep(min(2 ** attempt, 30))
               raise RuntimeError(f'failed to fetch {url}: {last}')
 
-          raw, record_final_url = get(api)
+          raw, record_final_url = get(api, 'application/json')
           pathlib.Path('evidence/record.json').write_bytes(raw)
           record = json.loads(raw)
           files = record.get('files', [])
@@ -67,7 +66,7 @@ jobs:
           content_url = links.get('content') or links.get('self')
           if not content_url:
               raise RuntimeError(f'no usable content link; keys={sorted(links)}')
-          payload, content_final_url = get(content_url, 'application/pdf')
+          payload, content_final_url = get(content_url)
           if not payload.startswith(b'%PDF-'):
               raise RuntimeError('downloaded payload is not a PDF')
           declared = item.get('checksum', '')
