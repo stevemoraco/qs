@@ -1,0 +1,57 @@
+name: Hodge q1 a7 NG21 canonical Miranda Lean replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/hodge-q1a7-ng21-canonical-miranda/**'
+      - '.github/workflows/hodge-q1a7-ng21-canonical-miranda.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/hodge-q1a7-ng21-canonical-miranda/R3Q1A7NG21CanonicalMirandaFiniteCore.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)\b|\bnative_decide\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/hodge-q1a7-ng21-canonical-miranda
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/hodge-q1a7-ng21-canonical-miranda
+        run: |
+          set -euo pipefail
+          sha256sum R3Q1A7NG21CanonicalMirandaFiniteCore.lean
+          lake env lean R3Q1A7NG21CanonicalMirandaFiniteCore.lean | tee lean-replay.log
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
