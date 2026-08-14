@@ -69,13 +69,12 @@ theorem dyadic_forward_growth_kernel_bound
     _ = 2 / (2 - c) := by
       have hden : 2 - c ≠ 0 := by linarith
       field_simp [hden]
-      ring
 
 /-- One lag of the reassigned far-field row.  The source-shaped kernel
 `2^{-m}` converts forward growth `c^m` into the effective ratio `(c/2)^m`. -/
 theorem one_lag_forward_growth_bound
     {A Q0 Qm D c : ℝ} {m : ℕ}
-    (hA : 0 ≤ A) (hD : 0 ≤ D) (hQ0 : 0 ≤ Q0)
+    (hA : 0 ≤ A)
     (hQm : Qm ≤ D * c ^ m * Q0) :
     (1 / 2 : ℝ) ^ m * A * Qm ≤
       D * A * Q0 * (c / 2) ^ m := by
@@ -107,7 +106,7 @@ theorem finite_reassigned_row_closure
         ∑ m ∈ Finset.range n, D * A * Q0 * (c / 2) ^ m := by
       apply Finset.sum_le_sum
       intro m hm
-      exact one_lag_forward_growth_bound hA hD hQ0
+      exact one_lag_forward_growth_bound hA
         (hgrowth m (Finset.mem_range.mp hm))
     _ = D * A * Q0 * (∑ m ∈ Finset.range n, (c / 2) ^ m) := by
       rw [Finset.mul_sum]
@@ -126,7 +125,13 @@ theorem critical_growth_cancels_dyadic_kernel (m : ℕ) :
 number of visible lags. -/
 theorem critical_growth_row_is_linear (n : ℕ) :
     (∑ m ∈ Finset.range n, (1 / 2 : ℝ) ^ m * (2 : ℝ) ^ m) = n := by
-  simp [critical_growth_cancels_dyadic_kernel]
+  calc
+    (∑ m ∈ Finset.range n, (1 / 2 : ℝ) ^ m * (2 : ℝ) ^ m) =
+        ∑ _m ∈ Finset.range n, (1 : ℝ) := by
+      apply Finset.sum_congr rfl
+      intro m _
+      exact critical_growth_cancels_dyadic_kernel m
+    _ = n := by simp
 
 /-- In the explicit critical model `A_j=4^{-j}`, `Q_j=2^j`, the diagonal
 product is nevertheless the summable geometric profile `2^{-j}`. -/
