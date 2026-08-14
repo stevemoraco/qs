@@ -1,4 +1,4 @@
-name: Hodge q1a8 C1 finite-pattern replay
+name: Hodge q1a8 finite-core replay
 
 on:
   push:
@@ -6,11 +6,11 @@ on:
       - verification/hodge-q1a8-c1-pattern-finite-20260814
     paths:
       - .github/workflows/hodge-q1a8-c1-pattern-finite.yml
-      - verification/hodge-q1a8-c1-pattern-finite/HodgeQ1A8C1PatternFiniteCore.lean
+      - verification/hodge-q1a8-c1-pattern-finite/*.lean
   pull_request:
     paths:
       - .github/workflows/hodge-q1a8-c1-pattern-finite.yml
-      - verification/hodge-q1a8-c1-pattern-finite/HodgeQ1A8C1PatternFiniteCore.lean
+      - verification/hodge-q1a8-c1-pattern-finite/*.lean
 
 permissions:
   contents: read
@@ -21,13 +21,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Verify flattened Lean theorem sources
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/hodge-q1a8-c1-pattern-finite/HodgeQ1A8C1PatternFiniteCore.lean
-          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
-          SRC="$SRC" python3 - <<'PY'
+          for SRC in verification/hodge-q1a8-c1-pattern-finite/*.lean; do
+            echo "=== $SRC ==="
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+            SRC="$SRC" python3 - <<'PY'
           import json, os, pathlib, urllib.request
           path = pathlib.Path(os.environ['SRC'])
           payload = json.dumps({
@@ -65,3 +66,4 @@ jobs:
               print('::error::AXLE_DIAG=' + json.dumps(diag, separators=(',', ':'))[:6000])
               raise SystemExit(1)
           PY
+          done
