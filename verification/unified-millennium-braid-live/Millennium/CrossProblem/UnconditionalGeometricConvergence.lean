@@ -13,7 +13,7 @@ This file removes "assume the approximation sequence converges" from the
 cross-problem proof architecture.
 
 It proves convergence from an explicit quantitative bound on consecutive
-increments in a complete metric space. It also proves that any closed native
+increments in a complete metric space.  It also proves that any closed native
 admissibility class containing all approximants contains the limit.
 
 This is a convergence theorem, not a proof that any particular Millennium
@@ -23,7 +23,7 @@ approximation scheme satisfies the required increment bound.
 variable {X : Type*} [PseudoMetricSpace X] [CompleteSpace X]
 
 /-- Geometrically decaying consecutive increments force convergence in a
-complete metric space. Convergence is a conclusion, not a hypothesis. -/
+complete metric space.  Convergence is a conclusion, not a hypothesis. -/
 theorem geometric_steps_tendsto
     (u : ℕ → X) (r C : ℝ)
     (hr : r < 1)
