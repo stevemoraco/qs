@@ -28,7 +28,7 @@ namespace NSYuTypeISimultaneousWorkCollapse
 the quadratic scale. -/
 theorem abs_work_le_quadratic_scale
     {σ stress test C H : ℝ}
-    (hC : 0 ≤ C) (hH : 0 ≤ H)
+    (hC : 0 ≤ C)
     (hstress : |stress| ≤ C * σ ^ 2)
     (htest : |test| ≤ H) :
     |stress * test| ≤ C * H * σ ^ 2 := by
@@ -43,16 +43,18 @@ theorem abs_work_le_quadratic_scale
 theorem abs_localized_work_le_quadratic_scale
     {σ stress test volume C H : ℝ}
     (hvolume : 0 ≤ volume)
-    (hC : 0 ≤ C) (hH : 0 ≤ H)
     (hwork : |stress * test| ≤ C * H * σ ^ 2) :
     volume * |stress * test| ≤ volume * C * H * σ ^ 2 := by
-  exact mul_le_mul_of_nonneg_left hwork hvolume
+  calc
+    volume * |stress * test| ≤ volume * (C * H * σ ^ 2) :=
+      mul_le_mul_of_nonneg_left hwork hvolume
+    _ = volume * C * H * σ ^ 2 := by ring
 
 /-- Along any vanishing scale, quadratic raw factors paired with uniformly
 bounded tests have work tending to zero. -/
 theorem quadratic_stress_uniform_test_tendsto_zero
     (σ stress test : ℕ → ℝ) (C H : ℝ)
-    (hC : 0 ≤ C) (hH : 0 ≤ H)
+    (hC : 0 ≤ C)
     (hσ : Tendsto σ atTop (𝓝 0))
     (hstress : ∀ n, |stress n| ≤ C * (σ n) ^ 2)
     (htest : ∀ n, |test n| ≤ H) :
@@ -65,13 +67,14 @@ theorem quadratic_stress_uniform_test_tendsto_zero
         Tendsto (fun _ : ℕ => C * H) atTop (𝓝 (C * H)) :=
       tendsto_const_nhds
     simpa using hconst.mul hsq
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le hquad.neg hquad
-  · intro n
-    exact neg_le_of_abs_le
-      (abs_work_le_quadratic_scale hC hH (hstress n) (htest n))
-  · intro n
-    exact le_of_abs_le
-      (abs_work_le_quadratic_scale hC hH (hstress n) (htest n))
+  have hneg :
+      Tendsto (fun n => -(C * H * (σ n) ^ 2)) atTop (𝓝 0) := by
+    simpa using hquad.neg
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le hneg hquad
+    (fun n => neg_le_of_abs_le
+      (abs_work_le_quadratic_scale hC (hstress n) (htest n)))
+    (fun n => le_of_abs_le
+      (abs_work_le_quadratic_scale hC (hstress n) (htest n)))
 
 /-- Reciprocal amplification exactly cancels a nonzero quadratic raw factor. -/
 theorem quadratic_raw_factor_reciprocal_test_unit_work
@@ -93,11 +96,9 @@ theorem arbitrarily_small_scale_can_keep_unit_work
   · linarith
   · exact quadratic_raw_factor_reciprocal_test_unit_work (by linarith)
 
-/-- A strict positive work floor is incompatible with a quadratic upper bound
-once the scale itself is smaller than the explicit margin. -/
+/-- A strict positive work floor is incompatible with a quadratic upper bound. -/
 theorem quadratic_work_floor_forces_scale_floor
     {δ σ C H work : ℝ}
-    (hδ : 0 < δ) (hC : 0 ≤ C) (hH : 0 ≤ H)
     (hlow : δ ≤ |work|)
     (hup : |work| ≤ C * H * σ ^ 2) :
     δ ≤ C * H * σ ^ 2 := by
