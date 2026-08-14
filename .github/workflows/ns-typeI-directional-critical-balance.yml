@@ -67,6 +67,29 @@ jobs:
           print(json.dumps(result, indent=2))
           PY
 
+      - name: Publish AXLE diagnostics
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          p = pathlib.Path('verification/ns-typeI-directional-critical-balance/axle-response.json')
+          if not p.exists():
+              print('AXLE response missing')
+          else:
+              r = json.loads(p.read_text())
+              print('```json')
+              print(json.dumps({
+                  'okay': r.get('okay'),
+                  'lean_errors': r.get('lean_messages', {}).get('errors', []),
+                  'lean_warnings': r.get('lean_messages', {}).get('warnings', []),
+                  'tool_errors': r.get('tool_messages', {}).get('errors', []),
+                  'tool_warnings': r.get('tool_messages', {}).get('warnings', []),
+                  'failed_declarations': r.get('failed_declarations', []),
+              }, indent=2))
+              print('```')
+          PY
+
       - name: Enforce compiler verdict
         shell: bash
         run: |
