@@ -1,0 +1,105 @@
+name: Unified Millennium braid v2 AXLE replay
+
+on:
+  push:
+    branches:
+      - verification/unified-millennium-braid-v2-axle-20260813-gpt56
+    paths:
+      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean'
+      - '.github/workflows/unified-millennium-braid-v2-axle.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean'
+      - '.github/workflows/unified-millennium-braid-v2-axle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(stripped)
+          if m: raise SystemExit(f'forbidden token: {m.group(2)}')
+          if 'Lean.ofReduceBool' in stripped or 'native_decide' in stripped:
+              raise SystemExit('forbidden proof shortcut')
+          if stripped.count('#print axioms') < 10:
+              raise SystemExit('expected broad axiom-report coverage')
+          print('trust preflight clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/unified-millennium-braid-v2/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean')
+          payload = json.dumps({
+              'content': p.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type':'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          out = pathlib.Path('verification/unified-millennium-braid-v2/evidence/axle-response.json')
+          out.write_text(json.dumps(result, indent=2, sort_keys=True))
+          summary = {
+              'okay': result.get('okay'),
+              'failed_declarations': result.get('failed_declarations', []),
+              'lean_errors': result.get('lean_messages', {}).get('errors', []),
+              'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+              'tool_errors': result.get('tool_messages', {}).get('errors', []),
+              'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+          }
+          print(json.dumps(summary, indent=2))
+          if not result.get('okay'): raise SystemExit(1)
+          if result.get('failed_declarations'): raise SystemExit(1)
+          if result.get('lean_messages', {}).get('errors'): raise SystemExit(1)
+          if result.get('tool_messages', {}).get('errors'): raise SystemExit(1)
+          PY
+
+      - name: Record exact source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean \
+            | tee verification/unified-millennium-braid-v2/evidence/source.sha256
+          git hash-object verification/unified-millennium-braid-v2/MillenniumGrandBraidExecutableV2.lean \
+            | tee verification/unified-millennium-braid-v2/evidence/source.git-blob
+          git rev-parse HEAD | tee verification/unified-millennium-braid-v2/evidence/commit.txt
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-v2-axle-evidence
+          path: verification/unified-millennium-braid-v2/evidence/
+          if-no-files-found: warn
