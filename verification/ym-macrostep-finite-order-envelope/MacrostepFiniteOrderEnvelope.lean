@@ -85,7 +85,9 @@ theorem macrostep_fixed_order_exponential_envelope
           ((6 * B) ^ n) ^ 3 = (6 * B) ^ n * (6 * B) ^ n * (6 * B) ^ n := by ring
           _ = (6 * B) ^ (n + n) * (6 * B) ^ n := by rw [pow_add]
           _ = (6 * B) ^ ((n + n) + n) := by rw [← pow_add]
-          _ = (6 * B) ^ (3 * n) := by congr 1 <;> omega
+          _ = (6 * B) ^ (3 * n) := by
+            congr 1
+            omega
       constructor
       · calc
           d1 (n + 1) ≤ B * d1 n := hstep1 n
@@ -147,7 +149,9 @@ theorem macrostep_envelope_is_polynomial_in_dyadic_length
   calc
     (6 * B) ^ (m * n) ≤ ((2 : ℝ) ^ q) ^ (m * n) := hpow
     _ = (2 : ℝ) ^ (q * (m * n)) := by rw [← pow_mul]
-    _ = (2 : ℝ) ^ (n * (m * q)) := by congr 1 <;> ring
+    _ = (2 : ℝ) ^ (n * (m * q)) := by
+      congr 1
+      ring
     _ = ((2 : ℝ) ^ n) ^ (m * q) := by rw [pow_mul]
 
 #print axioms macrostep_fixed_order_exponential_envelope
