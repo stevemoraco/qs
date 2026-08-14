@@ -73,6 +73,21 @@ theorem unit_of_equal_finite_value
     IsUnit stableValue := by
   simpa [h] using hfinite
 
+/-- If the approximation error is divisible by a modulus but the finite value
+is not, the limiting value cannot vanish. This is the exact divisibility core
+of the finite derivative certificate. -/
+theorem stable_nonzero_of_dvd_error_not_dvd_finite
+    {modulus finiteValue stableValue : ℤ}
+    (herror : modulus ∣ stableValue - finiteValue)
+    (hfinite : ¬ modulus ∣ finiteValue) :
+    stableValue ≠ 0 := by
+  intro hzero
+  subst stableValue
+  apply hfinite
+  rcases herror with ⟨q, hq⟩
+  refine ⟨-q, ?_⟩
+  omega
+
 /-- A rank lower bound and a signed-Iwasawa upper bound squeeze the rank exactly
 when they coincide. -/
 theorem exact_rank_of_matching_bounds
@@ -137,6 +152,7 @@ theorem rank_one_pBSD_chain
 #print axioms all_critical_values_equal_initial
 #print axioms nonzero_of_equal_finite_value
 #print axioms unit_of_equal_finite_value
+#print axioms stable_nonzero_of_dvd_error_not_dvd_finite
 #print axioms exact_rank_of_matching_bounds
 #print axioms positive_factor_count_le_total_order
 #print axioms at_most_one_positive_factor_of_total_order_one
