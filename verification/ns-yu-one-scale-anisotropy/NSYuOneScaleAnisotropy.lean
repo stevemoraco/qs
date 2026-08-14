@@ -41,7 +41,6 @@ theorem normalized_horizontal_from_work_defect
     horizontal / r ≤ defect / (r * gamma) := hstep
     _ = (r * defect) / (r ^ 2 * gamma) := by
       field_simp [ne_of_gt hr, ne_of_gt hgamma]
-      ring
 
 /-- Once the normalized affine gap stays positive, small normalized Rayleigh
 work defect gives the exact small horizontal-vorticity currency required by a
