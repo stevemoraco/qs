@@ -59,11 +59,11 @@ theorem geometric_tail_partial_le
     (hq0 : 0 ≤ q)
     (hq1 : q < 1)
     (n : ℕ) :
-    (∑ k in Finset.range n, q ^ (k + 1)) ≤ q / (1 - q) := by
+    (∑ k ∈ Finset.range n, q ^ (k + 1)) ≤ q / (1 - q) := by
   have hd : 0 < 1 - q := sub_pos.mpr hq1
   have hne : 1 - q ≠ 0 := ne_of_gt hd
   have hid :
-      (1 - q) * (∑ k in Finset.range n, q ^ (k + 1)) =
+      (1 - q) * (∑ k ∈ Finset.range n, q ^ (k + 1)) =
         q - q ^ (n + 1) := by
     induction n with
     | zero => simp
@@ -95,8 +95,8 @@ theorem cauchy_nonconstant_tail_tsum_le
     exact mul_nonneg (abs_nonneg _) (pow_nonneg hr (k + 1))
   · intro n
     calc
-      (∑ k in Finset.range n, |a (k + 1)| * r ^ (k + 1)) ≤
-          ∑ k in Finset.range n, C * (r / rho) ^ (k + 1) := by
+      (∑ k ∈ Finset.range n, |a (k + 1)| * r ^ (k + 1)) ≤
+          ∑ k ∈ Finset.range n, C * (r / rho) ^ (k + 1) := by
         apply Finset.sum_le_sum
         intro k _hk
         have hmul := mul_le_mul_of_nonneg_right
@@ -107,7 +107,7 @@ theorem cauchy_nonconstant_tail_tsum_le
           _ = C * (r / rho) ^ (k + 1) := by
             rw [div_pow]
             ring
-      _ = C * (∑ k in Finset.range n, (r / rho) ^ (k + 1)) := by
+      _ = C * (∑ k ∈ Finset.range n, (r / rho) ^ (k + 1)) := by
         rw [Finset.mul_sum]
       _ ≤ C * ((r / rho) / (1 - r / rho)) := by
         exact mul_le_mul_of_nonneg_left
