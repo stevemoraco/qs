@@ -53,10 +53,11 @@ theorem two_sided_exponential_bounds_do_not_identify_rates :
   · intro t ht
     exact exponential_rate_order_gives_bound 1 2 t (by norm_num) ht
 
-/-- Stronger parametric form: every strictly separated pair `0 < r < m`
-admits the source-shaped two-sided bounds with `G(t)=exp(-m*t)`. -/
+/-- Stronger parametric form: every strictly separated pair `r < m` admits
+the source-shaped two-sided bounds with `G(t)=exp(-m*t)`. In particular this
+applies to every physical pair `0 < r < m`. -/
 theorem arbitrary_strict_rate_separation_is_compatible
-    (r m : ℝ) (hr : 0 < r) (hrm : r < m) :
+    (r m : ℝ) (hrm : r < m) :
     ∃ G : ℝ → ℝ,
       (∀ t : ℝ, 0 ≤ t → Real.exp (-m * t) ≤ G t) ∧
       (∀ t : ℝ, 0 ≤ t → G t ≤ Real.exp (-r * t)) := by
