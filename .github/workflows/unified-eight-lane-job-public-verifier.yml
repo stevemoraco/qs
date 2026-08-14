@@ -1,0 +1,134 @@
+name: Unified eight-lane source public replay
+
+on:
+  push:
+    branches:
+      - agent/unified-eight-lane-job-public-verifier-20260813
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/unified-eight-lane/**'
+      - '.github/workflows/unified-eight-lane-job-public-verifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recover and authenticate exact submitted source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          url = ('https://lean-compile-farm.replit.app/api/jobs/'
+                 '0c06ff71-3b3e-41e3-909d-b42cad9dae46')
+          expected = '10be2b046540ca13b52f0dbb95f2156f40ba83cd7b794e75035be8b65225cfd7'
+          last = None
+          for attempt in range(12):
+              try:
+                  with urllib.request.urlopen(url, timeout=120) as response:
+                      job = json.load(response)
+                  break
+              except (TimeoutError, urllib.error.URLError,
+                      urllib.error.HTTPError, OSError) as error:
+                  last = error
+                  time.sleep(min(5 * (attempt + 1), 60))
+          else:
+              raise SystemExit(f'cannot retrieve canonical job: {last}')
+
+          source = job.get('lean_source')
+          if not isinstance(source, str) or not source:
+              raise SystemExit('canonical job did not return lean_source')
+          actual = hashlib.sha256(source.encode()).hexdigest()
+          print('canonical_job_status=', job.get('status'))
+          print('canonical_job_verdict=', job.get('verdict'))
+          print('expected_sha256=', expected)
+          print('actual_sha256=', actual)
+          if actual != expected:
+              raise SystemExit('canonical source digest mismatch')
+          directory = pathlib.Path('formal/unified-eight-lane')
+          path = directory / 'UnifiedMillenniumPerelmanInversionAudit.lean'
+          path.write_text(source)
+          (directory / 'source-sha256.txt').write_text(actual + '\n')
+          (directory / 'canonical-job.json').write_text(json.dumps(job, indent=2))
+          PY
+
+      - name: Static trust audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/unified-eight-lane/UnifiedMillenniumPerelmanInversionAudit.lean'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+          theorem_count="$(grep -c '^theorem ' "$file")"
+          axiom_count="$(grep -c '^#print axioms ' "$file")"
+          echo "theorem_count=$theorem_count"
+          echo "axiom_report_count=$axiom_count"
+          test "$theorem_count" -ge 30
+          test "$axiom_count" -ge 25
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='formal/unified-eight-lane'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean UnifiedMillenniumPerelmanInversionAudit.lean \
+            > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED unified eight-lane finite audit.'
+
+      - name: Preserve exact replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-eight-lane-public-evidence
+          path: |
+            formal/unified-eight-lane/UnifiedMillenniumPerelmanInversionAudit.lean
+            formal/unified-eight-lane/source-sha256.txt
+            formal/unified-eight-lane/canonical-job.json
+            formal/unified-eight-lane/lean-version.txt
+            formal/unified-eight-lane/lean-output.log
+          if-no-files-found: warn
