@@ -1,0 +1,142 @@
+name: Unified federated public PR Lean bank
+
+on:
+  push:
+    branches:
+      - agent/unified-millennium-federated-public-pr-corpus-20260813-gpt56pro
+    paths:
+      - 'verification/federated-public-pr-bank/**'
+      - 'verification/unified-exhaustive-bank/**'
+      - '.github/workflows/unified-federated-public-pr-bank.yml'
+  pull_request:
+    paths:
+      - 'verification/federated-public-pr-bank/**'
+      - 'verification/unified-exhaustive-bank/**'
+      - '.github/workflows/unified-federated-public-pr-bank.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  federate-and-kernel-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch every public pull-request head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune --filter=blob:none origin \
+            '+refs/pull/*/head:refs/remotes/origin/pr/*'
+          git for-each-ref --format='%(objectname) %(refname)' \
+            refs/remotes/origin/pr/ \
+            | tee verification/federated-public-pr-bank/fetched-pr-heads.txt
+          test -s verification/federated-public-pr-bank/fetched-pr-heads.txt
+
+      - name: Materialize one conservative copy of every unique PR-only Lean blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            verification/federated-public-pr-bank/extract_pr_corpus.py
+          python3 verification/federated-public-pr-bank/extract_pr_corpus.py \
+            --repo . \
+            --out verification/federated-public-pr-bank/corpus \
+            --manifest verification/federated-public-pr-bank/federated-pr-manifest.json
+          cat verification/federated-public-pr-bank/federated-extraction-summary.env
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        working-directory: verification/unified-exhaustive-bank
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version \
+            | tee ../federated-public-pr-bank/lean-version.txt
+          lake --version \
+            | tee -a ../federated-public-pr-bank/lean-version.txt
+          lake update
+          lake exe cache get
+
+      - name: Compile maximal compatible cross-PR theorem closure
+        shell: bash
+        working-directory: verification/unified-exhaustive-bank
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export BANK_BASE_LEAN_PATH="$(lake env printenv LEAN_PATH)"
+          mkdir -p "$RUNNER_TEMP/empty-legacy-rh"
+          python3 generate_bank.py \
+            --current-root ../.. \
+            --legacy-root "$RUNNER_TEMP/empty-legacy-rh" \
+            --out ../federated-public-pr-bank/run \
+            --timeout-per-file 60 \
+            --timeout-aggregate 7200
+          cat ../federated-public-pr-bank/run/generated/summary.env
+          source ../federated-public-pr-bank/run/generated/summary.env
+          test "$jointly_imported_modules" -gt 0
+          test "$source_theorem_syntax" -ge 700
+          test "$imported_bank_theorems" -ge 700
+          ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' \
+            ../federated-public-pr-bank/run/generated/unified-compile.log
+
+      - name: Enforce the foundation-only axiom boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path(
+              'verification/federated-public-pr-bank/run/generated/unified-compile.log')
+          text = path.read_text(encoding='utf-8', errors='replace')
+          target = 'UnifiedMillenniumPublicBank.acceptedCorpusKernelBundle'
+          pattern = re.compile(
+              rf"'{re.escape(target)}' depends on axioms:\s*\[(.*?)\]",
+              re.S)
+          match = pattern.search(text)
+          no_axioms = re.search(
+              rf"'{re.escape(target)}' does not depend on any axioms", text)
+          if match:
+              deps = {
+                  part.strip() for part in match.group(1).split(',') if part.strip()
+              }
+          elif no_axioms:
+              deps = set()
+          else:
+              raise SystemExit('acceptedCorpusKernelBundle axiom report missing')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          extra = deps - allowed
+          if extra:
+              raise SystemExit(f'non-foundation axioms: {sorted(extra)}')
+          Path(
+              'verification/federated-public-pr-bank/axiom-report.txt'
+          ).write_text(
+              f'{target}: {sorted(deps)}\n', encoding='utf-8')
+          print(f'{target}: {sorted(deps)}')
+          PY
+
+      - name: Preserve exact federated corpus and kernel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-federated-public-pr-bank-evidence
+          path: |
+            verification/federated-public-pr-bank/fetched-pr-heads.txt
+            verification/federated-public-pr-bank/federated-extraction-summary.env
+            verification/federated-public-pr-bank/federated-pr-manifest.json
+            verification/federated-public-pr-bank/lean-version.txt
+            verification/federated-public-pr-bank/axiom-report.txt
+            verification/federated-public-pr-bank/run/generated/**
+          if-no-files-found: warn
+          retention-days: 90
