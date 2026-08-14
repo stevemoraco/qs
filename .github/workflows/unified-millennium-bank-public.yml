@@ -1,0 +1,97 @@
+name: Unified Millennium bank public replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/unified-millennium-bank/**'
+      - '.github/workflows/unified-millennium-bank-public.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/unified-millennium-bank/UnifiedMillenniumBank.lean'
+          expected='a7d09b000b9aca002a7aa05cc348a3d4d28f3a9b'
+          actual="$(git hash-object "$file")"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/unified-millennium-bank/UnifiedMillenniumBank.lean'
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Submit exact source to Lean compile farm
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          path = pathlib.Path('formal/unified-millennium-bank/UnifiedMillenniumBank.lean')
+          source = path.read_text()
+
+          request = urllib.request.Request(
+              f'{API}/compile',
+              data=json.dumps({
+                  'name': 'unified-millennium-bank-public',
+                  'lean_source': source,
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=120) as response:
+              job = json.load(response)
+          job_id = job['id']
+          print('job', job_id, flush=True)
+
+          for poll in range(180):
+              time.sleep(20)
+              try:
+                  with urllib.request.urlopen(f'{API}/jobs/{job_id}', timeout=120) as response:
+                      job = json.load(response)
+              except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
+                  print(f'poll {poll}: transient failure: {error}', flush=True)
+                  continue
+              print(f"poll {poll}: {job.get('status')} {job.get('verdict')}", flush=True)
+              if job.get('status') in ('done', 'failed'):
+                  pathlib.Path('formal/unified-millennium-bank/result.json').write_text(
+                      json.dumps(job, indent=2))
+                  print(json.dumps(job, indent=2), flush=True)
+                  if job.get('verdict') != 'VERIFIED' or job.get('sorry_count') != 0:
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('compile farm did not return a verdict before timeout')
+          PY
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-bank-${{ github.sha }}
+          path: |
+            formal/unified-millennium-bank/UnifiedMillenniumBank.lean
+            formal/unified-millennium-bank/result.json
+          if-no-files-found: warn
