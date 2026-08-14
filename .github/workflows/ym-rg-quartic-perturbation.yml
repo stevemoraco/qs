@@ -14,27 +14,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch pinned canonical theorem sources
+      - name: Assemble exact mirrored theorem sources
         shell: bash
         run: |
           set -euo pipefail
-          fetch_contents () {
-            local REF="$1"
-            local PATHNAME="$2"
-            local OUT="$3"
-            curl -fsSL \
-              "https://api.github.com/repos/stevemoraco/RH-Lean/contents/${PATHNAME}?ref=${REF}" \
-              | python3 -c 'import base64,json,sys; d=json.load(sys.stdin); sys.stdout.write(base64.b64decode(d["content"]).decode())' \
-              > "$OUT"
-          }
-          fetch_contents \
-            1beb2e35449717fa4ecbc3a5a59ef36d797199da \
-            Millennium/YangMills/RGCubicLocalResidual.lean \
-            /tmp/RGCubicLocalResidual.lean
-          fetch_contents \
-            4ae9cfac2eb6514756659193eb428360c074c55a \
-            Millennium/YangMills/RGQuarticPerturbation.lean \
-            /tmp/RGQuarticPerturbation.lean
+          cp verification/ym-rg-quartic-perturbation/RGCubicLocalResidual.lean /tmp/RGCubicLocalResidual.lean
+          cp verification/ym-rg-quartic-perturbation/RGQuarticPerturbation.lean /tmp/RGQuarticPerturbation.lean
           grep -v '^import Millennium.YangMills.RGCubicLocalResidual$' /tmp/RGQuarticPerturbation.lean > /tmp/RGQuarticPerturbation.body
           cat /tmp/RGCubicLocalResidual.lean /tmp/RGQuarticPerturbation.body > /tmp/Combined.lean
           for SRC in /tmp/RGCubicLocalResidual.lean /tmp/RGQuarticPerturbation.lean /tmp/Combined.lean; do
