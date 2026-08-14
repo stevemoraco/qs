@@ -27,7 +27,7 @@ jobs:
           fi
       - name: Pin latest immutable source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract Lemma 6.30 and every named geometric dependency
+      - name: Extract exact load-bearing geometry sections
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -35,40 +35,49 @@ jobs:
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
           out = Path('source_audit/kirk_v4/lemma630_geometry')
           out.mkdir(parents=True, exist_ok=True)
+
+          def section(start_pat, end_pat, name):
+              s=re.search(start_pat,text,re.I)
+              if not s:
+                  raise SystemExit(f'missing start {start_pat}')
+              e=re.search(end_pat,text[s.end():],re.I)
+              end=s.end()+e.start() if e else min(len(text),s.start()+50000)
+              (out/name).write_text(text[s.start():end],encoding='utf-8')
+
+          section(r'Lemma 6\.17\s*\(', r'Lemma 6\.18\s*\(', 'LEMMA_6_17_EXACT.txt')
+          section(r'Theorem 6\.10\s*\(', r'Corollary 6\.11\s*\(', 'THEOREM_6_10_EXACT.txt')
+          section(r'Lemma 6\.30\s*\(', r'Lemma 6\.31\s*\(', 'LEMMA_6_30_EXACT.txt')
+          section(r'Proposition 6\.8\s*\(', r'Lemma 6\.9\s*\(', 'PROPOSITION_6_8_EXACT.txt')
+
           patterns = [
-            r'Lemma 6\.30', r'\(HT5\)', r'HT5',
-            r'diam A or \|A\|', r'n\(A\)', r'pivot incidence',
-            r'selected pivot', r'original-link pivot', r'multipivot',
-            r'cp R', r'c_p R', r'Lemma 6\.22', r'Lemma 6\.23',
-            r'Lemma 6\.28', r'Lemma 6\.29', r'Lemma 6\.31',
-            r'Proposition 6\.8', r'Lemma 6\.7'
+            r'define[^\n]{0,100}diam', r'diameter', r'tree length', r'tree-length',
+            r'τ\s*\(', r'active set', r'active carrier', r'active paths',
+            r'number of active', r'cardinality[^\n]{0,100}active', r'source order',
+            r'independent of Q', r'cp > 0', r'c_p > 0'
           ]
           ledger=[]
           for pat in patterns:
             hits=list(re.finditer(pat,text,re.I))
-            ledger.append(f'### PATTERN {pat} HITS {len(hits)}')
+            ledger.append(f'### {pat} hits={len(hits)}')
+            for i,m in enumerate(hits[:80],1):
+              ledger.append(f'\n=== hit {i} offset {m.start()} ===\n')
+              ledger.append(text[max(0,m.start()-3500):min(len(text),m.start()+7000)])
+          (out/'DEFINITION_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
+
+          # Keep prior broad contexts too.
+          broad=[]
+          for pat in [r'Lemma 6\.30',r'HT5',r'diam A or \|A\|',r'selected pivot',r'multipivot']:
+            hits=list(re.finditer(pat,text,re.I))
+            broad.append(f'### {pat} HITS {len(hits)}')
             for j,m in enumerate(hits[:40],1):
-              ledger.append(f'\n=== {pat} hit {j} offset {m.start()} ===\n')
-              ledger.append(text[max(0,m.start()-5000):min(len(text),m.start()+10000)])
-          (out/'TARGETED_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
-          key_hits=[]
-          for pat in [r'HT5', r'diam A or \|A\|', r'c.?p\s*R\s*\(n\(A\)\s*[-−]\s*1\)']:
-            key_hits.extend(re.finditer(pat,text,re.I))
-          key_hits=sorted(key_hits,key=lambda m:m.start())
-          chunks=[]
-          for i,m in enumerate(key_hits,1):
-            chunks.append(f'\n===== KEY HIT {i} offset {m.start()} =====\n')
-            chunks.append(text[max(0,m.start()-14000):min(len(text),m.start()+18000)])
-          (out/'KEY_GEOMETRY_CONTEXTS.txt').write_text('\n'.join(chunks),encoding='utf-8')
-          summary = {
-            'lemma_6_30_hits': len(re.findall(r'Lemma 6\.30', text)),
-            'HT5_hits': len(re.findall(r'HT5', text)),
-            'support_bound_hits': len(re.findall(r'diam A or \|A\|', text)),
-            'selected_pivot_hits': len(re.findall(r'selected pivot', text, re.I)),
-            'multipivot_hits': len(re.findall(r'multipivot', text, re.I)),
-          }
-          (out/'SUMMARY.txt').write_text('\n'.join(f'{k}={v}' for k,v in summary.items())+'\n',encoding='utf-8')
-          print(summary)
+              broad.append(f'\n=== hit {j} offset {m.start()} ===\n')
+              broad.append(text[max(0,m.start()-5000):min(len(text),m.start()+10000)])
+          (out/'TARGETED_CONTEXTS.txt').write_text('\n'.join(broad),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text(
+              f"lemma_6_30_hits={len(re.findall(r'Lemma 6\\.30',text))}\n"
+              f"HT5_hits={len(re.findall(r'HT5',text))}\n"
+              f"support_bound_hits={len(re.findall(r'diam A or \\|A\\|',text))}\n",
+              encoding='utf-8')
           PY
       - name: Preserve immutable contexts
         run: |
@@ -77,5 +86,5 @@ jobs:
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/lemma630_geometry
-          git commit -m 'audit(ym): preserve Lemma 6.30 geometry contexts'
+          git commit -m 'audit(ym): preserve exact Lemma 6.17/6.30 geometry sections'
           git push origin HEAD:verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
