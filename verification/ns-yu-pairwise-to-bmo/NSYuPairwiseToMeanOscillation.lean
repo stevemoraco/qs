@@ -73,12 +73,8 @@ theorem two_point_mean_oscillation_eq_pairwise
     |x - (x + y) / 2| + |y - (x + y) / 2| = |x - y| := by
   have hx : x - (x + y) / 2 = (x - y) / 2 := by ring
   have hy : y - (x + y) / 2 = -(x - y) / 2 := by ring
-  have habs : |y - x| = |x - y| := by
-    have hneg : y - x = -(x - y) := by ring
-    rw [hneg, abs_neg]
-  rw [hx, hy]
-  simp only [abs_div, abs_neg, abs_ofNat]
-  rw [habs]
+  have htwo : |(2 : ℝ)| = 2 := abs_of_pos (by norm_num)
+  rw [hx, hy, abs_div, abs_div, abs_neg, htwo]
   ring
 
 /-- On a high-vorticity core, Yu's magnitude weight
