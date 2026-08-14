@@ -26,16 +26,18 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Verify exact source and trust gate
+      - name: Verify exact sources and trust gate
         shell: bash
         run: |
           set -euo pipefail
-          file=BSDSignedAugmentationRigidity.lean
-          test "$(git hash-object "$file")" = "c4924d54355991057c3d3d8d20e7678e61c265b1"
-          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
-            echo "Forbidden token found"
-            exit 1
-          fi
+          test "$(git hash-object BSDSignedAugmentationRigidity.lean)" = "c4924d54355991057c3d3d8d20e7678e61c265b1"
+          test "$(git hash-object BSDPointFreeSignedDerivative.lean)" = "f5578954e848bcdd14f6b956e649edd5ee437d28"
+          for file in BSDSignedAugmentationRigidity.lean BSDPointFreeSignedDerivative.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+              echo "Forbidden token found in $file"
+              exit 1
+            fi
+          done
 
       - name: Install elan
         shell: bash
@@ -52,11 +54,12 @@ jobs:
           lake update
           lake exe cache get
 
-      - name: Kernel-check exact source
+      - name: Kernel-check exact sources
         shell: bash
         run: |
           set -euo pipefail
           lake env lean BSDSignedAugmentationRigidity.lean 2>&1 | tee lean-output.txt
+          lake env lean BSDPointFreeSignedDerivative.lean 2>&1 | tee -a lean-output.txt
           if grep -q 'sorryAx' lean-output.txt; then
             echo "sorryAx found in axiom report"
             exit 1
@@ -75,8 +78,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bsd-signed-augmentation-rigidity-replay
+          name: bsd-signed-point-free-rank-one-replay
           path: |
             verification/bsd_signed_augmentation/BSDSignedAugmentationRigidity.lean
+            verification/bsd_signed_augmentation/BSDPointFreeSignedDerivative.lean
             verification/bsd_signed_augmentation/lean-output.txt
           if-no-files-found: warn
