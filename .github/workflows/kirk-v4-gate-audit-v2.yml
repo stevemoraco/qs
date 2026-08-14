@@ -1,0 +1,51 @@
+name: Kirk v4 physical-scale gate audit v2
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/kirk-v4-gate-audit-v2.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: read
+
+jobs:
+  v4-gate-audit-v2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin and extract immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract load-bearing contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          targets=['Corollary 6.5','Lemma 8.2','Theorem 8.9','Corollary 8.12','Theorem 8.15','Theorem 8.46','Theorem 9.1','Lemma 9.2','Theorem 9.3','Theorem 10.2','Theorem 10.5','Lemma 10.6','Corollary 10.7','Theorem 11.1','dimensional transmutation','matching length','physical rate','asymptotic freedom','Lambda','Λ']
+          out=[]; low=text.lower()
+          for target in targets:
+            start=0
+            for hit in range(5):
+              i=low.find(target.lower(),start)
+              if i<0: break
+              s=' '.join(text[max(0,i-1000):min(len(text),i+2200)].split())
+              out.append(f'=== {target} hit {hit+1} ===\n{s}\n')
+              start=i+len(target)
+          Path('kirk_v4_gate_contexts.txt').write_text('\n'.join(out),encoding='utf-8')
+          print('\n'.join(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-physical-scale-gate-contexts-v2
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_gate_contexts.txt
