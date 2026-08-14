@@ -72,15 +72,24 @@ jobs:
           if not p.exists():
               raise SystemExit('missing AXLE response')
           r = json.loads(p.read_text())
-          bad = not r.get('okay')
-          for group in ('lean_messages','tool_messages'):
-              for kind in ('errors','warnings'):
-                  if r.get(group, {}).get(kind, []): bad = True
-          if r.get('failed_declarations', []): bad = True
-          rendered = json.dumps(r, sort_keys=True)
-          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered: bad = True
+          lean = r.get('lean_messages', {})
+          tool = r.get('tool_messages', {})
+          compact = {
+              'okay': r.get('okay'),
+              'lean_errors': lean.get('errors', []),
+              'lean_warnings': lean.get('warnings', []),
+              'tool_errors': tool.get('errors', []),
+              'tool_warnings': tool.get('warnings', []),
+              'failed_declarations': r.get('failed_declarations', []),
+          }
+          rendered_full = json.dumps(r)
+          compact['forbidden_postcompile'] = ('sorryAx' in rendered_full or 'Lean.ofReduceBool' in rendered_full)
+          bad = (not compact['okay'] or compact['lean_errors'] or compact['lean_warnings'] or
+                 compact['tool_errors'] or compact['tool_warnings'] or
+                 compact['failed_declarations'] or compact['forbidden_postcompile'])
           if bad:
-              print('::error title=AXLE diagnostic::' + rendered.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
+              msg = json.dumps(compact, sort_keys=True)
+              print('::error title=AXLE compact diagnostic::' + msg.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
               raise SystemExit(1)
           print('VERIFIED CLEAN')
           PY
