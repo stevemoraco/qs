@@ -19,8 +19,7 @@ theorem linear_wrapping_is_allowed_by_first_order_schedule
   · nlinarith [mul_le_mul_of_nonneg_right hk1 hu]
 
 theorem first_order_wrapping_schedule_does_not_fix_cubic
-    (u b c : ℝ)
-    (hu : 0 ≤ u) :
+    (u b c : ℝ) :
     u ≤ u ∧
     u + b * u^2 + c * u^3 + u * u^2 =
       u + b * u^2 + (c + 1) * u^3 := by
@@ -30,7 +29,6 @@ theorem first_order_wrapping_schedule_does_not_fix_cubic
 
 theorem second_order_wrapping_is_quartic
     (u δ D : ℝ)
-    (hD : 0 ≤ D)
     (hδ : |δ| ≤ D * u^2) :
     |δ * u^2| ≤ D * u^4 := by
   have hu2 : 0 ≤ u^2 := sq_nonneg u
