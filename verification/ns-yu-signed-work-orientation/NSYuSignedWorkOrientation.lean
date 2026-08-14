@@ -30,6 +30,7 @@ def orientedObservable (c k : ι → ℝ) (i : ι) : ℝ :=
 def orientedVisibleWeight (c k : ι → ℝ) (κ : ℝ) : ℝ :=
   ∑ i, if κ < orientedObservable c k i then |c i| else 0
 
+omit [Fintype ι] in
 /-- Pointwise polar decomposition over the reals. -/
 theorem abs_mul_orientedObservable
     (c k : ι → ℝ) (i : ι) :
@@ -50,6 +51,7 @@ theorem signed_work_eq_totalVariation_oriented
   intro i _hi
   exact (abs_mul_orientedObservable c k i).symm
 
+omit [Fintype ι] in
 /-- An absolute bound on the original angular observable survives orientation. -/
 theorem orientedObservable_le_of_abs_le
     (c k : ι → ℝ) (M : ℝ)
