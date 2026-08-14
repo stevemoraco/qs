@@ -32,8 +32,6 @@ or regularity/blow-up.
 
 namespace NSYuLogarithmicSequenceThreshold
 
-/-- The canonical exponents attached to positive logarithmic gains are
-conjugate, are both bigger than one, and equalize the two p-series powers. -/
 theorem canonical_conjugate_exponents
     {alpha beta : ℝ} (ha : 0 < alpha) (hb : 0 < beta) :
     let p := (alpha + beta) / alpha
@@ -57,12 +55,9 @@ theorem canonical_conjugate_exponents
     linarith
   refine ⟨hp, hq, hp1, hq1, ?_, ?_, ?_⟩
   · field_simp [ha0, hb0, hs0]
-    ring
   · field_simp [ha0]
   · field_simp [hb0]
 
-/-- If the total logarithmic gain is supercritical, the canonical conjugate
-exponents put both model p-series powers strictly above one. -/
 theorem total_gain_constructs_summable_exponents
     {alpha beta : ℝ} (ha : 0 < alpha) (hb : 0 < beta)
     (hs : 1 < alpha + beta) :
@@ -78,8 +73,6 @@ theorem total_gain_constructs_summable_exponents
     by simpa [halpha] using hs,
     by simpa [hbeta] using hs⟩
 
-/-- Conversely, any positive conjugate exponents that make both logarithmic
-p-series powers strictly summable force total logarithmic gain above one. -/
 theorem summable_conjugate_exponents_force_total_gain
     {alpha beta p q : ℝ}
     (hp : 0 < p) (hq : 0 < q)
@@ -95,8 +88,6 @@ theorem summable_conjugate_exponents_force_total_gain
     simpa [mul_comm] using hbeta
   linarith
 
-/-- Sharp scalar compatibility threshold for distributing logarithmic decay
-between Yu's two conjugate sequence reservoirs. -/
 theorem total_log_gain_iff_conjugate_summability_window
     {alpha beta : ℝ} (ha : 0 < alpha) (hb : 0 < beta) :
     1 < alpha + beta ↔
