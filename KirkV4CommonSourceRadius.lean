@@ -70,12 +70,10 @@ theorem geometric_tail_partial_le
     | succ n ih =>
         rw [Finset.sum_range_succ, mul_add, ih]
         ring
-  apply (mul_le_mul_left hd).mp
-  rw [hid]
   have hright : (1 - q) * (q / (1 - q)) = q := by
     field_simp [hne]
-  rw [hright]
-  exact sub_le_self q (pow_nonneg hq0 (n + 1))
+  have hp : 0 ≤ q ^ (n + 1) := pow_nonneg hq0 (n + 1)
+  nlinarith
 
 /-- Explicit bound on the nonconstant weighted source tail. -/
 theorem cauchy_nonconstant_tail_tsum_le
