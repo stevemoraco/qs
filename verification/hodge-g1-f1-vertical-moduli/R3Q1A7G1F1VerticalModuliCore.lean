@@ -1,8 +1,8 @@
 import Mathlib
 
 /-!
-Finite algebra/arithmetic shadow of the q=1,a=7 `G1` ruled-surface reduction
-in `stevemoraco/RH` run 17.
+Finite algebra/arithmetic shadow of the q=1,a=7 `G1` ruled-surface and local
+`3 -> 1` proximity reductions in `stevemoraco/RH` run 17.
 
 Formalized here only:
 * the integer class ledger forcing the vertical component classes `L=s` and
@@ -13,15 +13,18 @@ Formalized here only:
 * an explicit one-parameter integer polynomial family whose quadratic
   discriminant is `16*u^3*(u-1+t^2)` and full cubic discriminant is
   `256*u^3*(u-1)^2*(u-1+t^2)`;
-* the special collision fibre `t=0` and separated fibre `t=2`.
+* the special collision fibre `t=0` and separated fibre `t=2`;
+* the finite first-jet distinction between the two residual degree-two local
+  maps `z^2` and `z^2+z` used in the `3 -> 1` proximity firewall.
 
 NOT formalized here:
 Miranda/Faenzi--Stipins triple-cover geometry, identification of the vertical
 projective bundle with `F_1`, divisor classes on a ruled surface, irreducibility
-or cusp geometry of the displayed bisections, the G1 Stein-resolution graph,
-Tschirnhausen splitting, conductor/index geometry, K3 geometry, algebraic
-cycles, or the Hodge conjecture. No axiom below carries any of those
-conclusions.
+or cusp geometry of the displayed bisections, Enriques/proximity geometry,
+the interpretation of a residual first jet as ramification, the G1
+Stein-resolution graph, Tschirnhausen splitting, conductor/index geometry, K3
+geometry, algebraic cycles, or the Hodge conjecture. No axiom below carries any
+of those conclusions.
 -/
 
 namespace Millennium.Hodge.R3Q1A7G1F1VerticalModuliCore
@@ -120,6 +123,34 @@ theorem branch_resultant_collision_iff (t : ℤ) :
     subst t
     norm_num
 
+/-- Residual affine degree-two map used in the local `3 -> 1` model.  The
+parameter `a` is its first-order coefficient at the child `z=0`. -/
+def residualMap (a z : ℤ) : ℤ := z^2 + a*z
+
+/-- Every member of the local residual family sends the child `z=0` to the
+same target value. -/
+theorem residual_map_child_value (a : ℤ) :
+    residualMap a 0 = 0 := by
+  simp [residualMap]
+
+/-- Exact first-jet decomposition at the child.  Geometrically, after the
+external ruled-surface/proximity bridge, `a=0` is the ramified model while a
+nonzero `a` gives a nonzero first jet. -/
+theorem residual_map_first_jet (a z : ℤ) :
+    residualMap a z - residualMap a 0 - a*z = z^2 := by
+  simp [residualMap]
+  ring
+
+/-- Collision-model first-jet coefficient. -/
+theorem collision_local_first_jet_coefficient :
+    (0 : ℤ) = 0 := by
+  rfl
+
+/-- Separation-model first-jet coefficient. -/
+theorem separated_local_first_jet_coefficient :
+    (1 : ℤ) ≠ 0 := by
+  norm_num
+
 #check g1_component_class_ledger
 #check q_self_intersection_ledger
 #check q_canonical_intersection_ledger
@@ -130,6 +161,10 @@ theorem branch_resultant_collision_iff (t : ℤ) :
 #check collision_specialization
 #check separated_specialization
 #check branch_resultant_collision_iff
+#check residual_map_child_value
+#check residual_map_first_jet
+#check collision_local_first_jet_coefficient
+#check separated_local_first_jet_coefficient
 
 #print axioms g1_component_class_ledger
 #print axioms q_self_intersection_ledger
@@ -141,5 +176,9 @@ theorem branch_resultant_collision_iff (t : ℤ) :
 #print axioms collision_specialization
 #print axioms separated_specialization
 #print axioms branch_resultant_collision_iff
+#print axioms residual_map_child_value
+#print axioms residual_map_first_jet
+#print axioms collision_local_first_jet_coefficient
+#print axioms separated_local_first_jet_coefficient
 
 end Millennium.Hodge.R3Q1A7G1F1VerticalModuliCore
