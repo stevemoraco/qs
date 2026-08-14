@@ -41,36 +41,36 @@ jobs:
             ('theorem_4_29','Theorem 4.29'),('theorem_4_30','Theorem 4.30'),
             ('theorem_5_1','Theorem 5.1'),('lemma_5_20','Lemma 5.20'),
             ('theorem_5_8','Theorem 5.8'),('lemma_6_12','Lemma 6.12'),
-            ('theorem_6_39','Theorem 6.39'),('theorem_6_43','Theorem 6.43'),
-            ('theorem_6_44','Theorem 6.44'),('lemma_8_2','Lemma 8.2'),
-            ('lemma_8_5','Lemma 8.5')]
+            ('lemma_6_34','Lemma 6.34'),('lemma_6_35','Lemma 6.35'),
+            ('lemma_6_36','Lemma 6.36'),('lemma_6_37','Lemma 6.37'),
+            ('lemma_6_38','Lemma 6.38'),('theorem_6_39','Theorem 6.39'),
+            ('theorem_6_43','Theorem 6.43'),('theorem_6_44','Theorem 6.44'),
+            ('lemma_8_2','Lemma 8.2'),('lemma_8_5','Lemma 8.5')]
           outdir=Path('source_audit/kirk_v4/connector'); outdir.mkdir(parents=True,exist_ok=True)
           summary=[]
           for slug,target in targets:
               m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
               if not m:
-                  # Some numbers may be propositions/theorems rather than lemmas.
                   m=re.search(r'(?m)^\s*(?:Lemma|Theorem|Proposition|Corollary)\s+'+re.escape(target.split()[-1])+r'\b.*$',text)
               if not m:
                   summary.append(f'{target}: NOT FOUND')
                   continue
-              start=max(0,m.start()-1200); end=min(len(text),m.start()+9000)
+              start=max(0,m.start()-1800); end=min(len(text),m.start()+13000)
               chunk=text[start:end]
               (outdir/f'{slug}.txt').write_text(chunk,encoding='utf-8')
               summary.append(f'{target}: offset {m.start()}, chars {len(chunk)}')
-          phrases=['nonlocal rows obey','Clong','δD','deltaD','long row','short row',
-                   'local/nonlocal separation','localization commutator','reported nonlocal',
-                   'joint Haar','Haar–optical','Haar-optical','optical connector','macrobridge',
-                   'strict rooted-support','m_E','equation (103)','(103)','equation (208)','(208)']
+          phrases=['condition (84)','(84)','condition (95)','(95)','condition (96)','(96)',
+                   'qsp','q_sp','nuclear cost','incidence reserve','covered-pivot','coverage word',
+                   'physical cycles','shared tails','multi-pivot','nonlocal rows obey','Clong','δD','deltaD']
           ledger=[]; low=text.lower()
           for phrase in phrases:
               pos=0
-              for hit in range(10):
+              for hit in range(16):
                   i=low.find(phrase.lower(),pos)
                   if i<0: break
-                  ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-1800):min(len(text),i+5200)]+'\n')
+                  ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-2500):min(len(text),i+7000)]+'\n')
                   pos=i+len(phrase)
-          (outdir/'nonlocal_supplier_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (outdir/'compact_nuclear_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
           (outdir/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
           print('\n'.join(summary))
           PY
@@ -81,7 +81,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): expose Kirk v4 nonlocal macrostep supplier chain'
+          git commit -m 'audit(ym): preserve Kirk v4 compact nuclear collect spine'
           git push origin HEAD:verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
       - uses: actions/upload-artifact@v4
         with:
