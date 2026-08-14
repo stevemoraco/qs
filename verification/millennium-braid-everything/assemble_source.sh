@@ -21,6 +21,12 @@ for part in "${PARTS[@]}"; do
   test -s "$part"
 done
 
+(
+  cd source-xz-b64
+  sha256sum --check --strict SHA256SUMS
+  wc -c part-*.b64
+)
+
 cat "${PARTS[@]}" \
   | tr -d '\n\r\t ' \
   | base64 --decode \
