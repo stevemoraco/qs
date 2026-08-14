@@ -1,0 +1,60 @@
+name: PNP linear front-end classifier lower bound
+
+on:
+  pull_request:
+    branches:
+      - main
+      - agent/pnp-axis-classifier-firewall-20260814
+    paths:
+      - 'verification/pnp-linear-syndrome-factor-two/PNPLinearFrontEndClassifier.lean'
+      - 'verification/pnp-linear-syndrome-factor-two/lakefile.toml'
+      - 'verification/pnp-linear-syndrome-factor-two/lean-toolchain'
+      - '.github/workflows/pnp-linear-front-end-classifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/pnp-linear-syndrome-factor-two/PNPLinearFrontEndClassifier.lean'
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden proof hole or trust escape found.'
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        working-directory: verification/pnp-linear-syndrome-factor-two
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile exact source and print axioms
+        working-directory: verification/pnp-linear-syndrome-factor-two
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean PNPLinearFrontEndClassifier.lean 2>&1 | tee /tmp/pnp-linear-front.log
+          if grep -E 'declaration uses.*sorryAx' /tmp/pnp-linear-front.log; then
+            echo 'Unexpected sorry axiom in dependency report.'
+            exit 1
+          fi
