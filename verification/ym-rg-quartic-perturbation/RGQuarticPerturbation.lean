@@ -105,8 +105,8 @@ theorem quartic_perturbation_keeps_half_lower_bound
     have hid : R * u^4 = (R * u^3) * u := by ring
     rw [hid]
     nlinarith
-  have hr_lower : -R * u^4 ≤ r := by
-    exact neg_le_of_abs_le hr
+  have hr_lower0 := neg_le_of_abs_le hr
+  have hr_lower : -R * u^4 ≤ r := by nlinarith
   nlinarith
 
 /-- The reciprocal part of the corrected coordinate changes by `O(u^2)` under
@@ -276,10 +276,12 @@ theorem quartic_perturbation_preserves_quadratic_growth
     calc
       R * u^2 ≤ R * U^2 := mul_le_mul_of_nonneg_left hu2 hR
       _ ≤ b / 2 := hgrowth
-  have hr_lower : -R * u^4 ≤ r := neg_le_of_abs_le hr
+  have hr_lower0 := neg_le_of_abs_le hr
+  have hr_lower : -R * u^4 ≤ r := by nlinarith
   unfold cubicRGStep
+  have hb0 : 0 ≤ b := le_of_lt hb
   have hcu3 : 0 ≤ c * u^3 := by positivity
-  nlinarith [sq_nonneg u]
+  nlinarith [sq_nonneg u, hb0]
 
 #print axioms abs_log_sub_log_le_two_mul_abs_sub_div
 #print axioms quartic_perturbation_keeps_half_lower_bound
