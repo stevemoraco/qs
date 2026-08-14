@@ -1,0 +1,132 @@
+name: Hodge q1 a7 proximity replay
+
+on:
+  push:
+    branches:
+      - automation/hodge-q1a7-proximity-replay-20260814
+    paths:
+      - 'verification/hodge-q1a7-proximity/HodgeR3Q1A7ProximityLedger.lean'
+      - '.github/workflows/hodge-q1a7-proximity-replay.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'verification/hodge-q1a7-proximity/HodgeR3Q1A7ProximityLedger.lean'
+      - '.github/workflows/hodge-q1a7-proximity-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Exact-source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/hodge-q1a7-proximity/HodgeR3Q1A7ProximityLedger.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden_tokens = [r'\bsorry\b', r'\badmit\b', r'\bsorryAx\b',
+                              r'\bnative_decide\b', r'\bLean\.ofReduceBool\b']
+          forbidden_decls = [r'^\s*axiom\b', r'^\s*constant\b',
+                             r'^\s*opaque\b', r'^\s*unsafe\b']
+          for pattern in forbidden_tokens + forbidden_decls:
+              if re.search(pattern, stripped, flags=re.M):
+                  raise SystemExit(f'forbidden source construct: {pattern}')
+          reports = text.count('#print axioms')
+          if reports != 22:
+              raise SystemExit(f'expected 22 axiom reports, found {reports}')
+          print('trust preflight clean; axiom reports=22')
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/hodge-q1a7-proximity/HodgeR3Q1A7ProximityLedger.lean')
+          payload = json.dumps({
+              'content': src.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          out = pathlib.Path('verification/hodge-q1a7-proximity/evidence')
+          out.mkdir(exist_ok=True)
+          (out / 'axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          summary = {
+              'okay': result.get('okay'),
+              'failed_declarations': result.get('failed_declarations', []),
+              'lean_errors': result.get('lean_messages', {}).get('errors', []),
+              'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+              'tool_errors': result.get('tool_messages', {}).get('errors', []),
+              'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+          }
+          (out / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
+          print(json.dumps(summary, indent=2))
+          PY
+
+      - name: Record exact replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/hodge-q1a7-proximity/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner=${RUNNER_NAME}"
+            echo "environment=lean-4.30.0"
+            sha256sum verification/hodge-q1a7-proximity/HodgeR3Q1A7ProximityLedger.lean
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-q1a7-proximity-evidence
+          path: verification/hodge-q1a7-proximity/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/hodge-q1a7-proximity/evidence/summary.json')
+          if not p.exists():
+              raise SystemExit('missing compiler summary')
+          result = json.loads(p.read_text())
+          if result.get('okay') is not True:
+              raise SystemExit('AXLE did not return okay=true')
+          for key in ('failed_declarations', 'lean_errors', 'lean_warnings',
+                      'tool_errors', 'tool_warnings'):
+              if result.get(key):
+                  raise SystemExit(f'{key} is nonempty: {result[key]}')
+          print('HODGE Q1 A7 PROXIMITY LEDGER: VERIFIED WARNING-FREE')
+          PY
