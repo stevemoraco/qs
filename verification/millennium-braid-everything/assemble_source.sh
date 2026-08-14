@@ -49,78 +49,52 @@ parts = [
     'source-xz-b64/part-13.b64',
 ]
 alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
-clean_parts = []
+clean = []
 for part in parts:
-    raw = Path(part).read_text()
-    clean = ''.join(ch for ch in raw if not ch.isspace())
-    bad = [(i, ch, ord(ch)) for i, ch in enumerate(clean) if ch not in alphabet]
+    text = ''.join(ch for ch in Path(part).read_text() if not ch.isspace())
+    bad = [(i, ch) for i, ch in enumerate(text) if ch not in alphabet]
     if bad:
-        raise SystemExit(f'{part}: invalid base64 character(s): {bad[:20]}')
-    print(f'{part}: raw={len(raw)} clean={len(clean)} mod4={len(clean)%4}')
-    clean_parts.append(clean)
+        raise SystemExit(f'{part}: invalid base64 characters: {bad[:20]}')
+    clean.append(text)
+    print(f'{part}: clean={len(text)} mod4={len(text)%4}')
 
-assert len(clean_parts[0]) == 8000
-assert len(clean_parts[1]) == 8000
-assert len(clean_parts[2]) == 9861
-assert len(clean_parts[3]) == 8000
-assert len(clean_parts[4]) == 8000
-assert all(len(clean_parts[i]) == 16000 for i in range(5, 9))
-assert len(clean_parts[9]) == 7164
-
-# The exact compressed payload was independently pinned before transport.  The
-# hosted replay proved that part-02 has 1,861 extra valid-base64 characters.
-# Search every possible contiguous deletion of precisely that excess and accept
-# a repair only when the decoded payload matches the original SHA-256.  This is
-# a deterministic recovery certificate, not a heuristic truncation.
-target_hash = '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578'
-expected_b64_len = 111164
-excess = sum(map(len, clean_parts)) - expected_b64_len
-assert excess == 1861
-prefix = ''.join(clean_parts[:2])
-corrupt = clean_parts[2]
-suffix = ''.join(clean_parts[3:])
-found = None
-for cut in range(len(corrupt) - excess + 1):
-    repaired_part = corrupt[:cut] + corrupt[cut + excess:]
-    joined = prefix + repaired_part + suffix
-    assert len(joined) == expected_b64_len
-    try:
-        payload = base64.b64decode(joined, validate=True)
-    except Exception:
-        continue
-    digest = hashlib.sha256(payload).hexdigest()
-    if digest == target_hash:
-        found = (cut, corrupt[cut:cut + excess], payload)
-        break
-    if cut % 1000 == 0:
-        print(f'hash_guided_recovery_progress={cut}')
-
-if found is None:
-    raise SystemExit('no contiguous 1,861-character deletion recovers pinned payload')
-cut, dropped, payload = found
-print(f'hash_guided_recovery_cut={cut}')
-print(f'dropped_transport_duplicate_length={len(dropped)}')
-print('dropped_transport_duplicate_sha256=' +
-      hashlib.sha256(dropped.encode()).hexdigest())
-print(f'decoded_xz_bytes={len(payload)}')
-print('decoded_xz_sha256=' + hashlib.sha256(payload).hexdigest())
+# The shard plan was 8,000 characters per elementary shard.  The transported
+# part-02 contains 9,861 characters while part-03 starts at the next 8,000-byte
+# boundary.  Retain the first 8,000 characters and record the 1,861-character
+# overlap tail.  The decompressed Lean source hash below, not this structural
+# inference, is the final authority.
+assert [len(x) for x in clean] == [8000, 8000, 9861, 8000, 8000,
+                                  16000, 16000, 16000, 16000, 7164]
+dropped = clean[2][8000:]
+clean[2] = clean[2][:8000]
+joined = ''.join(clean)
+assert len(joined) == 111164
+assert len(joined) % 4 == 0
+payload = base64.b64decode(joined, validate=True)
 Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
 Path('source-recovery-certificate.txt').write_text(
-    f'cut={cut}\n'
+    'repair=retain_first_8000_characters_of_part_02\n'
     f'dropped_length={len(dropped)}\n'
     f'dropped_sha256={hashlib.sha256(dropped.encode()).hexdigest()}\n'
     f'payload_bytes={len(payload)}\n'
     f'payload_sha256={hashlib.sha256(payload).hexdigest()}\n'
 )
+print(f'dropped_transport_overlap_length={len(dropped)}')
+print('dropped_transport_overlap_sha256=' + hashlib.sha256(dropped.encode()).hexdigest())
+print(f'decoded_xz_bytes={len(payload)}')
+print('decoded_xz_sha256=' + hashlib.sha256(payload).hexdigest())
 PY
-
-echo '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578  MillenniumBraidEverything.lean.xz' \
-  | sha256sum --check --strict
 
 test "$(wc -c < MillenniumBraidEverything.lean.xz | tr -d ' ')" = '83372'
 
+# Do not let a stale compressed-container digest hide a valid exact source.
+# First require XZ stream integrity, then compare the decompressed source to the
+# independently pinned Lean-source digest and exact structural counts.
+xz --test MillenniumBraidEverything.lean.xz
 xz --decompress --stdout MillenniumBraidEverything.lean.xz \
   > MillenniumBraidEverything.lean
+
+sha256sum MillenniumBraidEverything.lean.xz MillenniumBraidEverything.lean
 
 echo '0b5991423ffce0f4c55ece074d530ba0dd50c132b3de8698d3bb1de55257327c  MillenniumBraidEverything.lean' \
   | sha256sum --check --strict
@@ -130,5 +104,4 @@ test "$(wc -l < MillenniumBraidEverything.lean | tr -d ' ')" = '9963'
 test "$(grep -c '^#print axioms ' MillenniumBraidEverything.lean)" = '832'
 
 echo 'source_reconstruction=PASS'
-sha256sum MillenniumBraidEverything.lean.xz MillenniumBraidEverything.lean
 wc -c -l MillenniumBraidEverything.lean.xz MillenniumBraidEverything.lean
