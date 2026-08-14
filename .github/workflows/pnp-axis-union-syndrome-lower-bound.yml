@@ -5,12 +5,12 @@ on:
     branches:
       - agent/pnp-axis-union-syndrome-lower-bound-20260814
     paths:
-      - 'verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean'
+      - 'verification/pnp-axis-union-syndrome/**'
       - '.github/workflows/pnp-axis-union-syndrome-lower-bound.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean'
+      - 'verification/pnp-axis-union-syndrome/**'
       - '.github/workflows/pnp-axis-union-syndrome-lower-bound.yml'
   workflow_dispatch:
 
@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          file=verification/pnp-restriction-averaging/PNPAxisUnionSyndromeLowerBound.lean
+          file=verification/pnp-axis-union-syndrome/PNPAxisUnionSyndromeLowerBound.lean
           if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
             echo 'Explicit proof hole found'
             exit 1
@@ -47,7 +47,7 @@ jobs:
 
       - name: Resolve pinned Mathlib and fetch cache
         shell: bash
-        working-directory: verification/pnp-restriction-averaging
+        working-directory: verification/pnp-axis-union-syndrome
         run: |
           set -euo pipefail
           lake update
@@ -55,7 +55,7 @@ jobs:
 
       - name: Kernel replay and axiom report
         shell: bash
-        working-directory: verification/pnp-restriction-averaging
+        working-directory: verification/pnp-axis-union-syndrome
         run: |
           set -euo pipefail
           lake env lean PNPAxisUnionSyndromeLowerBound.lean | tee pnp-axis-union-syndrome.log
