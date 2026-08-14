@@ -1,0 +1,32 @@
+name: Hodge basket-B Type-I DVR index replay
+on:
+  push:
+    branches: [agent/hodge-basketB-typeI-dvr-index-core-20260814-gpt56sol]
+    paths:
+      - .github/workflows/hodge-basketB-typeI-dvr-index-core.yml
+      - verification/hodge-basketB-typeI-dvr-index-core/*.lean
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: AXLE Lean replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/hodge-basketB-typeI-dvr-index-core/HodgeBasketBTypeIDVRIndexFiniteCore.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+          SRC="$SRC" python3 - <<'PY'
+          import json,os,pathlib,urllib.request
+          p=pathlib.Path(os.environ['SRC'])
+          payload=json.dumps({'content':p.read_text(),'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=960) as r: result=json.load(r)
+          print(json.dumps(result,indent=2))
+          lean=result.get('lean_messages',{}); tool=result.get('tool_messages',{})
+          if (not result.get('okay') or result.get('failed_declarations') or lean.get('errors') or lean.get('warnings') or tool.get('errors') or tool.get('warnings') or 'sorryAx' in json.dumps(result)):
+            raise SystemExit(1)
+          PY
