@@ -116,7 +116,9 @@ theorem logarithmicGainSq_telescopes (j : ℕ) :
       1 / ((j : ℝ) + 1) - 1 / ((j : ℝ) + 2) := by
   have h1 : (j : ℝ) + 1 ≠ 0 := by positivity
   have h2 : (j : ℝ) + 2 ≠ 0 := by positivity
-  field_simp [logarithmicGainSq, h1, h2] <;> ring
+  rw [logarithmicGainSq]
+  field_simp [h1, h2]
+  ring
 
 /-- Exact finite logarithmic-shell budget. -/
 theorem logarithmicGainSq_sum (N : ℕ) :
