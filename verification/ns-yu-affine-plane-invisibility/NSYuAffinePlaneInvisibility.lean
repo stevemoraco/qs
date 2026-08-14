@@ -88,7 +88,8 @@ theorem bounded_affine_endpoints_control_visible_slope
     gamma * R ≤ 2 * M := by
   have htri : |a * R| ≤ |a * R + c| + |c| := by
     calc
-      |a * R| = |(a * R + c) + (-c)| := by congr 1 <;> ring
+      |a * R| = |(a * R + c) + (-c)| := by
+        rw [show (a * R + c) + (-c) = a * R by ring]
       _ ≤ |a * R + c| + |-c| := abs_add_le _ _
       _ = |a * R + c| + |c| := by rw [abs_neg]
   have hAR : |a| * R ≤ 2 * M := by
