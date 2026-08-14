@@ -2,8 +2,8 @@ import Mathlib
 
 /-!
 Finite algebra/arithmetic shadow of the q=1,a=7 `G2` free-fork elimination in
-`stevemoraco/RH#401`, with the first exact polynomial gate for the surviving
-`G3` satellite branch.
+`stevemoraco/RH#401`, with exact polynomial gates for the surviving `G3`
+satellite branch.
 
 Formalized here only:
 * the exact binary-cubic discriminant polynomial;
@@ -14,6 +14,8 @@ Formalized here only:
   `ell W(beta Z^2+c ZW+d W^2)`;
 * if that cubic has zero discriminant and `ell,beta` are nonzero, its residual
   quadratic has zero discriminant `c^2=4*beta*d`;
+* the exact first transverse discriminant expansion about a double-root cubic
+  `s Z^2 W`;
 * elementary self-intersection monotonicity used after rational blowdowns.
 
 NOT formalized here:
@@ -72,6 +74,25 @@ theorem vanishing_cubic_disc_forces_residual_quadratic_disc_zero
   have hres : c^2 - 4*beta*d = 0 := (mul_eq_zero.mp hdisc).resolve_left hp
   exact sub_eq_zero.mp hres
 
+/-- Exact transverse discriminant expansion about the double-root cubic
+`s Z^2 W`.  If the transverse parameter is `t`, write the perturbed cubic as
+`t*a Z^3 + (s+t*b) Z^2 W + t*c Z W^2 + t*d W^3`.
+The coefficient of the first power of `t` in the discriminant is exactly
+`-4*d*s^3`; the displayed equality records the entire remainder as a multiple
+of `t^2`.  The geometric interpretation of `d` as evaluation of the transverse
+jet on the double-root line is NOT formalized here. -/
+theorem double_root_first_transverse_discriminant_jet
+    (t a s b c d : ℤ) :
+    binaryCubicDisc (t*a) (s+t*b) (t*c) (t*d)
+      = -4*d*s^3*t
+        + t^2 *
+          (s^2*(c^2 - 12*b*d)
+            + t*s*(18*a*c*d - 12*b^2*d + 2*b*c^2)
+            + t^2*(-27*a^2*d^2 + 18*a*b*c*d - 4*a*c^3
+                    - 4*b^3*d + b^2*c^2)) := by
+  simp [binaryCubicDisc]
+  ring
+
 /-- The two local index-cubic discriminant exponents differ by one. -/
 theorem local_discriminant_exponent_gap :
     (5 : ℤ) - 4 = 1 := by
@@ -104,6 +125,7 @@ theorem at_least_minus_two_stays_above_minus_three
 #check ramified_index_cubic_discriminant
 #check reduced_two_one_discriminant_factor
 #check vanishing_cubic_disc_forces_residual_quadratic_disc_zero
+#check double_root_first_transverse_discriminant_jet
 #check local_discriminant_exponent_gap
 #check elliptic_minus_two_to_minus_one_ledger
 #check minus_two_cannot_become_minus_three_by_nonnegative_increase
@@ -113,6 +135,7 @@ theorem at_least_minus_two_stays_above_minus_three
 #print axioms ramified_index_cubic_discriminant
 #print axioms reduced_two_one_discriminant_factor
 #print axioms vanishing_cubic_disc_forces_residual_quadratic_disc_zero
+#print axioms double_root_first_transverse_discriminant_jet
 #print axioms local_discriminant_exponent_gap
 #print axioms elliptic_minus_two_to_minus_one_ledger
 #print axioms minus_two_cannot_become_minus_three_by_nonnegative_increase
