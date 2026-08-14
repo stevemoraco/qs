@@ -44,7 +44,6 @@ def cumulativeFarField : ℕ → ℝ
   | k + 1 => cumulativeFarField k + farFieldPlateau k
 
 @[simp] theorem radius_pos (j : ℕ) : 0 < radius j := by
-  simp [radius]
   positivity
 
 @[simp] theorem radius_ne_zero (j : ℕ) : radius j ≠ 0 :=
