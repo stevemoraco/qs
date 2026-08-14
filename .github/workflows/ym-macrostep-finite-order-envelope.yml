@@ -39,11 +39,19 @@ jobs:
           with urllib.request.urlopen(req, timeout=960) as response:
               result = json.load(response)
           print(json.dumps(result, indent=2))
-          assert result.get('okay')
-          assert not result.get('failed_declarations', [])
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
-          assert not lean.get('errors', []) and not lean.get('warnings', [])
-          assert not tool.get('errors', []) and not tool.get('warnings', [])
-          assert 'sorryAx' not in json.dumps(result)
+          bad = (
+              not result.get('okay')
+              or bool(result.get('failed_declarations', []))
+              or bool(lean.get('errors', []))
+              or bool(lean.get('warnings', []))
+              or bool(tool.get('errors', []))
+              or bool(tool.get('warnings', []))
+              or 'sorryAx' in json.dumps(result)
+          )
+          if bad:
+              compact = json.dumps(result, separators=(',', ':'))
+              print('::error::AXLE_RESULT=' + compact[:6000])
+              raise SystemExit(1)
           PY
