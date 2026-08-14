@@ -1,0 +1,254 @@
+ore removing the
+cutoff. At the quadratic order in the marginal coordinate needed for the one-step coefficient, apply the
+complete SI–6B/SI–7M lattice BPHZL packet, the exhaustive ledger of Lemma 5.10, and the complete
+post-contraction admission check of Lemma 5.12 to every mixed Wilson/stable term. A marginal proper
+subgraph containing only Wilson vertices is exactly a standard background-field subgraph and is subtracted
+in the SI–6 scheme. After all such subgraphs are contracted, every remaining quotient graph contains at
+least one stable marked insertion and hence has positive irrelevant excess, at least two in the reflection-even
+physical sector. Its overall annulus sum is therefore a power row or an explicitly a2 | log a|-suppressed
+row, not an unsuppressed logarithm. Multiple stable insertions only increase that excess. The marked
+stable-fiber identity removes every degree-four input row before this forest analysis. Uniform convergence
+leaves one finite C 2 local scheme term and no new unsuppressed logarithmic coefficient.
+Lemma 5.15 (Scale-independent finite scheme map). Let gW be the local standard coupling on the
+canonically rescaled pure Wilson family and let g⋆ be the same local functional on the full centered
+invariant family. On the common weak interval there is one C 2 map
+                                  s(g) = g + cs g 2 + O(g 3 ),      s′ (0) = 1,
+independent of the dyadic lattice spacing, such that
+                                                    g⋆ = s(gW )
+at both ends of every factor-two step. Consequently
+                                            Σstd = s ◦ ΣW ◦ s−1 .
+The C 3 -flat irregular complement is included in s; no analyticity at g = 0 is claimed or needed.
+Proof. Evaluate the same canonically rescaled nonexceptional projector P⋆ on the two full weak families.
+Their tree Hessians coincide. Their first difference is the invariant-graph tangent uH1 , whose vacuum
+scalar and complete dimension-four retained projection vanish. Lemma 5.14 proves, rather than assumes,
+that the entire exponentially quasi-local insertion family contributes a finite scale-independent transverse
+scheme row and no new unsuppressed log a coefficient. SI–6 excludes an independent background
+dimension-four counterterm. The inner-chart difference is therefore a finite C 2 unit-tangent redefinition.
+U4 adds a C 3 -flat term through the two consumed background marks, which changes neither s′ (0) nor its
+quadratic coefficient. Canonical rescaling identifies the profile, gauge fermion, subtraction projector, and
+cutoff with the same unit-lattice template at every dyadic scale, so the same map s occurs before and
+after the step. The displayed conjugacy follows from the definitions.
+Theorem 5.16 (Thermodynamic standard-scheme coefficient and scheduled orbit row). The rooted-
+thermodynamic standard map satisfies
+                                                   11 CA (G) log 2 2
+                                 Σ∞ (v) = v +                     v + OG (v 3 ).                          (26)
+                                                       24π 2
+If vj = hj (uj ) lies on an admissible directed orbit, then
+                                                   11 CA (G) log 2 2
+                                 Σj (vj ) = vj +                  vj + OG (vj3 ),                         (27)
+                                                       24π 2
+uniformly along the orbit. No assertion is made that a fixed finite-volume map Σj (v) has exactly this
+second derivative at v = 0.
+
+
+                                                         47
+Proof. SI–8 gives b0 (G) = 11CA (G)/(48π 2 ) in the pure-G flow µ dg/dµ = −b0 (G)g 3 + OG (g 5 ). Hence
+µ du/dµ = −11CA (G)u2 /(24π 2 ) + OG (u3 ) for u = g 2 ; reversing to increasing physical length and
+integrating over one factor-two interval gives 11CA (G) log 2/(24π 2 ). SI–6, SI–6B, SI–7, and SI–7M
+identify this coefficient in the Wilson nonexceptional background scheme. Lemma 5.14 shows that the
+complete centered tangent family adds no unsuppressed logarithmic coefficient, while Lemma 5.15 gives a
+C 2 unit-tangent finite scheme change. This proves (26). The orbitwise comparison of Lemma 5.5 changes
+the finite-volume value by O(δG (Mj )vj2 + vj3 ) + O(vj−p e−c/vj ) = OG (vj3 ) and gives (27).
+Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+rooted-thermodynamic reduced map satisfies
+
+                                               11 CA (G) log 2 2
+                                F∞ (u) = u +                  u + OG (u3 ).
+                                                   24π 2
+For every admissible directed orbit,
+                                                  11 CA (G) log 2 2
+                                Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+                                                      24π 2
+uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+the shooting and first-crossing theorems.
+Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+differentiated at fixed Mj .
+
+5.3    Domain compactness and chart invariance
+Let Ba,N be the rooted activity space with norm
+                                               X
+                                 ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+                                                  e
+                                                      X∋e
+
+where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+connected support shapes of size at most m occur.
+Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and a′ < a, every bounded subset of Ba,N ,
+N ≥ 1, is relatively compact in Ba′ ,N −1 .
+Proof. Let F be bounded by M in Ba,N . For a cutoff L,
+                                 X      ′                        ′
+                            sup       ea |X| ∥FX ∥C N −1 ≤ e−(a−a )L M,
+                                  e
+                                        X∋e
+                                       |X|>L
+
+uniformly in F ∈ F.
+  For |X| ≤ L, only finitely many rooted support shapes occur. On each shape, the C N (KX ) bound is
+uniform, and the compact embedding
+                                           C N (KX ) ⋐ C N −1 (KX )
+follows from Arzela–Ascoli in finitely many coordinate charts. A diagonal subsequence converges on
+all shapes of size at most L. Letting L increase and using the uniform tail estimate proves relative
+compactness in Ba′ ,N −1 .
+Theorem 5.19 (Exact fiber-chart invariance). Let Ψ1 (w, z1 ) and Ψ2 (w, z2 ) be two exact C 1 fiber charts
+for the same finite-dimensional submersion B(U ) = w. Suppose their images agree on the integration
+region and their transition map is orientation preserving. Then, for every integrable density F ,
+                      Z                                   Z
+                         F (Ψ1 (w, z1 )) J1 (w, z1 ) dz1 = F (Ψ2 (w, z2 )) J2 (w, z2 ) dz2 .
+
+Consequently the normalized conditional expectation, its connected logarithm, and every background
+derivative of the complete local standard-scheme coordinate and its quadratic coefficient are independent
+of the chosen exact fiber chart.
+
+
+                                                        48
+Proof. The first identity is the ordinary change-of-variables theorem on the fiber. Division by the same
+fiber mass gives equality of normalized conditional expectations. Connected logarithms are functions
+of those expectations. Differentiation is permitted on any common dominated marked domain. The
+determinant statement follows because the two Jacobians are related by the determinant of the transition
+map, which cancels under the change of variables. It must not be inserted a second time.
+
+5.4    Ultraviolet supplier closure
+The finite-volume normal chart, strict macrostep contraction, and irregular Fréchet flatness used below
+are not separate inputs: they are respectively Theorem 2.5, Theorem 4.30, and Theorem 3.31.
+Lemma 5.20 (Adapted one-step mean-value contraction). The adapted one-step norm required in the
+endpoint argument is the standard finite-power norm
+                                           s−1
+                                           X
+                                  ∥x∥⋆ =         λ−j ∥Lj x∥,   qs < λs < 1,                             (29)
+                                           j=0
+
+for which ∥Lx∥⋆ ≤ λ∥x∥⋆ . By the mean-value theorem the exact one-step map contracts on a smaller ball
+whenever sup ∥DΦ − L∥⋆ < 1 − λ. This change of stable norm does not alter the marginal coordinate or
+its dyadic coefficient.
+5.5    Finite triangular source transport
+Lemma 5.21 (Finite graded curvature-jet quotient). Fix an engineering cutoff D. Modulo vacuum
+constants, total lattice differences, gauge and Bianchi identities, equation-of-motion/redundant directions,
+and the extracted dimension-four Yang–Mills coordinate, the local gauge-invariant curvature jets of
+dimension at most D form a finite graded space
+                                                      M
+                                               J≤D =       J∆ .
+                                                         ∆≤D
+
+The same remains true after adjoining any fixed finite collection of retained, source, displacement, profile,
+stress, rotation-defect, and one/two-root marks.
+Proof. After a boundary-rooted tree gauge, one enlarged block cell contains a finite alphabet of Lie-algebra
+variables and difference labels. Jets of bounded engineering dimension form a finite polynomial span.
+Every listed quotient relation is linear on that span, and adjoining finitely many marks gives a finite
+direct sum.
+Lemma 5.22 (No reflection-even scalar of engineering dimension five). In four-dimensional pure fixed-G
+lattice gauge theory, the signed-hypercubic and reflection-even gauge-invariant scalar jet quotient has no
+engineering-dimension-five component.
+Proof. A nonvacuum dimension-five scalar would have to contain two curvature factors and one covariant
+difference, hence five coordinate indices before contraction. The invariant tensors of the signed hypercubic
+group are generated by even-rank Kronecker contractions and the rank-four alternating tensor. They
+cannot contract an odd total of five indices to a scalar without a preferred vector. Total differences and
+Bianchi descendants are already removed in the quotient. Thus the reflection-even scalar sector jumps
+from the extracted dimension-four Yang–Mills density to dimension at least six.
+
+Lemma 5.23 (No reflection-even rank-two curvature jet of dimension five). In the local gauge-invariant
+rank-two curvature-jet quotient relevant to the stress/displacement source, the reflection-even engineering-
+dimension-five component is zero.
+Proof. A dimension-five curvature bilinear has the schematic Lorentz-index content F DF , hence five
+tensor indices before contractions. To leave exactly two free rank-two indices one would have to contract
+an odd set of three indices. The signed-hypercubic invariant tensors available in the reflection-even
+sector are products of Kronecker deltas and pairs of Levi–Civita tensors, all of even rank. A single
+Levi–Civita tensor is reflection odd. Thus no reflection-even constant coefficient tensor can perform the
+required contraction. Terms in which the derivative is moved onto the whole bilinear are total differences,
+while Bianchi and equation-of-motion descendants are already quotiented. The next possible rank-two
+complement after dimension four therefore begins at dimension six.
+
+
+
+                                                        49
+Proposition 5.24 (Finite-order marked RG bridge to the associated-graded block). Let
+
+                                           TD (u, ϱ) : J≤D −→ J≤D
+
+be the exact normalized marked one-step source transport on the common centered weak tube. The map
+extends C 1 to (u, ϱ) = (0, 0) in the finite jet matrix norm, satisfies
+
+                                                  TD (0, 0) = LD ,
+
+and on the invariant cone ∥ϱ∥ ≤ Ku3 obeys
+
+                                  ∥TD (u, ϱ) − LD ∥ ≤ CD (u + ∥ϱ∥) ≤ CD
+                                                                      ′
+                                                                        u.
+
+On degree ∆, the associated-graded multiplier is 24−∆ I.
+Proof. Project the exact marked
+                             √     one-step map to the finite-dimensional quotient J≤D . On the regular
+inner chart, rescaling A = u a and differentiating
+                                                 √ the finite marked integral once in u gives a uniform
+endpoint derivative; reflection removes the odd u terms. U4 and the corrected irregular Fréchet theorem
+give a coupling derivative of the complementary contribution bounded by u−p e−c/u , which extends by
+zero continuously at the endpoint. Hence the complete finite matrix is C 1 at (0, 0).
+   At the endpoint the exact block is the Gaussian/Wick block. Wick localization preserves the highest-
+degree symbol and canonical scale-two rescaling multiplies a degree-∆ source by 24−∆ ; contractions and
+nonlinear coordinate terms lower the filtration. Thus TD (0, 0) = LD on the associated graded. The finite-
+dimensional mean-value theorem gives
+
+                                      ∥TD (u, ϱ) − LD ∥ ≤ CD (u + ∥ϱ∥),
+
+and the centered cone gives the final O(u) row. No analytic extension in the singular coupling variable is
+assumed.
+Lemma 5.25 (Logarithmically   bounded principal transport and strict complementary contraction). Let
+uj ≤ Cu /(1 + j) and j u2j < ∞. On the normalized dimension-four principal block,
+                    P
+
+                       (4)
+                     Tj      = I + uj Aj + Rj ,          sup ∥Aj ∥ ≤ CA ,            ∥Rj ∥ ≤ CR u2j .
+                                                          j
+
+Then the fundamental matrices and inverses satisfy
+                                                                               pD
+                                                                        1+j
+                                                                    
+                                      ∥Φk,j ∥ + ∥Φ−1
+                                                  k,j ∥ ≤ CD                         .
+                                                                        1+k
+   On every reflection-even source type whose first complementary degree is six – in particular the scalar
+block by Lemma 5.22 and the rank-two stress block by Lemma 5.23 – one has
+                                                              1
+                                              ∥Tj⊥ ∥ ≤          + CD uj .
+                                                              4
+After decreasing the weak threshold once,
+
+                                                  ∥Tj⊥ ∥ ≤ qD < 1
+
+uniformly in j.
+Proof. The principal product estimate follows from
+                                                   (4)
+                                           log ∥Tj ∥ ≤ C1 uj + C2 u2j
+
+and the analogous inverse estimate, together with
+                                   j−1
+                                   X                     1+j            X
+                                         um ≤ C log          ,              u2m < ∞.
+                                                         1+k            m
+                                   m=k
+
+The complementary associated-graded multiplier is 24−6 = 1/4. Proposition 5.24 gives an O(uj ) pertur-
+bation, which remains strictly below one on a smaller weak tube.
+
+
+                                                              50
+Theorem 5.26 (Weak-regime finite triangular source renormalization). For every fixed engineering cutoff
+D, there are normalized source coordinates in the weak regime such that:
+   (i) principal same-degree transport and its inverse grow by at most a fixed power of the running
+       logarithm;
+  (ii) the complementary scalar source block is strictly contracting;
+ (iii) a dimension-∆ + 2 defect relative to a principal dimension-∆ source contributes
+
+                                                     r2 L(r)pD
+
+      at physical scale r;
+ (iv) all fixed marked rows obey uniform finite Schwartz-seminorm bounds.
+  This theorem stops at the compact first-crossing handoff. It does not invoke the later macrobridge or
+matching transfer.
+Proof. Normalize each principal block by the fundamental matrix in Lemma 5.25. The strict complemen-
+tary contraction sums the triangular inhomogeneous forcing by a geometric series. Canonical dimensional
+scaling supplies the 

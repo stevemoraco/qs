@@ -1,0 +1,277 @@
+truct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ = 0,  Cf Sf∗ = 0,
+and in particular Sf Cf∗ + Cf Sf∗ = 0. Expanding Af = (7/8)Sf + (1/8)Cf now gives
+
+                                                        49     1
+                                           Af A∗f =        I4 + Cf Cf∗ .
+                                                        2      64
+The right-inverse identity is immediate, and σmin (Af )2 ≥ 49/2 gives
+
+                                                             4         8
+                                           ∥P0 ∥22 =                ≤    .
+                                                        σmin (Af )2   49
+
+   It remains to certify the complex strip. Put c = cosh(10−3 ) < 1.000001. On |ℑzj | ≤ 10−3 , the
+displayed symbol gives the following uniform entrywise derivative bounds for one alias block:
+
+                                 entry and differentiated variable             bound
+                                               ∂µ Mµµ                          1.001
+                                           ∂j Mµµ , j ̸= µ                     0.251
+                                          ∂µ Mµν , µ ̸= ν                      0.251
+                                          ∂ν Mµν , µ ̸= ν                      0.126
+                                        ∂j Mµν , j ∈/ {µ, ν}                   0.126
+
+(the estimates use only | sin w|, | cos w| ≤ c and the coefficient (1 − ϑ)/3 = 1/24). Consequently, for each j,
+
+          ∥∂j Af (z)∥2 ≤ ∥∂j Af (z)∥F ≤ 16[1.0012 + 3(0.251)2 + 3(0.251)2 + 9(0.126)2 ] < 4.94.
+                                           p
+
+
+For z = x + iy, integration along x + ity and Cauchy–Schwarz give
+                                                                1/2
+                                      X3
+            ∥Af (z) − Af (x)∥ ≤ |y|2    sup ∥∂j Af (x + ity)∥22     < 0.002 (2 · 4.94) < 0.020.
+                                        j=0 0≤t≤1
+
+
+Thus 0.07 is a conservative consequence of a fully displayed finite bound. On the real zone,
+
+                                             49                    81
+                                                                r
+                                       T
+                                   Af Af ⪰      I,     ∥Af ∥ ≤        .
+                                              2                    2
+Using the retained conservative value 0.07,
+
+                                                                     81
+                                                                 r
+                     ∥Af (z)Af (z) − Af (x)Af (x) ∥ < 2
+                                  T                     T
+                                                                        (0.07) + (0.07)2 < 0.896.
+                                                                      2
+Neumann inversion therefore gives
+                                                                                  −1
+                                                                     49
+                                                                 
+                                                    T −1
+                                      Af (z)Af (z)                      − 0.896
+                                                     
+                                                             ≤                          ,
+                                                                     2
+
+and hence
+                                                   2     81/2 + 0.07
+                                                       p             
+                                      ∥P0 (z)∥ ≤                       < 0.546.
+                                                       49/2 − 0.896
+Analyticity in a fixed strip gives exponential Fourier-kernel decay.
+
+2.2    Exact normal fiber chart and coarea
+Let Xm , Ym be exponentially weighted Banach coordinate spaces and let
+
+                    L : Xm → Ym ,         P : Ym → Xm ,              LP = I,        ∥P ∥m = p < 1.
+
+Put K = ker L and write
+
+                            B(x) = Lx + N (x),              N (0) = 0,       DN (0) = 0.
+
+
+                                                            7
+Theorem 2.5 (Normal fiber chart). For w ∈ Ym and ζ ∈ K, consider
+                                       F (y; w, ζ) = y + N (P y + ζ) − w.
+Assume on a product ball that
+                                       η := sup ∥DN (P y + ζ)P ∥m < 1.
+Then there is a unique analytic solution y = T (w, ζ) and
+                                            PN (w, ζ) := P T (w, ζ) + ζ
+is an exact fiber chart:
+                                                  B(PN (w, ζ)) = w.
+If A = I + DN (PN )P , then
+                                Dw T = A− 1,            Dζ T = −A− 1DN (PN )|K ,
+and hence
+                           Dw PN = P A− 1,           Dζ PN = IK − P A− 1DN (PN )|K .
+All derivatives through order three are finite sums of products of A− 1, P, D2 N, D3 N and are exponentially
+local in the same Banach matrix algebra.
+Proof. For fixed (w, ζ), the map
+                                                 y 7→ w − N (P y + ζ)
+is an η-contraction on a sufficiently chosen invariant ball. Banach’s fixed-point theorem gives T . The
+exact fiber identity follows by substitution. Differentiating
+                                              T + N (P T + ζ) = w
+gives the displayed first derivatives. Repeated differentiation gives the second- and third-order Bell-
+polynomial formulas. Since ∥A− 1∥ ≤ (1 − η)− 1, every term is bounded in the same exponential matrix
+algebra.
+Corollary 2.6 (Explicit zero-detail constants). Let
+                                 Mr (ρ) =     sup ∥Dr N (x)∥m ,                  r = 2, 3,
+                                            ∥x∥m ≤ρ
+
+and suppose
+                                                          1
+                                                    pρM2 (ρ) ≤
+                                                            .
+                                                          4
+For the zero-detail section S(w) = PN (w, 0), using the conservative folded-strip value p ≤ 0.546, one has
+                                            ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+  
