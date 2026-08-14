@@ -104,7 +104,7 @@ theorem coefficient_depletion_survives_relative_error
   have hsum :
       (1 - eta) * nu * D + E ≤
         (1 - eta) * nu * D + theta * eta * nu * D :=
-    add_le_add_left hE _
+    add_le_add_right hE _
   calc
     stretching - nu * D ≤ ((1 - eta) * nu * D + E) - nu * D :=
       sub_le_sub_right hstretch _
