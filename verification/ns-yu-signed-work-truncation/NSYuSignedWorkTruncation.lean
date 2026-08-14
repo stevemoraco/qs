@@ -61,11 +61,12 @@ theorem totalVariation_split (keep : ι → Prop) [DecidablePred keep]
   by_cases hi : keep i <;> simp [hi]
 
 /-- Discarded signed work is bounded above by `M` times discarded total
-variation. This is the exact direction needed to lower-bound retained work. -/
+variation. This is the exact direction needed to lower-bound retained work.
+Nonnegativity of `M` is not separately needed: the pointwise absolute bound is
+the operative hypothesis. -/
 theorem tailWork_le_totalVariation
     (keep : ι → Prop) [DecidablePred keep]
     (c k : ι → ℝ) (M : ℝ)
-    (hM : 0 ≤ M)
     (hk : ∀ i, |k i| ≤ M) :
     tailWork keep c k ≤ M * tailTV keep c := by
   unfold tailWork tailTV
@@ -110,7 +111,7 @@ theorem retainedWork_margin
     (hmean : α * (∑ i, |c i|) ≤ ∑ i, c i * k i)
     (htail : tailTV keep c ≤ δ * (∑ i, |c i|)) :
     (α - M * δ) * (∑ i, |c i|) ≤ retainedWork keep c k := by
-  have htailWork := tailWork_le_totalVariation keep c k M hM hk
+  have htailWork := tailWork_le_totalVariation keep c k M hk
   have htailScaled :
       M * tailTV keep c ≤ M * (δ * (∑ i, |c i|)) :=
     mul_le_mul_of_nonneg_left htail hM
