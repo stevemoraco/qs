@@ -115,11 +115,47 @@ theorem weighted_defect_controls_raw_direction
   have hcubepos : 0 < Lambda ^ 3 := pow_pos hLambda 3
   exact (le_div_iff₀ hcubepos).2 (by simpa [mul_comm] using hbound)
 
+/-- Scalar core of the filtered-peak coverage argument.  If a peak is at least
+`2*Lambda`, the Lipschitz loss across a radius `s` is at most `Lambda`, and a
+point lies within that radius, then the value at that point remains at least
+`Lambda`.  In the PDE application `peak` and `value` are vorticity magnitudes
+and `L` is a bound for `|∇Omega_ell|`. -/
+theorem high_peak_plus_lipschitz_yields_core
+    (Lambda peak L s d value : ℝ)
+    (hLambda : 0 ≤ Lambda)
+    (hpeak : 2 * Lambda ≤ peak)
+    (hL : 0 ≤ L)
+    (hd : 0 ≤ d)
+    (hds : d ≤ s)
+    (hLs : L * s ≤ Lambda)
+    (hlower : peak - L * d ≤ value) :
+    Lambda ≤ value := by
+  have hLd : L * d ≤ L * s := mul_le_mul_of_nonneg_left hds hL
+  linarith
+
+/-- Converse firewall: if a point within radius `s` drops below `Lambda` despite
+a `2*Lambda` peak and the lower Lipschitz estimate, then the Lipschitz loss
+must exceed `Lambda`.  Thus failure of high-vorticity coverage has a visible
+gradient cost. -/
+theorem loss_of_high_core_forces_large_lipschitz_budget
+    (Lambda peak L s d value : ℝ)
+    (hpeak : 2 * Lambda ≤ peak)
+    (hL : 0 ≤ L)
+    (hd : 0 ≤ d)
+    (hds : d ≤ s)
+    (hlower : peak - L * d ≤ value)
+    (hlow : value < Lambda) :
+    Lambda < L * s := by
+  have hLd : L * d ≤ L * s := mul_le_mul_of_nonneg_left hds hL
+  linarith
+
 #print axioms biaxial_plane_has_circle_of_maximizers
 #print axioms orthogonal_maximizers_do_not_select_a_line
 #print axioms planar_direction_difference_controls_line_defect
 #print axioms two_point_mean_oscillation_eq_pairwise
 #print axioms high_vorticity_strips_yu_magnitude_weights
 #print axioms weighted_defect_controls_raw_direction
+#print axioms high_peak_plus_lipschitz_yields_core
+#print axioms loss_of_high_core_forces_large_lipschitz_budget
 
 end NSYuPairwiseToMeanOscillation
