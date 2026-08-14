@@ -27,7 +27,7 @@ jobs:
           fi
       - name: Pin latest immutable source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract exact load-bearing geometry sections
+      - name: Extract narrow load-bearing geometry slices
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -36,35 +36,38 @@ jobs:
           out = Path('source_audit/kirk_v4/lemma630_geometry')
           out.mkdir(parents=True, exist_ok=True)
 
-          def section(start_pat, end_pat, name):
+          def exact_section(start_pat, end_pat, name):
               s=re.search(start_pat,text,re.I)
-              if not s:
-                  raise SystemExit(f'missing start {start_pat}')
+              if not s: raise SystemExit(f'missing {start_pat}')
               e=re.search(end_pat,text[s.end():],re.I)
-              end=s.end()+e.start() if e else min(len(text),s.start()+50000)
+              end=s.end()+e.start() if e else min(len(text),s.start()+30000)
               (out/name).write_text(text[s.start():end],encoding='utf-8')
 
-          section(r'Lemma 6\.17\s*\(', r'Lemma 6\.18\s*\(', 'LEMMA_6_17_EXACT.txt')
-          section(r'Theorem 6\.10\s*\(', r'Corollary 6\.11\s*\(', 'THEOREM_6_10_EXACT.txt')
-          section(r'Lemma 6\.30\s*\(', r'Lemma 6\.31\s*\(', 'LEMMA_6_30_EXACT.txt')
-          section(r'Proposition 6\.8\s*\(', r'Lemma 6\.9\s*\(', 'PROPOSITION_6_8_EXACT.txt')
+          exact_section(r'Lemma 6\.17\s*\(',r'Lemma 6\.18\s*\(','LEMMA_6_17_EXACT.txt')
+          exact_section(r'Theorem 6\.10\s*\(',r'Corollary 6\.11\s*\(','THEOREM_6_10_EXACT.txt')
+          exact_section(r'Lemma 6\.30\s*\(',r'Lemma 6\.31\s*\(','LEMMA_6_30_EXACT.txt')
+          exact_section(r'Proposition 6\.8\s*\(',r'Lemma 6\.9\s*\(','PROPOSITION_6_8_EXACT.txt')
+          exact_section(r'Definition 6\.15\s*\(',r'Lemma 6\.16\s*\(','DEFINITION_6_15_EXACT.txt')
 
-          patterns = [
-            r'Qtail', r'qA[^\n]{0,40}ref', r'reference factor', r'reference factors',
-            r'canonical connector', r'shortest connector', r'connector path',
-            r'exponential matrix algebra', r'matrix algebra', r'Qopt', r'Qtempl',
-            r'diam A', r'τ\s*\(', r'active set', r'active paths',
-            r'independent of Q', r'fixed Q', r'source order', r'physical-source mark',
-            r'fixed finite active', r'every finite active'
-          ]
-          ledger=[]
-          for pat in patterns:
-            hits=list(re.finditer(pat,text,re.I))
-            ledger.append(f'### {pat} hits={len(hits)}')
-            for i,m in enumerate(hits[:100],1):
-              ledger.append(f'\n=== {pat} hit {i} offset {m.start()} ===\n')
-              ledger.append(text[max(0,m.start()-6000):min(len(text),m.start()+12000)])
-          (out/'REFERENCE_REPORTING_CONTEXTS.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          pats={
+            'QTAIL':r'Qtail',
+            'CANONICAL_CONNECTOR':r'canonical connector',
+            'SHORTEST_CONNECTOR':r'shortest connector',
+            'EXP_MATRIX':r'exponential matrix algebra',
+            'QTEMPL':r'Qtempl',
+            'QOPT':r'Qopt',
+            'DIAM_A':r'diam A',
+            'INDEPENDENT_Q':r'independent of Q',
+            'SOURCE_ORDER':r'source order',
+            'FIXED_Q':r'fixed Q',
+          }
+          for label,pat in pats.items():
+              hits=list(re.finditer(pat,text,re.I))
+              chunks=[f'pattern={pat}\nhits={len(hits)}\n']
+              for i,m in enumerate(hits[:12],1):
+                  chunks.append(f'\n=== hit {i} offset {m.start()} ===\n')
+                  chunks.append(text[max(0,m.start()-2500):min(len(text),m.start()+5000)])
+              (out/f'{label}_SLICES.txt').write_text(''.join(chunks),encoding='utf-8')
           PY
       - name: Preserve immutable contexts
         run: |
@@ -73,5 +76,5 @@ jobs:
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/lemma630_geometry
-          git commit -m 'audit(ym): preserve reference-factor reporting contexts'
+          git commit -m 'audit(ym): preserve narrow reference geometry slices'
           git push origin HEAD:verification/ym-kirk-v4-lemma630-geometry-audit-20260814-gpt56sol
