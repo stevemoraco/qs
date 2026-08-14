@@ -1,0 +1,157 @@
+name: Grand unified mutuality Lean kernel replay
+
+on:
+  push:
+    branches:
+      - agent/grand-unified-lean-kernel-replay-20260813
+    paths:
+      - 'formal/GrandUnifiedMutualityCore.lean'
+      - '.github/workflows/grand-unified-mutuality-lean.yml'
+  pull_request:
+    paths:
+      - 'formal/GrandUnifiedMutualityCore.lean'
+      - '.github/workflows/grand-unified-mutuality-lean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source and reject proof carriers in Lean code
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='fb30e2e46902657557d77595ad232ead9b64328ab4b9d42e1953a2c1249c5917'
+          actual="$(sha256sum formal/GrandUnifiedMutualityCore.lean | cut -d' ' -f1)"
+          test "$actual" = "$expected"
+          printf '%s  %s\n' "$actual" formal/GrandUnifiedMutualityCore.lean \
+            | tee GrandUnifiedMutualityCore.SHA256
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source = Path('formal/GrandUnifiedMutualityCore.lean').read_text()
+
+          def code_only(text: str) -> str:
+              out = []
+              i = 0
+              depth = 0
+              in_string = False
+              escaped = False
+              while i < len(text):
+                  ch = text[i]
+                  nxt = text[i + 1] if i + 1 < len(text) else ''
+                  if depth:
+                      if ch == '/' and nxt == '-':
+                          depth += 1
+                          out.extend('  ')
+                          i += 2
+                      elif ch == '-' and nxt == '/':
+                          depth -= 1
+                          out.extend('  ')
+                          i += 2
+                      else:
+                          out.append('\n' if ch == '\n' else ' ')
+                          i += 1
+                      continue
+                  if in_string:
+                      out.append('\n' if ch == '\n' else ' ')
+                      if escaped:
+                          escaped = False
+                      elif ch == '\\':
+                          escaped = True
+                      elif ch == '"':
+                          in_string = False
+                      i += 1
+                      continue
+                  if ch == '-' and nxt == '-':
+                      while i < len(text) and text[i] != '\n':
+                          out.append(' ')
+                          i += 1
+                      continue
+                  if ch == '/' and nxt == '-':
+                      depth = 1
+                      out.extend('  ')
+                      i += 2
+                      continue
+                  if ch == '"':
+                      in_string = True
+                      out.append(' ')
+                      i += 1
+                      continue
+                  out.append(ch)
+                  i += 1
+              if depth or in_string:
+                  raise SystemExit('unterminated Lean comment or string')
+              return ''.join(out)
+
+          code = code_only(source)
+          forbidden = re.compile(
+              r'\b(sorry|admit|sorryAx|axiom|constant|opaque|unsafe|native_decide)\b'
+              r'|Lean\.ofReduceBool'
+          )
+          hits = [
+              (m.group(0), code.count('\n', 0, m.start()) + 1)
+              for m in forbidden.finditer(code)
+          ]
+          if hits:
+              raise SystemExit(f'forbidden Lean code tokens: {hits}')
+          print('Source scan: no forbidden proof carrier in Lean code')
+          PY
+
+      - name: Install official pinned Lean 4.31.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Kernel-check theorem and print axiom dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          lean --version | tee lean-version.txt
+          lean formal/GrandUnifiedMutualityCore.lean \
+            2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo 'sorryAx occurred in Lean output'
+            exit 1
+          fi
+          test "$(grep -c 'depends on axioms: \[\]' lean-output.txt)" -eq 7
+
+      - name: Record replay manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > replay-manifest.txt <<EOF
+          source_sha256=fb30e2e46902657557d77595ad232ead9b64328ab4b9d42e1953a2c1249c5917
+          git_sha=${GITHUB_SHA}
+          workflow_run_id=${GITHUB_RUN_ID}
+          workflow_attempt=${GITHUB_RUN_ATTEMPT}
+          theorem=GrandUnifiedMutualityCore.grand_unified_mutuality_statement
+          expected_axiom_reports=7
+          EOF
+          cat replay-manifest.txt
+
+      - name: Upload raw replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grand-unified-mutuality-lean-replay
+          path: |
+            formal/GrandUnifiedMutualityCore.lean
+            GrandUnifiedMutualityCore.SHA256
+            lean-version.txt
+            lean-output.txt
+            replay-manifest.txt
+          if-no-files-found: warn
+          retention-days: 30
