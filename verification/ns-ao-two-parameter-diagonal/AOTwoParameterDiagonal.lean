@@ -24,21 +24,18 @@ The leading relative viscous factor `k^2/N^(1/3)` is exactly `M^-4`. -/
 theorem relative_viscosity_diagonal (M : ℚ) (hM : M ≠ 0) :
     (M^2)^2 / M^8 = 1 / M^4 := by
   field_simp [hM]
-  ring
 
 /-- The conservative accumulated perturbation budget
 `L^2 k^2 / N^(1/3)` is exactly `M^-2` on the same diagonal. -/
 theorem accumulated_budget_diagonal (M : ℚ) (hM : M ≠ 0) :
     M^2 * (M^2)^2 / M^8 = 1 / M^2 := by
   field_simp [hM]
-  ring
 
 /-- The axial-window modulation ratio for `B_z=N^(2/3)` versus the physical
 carrier `N*k` becomes `M^-10`: `M^16/(M^24*M^2)`. -/
 theorem axial_window_ratio_diagonal (M : ℚ) (hM : M ≠ 0) :
     M^16 / (M^24 * M^2) = 1 / M^10 := by
   field_simp [hM]
-  ring
 
 /-- For `M>1`, the corrected leading viscous factor is strictly below one. -/
 theorem relative_viscosity_lt_one
