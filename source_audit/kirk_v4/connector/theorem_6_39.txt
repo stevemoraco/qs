@@ -1,4 +1,28 @@
- let E∞ (t), E1 (t), and J (t) be the degree-(3 + Q) exponential generating polynomials of the
+   ωA,0 (1 + B)n(A)−1 .                                (92)
+                                                   p
+                                                       A∋p
+
+Then
+                                    Ξ(B) ≤ ε×,0,0 ,               Ξ′ (B) ≤ ε×,1,0 .                       (93)
+The first-incidence allocation of Lemma 6.37 assigns each activity once; its other n(A) − 1 incidences are
+only possible side branches. Thus the activity magnitude is never reused.
+   With maximum physical continuation degree D∗ , the complete rooted side sums obey
+                                    h                                            i
+                        Bm+1 ≤ J∗ (1 + ε∞ (1 + Bm ))D∗ −1 (1 + ε1 )D∗ eΞ(Bm ) − 1 .                   (94)
+
+Choose first R and then a finite pivot count N so that
+                              J∗ (1 + 2ε∞ )D∗ −1 (1 + ε1 )D∗ eε×,0,0 − 1 ≤ 1                              (95)
+                                                                       
+
+and
+                                                     h
+                        qsp := J∗ (1 + ε1 )D∗ eε×,0,0 (D∗ − 1)ε∞ (1 + 2ε∞ )D∗ −2
+                                                                                i                         (96)
+                                                        + (1 + 2ε∞ )D∗ −1 ε×,1,0 < 1.
+
+These choices are possible because the promoted Fourier–Wiener activity rows tend to zero with R, while
+the two physical rows tend to zero exponentially with N .
+   For marks, let E∞ (t), E1 (t), and J (t) be the degree-(3 + Q) exponential generating polynomials of the
 corresponding marked rows, and put
                                              3+Q
                                              X k   t     X
@@ -381,3 +405,32 @@ branches are summed by the remaining KP reserve. Weakening the smaller of the co
 and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
 fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
 Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+before the logarithm is taken, so no all-good denominator occurs. Write
+
+                                     Wm (J) = log Zm (J) − log Zm (0)
+
+for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+finite macrobridge is an identity, not an asymptotic expansion.
+   A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+transported without joining retain their existing components. At the terminal matching logarithm, the
+remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+fixed by the least source label, so isomorphic terms are not counted more than once.
+Lemma 8.6 (Exact multiscale Faà di Br

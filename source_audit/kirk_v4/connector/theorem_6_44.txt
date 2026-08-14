@@ -1,4 +1,25 @@
- . Lemma 6.41 supplies their common strict admission margin. Thus
+, and put
+
+                       mbase (u, Rinv , RG ) := C0 η0 (u, Rinv ) + θu + κG (RG ) .         (101)
+                                                                                
+
+Choose the compact first-crossing interval and Rinv , then enlarge RG , so that
+                                                         1                           1
+                           sup mbase (u, Rinv , RG ) ≤     δB ,      CE ηH (RG ) ≤     δB .                 (102)
+                          u∈I⋆                           2                           4
+
+Then the complete joint branch mass is at most 3δB /4, strictly inside the same admission ball.
+Proof. The regular supplier gives η0 ≤ C(uω + ∥R⋆ (u)∥[3] ), the bad-core mass is exponentially small, and
+both κG (RG ) and ηH (RG ) tend to zero as RG → ∞. Choose the parameters in the displayed order. This
+is the same strict inequality consumed by the existing irregular and Gaussian forest theorems.
+Lemma 6.42 (Cycle-safe compact spatial row). The complete compact activity estimate is exactly (99).
+In particular every discovery edge, closure edge, cycle, and off-spine branch is weighted before summation,
+and ηH (RG ) ≤ Ce−mH RG for one mH > 0.
+Proof. This is the final paragraph of Section 6.5.4; the residual edge-weight reserve pays root and anchor
+multiplicity.
+6.5.5 One mixed Haar–optical connected forest
+The regular, irregular, and Gaussian cross-core rows are collected in mbase , while the complete nonvacuum
+compact row is ηH . Lemma 6.41 supplies their common strict admission margin. Thus
                                                                              3
                             E := mbase (u, Rinv , RG ) + CE ηH (RG ) ≤
                            mbr                                                 δB < δB .                    (103)
@@ -372,4 +393,30 @@ resolution, microscopic cutoff, volume, and boundary conditions, with the follow
      and                                 X                             X
                                sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
                                 z                              z′
-                        
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled his

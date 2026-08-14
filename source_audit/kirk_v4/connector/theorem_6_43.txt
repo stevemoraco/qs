@@ -1,4 +1,23 @@
-hull; the resulting hull activities have
+                               X,J and one exact cross-core activity
+inventory
+                                AJ = AJG ⊔ AJreg ⊔ AJirr ⊔ AJH
+such that                                   Z O
+                                Z(J)                                X       Y
+                                        =           X,J (ζX )
+                                                  dµref                             zA,J (ζA ).          (100)
+                               Zloc (J)
+                                              X                 F compatible A∈F
+
+Here A G is the exact Gaussian cross-core inventory of Theorem 3.28, A reg and A irr are the exact
+owner-map outputs, and A H is the nonvacuum compact inventory of Theorem 6.39. The scalar Zloc (J)
+is formed only after every variable owned by a one-core reference has been integrated. Every physical,
+normalization, seam, wrapping, determinant, full-incidence compact-vacuum, and source occurrence is
+present exactly once in either a one-core reference or one of the four disjoint cross-core inventories; every
+internally nontrivial compact singlet is in AJH .
+Proof. Start from (53). Apply the exact Gaussian product identity of Theorem 3.28, the canonical owner
+map, and Theorem 6.39. Convert each connected Gaussian or logarithmic cross-core word to its exact
+Mayer factor e−GA − 1. Expand first over arbitrary finite subsets, including overlapping supports. Collect
+each connected overlap component onto its least canonical reported hull; the resulting hull activities have
 disjoint exact histories. Only after this overlap collect is performed are the remaining hull families declared
 compatible. History compatibility therefore makes the four ownership classes disjoint and exhaustive
 without omitting an overlapping Mayer term. Fubini gives (100); no scalar depending on an unintegrated
@@ -379,4 +398,27 @@ its coarsest skeleton have a uniformly summable one/two-root norm. Put
 
 
                                                      75
-F
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)

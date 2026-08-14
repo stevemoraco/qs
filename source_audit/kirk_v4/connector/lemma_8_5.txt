@@ -1,4 +1,25 @@
-d remainder bounded by Cu−pj e
+copic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
                                                                                                     −cuj
                                                                                                           .
 Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
@@ -378,4 +399,27 @@ let the lattice links be its exact edge holonomies. Write
 
 where the curvature is parallel transported to x along the initial part of the ν-edge.
 Lemma 8.20 (Covariant two-plaquette expansion). On every bounded smooth background set, uniformly
-with zero/one/two backg
+with zero/one/two background derivatives,
+                                                             a 
+                          Cµν (x) = a2 AdUν (x;0,a/2) Fµν x + ν̂ + a4 Rµνcl
+                                                                             (x; B),         (130)
+                                                              2
+                                                            a  
+                       Sµν (x; B) = a AdUν (x;0,a/2) Fµν x + ν̂ + a3 Rµνstrip
+                                                                              (x; B),        (131)
+                                                             2
+where the remainders are local covariant differential polynomials with two additional derivatives or one
+additional curvature and have uniform bounds.
+Proof. Write Pρσ = exp ωρσ on a smooth background. By (122), Ωsin (eω ) = (dρ)−1 Πρ [sinh(dρ(ω))] =
+ω + O(∥ω∥3 ). Since ω = O(a2 ), replacing the plaquette logarithm by the projected sine coordinate
+changes the expansion only at order a6 . Apply the covariant BCH/nonabelian-Stokes expansion to the
+two plaquettes sharing the distinguished link. After parallel transport to the common base point x,
+their centers are x + aν̂/2 ± aµ̂/2. Multiplication by the orientation sign and averaging cancels every
+term odd in the transverse displacement. The leading term is therefore a2 Fµν at the link midpoint,
+parallel transported to x, and the first surviving transverse defect is a4 Dµ2 F . The finite area average
+also contributes only two-extra-derivative or curvature-quadratic terms at order a4 . This proves (130).
+Covariant midpoint Taylor expansion of the one-dimensional integral (129) gives (131). Analyticity of
+the finite Wilson words permits two background derivatives with the same powers of a.
+Proposition 8.21 (Per-link and bounded-source error). Let Xa,v    geo
+                                                                      denote the infinitesimal anchored
+curvature-strip displacement. Then on smoo

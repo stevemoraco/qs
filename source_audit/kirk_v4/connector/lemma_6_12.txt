@@ -1,4 +1,24 @@
-efore any path-product coordinate is introduced, the Wilson base measure is the product of
+                                    osc log         ≤ Ω(u),                                                            (48)
+                                                               dmG
+and the connected activities of V≥2 satisfy, for every fixed λ > 0 and all sufficiently large R,
+        X               h ′                           ′                         ′
+                                                                                                   i
+  sup         eλ|IP (A)| earef diam A VAref C 2sG + eareg |A| ∥VAreg ∥C 2sG + eairr |A| VAirr [2s ] ≤ Cλ ∆R (u),
+                                                                                                                   G
+    i
+            A∋pi
+         |IP (A)|≥2
+                                                                                                                                       (HT5)
+where
+                               0 < a′ref < mref ,         0 < a′reg < areg ,           0 < a′irr < airr .
+The same row holds after zero, one, or two physical-source marks. If pi lies on an active path γ, then for
+fixed nonpivot links
+                                            Wγ = Bi Up±1
+                                                       i
+                                                         Ci ,                                         (49)
+with Bi , Ci independent of Upi . Thus every uncovered live pivot acts on the active carrier under the same
+exact product reference used in (47).
+Proof. Before any path-product coordinate is introduced, the Wilson base measure is the product of
 normalized Haar measures on the original fine links. Conditioning on all nonpivot links therefore leaves
 one exact
        P Haar factor for each live pivot. Fubini and exact ownership split the physical interaction into
@@ -401,4 +421,30 @@ integrated coefficientwise before the optical connected logarithm.
                                               eℓn(A) ems diam A ∥DJ≤2 zA,J |J=0 ∥[3] ,
                                           X
                             ζz (R) := sup                                                     (60)
-                    
+                                            p
+                                                A∋p
+
+                                                      eℓn(A) ems diam A ∥DJ≤2 VA,J |J=0 ∥[3] ,
+                                                X
+                               ζV (R) := sup                                                                     (61)
+                                            p
+                                                A∋p
+
+where ℓ > − log θ⋆ and ms > 0 lies below the unused reference/regular/irregular support exponents. The
+multipivot theorem and ∥e−VA − 1∥ ≤ e∥VA ∥ ∥VA ∥ imply ζz (R) + ζV (R) → 0 uniformly on I⋆ .
+
+Incidence-split product-group nuclear row and cycle-safe compact collect. Fix once and for
+all a finite physical-source order Q < ∞; the boundary-to-center theorem consumes only Q = 2.
+Lemma 6.27 (Fixed-order source upgrade at matching). For every fixed Q < ∞, the matching-stage
+product-tube, one-pivot-score, multipivot-activity, positive-denominator, and regular/irregular recombina-
+tion rows printed above with q ≤ 2 remain valid with q ≤ Q. The constants may depend on Q but are
+independent of cutoff, volume, exterior datum, and preceding weak depth. Original-support exponents and
+pivot-incidence charges are unchanged. With the exponential generating normalization in q, the constants
+are bounded on one common disc |tJ | < ρJ .
+Proof. The physical source enters the exact pre-marginal law through the common analytic species
+tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+corresponding finit
