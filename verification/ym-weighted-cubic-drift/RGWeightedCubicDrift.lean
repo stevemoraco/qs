@@ -78,14 +78,16 @@ theorem wcd_corrected_remainder_with_extra_budget
         (K / beta) * (u (n + 1) - u n) + extra n := by
     intro n hn
     have hnlt : n < N := Finset.mem_range.mp hn
+    have hmul :
+        (K / beta) * (beta * (u n)^2) ≤
+          (K / beta) * (u (n + 1) - u n) :=
+      mul_le_mul_of_nonneg_left (hgrowth n hnlt) hcoef
     calc
       |wcdCorrectedResidual phi n| ≤ K * (u n)^2 + extra n := hlocal n hnlt
       _ = (K / beta) * (beta * (u n)^2) + extra n := by
         field_simp [ne_of_gt hbeta]
-      _ ≤ (K / beta) * (u (n + 1) - u n) + extra n :=
-        add_le_add_right
-          (mul_le_mul_of_nonneg_left (hgrowth n hnlt) hcoef)
-          (extra n)
+      _ ≤ (K / beta) * (u (n + 1) - u n) + extra n := by
+        linarith
   calc
     |phi N - phi 0 + (N : ℝ)| ≤
         ∑ n ∈ Finset.range N, |wcdCorrectedResidual phi n| :=
@@ -97,8 +99,8 @@ theorem wcd_corrected_remainder_with_extra_budget
         ∑ n ∈ Finset.range N, extra n := by
       rw [Finset.sum_add_distrib]
       rw [wcd_sum_range_scaled_forward_differences]
-    _ ≤ (K / beta) * (u N - u 0) + W :=
-      add_le_add_left hextra _
+    _ ≤ (K / beta) * (u N - u 0) + W := by
+      linarith
 
 /-- Fixed-threshold form of the same budget. -/
 theorem wcd_corrected_remainder_with_extra_budget_at_threshold
@@ -118,13 +120,16 @@ theorem wcd_corrected_remainder_with_extra_budget_at_threshold
     div_nonneg hK (le_of_lt hbeta)
   have hendpoint : u N - u 0 ≤ U := by
     linarith
+  have hmul :
+      (K / beta) * (u N - u 0) ≤ (K / beta) * U :=
+    mul_le_mul_of_nonneg_left hendpoint hcoef
   calc
     |phi N - phi 0 + (N : ℝ)| ≤
         (K / beta) * (u N - u 0) + W :=
       wcd_corrected_remainder_with_extra_budget
         u phi extra N hbeta hK hgrowth hlocal hextra
-    _ ≤ (K / beta) * U + W :=
-      add_le_add_right (mul_le_mul_of_nonneg_left hendpoint hcoef) W
+    _ ≤ (K / beta) * U + W := by
+      linarith
 
 /-- A directly bounded weighted cubic drift is sufficient. -/
 theorem wcd_corrected_remainder_from_weighted_cubic_drift
