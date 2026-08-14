@@ -5,7 +5,7 @@ namespace Millennium.YangMills
 /-- Forward differences telescope over a finite trajectory. -/
 theorem wcd_sum_range_forward_differences
     (u : ℕ → ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, (u (n + 1) - u n)) = u N - u 0 := by
+    (∑ n ∈ Finset.range N, (u (n + 1) - u n)) = u N - u 0 := by
   induction N with
   | zero => simp
   | succ N ih =>
@@ -15,7 +15,7 @@ theorem wcd_sum_range_forward_differences
 /-- A constant multiple of forward differences telescopes. -/
 theorem wcd_sum_range_scaled_forward_differences
     (u : ℕ → ℝ) (a : ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, a * (u (n + 1) - u n)) =
+    (∑ n ∈ Finset.range N, a * (u (n + 1) - u n)) =
       a * (u N - u 0) := by
   induction N with
   | zero => simp
@@ -26,7 +26,7 @@ theorem wcd_sum_range_scaled_forward_differences
 /-- Triangle inequality for a finite range sum. -/
 theorem wcd_abs_sum_range_le_sum_abs
     (f : ℕ → ℝ) (N : ℕ) :
-    |∑ n in Finset.range N, f n| ≤ ∑ n in Finset.range N, |f n| := by
+    |∑ n ∈ Finset.range N, f n| ≤ ∑ n ∈ Finset.range N, |f n| := by
   induction N with
   | zero => simp
   | succ N ih =>
@@ -40,7 +40,7 @@ def wcdCorrectedResidual (phi : ℕ → ℝ) (n : ℕ) : ℝ :=
 /-- Corrected residuals telescope to the crossing-time remainder. -/
 theorem wcd_sum_correctedResidual
     (phi : ℕ → ℝ) (N : ℕ) :
-    (∑ n in Finset.range N, wcdCorrectedResidual phi n) =
+    (∑ n ∈ Finset.range N, wcdCorrectedResidual phi n) =
       phi N - phi 0 + (N : ℝ) := by
   induction N with
   | zero => simp [wcdCorrectedResidual]
@@ -53,7 +53,7 @@ theorem wcd_sum_correctedResidual
 theorem wcd_corrected_remainder_le_sum_abs
     (phi : ℕ → ℝ) (N : ℕ) :
     |phi N - phi 0 + (N : ℝ)| ≤
-      ∑ n in Finset.range N, |wcdCorrectedResidual phi n| := by
+      ∑ n ∈ Finset.range N, |wcdCorrectedResidual phi n| := by
   rw [← wcd_sum_correctedResidual phi N]
   exact wcd_abs_sum_range_le_sum_abs (wcdCorrectedResidual phi) N
 
@@ -68,7 +68,7 @@ theorem wcd_corrected_remainder_with_extra_budget
       beta * (u n)^2 ≤ u (n + 1) - u n)
     (hlocal : ∀ n < N,
       |wcdCorrectedResidual phi n| ≤ K * (u n)^2 + extra n)
-    (hextra : (∑ n in Finset.range N, extra n) ≤ W) :
+    (hextra : (∑ n ∈ Finset.range N, extra n) ≤ W) :
     |phi N - phi 0 + (N : ℝ)| ≤
       (K / beta) * (u N - u 0) + W := by
   have hcoef : 0 ≤ K / beta :=
@@ -88,13 +88,13 @@ theorem wcd_corrected_remainder_with_extra_budget
           (extra n)
   calc
     |phi N - phi 0 + (N : ℝ)| ≤
-        ∑ n in Finset.range N, |wcdCorrectedResidual phi n| :=
+        ∑ n ∈ Finset.range N, |wcdCorrectedResidual phi n| :=
       wcd_corrected_remainder_le_sum_abs phi N
-    _ ≤ ∑ n in Finset.range N,
+    _ ≤ ∑ n ∈ Finset.range N,
         ((K / beta) * (u (n + 1) - u n) + extra n) :=
       Finset.sum_le_sum hpoint
     _ = (K / beta) * (u N - u 0) +
-        ∑ n in Finset.range N, extra n := by
+        ∑ n ∈ Finset.range N, extra n := by
       rw [Finset.sum_add_distrib]
       rw [wcd_sum_range_scaled_forward_differences]
     _ ≤ (K / beta) * (u N - u 0) + W :=
@@ -112,7 +112,7 @@ theorem wcd_corrected_remainder_with_extra_budget_at_threshold
       beta * (u n)^2 ≤ u (n + 1) - u n)
     (hlocal : ∀ n < N,
       |wcdCorrectedResidual phi n| ≤ K * (u n)^2 + extra n)
-    (hextra : (∑ n in Finset.range N, extra n) ≤ W) :
+    (hextra : (∑ n ∈ Finset.range N, extra n) ≤ W) :
     |phi N - phi 0 + (N : ℝ)| ≤ (K / beta) * U + W := by
   have hcoef : 0 ≤ K / beta :=
     div_nonneg hK (le_of_lt hbeta)
@@ -138,7 +138,7 @@ theorem wcd_corrected_remainder_from_weighted_cubic_drift
       |wcdCorrectedResidual phi n| ≤
         K * (u n)^2 + |delta n| * u n)
     (hweighted :
-      (∑ n in Finset.range N, |delta n| * u n) ≤ W) :
+      (∑ n ∈ Finset.range N, |delta n| * u n) ≤ W) :
     |phi N - phi 0 + (N : ℝ)| ≤
       (K / beta) * (u N - u 0) + W := by
   exact wcd_corrected_remainder_with_extra_budget
