@@ -10,6 +10,11 @@ from pathlib import Path
 
 EXPECTED_REPORTS = 832
 ALLOWED_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
+REQUIRED_DECLARATIONS = {
+    "MillenniumBraidEverythingExecutable.millenniumBraidEverythingExecutable",
+    "MillenniumBraidUnified.millenniumBraidExecutableWithPerelmanAndInversion",
+    "MillenniumBraidEverythingIndex.exactTheoremLikeCount",
+}
 
 
 def main() -> None:
@@ -64,6 +69,7 @@ def main() -> None:
 
     forbidden: list[dict[str, object]] = []
     union: set[str] = set()
+    observed_declarations = {str(report["declaration"]) for report in reports}
     for report in reports:
         axioms = set(report["axioms"])
         union.update(axioms)
@@ -73,13 +79,14 @@ def main() -> None:
                 {"declaration": report["declaration"], "forbidden_axioms": bad}
             )
 
+    missing_required = sorted(REQUIRED_DECLARATIONS - observed_declarations)
     warning_lines = [line for line in lines if "warning:" in line.lower()]
     result = {
         "expected_reports": EXPECTED_REPORTS,
         "observed_reports": len(reports),
-        "unique_declarations_reported": len(
-            {str(report["declaration"]) for report in reports}
-        ),
+        "unique_declarations_reported": len(observed_declarations),
+        "required_declarations": sorted(REQUIRED_DECLARATIONS),
+        "missing_required_declarations": missing_required,
         "axiom_union": sorted(union),
         "allowed_axioms": sorted(ALLOWED_AXIOMS),
         "forbidden_reports": forbidden,
@@ -101,6 +108,11 @@ def main() -> None:
     if len(reports) != EXPECTED_REPORTS:
         raise SystemExit(
             f"axiom report count mismatch: {len(reports)} != {EXPECTED_REPORTS}"
+        )
+    if missing_required:
+        raise SystemExit(
+            "missing required final theorem axiom report(s): "
+            + ", ".join(missing_required)
         )
     if forbidden:
         raise SystemExit("non-foundation axiom dependency detected")
