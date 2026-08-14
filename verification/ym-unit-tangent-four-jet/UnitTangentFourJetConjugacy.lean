@@ -36,7 +36,6 @@ structure ParabolicJet4 where
   quad : ℝ
   cubic : ℝ
   quartic : ℝ
-  deriving Repr
 
 /-- Fourth-order composition law for unit-tangent scalar jets. -/
 def parabolicJet4Comp (outer inner : ParabolicJet4) : ParabolicJet4 where
@@ -59,7 +58,12 @@ theorem parabolicJet4_comp_inv (j : ParabolicJet4) :
     parabolicJet4Comp j (parabolicJet4Inv j) =
       { quad := 0, cubic := 0, quartic := 0 } := by
   rcases j with ⟨a, d, e⟩
-  ext <;> simp [parabolicJet4Comp, parabolicJet4Inv] <;> ring
+  apply ParabolicJet4.ext
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+    ring
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+    ring
 
 /-- Exact fourth-order conjugation formula.  The quadratic and cubic RG
 coefficients are unchanged; only the quartic coefficient drifts. -/
@@ -73,7 +77,12 @@ theorem unitTangent_conjugacy_fourJet_formula
       { quad := b,
         cubic := c,
         quartic := k + a * b^2 - a^2 * b - a * c + b * d } := by
-  ext <;> simp [parabolicJet4Comp, parabolicJet4Inv] <;> ring
+  apply ParabolicJet4.ext
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+    ring
+  · simp [parabolicJet4Comp, parabolicJet4Inv]
+    ring
 
 /-- The quartic coefficient of the change of variables does not enter the
 quartic drift of the conjugated RG map. -/
