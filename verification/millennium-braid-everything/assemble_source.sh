@@ -59,13 +59,6 @@ for part in parts:
     print(f'{part}: raw={len(raw)} clean={len(clean)} mod4={len(clean)%4}')
     clean_parts.append(clean)
 
-# Failed hosted reconstruction isolated exactly one malformed shard.  The
-# intended shard schedule has five 8,000-character shards, four combined
-# 16,000-character shards, and one 7,164-character tail.  part-02 contains the
-# correct 8,000-character shard followed by an accidental 1,861-character
-# duplicate tail.  We drop only that tail, record its digest, and then require
-# the reconstructed compressed payload and Lean source to match their original
-# independently pinned hashes below.  A wrong repair cannot pass those hashes.
 assert len(clean_parts[0]) == 8000
 assert len(clean_parts[1]) == 8000
 assert len(clean_parts[2]) == 9861
@@ -74,22 +67,51 @@ assert len(clean_parts[4]) == 8000
 assert all(len(clean_parts[i]) == 16000 for i in range(5, 9))
 assert len(clean_parts[9]) == 7164
 
-part02_prefix = clean_parts[2][:8000]
-part02_extra = clean_parts[2][8000:]
-print(f'part-02 retained_length={len(part02_prefix)}')
-print(f'part-02 dropped_duplicate_tail_length={len(part02_extra)}')
-print('part-02 dropped_duplicate_tail_sha256=' +
-      hashlib.sha256(part02_extra.encode()).hexdigest())
-clean_parts[2] = part02_prefix
+# The exact compressed payload was independently pinned before transport.  The
+# hosted replay proved that part-02 has 1,861 extra valid-base64 characters.
+# Search every possible contiguous deletion of precisely that excess and accept
+# a repair only when the decoded payload matches the original SHA-256.  This is
+# a deterministic recovery certificate, not a heuristic truncation.
+target_hash = '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578'
+expected_b64_len = 111164
+excess = sum(map(len, clean_parts)) - expected_b64_len
+assert excess == 1861
+prefix = ''.join(clean_parts[:2])
+corrupt = clean_parts[2]
+suffix = ''.join(clean_parts[3:])
+found = None
+for cut in range(len(corrupt) - excess + 1):
+    repaired_part = corrupt[:cut] + corrupt[cut + excess:]
+    joined = prefix + repaired_part + suffix
+    assert len(joined) == expected_b64_len
+    try:
+        payload = base64.b64decode(joined, validate=True)
+    except Exception:
+        continue
+    digest = hashlib.sha256(payload).hexdigest()
+    if digest == target_hash:
+        found = (cut, corrupt[cut:cut + excess], payload)
+        break
+    if cut % 1000 == 0:
+        print(f'hash_guided_recovery_progress={cut}')
 
-joined = ''.join(clean_parts)
-print(f'joined_clean_length={len(joined)} mod4={len(joined)%4}')
-assert len(joined) == 111164
-assert len(joined) % 4 == 0
-payload = base64.b64decode(joined, validate=True)
-Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
+if found is None:
+    raise SystemExit('no contiguous 1,861-character deletion recovers pinned payload')
+cut, dropped, payload = found
+print(f'hash_guided_recovery_cut={cut}')
+print(f'dropped_transport_duplicate_length={len(dropped)}')
+print('dropped_transport_duplicate_sha256=' +
+      hashlib.sha256(dropped.encode()).hexdigest())
 print(f'decoded_xz_bytes={len(payload)}')
 print('decoded_xz_sha256=' + hashlib.sha256(payload).hexdigest())
+Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
+Path('source-recovery-certificate.txt').write_text(
+    f'cut={cut}\n'
+    f'dropped_length={len(dropped)}\n'
+    f'dropped_sha256={hashlib.sha256(dropped.encode()).hexdigest()}\n'
+    f'payload_bytes={len(payload)}\n'
+    f'payload_sha256={hashlib.sha256(payload).hexdigest()}\n'
+)
 PY
 
 echo '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578  MillenniumBraidEverything.lean.xz' \
