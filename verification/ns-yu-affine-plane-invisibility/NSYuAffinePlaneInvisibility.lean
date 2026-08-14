@@ -17,26 +17,14 @@ infinite-energy boundary.
 
 namespace NSYuAffinePlaneInvisibility
 
-/-- Divergence arithmetic for the affine velocity gradient
-`diag(1,1,-2)` plus a skew `y-z` rotation block. -/
 theorem affine_plane_divergence :
     (1 : ℝ) + 1 - 2 = 0 := by
   norm_num
 
-/-- The `x`-component of curl for the skew block is `2*b`. -/
 theorem affine_plane_vorticity_x (b : ℝ) :
     b - (-b) = 2 * b := by
   ring
 
-/-- Componentwise algebra for the exact affine Navier--Stokes ansatz
-
-`u = (x, y - b z, b y - 2 z)`
-
-when the scalar time derivative satisfies `b_t=b`.  The three groups are
-`partial_t u + (u dot grad)u + grad p`; the affine Laplacian is zero.
-The pressure gradient used here is
-`(-x, (b^2-1)y, (b^2-4)z)`.
--/
 theorem affine_plane_ns_residual
     (b bt x y z : ℝ) (hbt : bt = b) :
     (0 + x + (-x) = 0) ∧
@@ -47,27 +35,19 @@ theorem affine_plane_ns_residual
   · ring
   constructor <;> ring
 
-/-- The symmetric strain has a repeated top eigenvalue in the affine model. -/
 theorem affine_plane_repeated_top_eigenvalue :
     ((1 : ℝ) = 1) ∧ ((-2 : ℝ) < 1) := by
   norm_num
 
-/-- For the actual vorticity `(2*b,0,0)`, the biaxial strain
-`diag(1,1,-2)` produces the full positive quadratic work `(2*b)^2`. -/
 theorem affine_plane_stretching_identity (b : ℝ) :
     (1 : ℝ) * (2 * b) ^ 2 + 1 * 0 ^ 2 + (-2) * 0 ^ 2 = (2 * b) ^ 2 := by
   ring
 
-/-- Nonzero affine vorticity gives strictly positive strain work. -/
 theorem affine_plane_stretching_positive
     (b : ℝ) (hb : b ≠ 0) :
     0 < (2 * b) ^ 2 := by
   exact sq_pos_of_ne_zero (mul_ne_zero (by norm_num) hb)
 
-/-- Smallest firewall against the shortcut
-`vanishing pairwise direction defect -> vanishing total stretching`.
-The direction can be spatially identical while the external affine strain does
-strictly positive work. -/
 theorem zero_direction_defect_with_positive_affine_work
     (b : ℝ) (hb : b ≠ 0) :
     (((1 : ℝ) - 1) ^ 2 = 0) ∧ 0 < (2 * b) ^ 2 := by
@@ -75,17 +55,11 @@ theorem zero_direction_defect_with_positive_affine_work
   · norm_num
   · exact affine_plane_stretching_positive b hb
 
-/-- A centered two-point filter applied to a scalar affine field has a covariance
-that is independent of the base point.  This is the finite algebraic core of
-why an affine subgrid stress can be nonzero while its spatial derivative is
-zero. -/
 theorem centered_affine_covariance_constant
     (a x h : ℝ) :
     ((a * (x + h)) ^ 2 + (a * (x - h)) ^ 2) / 2 - (a * x) ^ 2 = (a * h) ^ 2 := by
   ring
 
-/-- The centered affine covariance takes the same value at every two base
-points. -/
 theorem centered_affine_covariance_position_independent
     (a x y h : ℝ) :
     (((a * (x + h)) ^ 2 + (a * (x - h)) ^ 2) / 2 - (a * x) ^ 2) =
@@ -93,10 +67,6 @@ theorem centered_affine_covariance_position_independent
   rw [centered_affine_covariance_constant a x h,
     centered_affine_covariance_constant a y h]
 
-/-- A nontrivial affine centered covariance may be strictly positive and still
-be spatially constant.  This is the finite no-free-lunch model for trying to
-charge an asymptotically affine obstruction solely to a differentiated
-commutator. -/
 theorem nonzero_affine_covariance_can_be_derivative_invisible
     (a h : ℝ) (ha : a ≠ 0) (hh : h ≠ 0) :
     ∃ c : ℝ, 0 < c ∧
@@ -108,8 +78,7 @@ theorem nonzero_affine_covariance_can_be_derivative_invisible
 
 /-- Finite expanding-ball growth gate.  If an affine scalar component has
 visible slope `|a| >= gamma` and is bounded by `M` at both endpoints `0` and
-`R`, then `gamma * R <= 2 M`.  Thus a persistent nonzero affine slope cannot
-coexist with a radius-independent bound on arbitrarily large normalized balls. -/
+`R`, then `gamma * R <= 2 M`. -/
 theorem bounded_affine_endpoints_control_visible_slope
     (a c R M gamma : ℝ)
     (hR : 0 ≤ R)
@@ -118,9 +87,9 @@ theorem bounded_affine_endpoints_control_visible_slope
     (hRbound : |a * R + c| ≤ M) :
     gamma * R ≤ 2 * M := by
   have htri : |a * R| ≤ |a * R + c| + |c| := by
-    rw [show a * R = (a * R + c) + (-c) by ring]
     calc
-      |(a * R + c) + (-c)| ≤ |a * R + c| + |-c| := abs_add _ _
+      |a * R| = |(a * R + c) + (-c)| := by congr 1 <;> ring
+      _ ≤ |a * R + c| + |-c| := abs_add_le _ _
       _ = |a * R + c| + |c| := by rw [abs_neg]
   have hAR : |a| * R ≤ 2 * M := by
     calc
@@ -131,9 +100,6 @@ theorem bounded_affine_endpoints_control_visible_slope
       _ = 2 * M := by ring
   exact le_trans (mul_le_mul_of_nonneg_right hslope hR) hAR
 
-/-- Contrapositive form of the expanding-ball gate: once the visible affine
-slope would force more than `2M` variation across radius `R`, the two endpoint
-bounds cannot both hold. -/
 theorem visible_affine_slope_breaks_uniform_ball_bound
     (a c R M gamma : ℝ)
     (hR : 0 ≤ R)
