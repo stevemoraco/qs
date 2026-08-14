@@ -29,16 +29,22 @@ jobs:
           import re
 
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
-          start = text.find('\nA Endpoint packet-shell verification')
+          # The title also occurs in the table of contents.  Select the final
+          # occurrence, which is the actual appendix body.
+          start = text.rfind('\nA Endpoint packet-shell verification')
           end = text.find('\nB Root data and representation normalization', start + 1)
           if start < 0 or end < 0 or end <= start:
               raise SystemExit(f'appendix boundaries not found: start={start} end={end}')
           appendix = text[start:end]
+          if len(appendix) < 10000:
+              raise SystemExit(f'appendix extraction implausibly short: {len(appendix)} chars')
           Path('kirk_v4_appendix_A_endpoint_packet_shell.txt').write_text(appendix, encoding='utf-8')
 
           headings = []
           for m in re.finditer(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(A\.\d+)\b.*$', appendix):
               headings.append(' '.join(m.group(0).split()))
+          if len(headings) < 5:
+              raise SystemExit(f'appendix heading inventory implausibly short: {headings!r}')
           Path('kirk_v4_appendix_A_headings.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
 
           targets = [
