@@ -1,0 +1,73 @@
+name: Verify BSD signed augmentation rigidity
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_signed_augmentation/**"
+      - ".github/workflows/verify-bsd-signed-augmentation-rigidity.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_signed_augmentation/**"
+      - ".github/workflows/verify-bsd-signed-augmentation-rigidity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_signed_augmentation
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify exact source and trust gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=BSDSignedAugmentationRigidity.lean
+          test "$(git hash-object "$file")" = "8fc3b69b8d7ef54d93bda653f8b2a57d4364bcf2"
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean BSDSignedAugmentationRigidity.lean 2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-signed-augmentation-rigidity-replay
+          path: |
+            verification/bsd_signed_augmentation/BSDSignedAugmentationRigidity.lean
+            verification/bsd_signed_augmentation/lean-output.txt
+          if-no-files-found: warn
