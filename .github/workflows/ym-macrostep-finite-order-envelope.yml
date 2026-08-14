@@ -51,7 +51,13 @@ jobs:
               or 'sorryAx' in json.dumps(result)
           )
           if bad:
-              compact = json.dumps(result, separators=(',', ':'))
-              print('::error::AXLE_RESULT=' + compact[:6000])
+              diag = {
+                  'okay': result.get('okay'),
+                  'failed_declarations': result.get('failed_declarations', []),
+                  'lean_messages': lean,
+                  'tool_messages': tool,
+                  'cached_response': result.get('cached_response'),
+              }
+              print('::error::AXLE_DIAG=' + json.dumps(diag, separators=(',', ':'))[:6000])
               raise SystemExit(1)
           PY
