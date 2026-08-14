@@ -17,91 +17,70 @@ PARTS=(
   source-xz-b64/part-13.b64
 )
 
-for part in "${PARTS[@]}"; do
-  test -s "$part"
-done
+for part in "${PARTS[@]}"; do test -s "$part"; done
 
 (
   cd source-xz-b64
-  echo 'actual shard hashes:'
-  sha256sum part-*.b64
-  echo 'actual shard byte counts:'
-  wc -c part-*.b64
-  echo 'pinned shard identity check:'
   sha256sum --check --strict SHA256SUMS
 )
 
 python3 - <<'PY'
 from pathlib import Path
-import base64
-import hashlib
+from difflib import SequenceMatcher
+import base64, hashlib
 
-parts = [
-    'source-xz-b64/part-00.b64',
-    'source-xz-b64/part-01.b64',
-    'source-xz-b64/part-02.b64',
-    'source-xz-b64/part-03.b64',
-    'source-xz-b64/part-04.b64',
-    'source-xz-b64/part-05-06.b64',
-    'source-xz-b64/part-07-08.b64',
-    'source-xz-b64/part-09-10.b64',
-    'source-xz-b64/part-11-12.b64',
-    'source-xz-b64/part-13.b64',
+paths = [
+    'source-xz-b64/part-00.b64', 'source-xz-b64/part-01.b64',
+    'source-xz-b64/part-02.b64', 'source-xz-b64/part-03.b64',
+    'source-xz-b64/part-04.b64', 'source-xz-b64/part-05-06.b64',
+    'source-xz-b64/part-07-08.b64', 'source-xz-b64/part-09-10.b64',
+    'source-xz-b64/part-11-12.b64', 'source-xz-b64/part-13.b64',
 ]
-alphabet = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
-clean = []
-for part in parts:
-    text = ''.join(ch for ch in Path(part).read_text() if not ch.isspace())
-    bad = [(i, ch) for i, ch in enumerate(text) if ch not in alphabet]
-    if bad:
-        raise SystemExit(f'{part}: invalid base64 characters: {bad[:20]}')
-    clean.append(text)
-    print(f'{part}: clean={len(text)} mod4={len(text)%4}')
+parts = [''.join(c for c in Path(p).read_text() if not c.isspace()) for p in paths]
+print('lengths=' + repr([len(p) for p in parts]))
+corrupt = parts[2]
+extra = corrupt[8000:]
+print(f'extra_len={len(extra)} extra_sha256={hashlib.sha256(extra.encode()).hexdigest()}')
 
-# The shard plan was 8,000 characters per elementary shard.  The transported
-# part-02 contains 9,861 characters while part-03 starts at the next 8,000-byte
-# boundary.  Retain the first 8,000 characters and record the 1,861-character
-# overlap tail.  The decompressed Lean source hash below, not this structural
-# inference, is the final authority.
-assert [len(x) for x in clean] == [8000, 8000, 9861, 8000, 8000,
-                                  16000, 16000, 16000, 16000, 7164]
-dropped = clean[2][8000:]
-clean[2] = clean[2][:8000]
-joined = ''.join(clean)
-assert len(joined) == 111164
-assert len(joined) % 4 == 0
-payload = base64.b64decode(joined, validate=True)
+for i, text in enumerate(parts):
+    if i == 2:
+        continue
+    pos = text.find(extra)
+    print(f'exact_extra_in_part_{i}={pos}')
+
+for i in [0, 1, 3, 4, 5, 6, 7, 8, 9]:
+    m = SequenceMatcher(None, corrupt, parts[i], autojunk=False).find_longest_match()
+    print(f'longest_match_part02_part{i}: a={m.a} b={m.b} size={m.size}')
+
+neighbors = parts[1] + parts[3]
+m = SequenceMatcher(None, corrupt, neighbors, autojunk=False).find_longest_match()
+print(f'longest_match_part02_neighbors: a={m.a} b={m.b} size={m.size}')
+
+m = SequenceMatcher(None, extra, parts[3], autojunk=False).find_longest_match()
+print(f'longest_match_extra_part03: extra={m.a} part03={m.b} size={m.size}')
+m = SequenceMatcher(None, extra, parts[1], autojunk=False).find_longest_match()
+print(f'longest_match_extra_part01: extra={m.a} part01={m.b} size={m.size}')
+
+# Test every simple 8,000-character window of the 9,861-character shard.
+prefix = ''.join(parts[:2])
+suffix = ''.join(parts[3:])
+target = '52ec1001a3ee33b33e0ad1c1a024d572396850dd3c6a926299da45a6b2664578'
+for start in range(0, 1862):
+    candidate_part = corrupt[start:start + 8000]
+    payload = base64.b64decode(prefix + candidate_part + suffix, validate=True)
+    if hashlib.sha256(payload).hexdigest() == target:
+        print(f'exact_window_recovery_start={start}')
+        Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
+        break
+else:
+    print('exact_window_recovery_start=NONE')
+
+# Emit the prefix candidate for XZ integrity diagnostics.
+payload = base64.b64decode(prefix + corrupt[:8000] + suffix, validate=True)
 Path('MillenniumBraidEverything.lean.xz').write_bytes(payload)
-Path('source-recovery-certificate.txt').write_text(
-    'repair=retain_first_8000_characters_of_part_02\n'
-    f'dropped_length={len(dropped)}\n'
-    f'dropped_sha256={hashlib.sha256(dropped.encode()).hexdigest()}\n'
-    f'payload_bytes={len(payload)}\n'
-    f'payload_sha256={hashlib.sha256(payload).hexdigest()}\n'
-)
-print(f'dropped_transport_overlap_length={len(dropped)}')
-print('dropped_transport_overlap_sha256=' + hashlib.sha256(dropped.encode()).hexdigest())
-print(f'decoded_xz_bytes={len(payload)}')
-print('decoded_xz_sha256=' + hashlib.sha256(payload).hexdigest())
+print('prefix_candidate_sha256=' + hashlib.sha256(payload).hexdigest())
 PY
 
-test "$(wc -c < MillenniumBraidEverything.lean.xz | tr -d ' ')" = '83372'
-
-# Do not let a stale compressed-container digest hide a valid exact source.
-# First require XZ stream integrity, then compare the decompressed source to the
-# independently pinned Lean-source digest and exact structural counts.
+# This diagnostic is intentionally expected to fail until exact source
+# transport is recovered; preserve the candidate and all geometry in receipt.
 xz --test MillenniumBraidEverything.lean.xz
-xz --decompress --stdout MillenniumBraidEverything.lean.xz \
-  > MillenniumBraidEverything.lean
-
-sha256sum MillenniumBraidEverything.lean.xz MillenniumBraidEverything.lean
-
-echo '0b5991423ffce0f4c55ece074d530ba0dd50c132b3de8698d3bb1de55257327c  MillenniumBraidEverything.lean' \
-  | sha256sum --check --strict
-
-test "$(wc -c < MillenniumBraidEverything.lean | tr -d ' ')" = '681395'
-test "$(wc -l < MillenniumBraidEverything.lean | tr -d ' ')" = '9963'
-test "$(grep -c '^#print axioms ' MillenniumBraidEverything.lean)" = '832'
-
-echo 'source_reconstruction=PASS'
-wc -c -l MillenniumBraidEverything.lean.xz MillenniumBraidEverything.lean
