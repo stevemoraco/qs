@@ -1,5 +1,7 @@
 import Mathlib
 
+-- Public hostile replay revision: quotient-core-r2-20260814.
+
 /-!
 Finite coordinate shadow of the work-visible stress quotient in
 `stevemoraco/RH#541`.
