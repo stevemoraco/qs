@@ -29,12 +29,16 @@ jobs:
           import re
 
           text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
-          # The title also occurs in the table of contents.  Select the final
-          # occurrence, which is the actual appendix body.
-          start = text.rfind('\nA Endpoint packet-shell verification')
-          end = text.find('\nB Root data and representation normalization', start + 1)
+          # The appendix title also occurs in the table of contents. Anchor on
+          # the first substantive Appendix-A theorem and walk backward to the
+          # nearest title, then forward to Appendix B.
+          a1 = text.find('Lemma A.1 (Grounded-torus curvature covariance)')
+          if a1 < 0:
+              raise SystemExit('Lemma A.1 anchor not found')
+          start = text.rfind('A Endpoint packet-shell verification', 0, a1 + 1)
+          end = text.find('B Root data and representation normalization', a1 + 1)
           if start < 0 or end < 0 or end <= start:
-              raise SystemExit(f'appendix boundaries not found: start={start} end={end}')
+              raise SystemExit(f'appendix boundaries not found: start={start} a1={a1} end={end}')
           appendix = text[start:end]
           if len(appendix) < 10000:
               raise SystemExit(f'appendix extraction implausibly short: {len(appendix)} chars')
@@ -48,7 +52,7 @@ jobs:
           Path('kirk_v4_appendix_A_headings.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
 
           targets = [
-              'Theorem 10.4', 'terminal-shell', 'terminal remainder', 'crossing cell',
+              'Theorem 10.4', 'Theorem A.9', 'terminal-shell', 'terminal remainder', 'crossing cell',
               'geometrically summable', 'summable majorant', 'twice-marked',
               'same-owner', 'owner', 'wrapping', 'compact entrance', 'conditional packet',
               'uniform', 'independent of cutoff', 'independent of volume'
