@@ -1,6 +1,6 @@
 import Mathlib
 
-open Filter
+open Filter Topology
 
 /-!
 # Yu fixed-filter unfiltering firewall
