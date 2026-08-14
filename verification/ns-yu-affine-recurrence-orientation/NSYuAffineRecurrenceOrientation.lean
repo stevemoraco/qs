@@ -94,7 +94,7 @@ theorem diagonal_spectral_alignment_budget
     gamma * (x₂ ^ 2 + x₃ ^ 2) =
         gamma * x₂ ^ 2 + gamma * x₃ ^ 2 := by ring
     _ ≤ gamma * x₂ ^ 2 + (lambda₁ - lambda₃) * x₃ ^ 2 :=
-      add_le_add_left hmul _
+      add_le_add (le_refl _) hmul
     _ = (lambda₁ - lambda₂) * x₂ ^ 2 +
           (lambda₁ - lambda₃) * x₃ ^ 2 := by rw [hgap]
     _ = lambda₁ -
