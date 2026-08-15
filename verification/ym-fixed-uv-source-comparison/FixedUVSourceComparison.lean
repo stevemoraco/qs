@@ -81,7 +81,6 @@ quadratic error.  The remaining term `flat` is assumed already absorbed into
 once it has a regulator-independent finite bound. -/
 theorem source_comparison_gives_uniform_quadratic_error
     {u uMax delta flat h hInf C0 CInf Q : ℝ}
-    (hu : 0 ≤ u)
     (huMax : u ≤ uMax)
     (hdelta : delta ≤ u)
     (hQ : flat ≤ Q * u ^ 2)
