@@ -33,7 +33,6 @@ theorem fatou_clock_telescope
   | zero => simp
   | succ N ih =>
       rw [hstep N, ih, Finset.sum_range_succ]
-      simp only [Finset.sum_filter]
       push_cast
       ring
 
