@@ -1,0 +1,355 @@
+al theorem gives T (t) = e−tH with
+H ≥ 0.
+
+Spectral consequence of one common clustering rate Let D+,0 be the centered positive-time
+core,
+                              D+,0 = {F ∈ D+ : S(F ) = 0}.
+For F ∈ D+,0 let µF be the positive spectral measure of H in the vector [F ].
+
+
+                                                     89
+Lemma 9.2 (Core spectral support). For every F ∈ D+,0 ,
+
+                                              supp µF ⊂ [m, ∞).                                       (167)
+
+Proof. Let the time support of F lie in a fixed compact interval. For all sufficiently large t, the supports
+of ΘF and τt F are separated by at least t − cF . Since S(F ) = 0, (166) and OS reconstruction give
+                               Z ∞
+                          0≤        e−tλ dµF (λ) = ⟨[F ], T (t)[F ]⟩ ≤ CF e−mt .                       (168)
+                                  0
+
+Fix ε > 0. Then
+                                      e−(m−ε)t µF ([0, m − ε]) ≤ CF e−mt .
+Multiplication by e(m−ε)t and t → ∞ gives µF ([0, m − ε]) = 0. Letting ε ↓ 0 proves (167).
+
+Theorem 9.3 (Unique vacuum and complete local mass gap). The OS Hamiltonian satisfies
+
+                                               H Ω⊥ ≥ m > 0.                                          (169)
+
+The vacuum is unique.
+Proof. The centered classes [F ] − S(F )Ω, F ∈ D+ , are dense in Ω⊥ . Lemma 9.2 says that the spectral
+projection EH ([0, m − ε]) annihilates this dense set for every ε > 0; hence it vanishes on Ω⊥ . This proves
+the absence of spectrum in (0, m).
+   For a centered core vector, (168) tends to zero, so its spectral measure has no atom at zero. Density
+then shows that EH ({0})H = CΩ. Thus the vacuum is unique and (169) holds.
+
+10     Nontriviality and finite spectral window
+10.1     Endpoint interpolation and reflected noncollapse
+Let Yr (f ) be the tangent-normalized, Wick-centered scalar curvature source at physical scale r, with the
+source root parallel transported in the normalized finite-jet frame. The test profile f is chosen once at
+unit scale and dilated with the source so that its dimensionless support remains fixed and lies strictly in
+positive Euclidean time.
+Lemma 10.1 (Positive Gaussian OS norm). There is such a profile f for which
+
+                                    V0 (f ) := S0 ΘYr (f ) Yr (f ) > 0.
+                                                                  
+
+
+The value is independent of r in the normalized frame.
+Proof. At the Gaussian fixed point the centered scalar curvature composite creates a two-curvature Fock
+vector. In Fourier variables its squared norm is an integral of the squared symmetrized two-particle
+amplitude against the positive transverse curvature spectral density. That density is nonzero on an open
+set, so choosing a positive-time profile whose Fourier transform is nonzero there gives a strictly positive
+integral. Reflection positivity identifies the integral with the displayed OS form. Scale covariance of the
+tangent-normalized source makes the value independent of r.
+
+10.2     Uniform endpoint interpolation
+Theorem 10.2 (Uniform endpoint interpolation master theorem). Fix the positive-time profile f and a
+                                                   √
+physical weak scale r, put ur = u(r) and gr = ur , and use g rather than u = g 2 as the interpolation
+parameter. For the complete finite-volume normalized reflected two-root functional, and also with one
+fixed finite defect root, the following hold on the full segment 0 ≤ g ≤ gr :
+    (i) the graph-segment identities are C 2 and exact before every limit;
+   (ii) the stable/wrapping orbit rows, the pre-owner two-mark compact entrance row, and the terminal
+        packet-shell row have constants independent of cutoff, volume, preceding weak depth, crossing cell,
+        and terminal depth M ;
+  (iii) differentiation is performed inside each fixed crossing cell before ownership, never on the crossing
+        index, and the resulting total derivatives extend across cell boundaries;
+  (iv) the no-crossing terminal remainder tends to zero through two g-derivatives uniformly as M → ∞.
+
+
+
+
+                                                      90
+Consequently there is one finite Cf , depending only on the fixed profile and finite source order, such that
+
+                                  sup |Q
+                                       b ′′r (g)| ≤ Cf ,          sup |Q
+                                                                       b ′r (g)| ≤ Cf g,                 (170)
+                              0≤g≤gr                             0≤g≤gr
+
+uniformly in all cutoff and volume parameters. The same bound holds after one finite defect root. The
+fixed dyadic r may then be inserted into the countable source algebra before the single common diagonal
+extraction.
+Proof. The exact graph segment and derivative identity are established immediately below. The weak-orbit,
+crossing-cell, pre-owner compact-entrance, and terminal-shell estimates are collected in Theorem 10.4;
+its single summable majorant controls the functional and its first two derivatives and includes the cell-
+boundary and no-crossing limits. This proves the first estimate in (170). Exact evenness gives Q
+                                                                                               b ′ (0) = 0,
+                                                                                                 r
+and integration gives the second. The common-diagonal statement follows from the compatibility argument
+at the end of this subsection.
+Lemma 10.3 (Existence of the graph-segment interpolation). After choosing r in the common weak
+corridor, the segment 0 ≤ g ≤ gr lies in the same real marked domain. At finite cutoff and volume,
+evaluate the exact interaction at (g 2 , R⋆ (g 2 )) and express its quadratic part relative to the fixed g = 0
+grounded Gaussian. This gives a real C 2 family Vg,r with positive finite normalization. In fixed Gaussian
+coordinates its complete local expansion has the exact grading
+                           X
+                   Vg,r =      g ν Vn,ν;r ,     ν ≥ max{n − 2, 0},       ν ≡ n (mod 2).                   (171)
+                            n,ν
+
+Here n is field degree. The Wilson row attains the lower exponent ν = n − 2; Haar, chart, coarea,
+determinant, and graph-return rows carry additional nonnegative powers. The grading is read only after
+each complete BRS/reflection packet is collected. The graph is C 3 in u, so g 7→ (g 2 , R⋆ (g 2 )) is C 2 at
+g = 0. The Wilson word, Haar density, normal return, coarea, determinant, and finite Schur endpoint are
+analytic in the physical field A = ga. After the Gaussian quadratic form is removed, a Wilson term of field
+degree n carries g n−2 ; species without the g −2 Wilson prefactor carry higher powers. Analyticity under
+A = ga and the even dependence of the graph coefficients on g give the congruence in (171). Gauge/ghost
+partners and coordinate Jacobians are collected before the grading is read, so BRS and reflection relations
+are retained. No C 1 statement in the squared coupling u is used. Finite-volume Gaussian equivalence and
+the common analytic tube give positivity, integrability, and uniform C 2 control in g.
+   The exact weak block therefore gives the normalized family
+
+                                          F (A)e−Vg,r (A) dγr (A)
+                                        R
+                              ⟨F ⟩g,r =                           , 0 ≤ g ≤ gr ,                      (172)
+                                             e−Vg,r (A) dγr (A)
+                                           R
+
+with V0,r = 0.
+   Let qf ∈ P4 and O b + (f ) = ȷ4 qf be the fixed normalized curvature target. Using the complete filtered
+                      r
+source matrix at (g , R⋆ (g 2 )), define
+                   2
+
+
+                                                                 [D]
+                                               +
+                                              Oa;g,r (f ) := ιa,r;g2 (qf ).                              (173)
+
+Exact transport gives
+                                   +
+                                  Og,r =O
+                                        b + + E +,≤D + H +,>D = O
+                                          r    g,r      g,r
+                                                                br+ + Dg,r
+                                                                       +
+                                                                           ,                             (174)
+where
+                                       +,≤D
+                                  P≤D Eg,r  = Eg,r
+                                               +,≤D
+                                                    ,                       +,>D
+                                                                       P≤D Hg,r  = 0.                    (175)
+     −
+Put Og,r = ΘOg,r
+             +
+                 and
+                                             ±
+                                            Yg,r := Og,r
+                                                     ±       ±
+                                                         − ⟨Og,r ⟩g,r 1.                                 (176)
+Define
+                            Qr (g) := ⟨Og,r
+                                        −
+                                            ; Og,r
+                                               + c
+                                                   ⟩g,r ,         b r (g) := ⟨O
+                                                                  Q           b− ; O
+                                                                               r
+                                                                                   b + ⟩c .
+                                                                                     r g,r               (177)
+The exact change of variables A 7→ −A gives
+                                                 b r (−g) = Q
+                                                 Q          b r (g).                                     (178)
+
+The principal curvature sources are fixed and reflection even; the measure depends on the physical
+combination gA and on g 2 graph coefficients, while the Gaussian reference is even.
+
+
+                                                            91
+Exact g-derivative identity. At finite cutoff and volume,
+                                d
+                                   Qr (g) = ⟨∂g Dg,r
+                                                 −
+                                                     ; Og,r
+                                                        + c
+                                                            ⟩ + ⟨Og,r−
+                                                                          ; ∂g Dg,r
+                                                                                + c
+                                                                                    ⟩
+                                dg
+                                                 −
+                                            − ⟨Og,r ; Og,r
+                                                        +
+                                                           ; ∂g Vg,r ⟩c .                               (179)
+
+Use the normalized generating functional
+                                                                       −        +
+                                                          e−Vg,r +η− Og,r +η+ Og,r dγr
+                                                      R
+                              Wg,r (η− , η+ ) = log             R                      .                (180)
+                                                                  e−Vg,r dγr
+
+Differentiate first in g and then in the two source variables. The principal target is fixed; all source
+motion is exactly ∂g D ± . The logarithm supplies the connected subtractions.
+Theorem 10.4 (Endpoint packet-shell supplier). For the graph-segment family constructed above, the
+complete twice-marked endpoint expansion has the following properties.
+    (i) The grounded periodic covariance has volume-independent AA, AF , and F F rows of orders two,
+        three, and four. After the exact global contact is subtracted, every complete reflection/BRS packet
+        has two lattice-difference factors and therefore gains (r/ℓi )2 at weak scale i.
+   (ii) The exact weak recurrence admits a finite crossing-cell decomposition. On each fixed cell, both g
+        derivatives are taken before the labelled large-field partition and before bad-core ownership. The
+        differentiated partition is then recollected with the same charged events and with no same-owner
+        cancellation assumption.
+ (iii) Before crossing, the full rooted stable map, including wrapping and charged-flat coordinates, is C 2
+        in g with a strictly contracting same-order marked row. At first crossing, the fresh marked family
+        lies in a uniform hybrid pivot–jet polydisc and satisfies the original-link Fourier–Wiener incidence
+        row required by the joint Haar–optical collect.
+  (iv) The crossing contribution and the no-crossing terminal contribution are controlled by one geometri-
+        cally summable conditional-packet shell majorant. The same majorant controls the functional and
+        its first two g derivatives, extends to the closed crossing cells, and sends the terminal remainder to
+        zero uniformly as the terminal depth tends to infinity.
+Consequently the complete normalized two-root functional, with or without one fixed dimension-six defect
+root, has a cutoff-, volume-, crossing-cell-, and terminal-depth-independent C 2 bound on 0 ≤ g ≤ gr .
+Proof. Appendix A gives the full proof inside this manuscript. Its five subsections establish the grounded-
+torus covariance and globally subtracted packet division; the weak crossing recurrence and wrapping rows;
+the twice-marked conditional-packet contraction; the pre-owner hybrid-polydisc Wiener and compact-
+entrance estimates; and the terminal-shell summation. No additional mathematical input is imported
+beyond the results proved in Sections 3–7.
+
+Scale-uniform pullback defect row.            Uniformly for 0 ≤ g ≤ gr ,
+                                            ±
+                                          ∥Dg,r ∥r,[1] ≤ Cf r2 L(r)pf .                                 (181)
+
+The same row holds after reflection and with every finite passive source mark used in the two-root stability
+estimate.
+                                      sup ∥Dg,r±
+                                                 ∥r,[1] ≤ Cf r2 L(r)pf .                              (182)
+                                      0≤g≤gr
+
+The marked first-exit theorem and complementary high-jet source transport both begin two engineering
+degrees above the fixed principal target. Their scale-normalized rows are therefore bounded by Cf r2 L(r)pf
+uniformly on the common graph segment. This estimate uses no coupling derivative and so requires only
+the already proved finite marked source bridge.
+10.3     Dimension-six source comparison and noncollapse
+The exact source decomposition is
+                                                ±
+                                               Og,r =O
+                                                     br± + Dg,r
+                                                            ±
+                                                                ,                                       (183)
+with
+                                             ±
+                                           ∥Dg,r ∥[1] ≤ Cf r2 L(r)pf .                                  (184)
+
+
+
+                                                          92
+Two-root stability under the dimension-six defect. Let Q
+                                                       b r (g) be the reflected connected form
+formed with the fixed principal sources. Then
+
+                                      |Qr (g) − Q
+                                                b r (g)| ≤ Cf r2 L(r)pf .                              (185)
+
+Expand the connected two-root form using O± = O b ± + D ± . Every difference term contains a defect root
+and is bounded by the two-root version of Theorem 10.2; the two-defect term is smaller.
+
+Compatibility of the physical scale with the common diagonal. Let f be the profile of
+Lemma 10.1, and let the constants Cf , pf be those in the uniform endpoint and source-defect rows
+above. Choose the fixed countable source-scale set used in Corollary 8.12 to contain a cofinal dyadic
+sequence rn ↓ 0. There is an index n such that, for r = rn ,
+                                                         1
+                                     Cf u(r) + r2 L(r)pf ≤ V0 (f ).
+                                       
+                                                          2
+Before taking the common diagonal subsequence, enlarge the countable source algebra by the fixed fields
+Yr (f ), ΘYr (f ), and their reflected product. The same single diagonal extraction then gives all Schwinger
+limits entering their OS form and preserves every cutoff- and volume-uniform lower bound. The scale r is
+not changed after extraction. The cofinal dyadic choice is countable, while u(r) → 0 and r2 L(r)pf → 0
+along it. Hence one r satisfies the displayed inequality. Adding finitely many fields at that scale preserves
+countability of the source algebra. The source-tree theorem and Corollary 8.12 therefore permit the
+same diagonal argument, and convergence of the finitely many Schwinger functions passes a uniform
+finite-cutoff lower bound to the limit.
+Theorem 10.5 (Interacting-to-Gaussian reflected two-root comparison). For the profile of Lemma 10.1,
+uniformly in cutoff, volume, and preceding ultraviolet depth,
+
+                             |Sur (ΘYr (f )Yr (f )) − V0 (f )| ≤ Cf u(r) + r2 L(r)pf .                  (186)
+                                                                                   
+
+Consequently, for sufficiently small fixed dyadic r,
+                                                            1
+                                        ∥[Yr (f )]∥2OS ≥      V0 (f ) > 0.                             (187)
+                                                            2
+Proof. The master endpoint theorem, equivalently Theorem 10.2, and evenness give
+                                                    Z gr
+                              |Qr (gr ) − Qr (0)| ≤
+                               b          b              Cf g dg ≤ Cf ur .
+                                                           0
+
+At g = 0 the law is the grounded tangent Gaussian and the principal source is the Gaussian Wick source,
+so Q
+   b r (0) = V0 (f ). Add the dimension-six source-defect estimate below; its source error is Cf r2 L(r)pf .
+Choose r and the common subsequence by the compatibility argument above; the total error is then at
+most V0 (f )/2. Reflection-positive recombination identifies the finite-cutoff form with the squared OS
+norm, and the same lemma passes the lower bound to the common limit.
+
+10.4     Limiting curvature vector and finite spectral window
+Lemma 10.6 (Survival of the reflected curvature vector in the common limit). Let Yr (f ) be a fixed
+positive-time reflected local curvature functional. Suppose along the common diagonal subsequence:
+   (i) every Schwinger function entering Sa,L (ΘYr (f )Yr (f )) converges;
+  (ii) reflection-positive recombination has already been performed;
+ (iii) uniformly in cutoff and volume,
+                                                                    1
+                                       Sa,L (ΘYr (f )Yr (f )) ≥       V0 (f ) > 0.
+                                                                    2
+   Then the limiting Osterwalder–Schrader vector
+
+                                                ψY = [Yr (f )]
+
+is nonzero and satisfies
+                                                                         1
+                            ∥ψY ∥2OS = lim Sa,L (ΘYr (f )Yr (f )) ≥        V0 (f ) > 0.
+                                                                         2
+
+                                                       93
+Proof. The OS norm of this fixed local polynomial is a finite linear combination of the convergent limiting
+Schwinger functions. Therefore its finite-cutoff values converge to the limiting quadratic form. The
+uniform positive lower bound passes to the limit.
+Corollary 10.7 (Finite positive local spectral window without Wilson pushforward). Let ψY be the
+nonzero limiting curvature vector from Lemma 10.6. If common physical clustering and the OS spectral
+argument give
+                                    supp µY ⊂ [m⋆ , ∞),  m⋆ > 0,
+then there exists a finite MY ≥ m⋆ such that
+
+                                           µY ([m⋆ , MY ]) > 0.
+
+No exact Wilson pushforward, Wilson moment identity, or reducing retained Hilbert subspace is used.
+
+Proof. The finite spectral measure has total mass
+
+                                    0 < µY ([m⋆ , ∞)) = ∥ψY ∥2OS < ∞.
+
+Since [m⋆ , n] ↑ [m⋆ , ∞), continuity from below implies that some finite n has positive mass. Set
+MY = n.
+
+11     Completion for arbitrary fixed compact simple gauge groups
+Theorem 11.1 (Completion of the fixed-group construction). For every fixed compact connected simple
+G and faithful unitary representation ρ, the group register CG is finite and all hypotheses consumed by
+Sections 2–10 are satisfied. Consequently Theorem 1.1 holds.
+Proof. Compactness and the analytic bi-invariant geometry give the Karcher, logarithm, coarea, and
+faithful-action constants of Section 2. The complete folded block symbol is spacetime-only and tensors
+with Ig , so the strict right-inverse and optical coercivity constants are unchanged. The chart complement
+is charged by the faithful Wilson action and the irregular activity is exponentially small. The permanent
+weak map, centered graph, and BPHZL packet use the same finite-dimensional Lie-algebra tensor calculus,
+with the universal color factor CA (G).
+   The Peter–Weyl spectral sum converges at the fixed order sG , and the higher hybrid-polydisc argument
+supplies the one-pivot nuclear and multipivot Fourier–Wiener rows. The ordinary-periodic toron, seam,
+reflection, and wrapping templates are admitted by Theorem D.3; no twisted sector or finite-volume bundle
+sum is used. The invariant-jet theorem supplies the complete low-dimensional mixing and dimension-six
+regulator spaces. The joint Haar–optical forest, source transport, Ward hierarchy, OS reconstruction,
+and noncollapse theorem then apply with constants depending on G but uniform in cutoff, volume, and
+directed depth. Appendix F, specifically Table 3, records every independent entry of CG , the first proof
+call at which its G-dependence enters, and the subsequent consumers. Thus no additional estimate
+uniform in G is hidden in this completion step: after those finite calls, each rema
