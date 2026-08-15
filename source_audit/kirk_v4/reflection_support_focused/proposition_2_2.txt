@@ -1,0 +1,133 @@
+very new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ = 0,  Cf Sf∗ = 0,
+and in particular Sf Cf∗ + Cf Sf∗ = 0. Expanding Af = (7/8)Sf + (1/8)Cf now gives
+
+                                                        49     1
+                                           Af A∗f =        I4 + Cf Cf∗ .
+                                                        2      64
+The right-inverse identity is immediate, and σmin (Af )2 ≥ 49/2 gives
+
+                     

@@ -1,0 +1,130 @@
+ functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not supplied by the input
+ SI–1      BKAR forest             Exact finite-replica           Permanent domain, allocation, marked
+           formula [4]             connected logarithm.           estimates, and recertification.
+ SI–2      Kotecký–Preiss          Rooted smallness implies       Activities, group-dependent support
+           theorem [5]             convergence of the             charges, Haar contraction, and uniform
+                                   connected polymer              constants.
+                                   logarithm.
+ SI–5      Osterwalder–            The printed OS axioms          The limiting Schwinger family,
+           Schrader                reconstruct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
