@@ -28,7 +28,8 @@ theorem bounded_cover_forces_local_jump
     (hcover : 0 < cover)
     (hroute : gap ≤ cover * localJump) :
     gap / cover ≤ localJump := by
-  exact (div_le_iff₀ hcover).2 hroute
+  apply (div_le_iff₀ hcover).2
+  simpa [mul_comm] using hroute
 
 /-- A lower bound for one local angular jump becomes a lower bound for any
 nonnegative weighted *linear* defect that dominates that jump.  This matches
@@ -36,7 +37,6 @@ the angular power in Yu's pairwise defect. -/
 theorem local_jump_forces_weighted_linear_defect
     {weight gap cover localJump defect : ℝ}
     (hweight : 0 ≤ weight)
-    (hcover : 0 < cover)
     (hlocal : gap / cover ≤ localJump)
     (hdefect : weight * localJump ≤ defect) :
     weight * (gap / cover) ≤ defect := by
