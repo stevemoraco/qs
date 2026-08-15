@@ -88,7 +88,8 @@ jobs:
                  compact['tool_errors'] or compact['tool_warnings'] or
                  compact['failed_declarations'] or compact['forbidden_postcompile'])
           if bad:
-              print(json.dumps(compact, sort_keys=True))
+              msg = json.dumps(compact, sort_keys=True).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print(f'::error title=AXLE clean-verdict failure::{msg}')
               raise SystemExit(1)
           print('VERIFIED CLEAN')
           PY
