@@ -1,0 +1,2041 @@
+===== Theorem 2.4 hit 1 at 18538 =====
+ative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not supplied by the input
+ SI–1      BKAR forest             Exact finite-replica           Permanent domain, allocation, marked
+           formula [4]             connected logarithm.           estimates, and recertification.
+ SI–2      Kotecký–Preiss          Rooted smallness implies       Activities, group-dependent support
+           theorem [5]             convergence of the             charges, Haar contraction, and uniform
+                                   connected polymer              constants.
+                                   logarithm.
+ SI–5      Osterwalder–            The printed OS axioms          The limiting Schwinger family,
+           Schrader                reconstruct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ = 0,  Cf Sf∗ = 0,
+and in particular Sf Cf∗ + Cf Sf∗ = 0. Expanding Af = (7/8)Sf + (1/8)Cf now gives
+
+                                                        49     1
+                                           Af A∗f =        I4 + Cf Cf∗ .
+                                                        2      64
+The right-inverse identity is immediate, and σmin (Af )2 ≥ 49/2 gives
+
+                                                             4         8
+                                           ∥P0 ∥22 =                ≤    .
+                                                        σmin (Af )2   49
+
+   It remains to certify the complex strip. Put c = cosh(10−3 ) < 1.000001. On |ℑzj | ≤ 10−3 , the
+displayed symbol gives the following uniform entrywise derivative bounds for one alias block:
+
+                                 entry and differentiated variable             bound
+                                               ∂µ Mµµ                          1.001
+                                           ∂j Mµµ , j ̸= µ                     0.251
+                                          ∂µ Mµν , µ ̸= ν                      0.251
+                                          ∂ν Mµν , µ ̸= ν                      0.126
+                                        ∂j Mµν , j ∈/ {µ, ν}                   0.126
+
+(the estimates use only | sin w|, | cos w| ≤ c and the coefficient (1 − ϑ)/3 = 1/24). Consequently, for each j,
+
+          ∥∂j Af (z)∥2 ≤ ∥∂j Af (z)∥F ≤ 16[1.0012 + 3(0.251)2 + 3(0.251)2 + 9(0.126)2 ] < 4.94.
+                                           p
+
+
+For z = x + iy, integration along x + ity and Cauchy–Schwarz give
+                                                                1/2
+                                      X3
+            ∥Af (z) − Af (x)∥ ≤ |y|2    sup ∥∂j Af (x + ity)∥22     < 0.002 (2 · 4.94) < 0.020.
+                                        j=0 0≤t≤1
+
+
+Thus 0.07 is a conservative consequence of a fully displayed finite bound. On the real zone,
+
+                                             49                    81
+                                                                r
+                                       T
+                                   Af Af ⪰      I,     ∥Af ∥ ≤        .
+                                              2                    2
+Using the retained conservative value 0.07,
+
+                                                                     81
+                                                                 r
+                     ∥Af (z)Af (z) − Af (x)Af (x) ∥ < 2
+                                  T                     T
+                                                                        (0.07) + (0.07)2 < 0.896.
+                                                                      2
+Neumann inversion therefore gives
+                                                                                  −1
+                                                                     49
+                                                                 
+                                                    T −1
+                                      Af (z)Af (z)                      − 0.896
+                                                     
+                                                             ≤                          ,
+                                                                     2
+
+and hence
+                                                   2     81/2 + 0.07
+                                                       p             
+                                      ∥P0 (z)∥ ≤                       < 0.546.
+                                                       49/2 − 0.896
+Analyticity in a fixed strip gives exponential Fourier-kernel decay.
+
+2.2    Exact normal fiber chart and coarea
+Let Xm , Ym be exponentially weighted Banach coordinate spaces and let
+
+                    L : Xm → Ym ,         P : Ym → Xm ,              LP = I,        ∥P ∥m = p < 1.
+
+Put K = ker L and write
+
+                            B(x) = Lx + N (x),              N (0) = 0,       DN (0) = 0.
+
+
+                                                            7
+Theorem 2.5 (Normal fiber chart). For w ∈ Ym and ζ ∈ K, consider
+                                       F (y; w, ζ) = y + N (P y + ζ) − w.
+Assume on a product ball that
+                                       η := sup ∥DN (P y + ζ)P ∥m < 1.
+Then there is a unique analytic solution y = T (w, ζ) and
+                                            PN (w, ζ) := P T (w, ζ) + ζ
+is an exact fiber chart:
+                                                  B(PN (w, ζ)) = w.
+If A = I + DN (PN )P , then
+                                Dw T = A− 1,            Dζ T = −A− 1DN (PN )|K ,
+and hence
+                           Dw PN = P A− 1,           Dζ PN = IK − P A− 1DN (PN )|K .
+All derivatives through order three are finite sums of products of A− 1, P, D2 N, D3 N and are exponentially
+local in the same Banach matrix algebra.
+Proof. For fixed (w, ζ), the map
+                                                 y 7→ w − N (P y + ζ)
+is an η-contraction on a sufficiently chosen invariant ball. Banach’s fixed-point theorem gives T . The
+exact fiber identity follows by substitution. Differentiating
+                                              T + N (P T + ζ) = w
+gives the displayed first derivatives. Repeated differentiation gives the second- and third-order Bell-
+polynomial formulas. Since ∥A− 1∥ ≤ (1 − η)− 1, every term is bounded in the same exponential matrix
+algebra.
+Corollary 2.6 (Explicit zero-detail constants). Let
+                                 Mr (ρ) =     sup ∥Dr N (x)∥m ,                  r = 2, 3,
+                                            ∥x∥m ≤ρ
+
+and suppose
+                                                          1
+                                                    pρM2 (ρ) ≤
+                                                            .
+                                                          4
+For the zero-detail section S(w) = PN (w, 0), using the conservative folded-strip value p ≤ 0.546, one has
+                                            ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+                                                                 
+
+while det J0 is a once-only field-independent normalization.
+Proof. The chart factors as
+                                       (w, ζ) 7→ (T (w, ζ), ζ) 7→ J0 (T, ζ).
+The first derivative is block triangular:
+                                                 A− 1   −A− 1DN |K
+                                                                        
+                                                                             .
+                                                  0        IK
+Its determinant is det A− 1.
+
+
+                                                           8
+2.3     Nonlinear forty-nine-path section
+Lemma 2.8 (Finite-cell analytic atlas and uniform Cauchy bounds). Let P49 be the finite path atlas
+for one retained cell and its finite aligned-reflection template family. There exist fixed radii 0 < η0 < η1 ,
+uniform under the standing convention, such that the product exponential, multiplication, inversion,
+logarithm, and Karcher-mean maps defining every template extend holomorphically from Tη0 to Tη1 .
+   Write the canonically rescaled local block as
+
+                             B(x) = Lx + N (x),       N (0) = 0,             DN (0) = 0.
+
+For every exponential kernel rate 0 < m < mP and r = 2, 3, there is a finite constant
+
+                                             CN,r (m; η0 , η1 ) < ∞
+
+such that
+                                    sup ∥Dr N (x)∥Km ≤ CN,r (m; η0 , η1 ),
+                                   x∈Tη0
+
+uniformly under the standing convention. The same constants, enlarged by a finite maximum, serve the
+aligned-reflection templates.
+Proof. For one retained cell the block depends on finitely many g coordinates. The exponential and
+multiplication maps are entire, while inversion and the principal logarithm are holomorphic on a fixed
+neighborhood of the identity. At the flat field the Karcher critical point has positive Hessian on the
+retained tangent space; the analytic implicit-function theorem therefore supplies a unique holomorphic
+Karcher mean on a fixed complex neighborhood. The path family and the reflected template family are
+finite, so one may choose common nested radii 0 < η0 < η1 for all of them. On the larger finite-dimensional
+complex polydisc, every elementary map and their finite compositions are holomorphic and uniformly
+bounded. Cauchy’s integral estimate on the smaller polydisc gives uniform derivative bounds through
+order three with denominator powers of η1 − η0 .
+   The global block is obtained by translating this fixed finite cell. Each output row meets only a fixed
+number of input cells, and each input column enters only a fixed number of output cells. Multiplying the
+finite-cell Cauchy bounds by these fixed incidence numbers gives the two-sided exponentially weighted
+Schur-kernel bounds. These incidence numbers do not depend on the total volume or preceding weak
+depth. The aligned-reflection family is finite, so one takes a finite maximum.
+Proposition 2.9 (Model-specific nonlinear normal section for the forty-nine-path block). Let
+
+                             pm := ∥P0 ∥Km < 0.546,           C2 := CN,2 (m; η0 , η1 ),
+
+and choose
+                                                               1
+                                                                    
+                                                          η0
+                                           ρm = min          ,           .
+                                                          4 4pm C2
+For every retained coordinate w with ∥w∥Km ≤ ρm , the retained-space equation
+
+                                               y + N (P0 y) = w
+
+has a unique solution y = T (w, 0) in ∥y∥Km ≤ 2ρm . The zero-detail normal section
+
+                                              S(w) := P0 T (w, 0)
+
+satisfies
+                                  B(S(w)) = w,        ∥S(w)∥Km ≤ 2pm ρm .
+It is analytic and exponentially quasi-local, and its first three marked derivatives have volume- and
+depth-independent bounds. The same conclusion holds on the aligned-reflection templates after taking the
+minimum radius over that finite family.
+Proof. For fixed w, define
+                                            Φw (y) := w − N (P0 y).
+If ∥y∥ ≤ 2ρm , then ∥P0 y∥ ≤ η0 /2. Since DN (0) = 0, Lemma 2.8 gives
+                                                                                 pm  1
+                          ∥Dy Φw (y)∥ = ∥DN (P0 y)P0 ∥ ≤ 2p2m C2 ρm ≤               < .
+                                                                                  2  2
+
+                                                          9
+The second-order integral formula gives
+                                         1                            pm
+                          ∥N (P0 y)∥ ≤     C2 ∥P0 y∥2 ≤ 2C2 p2m ρ2m ≤    ρm < ρm .
+                                         2                             2
+Thus Φw maps the 2ρm ball into itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential charts as
+                                                 b Z : a 7−→ w.
+                                                 B
+
+On the common weak chart,
+                                    b Z (a) = ϑ(I + KZ (a)),            7
+                                   DB                              ϑ=     ,
+                                                                        8
+
+
+                                                      10
+where KZ has fixed propagation range and
+                                                                                  1
+                              sup max{∥KZ (a)∥1→1 , ∥KZ (a)∥∞→∞ } ≤                 .
+                               a                                                  4
+The same row and column estimates hold after the fixed marked derivatives used below.
+Proof. At the flat field, the selected straight input contributes ϑI. The cross-anchor cancellation can be
+read directly from the flat forty-nine-path symbol. Its diagonal detour part is proportional to
+                                                      kµ Y
+                                              cos          cos kλ ,
+                                                       2
+                                                        λ̸=µ
+
+so in position space every detour coefficient has an odd displacement in all three transverse directions
+relative to the selected all-even anchor column. For µ ̸= ν, the factor
+                                        kν
+                           sin kµ sin      (2 cos kα cos kβ + cos kα + cos kβ + 2)
+                                        2
+has an odd µ displacement. Thus no detour term lands on another selected anchor link; the orientation
+signs are the sine signs in this formula. The flat simultaneous derivative is therefore exactly ϑI. Away
+from the flat field, every entry is an analytic function of finitely many path holonomies and differs from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                  
+
+===== Theorem 2.4 hit 2 at 34764 =====
+                                     Af (z)Af (z)                      − 0.896
+                                                     
+                                                             ≤                          ,
+                                                                     2
+
+and hence
+                                                   2     81/2 + 0.07
+                                                       p             
+                                      ∥P0 (z)∥ ≤                       < 0.546.
+                                                       49/2 − 0.896
+Analyticity in a fixed strip gives exponential Fourier-kernel decay.
+
+2.2    Exact normal fiber chart and coarea
+Let Xm , Ym be exponentially weighted Banach coordinate spaces and let
+
+                    L : Xm → Ym ,         P : Ym → Xm ,              LP = I,        ∥P ∥m = p < 1.
+
+Put K = ker L and write
+
+                            B(x) = Lx + N (x),              N (0) = 0,       DN (0) = 0.
+
+
+                                                            7
+Theorem 2.5 (Normal fiber chart). For w ∈ Ym and ζ ∈ K, consider
+                                       F (y; w, ζ) = y + N (P y + ζ) − w.
+Assume on a product ball that
+                                       η := sup ∥DN (P y + ζ)P ∥m < 1.
+Then there is a unique analytic solution y = T (w, ζ) and
+                                            PN (w, ζ) := P T (w, ζ) + ζ
+is an exact fiber chart:
+                                                  B(PN (w, ζ)) = w.
+If A = I + DN (PN )P , then
+                                Dw T = A− 1,            Dζ T = −A− 1DN (PN )|K ,
+and hence
+                           Dw PN = P A− 1,           Dζ PN = IK − P A− 1DN (PN )|K .
+All derivatives through order three are finite sums of products of A− 1, P, D2 N, D3 N and are exponentially
+local in the same Banach matrix algebra.
+Proof. For fixed (w, ζ), the map
+                                                 y 7→ w − N (P y + ζ)
+is an η-contraction on a sufficiently chosen invariant ball. Banach’s fixed-point theorem gives T . The
+exact fiber identity follows by substitution. Differentiating
+                                              T + N (P T + ζ) = w
+gives the displayed first derivatives. Repeated differentiation gives the second- and third-order Bell-
+polynomial formulas. Since ∥A− 1∥ ≤ (1 − η)− 1, every term is bounded in the same exponential matrix
+algebra.
+Corollary 2.6 (Explicit zero-detail constants). Let
+                                 Mr (ρ) =     sup ∥Dr N (x)∥m ,                  r = 2, 3,
+                                            ∥x∥m ≤ρ
+
+and suppose
+                                                          1
+                                                    pρM2 (ρ) ≤
+                                                            .
+                                                          4
+For the zero-detail section S(w) = PN (w, 0), using the conservative folded-strip value p ≤ 0.546, one has
+                                            ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+                                                                 
+
+while det J0 is a once-only field-independent normalization.
+Proof. The chart factors as
+                                       (w, ζ) 7→ (T (w, ζ), ζ) 7→ J0 (T, ζ).
+The first derivative is block triangular:
+                                                 A− 1   −A− 1DN |K
+                                                                        
+                                                                             .
+                                                  0        IK
+Its determinant is det A− 1.
+
+
+                                                           8
+2.3     Nonlinear forty-nine-path section
+Lemma 2.8 (Finite-cell analytic atlas and uniform Cauchy bounds). Let P49 be the finite path atlas
+for one retained cell and its finite aligned-reflection template family. There exist fixed radii 0 < η0 < η1 ,
+uniform under the standing convention, such that the product exponential, multiplication, inversion,
+logarithm, and Karcher-mean maps defining every template extend holomorphically from Tη0 to Tη1 .
+   Write the canonically rescaled local block as
+
+                             B(x) = Lx + N (x),       N (0) = 0,             DN (0) = 0.
+
+For every exponential kernel rate 0 < m < mP and r = 2, 3, there is a finite constant
+
+                                             CN,r (m; η0 , η1 ) < ∞
+
+such that
+                                    sup ∥Dr N (x)∥Km ≤ CN,r (m; η0 , η1 ),
+                                   x∈Tη0
+
+uniformly under the standing convention. The same constants, enlarged by a finite maximum, serve the
+aligned-reflection templates.
+Proof. For one retained cell the block depends on finitely many g coordinates. The exponential and
+multiplication maps are entire, while inversion and the principal logarithm are holomorphic on a fixed
+neighborhood of the identity. At the flat field the Karcher critical point has positive Hessian on the
+retained tangent space; the analytic implicit-function theorem therefore supplies a unique holomorphic
+Karcher mean on a fixed complex neighborhood. The path family and the reflected template family are
+finite, so one may choose common nested radii 0 < η0 < η1 for all of them. On the larger finite-dimensional
+complex polydisc, every elementary map and their finite compositions are holomorphic and uniformly
+bounded. Cauchy’s integral estimate on the smaller polydisc gives uniform derivative bounds through
+order three with denominator powers of η1 − η0 .
+   The global block is obtained by translating this fixed finite cell. Each output row meets only a fixed
+number of input cells, and each input column enters only a fixed number of output cells. Multiplying the
+finite-cell Cauchy bounds by these fixed incidence numbers gives the two-sided exponentially weighted
+Schur-kernel bounds. These incidence numbers do not depend on the total volume or preceding weak
+depth. The aligned-reflection family is finite, so one takes a finite maximum.
+Proposition 2.9 (Model-specific nonlinear normal section for the forty-nine-path block). Let
+
+                             pm := ∥P0 ∥Km < 0.546,           C2 := CN,2 (m; η0 , η1 ),
+
+and choose
+                                                               1
+                                                                    
+                                                          η0
+                                           ρm = min          ,           .
+                                                          4 4pm C2
+For every retained coordinate w with ∥w∥Km ≤ ρm , the retained-space equation
+
+                                               y + N (P0 y) = w
+
+has a unique solution y = T (w, 0) in ∥y∥Km ≤ 2ρm . The zero-detail normal section
+
+                                              S(w) := P0 T (w, 0)
+
+satisfies
+                                  B(S(w)) = w,        ∥S(w)∥Km ≤ 2pm ρm .
+It is analytic and exponentially quasi-local, and its first three marked derivatives have volume- and
+depth-independent bounds. The same conclusion holds on the aligned-reflection templates after taking the
+minimum radius over that finite family.
+Proof. For fixed w, define
+                                            Φw (y) := w − N (P0 y).
+If ∥y∥ ≤ 2ρm , then ∥P0 y∥ ≤ η0 /2. Since DN (0) = 0, Lemma 2.8 gives
+                                                                                 pm  1
+                          ∥Dy Φw (y)∥ = ∥DN (P0 y)P0 ∥ ≤ 2p2m C2 ρm ≤               < .
+                                                                                  2  2
+
+                                                          9
+The second-order integral formula gives
+                                         1                            pm
+                          ∥N (P0 y)∥ ≤     C2 ∥P0 y∥2 ≤ 2C2 p2m ρ2m ≤    ρm < ρm .
+                                         2                             2
+Thus Φw maps the 2ρm ball into itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential charts as
+                                                 b Z : a 7−→ w.
+                                                 B
+
+On the common weak chart,
+                                    b Z (a) = ϑ(I + KZ (a)),            7
+                                   DB                              ϑ=     ,
+                                                                        8
+
+
+                                                      10
+where KZ has fixed propagation range and
+                                                                                  1
+                              sup max{∥KZ (a)∥1→1 , ∥KZ (a)∥∞→∞ } ≤                 .
+                               a                                                  4
+The same row and column estimates hold after the fixed marked derivatives used below.
+Proof. At the flat field, the selected straight input contributes ϑI. The cross-anchor cancellation can be
+read directly from the flat forty-nine-path symbol. Its diagonal detour part is proportional to
+                                                      kµ Y
+                                              cos          cos kλ ,
+                                                       2
+                                                        λ̸=µ
+
+so in position space every detour coefficient has an odd displacement in all three transverse directions
+relative to the selected all-even anchor column. For µ ̸= ν, the factor
+                                        kν
+                           sin kµ sin      (2 cos kα cos kβ + cos kα + cos kβ + 2)
+                                        2
+has an odd µ displacement. Thus no detour term lands on another selected anchor link; the orientation
+signs are the sine signs in this formula. The flat simultaneous derivative is therefore exactly ϑI. Away
+from the flat field, every entry is an analytic function of finitely many path holonomies and differs from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                    4
+Every principal subproblem obtained by fixing the exterior anchors has the same lower Lipschitz bound
+and a volume-independent inverse derivative.
+Proof. For v = a − b, integrate the derivative along the segment from b to a. Schur’s test gives
+∥KZ ∥2→2 ≤ 1/4, proving both bounds. The lower bound gives injectivity; the inverse-function theorem
+gives the smooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.4 (Finite-cell retention and chart charge). There are constants Cret < ∞, cch > 0, and
+tch > 0, depending only on the fixed cell atlas, such that
+
+                                            DQ (U ) ≤ Cret AQ+ (U )
+
+for every fine configuration. Moreover,
+
+                                   TQ (U ) ≥ tch /4     =⇒     AQ+ (U ) ≥ cch .
+
+The constants are independent of total volume, ultraviolet depth, periodic wrapping, and the aligned-
+reflection template.
+Proof. Use a boundary-rooted tree gauge on the fixed finite contractible cell. By Lemma 3.1, the zero set
+of AQ+ is precisely the flat set. On that set all common-endpoint paths agree, hence DQ = TQ = 0. Near
+the flat set, the representation-normalized quadratic comparison and the grounded finite-cell Poincaré
+inequality give
+                                          AQ+ ≍ ∥dX∥2 ≍ ∥X∥2 ,
+while smoothness of the finite path atlas and the fact that every retained plaquette word equals the
+identity on the flat set give DQ + TQ ≤ C∥X∥2 . This proves the retention inequality on one neighborhood
+of the flat set.
+   Remove a smaller such neighborhood. On the resulting compact set, AQ+ has a strictly positive
+minimum and the smoothly extended DQ is bounded, so their quotient is bounded there as well. This
+
+
+                                                         11
+proves the global displayed inequality without extending a quotient through its zero set. Finally choose
+tch inside the chart reserve. The closed set {TQ ≥ tch /4} is disjoint from the flat set; compactness and
+Lemma 3.1 give a positive minimum cch of AQ+ on it. Taking the finite maximum and minimum over the
+bulk and aligned-reflection templates proves the stated uniformity.
+
+  Choose smooth decreasing cutoffs γD , γ0 , γ1 ∈ [0, 1] with γ0 ≤ γ1 and
+
+                               γD = 1 (DQ ≤ χ2 /4), γD = 0 (DQ ≥ χ2 ),
+                               γ0 = 1 (TQ ≤ tch /8), γ0 = 0 (TQ ≥ tch /4),
+                               γ1 = 1 (TQ ≤ tch /2), γ1 = 0 (TQ ≥ tch ).
+
+Define the exact labelled partition
+
+                Q = γD γ0 ,
+               χin                  χcurv
+                                     Q    = (1 − γD )γ0 ,         Q = γ1 − γ0 ,
+                                                                 χcol              Q = 1 − γ1 .
+                                                                                  χout
+
+Then
+                                           Q + χQ
+                                          χin        + χcol
+                                                        Q + χQ = 1
+                                                curv         out
+
+
+pointwise. The labels are used only inside absolute-value expansions and are recombined before reflection
+positivity is invoked.
+Lemma 3.5 (Charged support of every irregular label). After fixing 0 < χ ≤ χ0 with χ20 ≤ 4cch , every
+curvature, collar, or outer label is supported on
+
+                                                 AQ+ (U ) ≥ c0 χ2
+
+for one fixed c0 > 0. Every derivative of a splice cutoff through order 2sG is supported on the same
+charged event and has a fixed-template polynomial bound in χ−1 and the fixed chart thresholds.
+
+Proof. On the support of 1 − γD , either DQ ≥ χ2 /4 or a derivative of γD is present. The retention
+inequality gives AQ+ ≥ χ2 /(4Cret ). On the collar and outer supports, or on a derivative of γ0 or γ1 , one
+has TQ ≥ tch /8 after decreasing the fixed thresholds once. The compactness argument in Theorem 3.4
+gives a fixed positive action charge, which dominates c0 χ2 for χ ≤ χ0 . The derivative bounds through
+order 2sG follow from the fixed smooth cutoffs, Lemma 3.1, and the finite cell atlas; differentiation changes
+neither transition support nor action charge.
+
+   Fix R0 larger than the diameter of every local variable support in one normalized step. For each
+labelled bad block Q, choose a finite integration core IQ containing every variable on which its cutoff and
+retention estimate depend, and put
+                                             Hb Q = N2R (IQ ).
+                                                        0
+
+
+Join two bad blocks when their H-sets
+                                b     meet. A bad seed X is a connected component of this graph, with
+                          [                     [
+                  I(X) =       IQ ,   H(X) =       HbQ,     H + (X) = NR0 (H(X)).
+                              Q∈X                     Q∈X
+
+There are fixed constants CH and νov < ∞ such that
+
+                                     |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|,
+
+and the enlarged-cell overlap graph admits a νov -coloring.
+Proposition 3.6 (Component action charge). For every bad seed X and every configuration in its labelled
+support,
+                                                            |X|
+                                        AI(X) (U ) ≥ c∗ χ2      .
+                                                            νov
+The statement is uniform under the standing convention.
+Proof. A color class contains a subfamily S ⊂ X of pairwise disjoint enlarged cells with |S| ≥ |X|/νov .
+By Lemma 3.5, every selected cell carries c0 χ2 of faithful Wilson action. The selected action supports are
+disjoint, so their charges add. Enlarging the fixed cores once ensures all selected plaquettes lie in I(X).
+Rename the finite constant.
+
+
+
+                                                            12
+3.1    Permanent support geometry
+Let τ (S) denote the lattice spanning-tree size of a connected reported support. Assume covariance
+connectors obey
+                                 |C(x, y)| ≤ KC e−µd(x,y) ,   µ > 0.
+Lemma 3.7 (Geometric reporting). Let S1 , . . . , Sn be species supports joined by a labelled tree T . Report
+each covariance edge by a shortest connector path and each hard-core edge by its fixed bounded collar. If
+P is the union of all supports, paths, and finite atlas collars, then
+                                           n
+                                           X                  X
+                                τ (P ) ≤         τ (Si ) +            de + Cgeo (n − 1)
+                                           i=1               e∈Tcov
+
+for a finite template constant Cgeo .
+Proof. Choose a spanning tree in each Si . Add the reported connector for every edge of T , and add a
+uniformly bounded number of collar edges for each new attachment. The resulting connected graph spans
+P and has the stated number of edges.
+
+Consequence (Permanent locality exponent).                        For every 0 < κ < µ,
+                        Y          Y
+               eκτ (P )   KC e−µde    KH
+                           e∈Tcov            e∈Thc
+                                                   n−1 Y κτ (Si ) Y −(µ−κ)de
+                        ≤ eκCgeo max{KC , KH eκRH }
+                         
+                                                         e           e        .
+                                                                        i         e∈Tcov
+
+Thus connector and hull reporting preserve the same support exponent.
+Lemma 3.8 (Allocation loss is per vertex). Assume
+                                             X
+                                         sup    eκτ (S) βS ≤ b
+                                                 x
+                                                      S∋x
+
+and |S| ≤ cd (1 + τ (S)). Then every species obeys
+                               βS |S| ≤ Cd,κ b,             Cd,κ = cd sup(1 + t)e−κt .
+                                                                            t≥0
+
+                                                                                                   Creg bn
+                                                                      P
+Consequently a Gaussian regulator factor controlled by                  i βSi |Si | costs at most e        on an n-vertex
+family.
+Proof. Choose any root x ∈ S. The cone gives βS ≤ be−κτ (S) . Multiply by the cardinality bound and
+take the scalar supremum.
+Theorem 3.9 (Corrected support closure). Assume:
+1. the summed replica-BKAR theorem;
+2. the geometric reporting lemma;
+3. the complete-species allocation cone;
+4. the exact dimension-ledger reblocking factor 24−∆ ;
+5. a logarithmic-support localization estimate
+                           qloc (D, L) ≤ C L−3 + (log L)pD LΓ−δD ,
+                                                               
+                                                                                      δD → ∞.
+Choose κ = µ/2. If the rooted regular atom mass and allocation radius are small enough that
+                                                     χeff (u, r, b) < 1,
+then one may choose finite D and finite L = 2s so that the stable regular derivative satisfies
+                                                 ∥DΦreg |stable ∥ < 1
+in the same permanent κ-weighted support norm.
+Proof. The first two lemmas leave a residual connector decay µ − κ > 0 and convert every fixed geometric
+and regulator cost into a per-vertex constant. The summed BKAR tree recursion is therefore geometric
+in the effective rooted link mass χeff . Reblocking is paid by the engineering factor and does not weaken κ.
+Choose D with δD > Γ + 3, then choose finite L so qloc lies inside the strict associated-graded jet gap.
+Finally shrink u, r, b to absorb the nonlinear and irregular source terms.
+
+
+                                                             13
+3.2      Aligned-reflection section
+Let L : Hf → Hc be the canonically rescaled full-lattice flat block and let P : Hc → Hf satisfy
+
+                                                                    1
+                                     LP = I,       ∥P ∥exp,2 ≤ p < √ .
+                                                                     2
+Assume L and P intertwine aligned reflection.
+   Let E+ be reflection extension from the positive closed-half-space coarse space and R+ fine-field
+restriction. Assume                           √
+                                     ∥E+ ∥ ≤ 2,      ∥R+ ∥ ≤ 1,
+and that every retained row in the positive schedule is supported in the positive closed half-space and
+fixed reflection boundary.
+Theorem 3.10 (Reflected linear section). Define
+
+                                               P+ = R+ P E+ .
+
+Then
+                                                 L+ P+ = I
+and                                                       √
+                                         ∥P+ ∥exp,2 ≤         2 p < 1.
+For the forty-nine-path block,
+                                                            16
+                                                ∥P+ ∥22 ≤      .
+                                                            49
+Proof. Closed-half-space support gives L+ R+ = R+ L on reflected fields. Therefore
+
+                                     L+ P+ = R+ LP E+ = R+ E+ = I.
+
+The norm estimate is immediate. On the real Brillouin zone the bulk normal section satisfies ∥P ∥2 ≤ 8/49,
+yielding the displayed sharper bound.
+
+Theorem 3.11 (Reflected nonlinear section). Let S be an exact reflection-equivariant nonlinear bulk
+section,
+                                                            p
+                              B(S(w)) = w,       ∥DS∥ ≤        .
+                                                          1−η
+Define
+                                          S+ (w) = R+ S(E+ w).
+Then
+                                               B+ (S+ (w)) = w
+and                                                         √
+                                                           2p
+                                               ∥DS+ ∥ ≤       .
+                                                          1−η
+In particular, using p < 0.546 and η ≤ 1/10,
+
+                                          ∥DS+ ∥ < 0.859 < 1.
+
+For m = 2, 3,
+                                        ∥Dm S+ ∥ ≤ 2m/2 ∥Dm S∥.
+Proof. The exact path-extent schedule gives
+
+                                               B+ R+ = R+ B
+
+on reflected configurations. Hence
+
+                                     B+ S+ = R+ BSE+ = R+ E+ = I.
+
+The derivative estimates follow from the chain rule and the extension and restriction norms.
+
+
+
+                                                     14
+3.3    Exterior complex tube
+Fix the exact symmetric forty-nine-path fixed-G block. Let X be a connected curvature-bad component,
+I(X) its fixed integration core, and RX its exterior ring. Use the selected-anchor component chart on
+I(X), with every chart Jacobian included in the density.
+Lemma 3.12 (Finite word transport). There are fixed radii δout , δin > 0 and a constant Ctr < ∞,
+uniform under the standing convention, such that the component anchor solve is holomorphic for
+
+                                       η ∈ WRX ,        h ∈ Θδout ,RX ,
+
+and every Wilson word in the owned core atlas obeys
+                               X
+                                    ∥δAℓ (h)∥2 ≤ Ctr u qRX (h) + |X| .
+                                                                    
+
+                                ℓ∈I(X)
+
+Its derivatives through order three have the same rooted local incidence bound.
+Proof. Every owned plaquette is a finite word in the fixed forty-nine-path atlas. On the smaller tube, the
+exponential, logarithm, Karcher solve, and principal-submatrix anchor inverse are holomorphic. Their
+derivatives are bounded on the compact closure of each local template tube. There are only finitely many
+bulk and aligned-reflection local templates; periodic wrapping does not change a rooted local template.
+Summing the finite local row/column incidence bounds gives the displayed estimate.
+Lemma 3.13 (Complex Wilson-sector reserve). For h in the fixed exterior tube,
+
+                                                 1
+                           Re AX (z; η + h) ≥      AX (z; η) − Cu qRX (h) + |X| .
+                                                                               
+                                                 2
+
+By Proposition 3.6, on the curvature-bad support,
+                                                                 |X|
+                                             AX (z; η) ≥ c∗ χ2       ,
+                                                                 νov
+and therefore
+                                                     c∗ χ2 |X|
+                          u−1 Re AX (z; η + h) ≥               − CqRX (h) − C|X|.
+                                                     2 u νov
+Proof. For one normalized fixed-G Wilson word, put w(U ) = wG,ρ (U ). The zero of w is nondegenerate
+at the identity. On a small identity tube, Taylor expansion in a tangent increment H gives
+
+                     |∂w(U )[H]| ≤ CG w(U ) ∥H∥,        |∂ 2 w(U )[H, H]| ≤ CG ∥H∥2 .
+                                       p
+
+
+Away from that tube, w has a positive compact minimum, while its first two derivatives are bounded;
+enlarging CG gives the same inequalities on the complete fixed complex tube. The inequality 2ab ≤ a2 + b2 ,
+followed by the finite word-transport estimate, gives the component bound. Proposition 3.6 gives the
+second display.
+Lemma 3.14 (Fixed-atlas residual). After removing the scalar, complete retained two-jet, and allo-
+cated local determinant endpoint, the sum of Wilson, Haar, inverse-coordinate, coarea, anchor-return,
+determinant-remainder, and finite Schur-connector terms satisfies
+
+                         Re Lfixed
+                             X     (z; η + h) ≤ C|X| + Cuωfix (qRX (η) + qRX (h))
+
+on a smaller fixed tube, for some ωfix > 0.
+Proof. Each fixed local factor has vanishing Taylor coefficients through order two after allocation. Its
+
+===== Theorem 2.4 hit 3 at 106531 =====
+        gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the reported support. The first statement is Corollary 4.10
+with finite support sums. On the unique tree path between the two roots, the triangle inequality makes the
+sum of edge distances at least the root separation. The remaining branches are summed by the unused
+rooted smallness margin. Fixed marks promote finitely many vertices and change only the constant.
+4.4      Wick-stable jet block
+Coordinate choice. Use the grounded covariances and harmonic extensions constructed in Section 4.3.
+Thus, before the scale-j conditional expectation,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+
+where Cj = Cjd is the exact detail covariance and the second term is the embedded remaining covariance.
+After canonical scale-two identification, Cjc is denoted C≥j+1 . For every finite-degree local gauge-complete
+jet P , define
+                                                          1
+                                                                 
+                                        : P : C≥j = exp − ∆C≥j P.
+                                                          2
+The contraction exponential terminates at finite degree.
+   Let Πext extract:
+1. the vacuum coordinate;
+2. the tangent-normalized reflection-even Yang–Mills coordinate;
+3. every declared marked/contact jet of degree below five;
+4. total differences, Bianchi descendants, and the reflection-odd scalar sector.
+   Put
+                                                       Πirr = I − Πext
+on the jet truncation through degree eight. The stable marked fiber begins at degree five; its unmarked
+scalar subfiber begins at degree six.
+Lemma 4.15 (Marked Gaussian Wick martingale). For every finite-degree gauge-complete jet, with zero,
+one, or two active background marks and every fixed finite family of passive source leaves,
+
+                                  ECj : P (Jj W + ζ) : C≥j =: (P ◦ Jj )(W ) : Cjc .
+
+After the canonical scale-two identification this is the stated passage from scale j to scale j +1. Conditional
+Gaussian expectation therefore preserves homogeneous Wick chaos exactly and creates no lower-chaos
+contraction path.
+Proof. This is Corollary 4.12. Explicitly,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+so the commuting contraction operators give
+                             1          − 12 ∆C≥j                     − 21 ∆C c
+                           e 2 ∆C j e               P (Jj W + ·) 0 = e        j   (P ◦ Jj )(W ).
+The covariance is fixed rather than background dependent. Background and passive-source derivatives
+therefore commute with the contraction operators. Wick contraction is applied to the complete gauge-
+invariant tensor, so gauge, signed-hypercubic, and aligned-reflection covariance are preserved.
+
+Exact forty-nine-path symbol jet.          For ϑ = 7/8, the exact centered linear block symbol is
+                                                                          
+                                                 kµ             Y
+                                 Mµµ (k) = 2 cos     ϑ + (1 − ϑ)    cos kλ  ,
+                                                  2
+                                                                           λ̸=µ
+
+and, for µ ̸= ν,
+                                 1−ϑ            kν
+                    Mµν (k) =        sin kµ sin    [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                                  3             2
+   Let
+                                                                 1
+                                                       N (k) =     M (k)
+                                                                 2
+be the canonically normalized connection symbol.
+
+
+                                                              30
+Lemma 4.16 (Exact low-momentum jet). The printed symbol satisfies:
+                                        N (0) = I,         DN (0) = 0,
+and every total-order-three derivative at zero vanishes. The nonzero quadratic derivatives are generated by
+                                             1                         1
+                              ∂µ2 Nµµ (0) = − ,      ∂λ2 Nµµ (0) = −        (λ ̸= µ),
+                                             4                         8
+and
+                                                    1
+                                        ∂µ ∂ν Nµν (0) = (µ ̸= ν).
+                                                   16
+Consequently the block correction raises engineering degree by an even positive amount. It has no
+same-degree off-diagonal part.
+Proof. For the diagonal entry,
+                                                                                
+                                                                   Y
+                               Nµµ (k) = cos(kµ /2) ϑ + (1 − ϑ)           cos kλ  .
+                                                                   λ̸=µ
+
+It is even in every variable, so all first and third total derivatives at zero vanish. Direct differentiation
+gives ∂µ2 Nµµ (0) = −1/4 and, for λ ̸= µ, ∂λ2 Nµµ (0) = −(1 − ϑ) = −1/8. For µ ̸= ν,
+                            1−ϑ
+                  Nµν (k) =       sin kµ sin(kν /2) [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                              6
+The bracket equals six at zero, so ∂µ ∂ν Nµν (0) = (1 − ϑ) · (1/2) = 1/16. Its Taylor series begins in total
+degree two and the next terms have total degree four, hence every total-degree-three derivative vanishes.
+These formulas also show that every correction raises engineering degree by an even positive amount.
+
+Stable jet matrix. Order the stable Wick-local jet fiber by increasing declared engineering degree:
+                                           [2]
+                                         Jst = J5 ⊕ J6 ⊕ J7 ⊕ J8 .
+Theorem 4.17 (Stable jet-matrix theorem). At the Gaussian point, the one-step stable derivative is
+                                          Ljet = Πirr S2 Γ(J) Πirr ,
+where Γ(J) is Gaussian second quantization of the harmonic extension and S2 is canonical scale-two
+rescaling.
+   In the displayed degree ordering,
+                                        2 I5    0             0
+                                        −1                        
+                                                      B57
+                                        0   2−2 I6    0     B68 
+                                Ljet = 
+                                        0
+                                                                   ,
+                                                0    2 I7
+                                                      −3
+                                                              0 
+                                          0     0      0    2−4 I8
+after combining all allowed degree-+2r entries into the finite blocks B∆,∆+2r . More generally the matrix
+is block upper triangular and
+                                           gr∆ Ljet = 24−∆ I.
+   All entries are finite and uniform under the standing convention: they are derivatives at the flat point
+of one fixed finite forty-nine-path cell and its fixed finite Wick conversion.
+   Therefore
+                                                             1
+                                                  r(Ljet ) ≤ ,
+                                                             2
+and on the unmarked scalar subfiber,
+                                                             1
+                                                  r(Ljet ) ≤ .
+                                                             4
+Proof. The Wick martingale eliminates every covariance-contraction lowering term. Lemma 4.16 gives
+identity on the same-degree field jet and only degree-+2r corrections. Canonical cell rescaling multiplies
+a homogeneous degree-∆ jet by 24−∆ .
+   The extraction projector removes every declared jet below the stable threshold. Hence the stable matrix
+is block upper triangular with the displayed diagonal. Its entries come from finitely many derivatives of
+finite local analytic maps, so they are finite uniform constants. The spectrum of a finite block triangular
+matrix is the union of the spectra of its diagonal blocks.
+
+
+                                                      31
+4.5    Localization and exact collect
+Fix one finite dyadic macrostep L = 2s . All fields are expressed in the scale-dependent Wick coordinates
+of the stable-jet theorem. Engineering degree includes discrete derivatives and every declared active
+structural mark.
+
+Rooted histories and collect. Let HL be the absolutely summable family of connected regular
+macrostep histories. A history h has a reported connected support P (h), a distinguished root, and a
+canonical hull
+                                             Y = H(h).
+The hull contains the reported supports, shortest covariance connector paths, and the fixed finite atlas
+collar.
+Definition 4.18 (Exact collect). For a coarse connected support Y , define
+                                                     X
+                                        (CL F )Y =         Fh .
+                                                       h∈HL
+                                                      H(h)=Y
+
+The history certificate is retained as a passive label until this sum is formed.
+Lemma 4.19 (Collect is a rooted partition). The sets
+
+                                              {h : H(h) = Y }
+
+partition HL . Hence collect is exact, and for every bounded linear localization operator AY ,
+                                                       X
+                                       AY (CL F )Y =        AY Fh .
+                                                      H(h)=Y
+
+No history is omitted or counted twice.
+Proof. The canonical hull and history certificate are deterministic functions of the reported history.
+Absolute convergence in the rooted activity norm permits bounded linear operations to pass through the
+history sum.
+
+Gauge-covariant local jet projector. For a rooted support Y , choose the canonical root cell r(Y ).
+Parallel-transport every local tensor to r(Y ) along the canonical hull tree and write the resulting local
+field in the finite normal-coordinate atlas.
+    Let JD (Y ) be the finite-dimensional space of gauge-complete, signed-hypercubic covariant, Wick-local
+jets of declared engineering degree at most D, including the extraction sector and the stable jet sector.
+Lemma 4.20 (Discrete covariant localization). There is a projector
+
+                                          LocD,Y : FY 7−→ JD (Y )
+
+with the following properties.
+1. Loc2D,Y = LocD,Y , and it is exact on JD (Y ).
+2. It commutes with gauge transformations, signed-hypercubic symmetries, and aligned reflection.
+3. For 0 ≤ m 
+
+===== Theorem 2.4 hit 4 at 108806 =====
+                                                    e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the reported support. The first statement is Corollary 4.10
+with finite support sums. On the unique tree path between the two roots, the triangle inequality makes the
+sum of edge distances at least the root separation. The remaining branches are summed by the unused
+rooted smallness margin. Fixed marks promote finitely many vertices and change only the constant.
+4.4      Wick-stable jet block
+Coordinate choice. Use the grounded covariances and harmonic extensions constructed in Section 4.3.
+Thus, before the scale-j conditional expectation,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+
+where Cj = Cjd is the exact detail covariance and the second term is the embedded remaining covariance.
+After canonical scale-two identification, Cjc is denoted C≥j+1 . For every finite-degree local gauge-complete
+jet P , define
+                                                          1
+                                                                 
+                                        : P : C≥j = exp − ∆C≥j P.
+                                                          2
+The contraction exponential terminates at finite degree.
+   Let Πext extract:
+1. the vacuum coordinate;
+2. the tangent-normalized reflection-even Yang–Mills coordinate;
+3. every declared marked/contact jet of degree below five;
+4. total differences, Bianchi descendants, and the reflection-odd scalar sector.
+   Put
+                                                       Πirr = I − Πext
+on the jet truncation through degree eight. The stable marked fiber begins at degree five; its unmarked
+scalar subfiber begins at degree six.
+Lemma 4.15 (Marked Gaussian Wick martingale). For every finite-degree gauge-complete jet, with zero,
+one, or two active background marks and every fixed finite family of passive source leaves,
+
+                                  ECj : P (Jj W + ζ) : C≥j =: (P ◦ Jj )(W ) : Cjc .
+
+After the canonical scale-two identification this is the stated passage from scale j to scale j +1. Conditional
+Gaussian expectation therefore preserves homogeneous Wick chaos exactly and creates no lower-chaos
+contraction path.
+Proof. This is Corollary 4.12. Explicitly,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+so the commuting contraction operators give
+                             1          − 12 ∆C≥j                     − 21 ∆C c
+                           e 2 ∆C j e               P (Jj W + ·) 0 = e        j   (P ◦ Jj )(W ).
+The covariance is fixed rather than background dependent. Background and passive-source derivatives
+therefore commute with the contraction operators. Wick contraction is applied to the complete gauge-
+invariant tensor, so gauge, signed-hypercubic, and aligned-reflection covariance are preserved.
+
+Exact forty-nine-path symbol jet.          For ϑ = 7/8, the exact centered linear block symbol is
+                                                                          
+                                                 kµ             Y
+                                 Mµµ (k) = 2 cos     ϑ + (1 − ϑ)    cos kλ  ,
+                                                  2
+                                                                           λ̸=µ
+
+and, for µ ̸= ν,
+                                 1−ϑ            kν
+                    Mµν (k) =        sin kµ sin    [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                                  3             2
+   Let
+                                                                 1
+                                                       N (k) =     M (k)
+                                                                 2
+be the canonically normalized connection symbol.
+
+
+                                                              30
+Lemma 4.16 (Exact low-momentum jet). The printed symbol satisfies:
+                                        N (0) = I,         DN (0) = 0,
+and every total-order-three derivative at zero vanishes. The nonzero quadratic derivatives are generated by
+                                             1                         1
+                              ∂µ2 Nµµ (0) = − ,      ∂λ2 Nµµ (0) = −        (λ ̸= µ),
+                                             4                         8
+and
+                                                    1
+                                        ∂µ ∂ν Nµν (0) = (µ ̸= ν).
+                                                   16
+Consequently the block correction raises engineering degree by an even positive amount. It has no
+same-degree off-diagonal part.
+Proof. For the diagonal entry,
+                                                                                
+                                                                   Y
+                               Nµµ (k) = cos(kµ /2) ϑ + (1 − ϑ)           cos kλ  .
+                                                                   λ̸=µ
+
+It is even in every variable, so all first and third total derivatives at zero vanish. Direct differentiation
+gives ∂µ2 Nµµ (0) = −1/4 and, for λ ̸= µ, ∂λ2 Nµµ (0) = −(1 − ϑ) = −1/8. For µ ̸= ν,
+                            1−ϑ
+                  Nµν (k) =       sin kµ sin(kν /2) [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                              6
+The bracket equals six at zero, so ∂µ ∂ν Nµν (0) = (1 − ϑ) · (1/2) = 1/16. Its Taylor series begins in total
+degree two and the next terms have total degree four, hence every total-degree-three derivative vanishes.
+These formulas also show that every correction raises engineering degree by an even positive amount.
+
+Stable jet matrix. Order the stable Wick-local jet fiber by increasing declared engineering degree:
+                                           [2]
+                                         Jst = J5 ⊕ J6 ⊕ J7 ⊕ J8 .
+Theorem 4.17 (Stable jet-matrix theorem). At the Gaussian point, the one-step stable derivative is
+                                          Ljet = Πirr S2 Γ(J) Πirr ,
+where Γ(J) is Gaussian second quantization of the harmonic extension and S2 is canonical scale-two
+rescaling.
+   In the displayed degree ordering,
+                                        2 I5    0             0
+                                        −1                        
+                                                      B57
+                                        0   2−2 I6    0     B68 
+                                Ljet = 
+                                        0
+                                                                   ,
+                                                0    2 I7
+                                                      −3
+                                                              0 
+                                          0     0      0    2−4 I8
+after combining all allowed degree-+2r entries into the finite blocks B∆,∆+2r . More generally the matrix
+is block upper triangular and
+                                           gr∆ Ljet = 24−∆ I.
+   All entries are finite and uniform under the standing convention: they are derivatives at the flat point
+of one fixed finite forty-nine-path cell and its fixed finite Wick conversion.
+   Therefore
+                                                             1
+                                                  r(Ljet ) ≤ ,
+                                                             2
+and on the unmarked scalar subfiber,
+                                                             1
+                                                  r(Ljet ) ≤ .
+                                                             4
+Proof. The Wick martingale eliminates every covariance-contraction lowering term. Lemma 4.16 gives
+identity on the same-degree field jet and only degree-+2r corrections. Canonical cell rescaling multiplies
+a homogeneous degree-∆ jet by 24−∆ .
+   The extraction projector removes every declared jet below the stable threshold. Hence the stable matrix
+is block upper triangular with the displayed diagonal. Its entries come from finitely many derivatives of
+finite local analytic maps, so they are finite uniform constants. The spectrum of a finite block triangular
+matrix is the union of the spectra of its diagonal blocks.
+
+
+                                                      31
+4.5    Localization and exact collect
+Fix one finite dyadic macrostep L = 2s . All fields are expressed in the scale-dependent Wick coordinates
+of the stable-jet theorem. Engineering degree includes discrete derivatives and every declared active
+structural mark.
+
+Rooted histories and collect. Let HL be the absolutely summable family of connected regular
+macrostep histories. A history h has a reported connected support P (h), a distinguished root, and a
+canonical hull
+                                             Y = H(h).
+The hull contains the reported supports, shortest covariance connector paths, and the fixed finite atlas
+collar.
+Definition 4.18 (Exact collect). For a coarse connected support Y , define
+                                                     X
+                                        (CL F )Y =         Fh .
+                                                       h∈HL
+                                                      H(h)=Y
+
+The history certificate is retained as a passive label until this sum is formed.
+Lemma 4.19 (Collect is a rooted partition). The sets
+
+                                              {h : H(h) = Y }
+
+partition HL . Hence collect is exact, and for every bounded linear localization operator AY ,
+                                                       X
+                                       AY (CL F )Y =        AY Fh .
+                                                      H(h)=Y
+
+No history is omitted or counted twice.
+Proof. The canonical hull and history certificate are deterministic functions of the reported history.
+Absolute convergence in the rooted activity norm permits bounded linear operations to pass through the
+history sum.
+
+Gauge-covariant local jet projector. For a rooted support Y , choose the canonical root cell r(Y ).
+Parallel-transport every local tensor to r(Y ) along the canonical hull tree and write the resulting local
+field in the finite normal-coordinate atlas.
+    Let JD (Y ) be the finite-dimensional space of gauge-complete, signed-hypercubic covariant, Wick-local
+jets of declared engineering degree at most D, including the extraction sector and the stable jet sector.
+Lemma 4.20 (Discrete covariant localization). There is a projector
+
+                                          LocD,Y : FY 7−→ JD (Y )
+
+with the following properties.
+1. Loc2D,Y = LocD,Y , and it is exact on JD (Y ).
+2. It commutes with gauge transformations, signed-hypercubic symmetries, and aligned reflection.
+3. For 0 ≤ m ≤ 3,
+                                ∥ LocD,Y FY ∥[m] ≤ CD (1 + τ (Y ))pD ∥FY ∥[m] .
+4. If LocD,Y FY = 0, then after canonical scale-L rescaling,
+
+                                 ∥TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+
+  The estimate includes both the nonlocal output and its newly generated local projection:
+
+                ∥ LocD TL FY ∥[m] + ∥(1 − LocD )TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+
+Proof. On each finite local template, take the gauge-complete Taylor expansion in normal coordinates
+and scale-dependent Wick monomials, transport all coefficients to the canonical root, and average over
+the finite stabilizer. The dual coefficient functionals use finitely many derivatives and finite-difference
+
+
+                                                     32
+moments. Transport along a tree of radius τ (Y ) costs at most a polynomial in 1 + τ (Y ), proving the
+third row.
+   If LocD,Y FY = 0, every declared Taylor coefficient through degree D vanishes. The integral form of
+the covariant Taylor remainder begins at degree D + 1. Canonical rescaling gives one root-preimage factor
+L4 and L−(D+1) from the smallest omitted engineering degree. Thus the gain is
+
+                                              L4−(D+1) = L3−D .
+
+The regular linearized block kernel is analytic on the fixed tube and bounded through the three active
+marked rows, so integration and the local coefficient functionals preserve this remainder estimate. Applying
+the projector after integration proves the displayed localization-commutator bound; in particular, a
+remainder cannot feed the finite local block without paying the same L3−D factor.
+
+Exact local block and localization commutator. Let ΠD denote the full local jet projector on the
+                                  [s]
+macrostep activity space and let Ljet be the exact finite stable Wick-jet matrix of Theorem 4.17.
+Lemma 4.21 (Exact block decomposition). At the Gaussian point,
+
+                                           DΦL (0)|stable = JL + NL ,
+
+where
+                                                                       [s]
+                                          JL = ΠD DΦL (0)ΠD = Ljet ,
+and every other block,
+
+            ΠD DΦL (0)(1 − ΠD ),          (1 − ΠD )DΦL (0)ΠD ,           (1 − ΠD )
