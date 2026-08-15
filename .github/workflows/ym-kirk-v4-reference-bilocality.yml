@@ -1,0 +1,116 @@
+name: YM Kirk v4 reference bilocality audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-reference-bilocality-20260814-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-reference-bilocality.yml
+
+permissions:
+  contents: write
+
+jobs:
+  source-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-reference-bilocality-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable v4 and extract reference-kernel structure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,time,urllib.request,urllib.error
+          RECORD=21765806
+          EXPECTED='c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          UA='millennium-braid-reference-bilocality-audit/1.0'
+          def get(url,tries=7):
+              last=None
+              for i in range(tries):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'*/*'})
+                      with urllib.request.urlopen(req,timeout=60) as r: return r.read(),r.geturl()
+                  except (urllib.error.HTTPError,urllib.error.URLError) as e:
+                      last=e
+                      if isinstance(e,urllib.error.HTTPError) and e.code not in (429,500,502,503,504): raise
+                      time.sleep(min(2**i,32))
+              raise last
+          raw,final=get(f'https://zenodo.org/api/records/{RECORD}')
+          rec=json.loads(raw)
+          Path('kirk_v4_record.json').write_bytes(raw)
+          pdfs=[f for f in rec.get('files',[]) if str(f.get('key','')).lower().endswith('.pdf')]
+          if len(pdfs)!=1: raise RuntimeError(f'expected one PDF, got {len(pdfs)}')
+          entry=pdfs[0]; furl=entry.get('links',{}).get('content') or entry.get('links',{}).get('self')
+          pdf,pfinal=get(furl); sha=hashlib.sha256(pdf).hexdigest()
+          if sha!=EXPECTED: raise RuntimeError(f'PDF SHA changed: {sha}')
+          Path('kirk_v4.pdf').write_bytes(pdf)
+          print('record',rec.get('id'),'version',rec.get('metadata',{}).get('version'),'sha',sha)
+          PY
+          pdftotext -layout kirk_v4.pdf kirk_v4.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,json
+          text=Path('kirk_v4.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/reference_bilocality'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            ('def_3_22','Definition 3.22'),('lemma_3_25','Lemma 3.25'),
+            ('prop_2_2','Proposition 2.2'),('theorem_2_4','Theorem 2.4'),
+            ('prop_6_8','Proposition 6.8'),('lemma_6_30','Lemma 6.30'),
+            ('def_6_33','Definition 6.33'),('theorem_6_39','Theorem 6.39'),
+          ]
+          summary=[]
+          for slug,target in targets:
+              hits=list(re.finditer(re.escape(target),text,re.I)); summary.append(f'{target}: {len(hits)} hits')
+              chunks=[]
+              for j,m in enumerate(hits[:8],1):
+                  chunks.append(f'===== {target} hit {j} at {m.start()} =====\n'+text[max(0,m.start()-9000):min(len(text),m.end()+22000)])
+              (out/f'{slug}.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+          phrases=[
+            'Qtempl','Qtail','Qref','reference factor','reference factors','complete allocated two-jet',
+            'Gaussian precision','optical precision','matrix kernel','exponential matrix algebra',
+            'two-point','two point','bilocal','two-link','edge-pair','edge pair',
+            'canonical hull','exponential connector','canonical connector','connector',
+            'parallel transport','finite-template incidence','finite template incidence',
+            'finite-template','support meets','original fine-link support','diam A','tree length','tau(',
+            'active straight macro-path','path product','carrier edge','geometric history'
+          ]
+          ledger=[]; low=text.lower()
+          for phrase in phrases:
+              pos=0; count=0
+              while True:
+                  i=low.find(phrase.lower(),pos)
+                  if i<0: break
+                  count+=1
+                  if count<=30:
+                      ledger.append(f'===== {phrase} hit {count} at {i} =====\n'+text[max(0,i-4200):min(len(text),i+12000)])
+                  pos=i+max(1,len(phrase))
+              summary.append(f'phrase {phrase!r}: {count} hits')
+          (out/'PHRASE_LEDGER.txt').write_text('\n\n'.join(ledger),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit source contexts
+        run: |
+          mkdir -p source_audit/kirk_v4/reference_bilocality
+          cp kirk_v4_record.json source_audit/kirk_v4/reference_bilocality/RECORD.json
+          printf 'sha256  ' > source_audit/kirk_v4/reference_bilocality/PDF_SHA256.txt
+          sha256sum kirk_v4.pdf | awk '{print $1}' >> source_audit/kirk_v4/reference_bilocality/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reference_bilocality
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): pin Kirk reference bilocality contexts'
+          git push origin HEAD:verification/ym-kirk-v4-reference-bilocality-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-reference-bilocality
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/reference_bilocality/
