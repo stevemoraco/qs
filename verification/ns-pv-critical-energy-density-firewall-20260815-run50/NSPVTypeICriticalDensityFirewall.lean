@@ -33,7 +33,7 @@ def normalizedShellCharge (_j : ℕ) : ℕ := 1
 /-- Exact finite geometric identity: the first N critical shell masses plus one
 are the next dyadic radius. -/
 theorem raw_prefix_plus_one (N : ℕ) :
-    (∑ j in Finset.range N, rawShellMass j) + 1 = radius N := by
+    Finset.sum (Finset.range N) rawShellMass + 1 = radius N := by
   induction N with
   | zero => norm_num [rawShellMass, radius]
   | succ N ih =>
@@ -44,20 +44,20 @@ theorem raw_prefix_plus_one (N : ℕ) :
 
 /-- Thus every finite raw prefix stays below the critical linear radius budget. -/
 theorem raw_prefix_le_radius (N : ℕ) :
-    (∑ j in Finset.range N, rawShellMass j) ≤ radius N := by
+    Finset.sum (Finset.range N) rawShellMass ≤ radius N := by
   have h := raw_prefix_plus_one N
   omega
 
 /-- The normalized/logarithmic charge instead grows exactly by one per shell. -/
 theorem normalized_prefix_eq_nat (N : ℕ) :
-    (∑ j in Finset.range N, normalizedShellCharge j) = N := by
+    Finset.sum (Finset.range N) normalizedShellCharge = N := by
   simp [normalizedShellCharge]
 
 /-- A uniformly critical raw prefix and arbitrarily long normalized plateau
 coexist in the same finite model. -/
 theorem critical_linear_budget_allows_normalized_plateau (N : ℕ) :
-    (∑ j in Finset.range N, rawShellMass j) ≤ radius N ∧
-      (∑ j in Finset.range N, normalizedShellCharge j) = N := by
+    Finset.sum (Finset.range N) rawShellMass ≤ radius N ∧
+      Finset.sum (Finset.range N) normalizedShellCharge = N := by
   exact ⟨raw_prefix_le_radius N, normalized_prefix_eq_nat N⟩
 
 #print axioms shell_mass_eq_radius
