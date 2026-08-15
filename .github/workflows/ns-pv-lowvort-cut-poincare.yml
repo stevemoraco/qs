@@ -1,0 +1,122 @@
+name: Verify NS PV low-vorticity and temporal-axis cores
+
+on:
+  push:
+    branches:
+      - agent/ns-pv-lowvort-cut-poincare-20260815-run37
+    paths:
+      - 'verification/ns-pv-lowvort-cut-poincare-20260815-run37/**'
+      - '.github/workflows/ns-pv-lowvort-cut-poincare.yml'
+  pull_request:
+    paths:
+      - 'verification/ns-pv-lowvort-cut-poincare-20260815-run37/**'
+      - '.github/workflows/ns-pv-lowvort-cut-poincare.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          for SRC in \
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSPVLowVortCutVariance.lean \
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSAnchorTemporalConeBudget.lean \
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSGMFilteredSeparationBudget.lean
+          do
+            test -s "$SRC"
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+              echo "forbidden trust carrier found in $SRC" >&2
+              exit 1
+            fi
+            test "$(grep -c '^#print axioms ' "$SRC")" = 4
+            sha256sum "$SRC"
+          done | tee source.sha256
+
+      - name: Execute exact sources with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          files = [
+              pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSPVLowVortCutVariance.lean'),
+              pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSAnchorTemporalConeBudget.lean'),
+              pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSGMFilteredSeparationBudget.lean'),
+          ]
+          for p in files:
+              payload = json.dumps({
+                  'content': p.read_text(),
+                  'environment': 'lean-4.30.0',
+                  'ignore_imports': True,
+                  'mathlib_options': False,
+                  'timeout_seconds': 1200,
+              }).encode()
+              req = urllib.request.Request(
+                  'https://axle.axiommath.ai/api/v1/check',
+                  data=payload,
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              with urllib.request.urlopen(req, timeout=1260) as response:
+                  result = json.load(response)
+              out = pathlib.Path(p.stem + '-axle-response.json')
+              out.write_text(json.dumps(result, indent=2, sort_keys=True))
+              print(p.name)
+              print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler verdicts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          paths = [
+              pathlib.Path('NSPVLowVortCutVariance-axle-response.json'),
+              pathlib.Path('NSAnchorTemporalConeBudget-axle-response.json'),
+              pathlib.Path('NSGMFilteredSeparationBudget-axle-response.json'),
+          ]
+          for p in paths:
+              if not p.exists():
+                  raise SystemExit(f'missing AXLE response: {p}')
+              r = json.loads(p.read_text())
+              lean = r.get('lean_messages', {})
+              tool = r.get('tool_messages', {})
+              compact = {
+                  'okay': r.get('okay'),
+                  'lean_errors': lean.get('errors', []),
+                  'lean_warnings': lean.get('warnings', []),
+                  'tool_errors': tool.get('errors', []),
+                  'tool_warnings': tool.get('warnings', []),
+                  'failed_declarations': r.get('failed_declarations', []),
+              }
+              rendered = json.dumps(r)
+              compact['forbidden_postcompile'] = ('sorryAx' in rendered or 'Lean.ofReduceBool' in rendered)
+              bad = (not compact['okay'] or compact['lean_errors'] or compact['lean_warnings'] or
+                     compact['tool_errors'] or compact['tool_warnings'] or
+                     compact['failed_declarations'] or compact['forbidden_postcompile'])
+              print(p.name, json.dumps(compact, sort_keys=True))
+              if bad:
+                  raise SystemExit(1)
+          print('VERIFIED CLEAN')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-pv-lowvort-cut-poincare-evidence
+          path: |
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/*.lean
+            source.sha256
+            *-axle-response.json
