@@ -1,0 +1,90 @@
+name: Verify RH B123 weighted variance / Hankel pencil
+
+on:
+  push:
+    branches:
+      - verification/rh-b123-weighted-variance-hankel-pencil-20260815-gpt56sol
+    paths:
+      - 'verification/rh-b123/RHB123WeightedVarianceHankelPencil.lean'
+      - '.github/workflows/rh-b123-weighted-variance-hankel-pencil.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='verification/rh-b123/RHB123WeightedVarianceHankelPencil.lean'
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'Forbidden proof hole or trust escape found'
+            exit 1
+          fi
+
+      - name: Submit exact source to AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          source = pathlib.Path('verification/rh-b123/RHB123WeightedVarianceHankelPencil.lean').read_text()
+
+          def read_json(request_or_url, attempts=10, timeout=120):
+              last = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=timeout) as response:
+                          return json.load(response)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
+                      last = error
+                      time.sleep(min(3 * attempt, 30))
+              raise RuntimeError(f'compile-farm retry budget exhausted: {last}')
+
+          request = urllib.request.Request(
+              f'{API}/compile',
+              data=json.dumps({
+                  'name': 'rh-b123-weighted-variance-hankel-pencil-public',
+                  'lean_source': source,
+                  'lean_version': '4.30.0',
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          job = read_json(request)
+          job_id = job['id']
+          print('AXLE job', job_id, flush=True)
+
+          for poll in range(150):
+              time.sleep(15)
+              try:
+                  result = read_json(f'{API}/jobs/{job_id}', attempts=3, timeout=120)
+              except RuntimeError as error:
+                  print(f'poll {poll}: transient error {error}', flush=True)
+                  continue
+              status = result.get('status')
+              print(f'poll {poll}: {status} {result.get("verdict")}', flush=True)
+              if status in ('done', 'failed'):
+                  print(json.dumps(result, indent=2), flush=True)
+                  if result.get('verdict') != 'VERIFIED':
+                      raise SystemExit(1)
+                  if result.get('sorry_count', 0) != 0:
+                      raise SystemExit(1)
+                  if result.get('error') not in (None, ''):
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('AXLE did not return a verdict before timeout')
+          PY
