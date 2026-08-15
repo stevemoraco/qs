@@ -21,24 +21,24 @@ function, define Lambda_YM, construct an OS limit, or prove a mass gap.
 
 namespace Millennium.YangMills
 
-/-- If a regulated scalar Hessian lies within half of a strictly positive
-limiting Hessian, then it lies in the explicit interval `[H/2, 3H/2]`. -/
+/-- If a regulated scalar Hessian lies within half of a limiting Hessian, then
+it lies in the explicit interval `[H/2, 3H/2]`.  Positivity of `H` is not
+needed for this interval statement itself. -/
 theorem backgroundHessian_halfError_bounds
     {H Hn : ℝ}
-    (hH : 0 < H)
     (herr : |Hn - H| ≤ H / 2) :
     H / 2 ≤ Hn ∧ Hn ≤ 3 * H / 2 := by
   have habs : -(H / 2) ≤ Hn - H ∧ Hn - H ≤ H / 2 := abs_le.mp herr
   constructor <;> linarith
 
-/-- The same half-error hypothesis prevents the regulated Hessian denominator
-from crossing zero. -/
+/-- The half-error hypothesis around a strictly positive limiting Hessian
+prevents the regulated Hessian denominator from crossing zero. -/
 theorem backgroundHessian_positive_of_halfError
     {H Hn : ℝ}
     (hH : 0 < H)
     (herr : |Hn - H| ≤ H / 2) :
     0 < Hn := by
-  have hb := backgroundHessian_halfError_bounds hH herr
+  have hb := backgroundHessian_halfError_bounds herr
   linarith
 
 /-- Exact difference identity for the inverse-coupling coordinate. -/
@@ -56,7 +56,7 @@ theorem inverseHessian_denominator_lower
     (hH : 0 < H)
     (herr : |Hn - H| ≤ H / 2) :
     H ^ 2 / 2 ≤ Hn * H := by
-  have hb := backgroundHessian_halfError_bounds hH herr
+  have hb := backgroundHessian_halfError_bounds herr
   have hH0 : 0 ≤ H := le_of_lt hH
   have hmul := mul_le_mul_of_nonneg_right hb.1 hH0
   nlinarith
