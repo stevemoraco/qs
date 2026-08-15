@@ -1,0 +1,138 @@
+name: YM Kirk v4 cubic-drift and RP49 audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-cubic-drift-and-rp49-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-cubic-drift-and-rp49-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Audit cubic-drift / two-loop body
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/cubic_drift_rp49'); out.mkdir(parents=True,exist_ok=True)
+          low=text.lower()
+          terms=[
+            'two-loop','two loop','beta_1','beta1','β1','third derivative','third scalar derivative',
+            'third jet','cubic coefficient','cubic drift','quartic remainder','o(u^4)','o(v^4)',
+            'O(u4)','O(v4)','O(u^4)','O(v^4)','three background marks','third background mark',
+            'k ≤ 3','k <= 3','0 ≤ k ≤ 3','0 <= k <= 3','∂u3','∂u^3',
+            'Lemma 5.5','Lemma 5.10','Lemma 5.11','Lemma 5.12','Lemma 5.13','Lemma 5.14',
+            'Lemma 5.15','Theorem 5.16','Theorem 5.17','Theorem 5.27'
+          ]
+          counts={}; led=[]; seen=[]
+          for term in terms:
+            pos=0;n=0
+            while True:
+              i=low.find(term.lower(),pos)
+              if i<0: break
+              n+=1
+              if not any(abs(i-j)<1400 for j in seen):
+                seen.append(i)
+                led.append(f'=== {term} hit {n} at {i} ===\n'+text[max(0,i-5500):min(len(text),i+15000)]+'\n')
+              pos=i+len(term)
+            counts[term]=n
+          (out/'CUBIC_COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          (out/'CUBIC_LEDGER.txt').write_text('\n'.join(led),encoding='utf-8')
+          # Exact theorem-body extraction for the denominator corridor.
+          exact=['Lemma 5.5','Lemma 5.10','Lemma 5.11','Lemma 5.12','Lemma 5.13','Lemma 5.14','Lemma 5.15','Theorem 5.16','Theorem 5.17','Theorem 5.27']
+          summary=[]
+          for target in exact:
+            m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+            if not m:
+              summary.append(target+': NOT FOUND'); continue
+            tail=text[m.end():]
+            nxt=re.search(r'(?m)^\s*(?:Lemma|Theorem|Proposition|Corollary|Definition)\s+\d+\.\d+\b',tail)
+            end=m.end()+(nxt.start() if nxt else 16000)
+            end=max(end,m.start()+5000); end=min(end,len(text))
+            slug=target.lower().replace(' ','_').replace('.','_')
+            (out/(slug+'.txt')).write_text(text[m.start():end],encoding='utf-8')
+            summary.append(f'{target}: offset {m.start()}, chars {end-m.start()}')
+          (out/'CUBIC_EXACT_SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('CUBIC COUNTS')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          print('\nEXACT')
+          print('\n'.join(summary))
+          PY
+      - name: Audit full 49-path definition and positive schedule
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/cubic_drift_rp49')
+          low=text.lower()
+          terms=[
+            'forty-nine-path','forty nine path','forty-eight signed-corner','signed-corner staple',
+            'signed corner staple','corner staple','P49','path atlas','straight two-link path',
+            'path-extent schedule','path extent schedule','positive schedule','aligned-reflection template',
+            'positive closed-half-space','fixed reflection boundary','B+ R+','R+ B',
+            'temporal extent','time extent','temporal offset','time offset','support extent',
+            'Lemma 2.8','Proposition 2.9','Theorem 3.10','Theorem 3.11'
+          ]
+          counts={}; led=[]; seen=[]
+          for term in terms:
+            pos=0;n=0
+            while True:
+              i=low.find(term.lower(),pos)
+              if i<0: break
+              n+=1
+              if not any(abs(i-j)<1100 for j in seen):
+                seen.append(i)
+                led.append(f'=== {term} hit {n} at {i} ===\n'+text[max(0,i-5000):min(len(text),i+15000)]+'\n')
+              pos=i+len(term)
+            counts[term]=n
+          # Search lines likely to contain actual step vectors/path words, rather than only prose names.
+          lines=text.splitlines()
+          candidates=[]
+          pat=re.compile(r'(?:staple|path atlas|P49|signed.corner|two.link|reflection.*template|path.extent)',re.I)
+          for no,line in enumerate(lines,1):
+            if pat.search(line):
+              candidates.append(f'{no}: {line}')
+          (out/'RP49_COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          (out/'RP49_LEDGER.txt').write_text('\n'.join(led),encoding='utf-8')
+          (out/'RP49_CANDIDATE_LINES.txt').write_text('\n'.join(candidates)+'\n',encoding='utf-8')
+          print('RP49 COUNTS')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          print(f'candidate lines: {len(candidates)}')
+          PY
+      - name: Preserve immutable source audit
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/cubic_drift_rp49/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/cubic_drift_rp49/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/cubic_drift_rp49
+          if ! git diff --cached --quiet; then
+            git commit -m 'audit(ym): preserve v4 cubic-drift and RP49 contexts'
+            git push origin HEAD:verification/ym-kirk-v4-cubic-drift-and-rp49-audit-20260815-gpt56sol
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-cubic-drift-rp49-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/cubic_drift_rp49/
