@@ -15,7 +15,7 @@ theorem offGraph_quartic_transport
     {u A L K r w d : ℝ}
     (hu0 : 0 ≤ u) (hu1 : u ≤ 1)
     (hA : 0 ≤ A) (hL : 0 ≤ L) (hK : 0 ≤ K)
-    (hr0 : 0 ≤ r) (hw0 : 0 ≤ w)
+    (hw0 : 0 ≤ w)
     (hr : r ≤ A * u)
     (hw : w ≤ K * u ^ 3)
     (hd : d ≤ L * (u + r + w) * w) :
