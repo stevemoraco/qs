@@ -35,7 +35,7 @@ theorem half_contracting_sum_range_le_two
         calc
           (∑ n ∈ Finset.range M, a n) + a M
               ≤ 2 * (a 0 - a M) + a M := by
-                exact add_le_add_right ih _
+                linarith
           _ ≤ 2 * (a 0 - a (M + 1)) := by
                 nlinarith [hhalf M]
   have hM := htel N
@@ -68,8 +68,7 @@ theorem dyadicExpTerm_le_first (x : ℝ) (hx : 0 ≤ x) (n : ℕ) :
 /-- The dyadic exponential sequence squares at each successive scale. -/
 theorem dyadicExpTerm_succ_sq (x : ℝ) (n : ℕ) :
     dyadicExpTerm x (n + 1) = (dyadicExpTerm x n) ^ 2 := by
-  change Real.exp (-((2 : ℝ) ^ (n + 1)) * x) =
-    Real.exp (-((2 : ℝ) ^ n) * x) * Real.exp (-((2 : ℝ) ^ n) * x)
+  simp only [dyadicExpTerm, pow_two]
   rw [← Real.exp_add]
   congr 1
   rw [pow_succ]
@@ -92,11 +91,12 @@ theorem dyadic_exp_sum_range_le_two_exp_neg
     (x : ℝ) (hx : 1 ≤ x) (N : ℕ) :
     ∑ n ∈ Finset.range N, dyadicExpTerm x n ≤
       2 * Real.exp (-x) := by
-  exact half_contracting_sum_range_le_two
-    (dyadicExpTerm x)
-    (fun n => (Real.exp_pos _).le)
-    (dyadicExpTerm_half_step x hx)
-    N
+  simpa [dyadicExpTerm] using
+    half_contracting_sum_range_le_two
+      (dyadicExpTerm x)
+      (fun n => (Real.exp_pos _).le)
+      (dyadicExpTerm_half_step x hx)
+      N
 
 /-- Infinite-depth form: the whole dyadic weak-scale tail is bounded by twice
 the coarsest-scale exponential once the dimensionless separation is at least
