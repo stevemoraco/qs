@@ -21,12 +21,12 @@ jobs:
       - name: Ensure pdftotext
         run: |
           if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
-      - name: Pin v4 and extract finite-template locality contexts
+      - name: Pin v4 and isolate finite-tail exhaustion contexts
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib,json,time,urllib.request,urllib.error
-          UA='ym-kirk-v4-finite-template-locality/1.0'
+          import json,time,urllib.request,urllib.error,hashlib
+          UA='ym-kirk-fin-tail-exhaustion/2.0'
           def get(url):
               last=None
               for i in range(7):
@@ -38,69 +38,59 @@ jobs:
                       if isinstance(e,urllib.error.HTTPError) and e.code not in (429,500,502,503,504): raise
                       time.sleep(min(2**i,32))
               raise last
-          rec_raw=get('https://zenodo.org/api/records/21765806')
-          rec=json.loads(rec_raw)
+          rec=json.loads(get('https://zenodo.org/api/records/21765806'))
           pdfs=[f for f in rec.get('files',[]) if str(f.get('key','')).lower().endswith('.pdf')]
           if len(pdfs)!=1: raise RuntimeError(f'expected one PDF, got {len(pdfs)}')
           url=pdfs[0].get('links',{}).get('content') or pdfs[0].get('links',{}).get('self')
-          pdf=get(url)
-          Path('/tmp/kirk-v4.pdf').write_bytes(pdf)
-          out=Path('source_audit/kirk_v4/finite_template_locality'); out.mkdir(parents=True,exist_ok=True)
-          (out/'RECORD.json').write_bytes(rec_raw)
-          (out/'PDF_SHA256.txt').write_text(hashlib.sha256(pdf).hexdigest()+'\n')
-          print('record_id',rec.get('id'))
-          print('version',rec.get('metadata',{}).get('version'))
-          print('sha256',hashlib.sha256(pdf).hexdigest())
+          pdf=get(url); Path('/tmp/kirk-v4.pdf').write_bytes(pdf)
+          print('record_id',rec.get('id')); print('version',rec.get('metadata',{}).get('version')); print('sha256',hashlib.sha256(pdf).hexdigest())
           PY
           pdftotext -layout /tmp/kirk-v4.pdf /tmp/kirk-v4.txt
           python3 - <<'PY'
           from pathlib import Path
           import re
-          text=Path('/tmp/kirk-v4.txt').read_text(encoding='utf-8',errors='replace')
-          low=text.lower()
-          out=Path('source_audit/kirk_v4/finite_template_locality')
-          phrases=[
-            'finite-template incidences','finite-template incidence','finite template','template incidence',
-            'fixed optical template','fixed template','template family','template families','template map','template maps',
-            'bounded support','bounded-support','uniformly bounded support','support diameter','diameter at most',
-            'fixed support','local support','actual local support','finite range','finite-range','fixed range',
-            'finite atlas','finite family','fixed cell','fixed-cell','cell template','block template',
-            'Qtail','Qtempl','Qref','DAS2','DAS3','Proposition 6.8','Lemma 6.7','Definition 3.22'
+          text=Path('/tmp/kirk-v4.txt').read_text(encoding='utf-8',errors='replace'); low=text.lower()
+          out=Path('source_audit/kirk_v4/finite_template_locality/exhaustion'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            ('finite_template_incidences','finite-template incidences'),('finite_template','finite template'),
+            ('prop_6_8','Proposition 6.8'),('def_3_22','Definition 3.22'),('lemma_3_24','Lemma 3.24'),
+            ('das1','DAS1'),('das2','DAS2'),('das3','DAS3'),('das4','DAS4'),('das5','DAS5'),
+            ('fixed_block_template','fixed block template'),('fixed_cell','fixed cell'),
+            ('finite_range','finite range'),('finite_range_hyphen','finite-range'),('fixed_finite_range','fixed finite range'),
+            ('uniformly_bounded_support','uniformly bounded support'),('actual_support_diameter','actual support diameter'),
+            ('tail_families','tail families'),('finite_tail','finite tail'),('optical_tail','optical tail'),
+            ('permanent_support_reporting','permanent support reporting'),('fixed_group_templates','For the fixed group G, the Karcher')
           ]
-          summary=[]; chunks=[]
-          for phrase in phrases:
+          summary=[]
+          for slug,phrase in targets:
               hits=[]; pos=0
               while True:
                   i=low.find(phrase.lower(),pos)
                   if i<0: break
                   hits.append(i); pos=i+max(1,len(phrase))
               summary.append(f'{phrase}: {len(hits)}')
+              chunks=[]
               for j,i in enumerate(hits[:30],1):
-                  chunks.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-4500):min(len(text),i+9000)])
-          # Also collect every occurrence of "template" whose +/-1200-char neighborhood mentions support/local/cell/atlas/incidence.
-          targeted=[]
-          for m in re.finditer(r'template',low):
-              i=m.start(); ctx=low[max(0,i-1200):min(len(low),i+1200)]
-              if any(k in ctx for k in ['support','local','cell','atlas','incidence','diameter','range','connector','finite']):
-                  targeted.append(i)
-          summary.append(f'targeted template+geometry contexts: {len(targeted)}')
-          for j,i in enumerate(targeted[:120],1):
-              chunks.append(f'===== targeted template geometry {j} at {i} =====\n'+text[max(0,i-3500):min(len(text),i+7000)])
+                  chunks.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-7000):min(len(text),i+14000)])
+              (out/f'{slug}.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+          a=low.find('definition 3.22'); b=low.find('lemma 3.25',a+1)
+          if a>=0 and b>a: (out/'section_3_22_to_3_24.txt').write_text(text[a:b],encoding='utf-8')
+          a=low.find('proposition 6.8'); b=low.find('lemma 6.9',a+1)
+          if a>=0 and b>a: (out/'prop_6_8_full.txt').write_text(text[a:b],encoding='utf-8')
           (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
-          (out/'CONTEXTS.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
           print('\n'.join(summary))
           PY
-      - name: Commit source audit
+      - name: Commit focused source audit
         run: |
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
-          git add source_audit/kirk_v4/finite_template_locality
+          git add source_audit/kirk_v4/finite_template_locality/exhaustion
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): pin finite-template locality contexts'
+          git commit -m 'audit(ym): isolate finite-tail exhaustion contexts'
           git push origin HEAD:verification/ym-kirk-v4-finite-template-locality-audit-20260815-gpt56sol
       - uses: actions/upload-artifact@v4
         with:
-          name: kirk-v4-finite-template-locality
+          name: kirk-v4-fin-tail-exhaustion
           if-no-files-found: error
           retention-days: 30
-          path: source_audit/kirk_v4/finite_template_locality/
+          path: source_audit/kirk_v4/finite_template_locality/exhaustion/
