@@ -1,4 +1,4 @@
-name: Verify RH B113 finite Fermi core
+name: Verify RH B113 finite Fermi cores
 
 on:
   push:
@@ -19,39 +19,49 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          FILE=verification/rh-b113/RHB113FermiLogdetFinite.lean
-          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
-            echo "forbidden proof/trust carrier in $FILE"
-            exit 1
-          fi
-      - name: Verify exact source with AXLE Lean 4.30
+          for FILE in \
+            verification/rh-b113/RHB113FermiLogdetFinite.lean \
+            verification/rh-b113/RHB113ACongruenceDepthFinite.lean
+          do
+            if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+              echo "forbidden proof/trust carrier in $FILE"
+              exit 1
+            fi
+          done
+      - name: Verify exact sources with AXLE Lean 4.30
         shell: bash
         run: |
           set -euo pipefail
           API="https://lean-compile-farm.replit.app/api"
-          FILE=verification/rh-b113/RHB113FermiLogdetFinite.lean
-          NAME=$(basename "$FILE" .lean)
-          SOURCE_JSON=$(jq -Rs . < "$FILE")
-          RESPONSE=$(curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 3 -sS \
-            -X POST "$API/compile" \
-            -H "Content-Type: application/json" \
-            --data "{\"name\":\"${NAME}-${GITHUB_SHA}\",\"lean_source\":${SOURCE_JSON}}")
-          JOB_ID=$(jq -er '.id' <<< "$RESPONSE")
-          echo "$NAME job $JOB_ID"
-          for attempt in $(seq 1 120); do
-            JOB=$(curl --fail-with-body --retry 3 --retry-all-errors --retry-delay 2 -sS "$API/jobs/$JOB_ID")
-            STATUS=$(jq -er '.status' <<< "$JOB")
-            case "$STATUS" in
-              done)
-                jq '{status,verdict,sorry_count,error,axioms,verified_count}' <<< "$JOB"
-                test "$(jq -r '.verdict' <<< "$JOB")" = "VERIFIED"
-                test "$(jq -r '.sorry_count' <<< "$JOB")" = "0"
-                test "$(jq -r '.error' <<< "$JOB")" = "null"
-                exit 0
-                ;;
-              failed) jq . <<< "$JOB"; exit 1 ;;
-              pending|compiling) sleep 15 ;;
-              *) jq . <<< "$JOB"; exit 1 ;;
-            esac
+          for FILE in \
+            verification/rh-b113/RHB113FermiLogdetFinite.lean \
+            verification/rh-b113/RHB113ACongruenceDepthFinite.lean
+          do
+            NAME=$(basename "$FILE" .lean)
+            SOURCE_JSON=$(jq -Rs . < "$FILE")
+            RESPONSE=$(curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 3 -sS \
+              -X POST "$API/compile" \
+              -H "Content-Type: application/json" \
+              --data "{\"name\":\"${NAME}-${GITHUB_SHA}\",\"lean_source\":${SOURCE_JSON}}")
+            JOB_ID=$(jq -er '.id' <<< "$RESPONSE")
+            echo "$NAME job $JOB_ID"
+            DONE=0
+            for attempt in $(seq 1 120); do
+              JOB=$(curl --fail-with-body --retry 3 --retry-all-errors --retry-delay 2 -sS "$API/jobs/$JOB_ID")
+              STATUS=$(jq -er '.status' <<< "$JOB")
+              case "$STATUS" in
+                done)
+                  jq '{status,verdict,sorry_count,error,axioms,verified_count}' <<< "$JOB"
+                  test "$(jq -r '.verdict' <<< "$JOB")" = "VERIFIED"
+                  test "$(jq -r '.sorry_count' <<< "$JOB")" = "0"
+                  test "$(jq -r '.error' <<< "$JOB")" = "null"
+                  DONE=1
+                  break
+                  ;;
+                failed) jq . <<< "$JOB"; exit 1 ;;
+                pending|compiling) sleep 15 ;;
+                *) jq . <<< "$JOB"; exit 1 ;;
+              esac
+            done
+            test "$DONE" = "1"
           done
-          exit 1
