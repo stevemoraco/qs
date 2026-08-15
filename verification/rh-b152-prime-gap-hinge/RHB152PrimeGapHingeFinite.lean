@@ -13,9 +13,10 @@ concave quadratic maximum
 
 `sup_{0 <= theta <= ell} theta * (ell - a) - theta^2 / 2`.
 
-The declarations below formalize only that finite optimization algebra and the
-hostile unboxed overcharge.  They do not formalize primes, Mertens sums, Mellin
-transforms, Landau's theorem, zeta zeros, BGST matrices, or RH.
+The declarations below formalize only that finite optimization algebra, the
+endpoint-mass comparison used by B152C, and the hostile unboxed overcharge.
+They do not formalize primes, Mertens sums, Mellin transforms, Landau's theorem,
+zeta zeros, BGST matrices, or RH.
 -/
 
 namespace RHB152PrimeGapHingeFinite
@@ -35,6 +36,10 @@ def hingeOptimizer (a ell : Real) : Real :=
   if a <= 0 then ell
   else if a < ell then ell - a
   else 0
+
+/-- Binary left-endpoint negative mass for one cell. -/
+def endpointMass (a ell : Real) : Real :=
+  ell * max (-a) 0
 
 /-- Every feasible box point lies below the exact hinge area. -/
 theorem hingeObjective_le_hingeArea
@@ -89,6 +94,33 @@ theorem hingeOptimizer_attains
       ring
     · simp [hingeOptimizer, hingeArea, hingeObjective, ha0, haell]
 
+/-- B152C cell firewall: replacing the exact hinge cell by its binary
+left-endpoint negative mass loses a nonnegative amount bounded by `ell^2/2`. -/
+theorem hingeArea_endpointMass_debt
+    {a ell : Real} (hell : 0 <= ell) :
+    0 <= hingeArea a ell - endpointMass a ell ∧
+      hingeArea a ell - endpointMass a ell <= ell ^ 2 / 2 := by
+  by_cases ha0 : a <= 0
+  · have hneg : 0 <= -a := by linarith
+    constructor
+    · simp [hingeArea, endpointMass, ha0, max_eq_left hneg]
+      nlinarith [sq_nonneg ell]
+    · simp [hingeArea, endpointMass, ha0, max_eq_left hneg]
+      nlinarith [sq_nonneg ell]
+  · have ha : 0 < a := lt_of_not_ge ha0
+    have hna : -a <= 0 := by linarith
+    by_cases haell : a < ell
+    · have htwopos : 0 <= 2 * ell - a := by linarith
+      have hprod : 0 <= a * (2 * ell - a) :=
+        mul_nonneg (le_of_lt ha) htwopos
+      constructor
+      · simp [hingeArea, endpointMass, ha0, haell, max_eq_right hna]
+        nlinarith [sq_nonneg (ell - a)]
+      · simp [hingeArea, endpointMass, ha0, haell, max_eq_right hna]
+        nlinarith [hprod]
+    · constructor <;>
+        simp [hingeArea, endpointMass, ha0, haell, max_eq_right hna]
+
 /-- Finite box objective is bounded termwise by the finite hinge-area sum. -/
 theorem finite_hinge_sum_upper
     {I : Type*} (s : Finset I)
@@ -124,6 +156,7 @@ theorem unboxed_negative_cell_overcharge (M ell : Real) :
 #print axioms hingeObjective_le_hingeArea
 #print axioms hingeOptimizer_feasible
 #print axioms hingeOptimizer_attains
+#print axioms hingeArea_endpointMass_debt
 #print axioms finite_hinge_sum_upper
 #print axioms finite_hinge_optimizer_attains
 #print axioms unboxed_negative_cell_overcharge
