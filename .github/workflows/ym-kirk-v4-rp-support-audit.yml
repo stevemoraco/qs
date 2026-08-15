@@ -1,0 +1,82 @@
+name: YM Kirk v4 reflection support audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract reflection-support contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/reflection_support'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'Lemma 8.14','Theorem 8.15','Theorem 8.46',
+            'reflection positive','reflection-positive','reflection positivity',
+            'positive-time','positive time','aligned reflection','reflection plane',
+            'half-cylinder','half cylinder','positive-time links','positive time links',
+            'block map','blocking map','block kernel','reflection equivariant','reflection-equivariant',
+            'commutes with reflection','reflection covariance','time support','support preserving',
+            'support-preserving','pull each','pullback','pull back','original Wilson measure'
+          ]
+          counts={}; ledger=[]
+          low=text.lower()
+          for target in targets:
+            pos=0; n=0
+            for hit in range(80):
+              i=low.find(target.lower(),pos)
+              if i<0: break
+              n+=1
+              ledger.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-4000):min(len(text),i+12000)]+'\n')
+              pos=i+len(target)
+            counts[target]=n
+          # theorem-like lines containing reflection/block/support to expose exact local anchors
+          pattern=re.compile(r'(?m)^.*(?:Lemma|Theorem|Proposition|Corollary).*?(?:reflection|positive-time|half-cylinder|block|support).*$',re.I)
+          theorem_lines=pattern.findall(text)
+          (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          (out/'THEOREM_LINES.txt').write_text('\n'.join(theorem_lines)+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          required=['Lemma 8.14','Theorem 8.46','positive-time']
+          missing=[x for x in required if counts[x]==0]
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable audit contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/reflection_support/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/reflection_support/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reflection_support
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 reflection-support contexts'
+          git push origin HEAD:verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-reflection-support-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/reflection_support/
