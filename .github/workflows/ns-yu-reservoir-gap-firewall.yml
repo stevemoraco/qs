@@ -33,7 +33,7 @@ jobs:
             echo "forbidden trust carrier found in $SRC" >&2
             exit 1
           fi
-          test "$(grep -c '^#print axioms ' "$SRC")" = 6
+          test "$(grep -c '^#print axioms ' "$SRC")" = 7
           sha256sum "$SRC" | tee source.sha256
 
       - name: Execute exact source with AXLE Lean 4.30
