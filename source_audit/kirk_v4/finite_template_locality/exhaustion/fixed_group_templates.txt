@@ -1,23 +1,5 @@
-===== tail families hit 1 at 227123 =====
-finition. Substitute (39) into n log 2 to obtain the final
-row.
-
-6.3       Two-scale weak-to-Haar landing
-Let PYM be the normalized marginal activity and let R⋆ (u) be the invariant irrelevant graph. Fix
-
-                                             I⋆ = [ū, ū + Ccr ū2 ] ⋐ (0, u⋆ )
-
-and 0 < a0 < a. The weak output radius is
-
-                       Mwk := sup u∥PYM ∥a;3,N + ∥R⋆ (u)∥⋆;a;3,N + Ku3 .
-                                                                     
-                                      u∈I⋆
-
-This is a bound on the interaction relative to the scale-normalized Gaussian reference. It is not a
-Haar-relative oscillation bound.
-  Let F⋆ be the exact first-crossing family
-
-                      Φ(u, ϱ) = uPYM + R⋆ (u) + ϱ,                     u ∈ I⋆ ,            ∥ϱ∥⋆;a;3,N ≤ Ku3 ,
+===== For the fixed group G, the Karcher hit 1 at 227856 =====
+ + R⋆ (u) + ϱ,                     u ∈ I⋆ ,            ∥ϱ∥⋆;a;3,N ≤ Ku3 ,
 
 and let
                                                                      Ba0 ,2,N
@@ -291,4 +273,18 @@ The geometry requires only a finite path length once R0 , N are fixed.
 Proposition 6.13 (Finite-volume Perron input from two-scale landing). For every finite spatial volume,
 the one-step matching transfer kernel relative to product Haar is continuous, symmetric, and strictly
 positive. If MΛ is the finite number of one-link updates in a sweep, then
-               
+                                                          −1
+                                          KL (x, y) ≥ ϵM
+                                                       ⋆ ZΛ,L > 0.
+                                                        Λ
+
+
+
+The compact transfer operator has a simple maximal eigenvalue and a unique strictly positive Perron
+eigenfunction. No volume-uniform lower bound for the complete kernel is asserted.
+Proof. Apply Theorem 6.10 with one live pivot at a time. Corollary 6.11 gives the finite-volume product
+lower bound. The aligned half-step is SL∗ SL , so the transfer is positive and self-adjoint. Jentzsch–Perron
+applies in finite volume.
+
+6.5    Exact Haar–optical matching law
+The matching macroblock used after the co
