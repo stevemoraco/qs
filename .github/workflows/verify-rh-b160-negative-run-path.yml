@@ -1,0 +1,80 @@
+name: Verify RH B160 negative-run path source
+
+on:
+  push:
+    branches:
+      - verification/rh-b160-negative-run-path-20260815-gpt56sol
+    paths:
+      - verification/rh-b160-negative-run-path/RHNegativeRunPathInertiaFinite.lean
+      - .github/workflows/verify-rh-b160-negative-run-path.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and unsafe carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/rh-b160-negative-run-path/RHNegativeRunPathInertiaFinite.lean
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'forbidden proof/trust carrier found'
+            exit 1
+          fi
+
+      - name: Submit exact source to AXLE Lean 4.30
+        id: submit
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/rh-b160-negative-run-path/RHNegativeRunPathInertiaFinite.lean
+          SOURCE_JSON=$(jq -Rs . < "$FILE")
+          RESPONSE=$(curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 3 -sS \
+            -X POST 'https://lean-compile-farm.replit.app/api/compile' \
+            -H 'Content-Type: application/json' \
+            --data "{\"name\":\"rh-b160-negative-run-path-${GITHUB_SHA}\",\"lean_source\":${SOURCE_JSON}}")
+          JOB_ID=$(jq -er '.id' <<< "$RESPONSE")
+          echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+          echo "submitted job $JOB_ID"
+
+      - name: Require clean verified verdict
+        shell: bash
+        env:
+          JOB_ID: ${{ steps.submit.outputs.job_id }}
+        run: |
+          set -euo pipefail
+          ENDPOINT="https://lean-compile-farm.replit.app/api/jobs/${JOB_ID}"
+          for attempt in $(seq 1 120); do
+            JOB=$(curl --fail-with-body --retry 3 --retry-all-errors --retry-delay 2 -sS "$ENDPOINT")
+            STATUS=$(jq -er '.status' <<< "$JOB")
+            case "$STATUS" in
+              done)
+                jq '{status,verdict,sorry_count,error,verified_count,axioms}' <<< "$JOB"
+                test "$(jq -r '.verdict' <<< "$JOB")" = VERIFIED
+                test "$(jq -r '.sorry_count' <<< "$JOB")" = 0
+                test "$(jq -r '.verified_count' <<< "$JOB")" -ge 7
+                test "$(jq -r '.error' <<< "$JOB")" = null
+                exit 0
+                ;;
+              failed)
+                jq . <<< "$JOB"
+                exit 1
+                ;;
+              pending|compiling)
+                sleep 15
+                ;;
+              *)
+                jq . <<< "$JOB"
+                exit 1
+                ;;
+            esac
+          done
+          echo 'compile farm did not return a verdict before timeout'
+          exit 1
