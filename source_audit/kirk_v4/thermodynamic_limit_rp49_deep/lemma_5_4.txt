@@ -1,0 +1,85 @@
+Lemma 5.4 (Massless nonexceptional sum–integral comparison). Let M be divisible by m⋆ and let
+ΓM = (2π/M )Z4M be the loop-momentum grid. For every pure-Wilson or stable-marked complete one-loop
+BPHZL packet contributing to the quadratic background coefficient, and through the two background marks
+consumed by ga , there is a finite soft set S(q) ⊂ T4 such that, away from that set,
+                                                                         
+                                                     X
+                     k RX (q, 1; k) ≤ Cα PX
+                   ∇α   LZ                    1 +       dT4 (k, ξ)−2−|α|  ,   |α| ≤ 2.            (9)
+                                                             ξ∈S(q)
+
+Here PX = 1 for a pure-Wilson packet and otherwise PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 . At a grounded
+soft momentum the finite-volume summand is omitted. Uniformly for every grid-compatible q ∈ Q⋆ ∩ ΓM
+
+
+                                                              41
+(in particular for the fixed signed-hypercubic orbit of q⋆ ),
+                      ′
+                1 X LZ                                        d4 k
+                                          Z
+                              (q, 1;            LZ
+                                                   (q, 1;           ≤ CPX M −2 1 + log(2 + M ) .           (10)
+                                                                                              
+                          R          k) −     R           k)
+               M4           X
+                                           T4
+                                                X
+                                                             (2π) 4
+                   k∈ΓM
+
+The same estimate holds after the two background marks. After the rooted support sum it therefore
+compares the finite-volume and thermodynamic quadratic Taylor coefficients of the local background
+coordinate and of the standard one-step map.
+Proof. The complete-forest admission in Lemma 5.12 gives the degree-two soft majorant (23). Differenti-
+ating a complete sector packet in loop momentum once or twice lowers its verified infrared degree by
+the number of derivatives and gives (9). The finite SI–7M sector family, the nonexceptional compact set
+Q⋆ , and the two background marks change only the constant and the support polynomial. No separated
+Lowenstein Taylor piece is used.
+   Put h = 2π/M and partition the momentum torus into the periodic Voronoi cubes Qℓ centered at the
+grid points. The finitely many cubes meeting S(q) contribute O(PX h2 ) to the integral by the d(k, ξ)−2
+row; their singular grounded samples are absent from the primed sum. On every remaining cube use the
+symmetric second-order Taylor formula about its center. Bounded overlap of twice-enlarged cubes gives
+                                                                                            
+                X ′           Z                              X Z
+             h4      RX (k) − RX (k) d4 k ≤ CPX h2 1 +                       d(k, ξ)−4 d4 k  .
+               k∈ΓM                                                 ξ∈S(q)   h≤d(k,ξ)≤1
+
+
+The radial integral is O(1 + log M ), proving (10) after the fixed normalization of the Brillouin torus. The
+strict rooted support reserve absorbs PX before the support sum. The pure-Wilson and stable-marked
+packets exhaust the quadratic coefficient by Lemmas 5.10 and 5.14.
+   Fix the localized wrapping exponent σ > 0 supplied by permanent support closure. Define the
+fixed-group finite-size modulus
+                            δG (M ) := CG e−σM + M −2 1 + log(2 + M ) ,                   (11)
+                                                                    
+
+where the exponential term retains the permanently localized wrapping row and the polynomial term is
+the massless acoustic sum–integral row.
+   Fix once and for all a tail-compatible admissible directed schedule s of the form (32). Write aj = 2j a0 ,
+let Mj be the scheduled periodic side at scale aj , and let µ   bsj,u be the full normalized physical weak
+measure at that scale, including the centered regular coordinate and the exactly recombined U4 irregular
+and wrapping sectors. The exact reduced one-step map on that tail is denoted by Fj . Define
+                                               hj (u) := gaj (b
+                                                              µsj,u ).                                     (12)
+Let F∞ , h∞ , and Σ∞ denote the corresponding rooted-thermodynamic maps obtained from the same
+canonically rescaled local functional. The finite-volume symbols are nonautonomous; no fixed-volume
+Taylor coefficient is identified with the thermodynamic coefficient merely from an estimate along one
+orbit.
+Lemma 5.5 (Finite-volume two-jet comparison and orbitwise finite-size row). There are c > 0 and finite
+Ck , pk such that, for 0 ≤ k ≤ 2,
+                          ∂uk (hj − h∞ )(u) + ∂uk (Σj − Σ∞ )(u) + ∂uk (Fj − F∞ )(u)
+                                     h                                 i
+                                ≤ Ck δG (Mj )u2−k + u3−k + u−pk e−c/u .                                    (13)
+
+For Σj , the derivative is in its scalar argument. This is a comparison through the quadratic jet; no
+exponential or polynomial all-orders convergence rate for the full massless functional is asserted. If
+(uj , Mj ) is a directed orbit and
+                                              δG (Mj ) ≤ uj ,                                     (14)
+then
+                  Fj (uj ) = F∞ (uj ) + OG (u3j ),                       ∂u (Fj − F∞ )(uj ) = OG (u2j ),   (15)
+             Σj (hj (uj )) = Σ∞ (h∞ (uj )) + OG (u3j ).                                                    (16)
+The same rows hold through the two background marks used by ga . All constants are independent of j,
+preceding weak depth, cutoff, volume, and the scheduled orbit with terminal coupling in the fixed interval
+I⋆ ; they may depend on G and I⋆ .
+
+
