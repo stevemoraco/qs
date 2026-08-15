@@ -21,8 +21,12 @@ jobs:
         run: |
           set -euo pipefail
           FILE="verification/rh-b106-slope-event-four-bin/RHB106SlopeEventFourBinFinite.lean"
-          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+          if grep -En '\b(sorry|admit|sorryAx|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
             echo "forbidden trust carrier found"
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*axiom[[:space:]]+' "$FILE"; then
+            echo "custom axiom declaration found"
             exit 1
           fi
 
