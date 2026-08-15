@@ -1,0 +1,73 @@
+name: YM Kirk v4 O4 Ward chain audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-o4-ward-chain-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-o4-ward-chain-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract O4/Ward contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower(); out=Path('source_audit/kirk_v4/o4_ward_chain'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            'Lemma 8.17','Lemma 8.18','Lemma 8.19','Lemma 8.20','Lemma 8.21','Lemma 8.22','Lemma 8.23','Lemma 8.24','Lemma 8.25','Lemma 8.26','Lemma 8.27','Lemma 8.28','Lemma 8.29',
+            'Lemma 8.30','Lemma 8.31','Lemma 8.32','Lemma 8.33','Lemma 8.34','Lemma 8.35','Lemma 8.36','Lemma 8.37','Lemma 8.38','Lemma 8.39','Lemma 8.40','Lemma 8.41','Lemma 8.42','Theorem 8.43','Lemma 8.44','Theorem 8.45','Theorem 8.46',
+            'regulator contact','anisotropy','strain','stress','Ward','rotation','cutoff annulus','dimension-raised','hypercubic','O(4)'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            while n<25:
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-11000):min(len(text),i+42000)])
+              pos=i+len(needle)
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:80]
+            if chunks: (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['Lemma 8.17','Lemma 8.41','Lemma 8.42','Theorem 8.43','Theorem 8.45','Theorem 8.46']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/o4_ward_chain/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/o4_ward_chain/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/o4_ward_chain
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve O4 Ward chain contexts'
+          git push origin HEAD:verification/ym-kirk-v4-o4-ward-chain-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-o4-ward-chain-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/o4_ward_chain/
