@@ -123,7 +123,7 @@ theorem exp_incidence_diameter_with_R_smallness_le_tree_reserve
     linarith
   rw [← Real.exp_add]
   exact Real.exp_le_exp.mpr (by
-    convert hshift using 1 <;> ring)
+    simpa [sub_eq_add_neg] using hshift)
 
 #print axioms incidence_le_twice_nonroot_smallness
 #print axioms tree_reserve_pays_incidence_diameter_and_R_smallness
