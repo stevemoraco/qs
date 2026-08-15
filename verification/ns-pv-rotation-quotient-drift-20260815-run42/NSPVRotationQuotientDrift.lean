@@ -66,6 +66,23 @@ theorem quotient_plus_rotation_triggers_raw
     raw ≤ delta := by
   linarith
 
+/-- One-dimensional shadow of relative-equilibrium rigidity: if a nonzero
+    orbit tangent is multiplied by two speeds and produces the same autonomous
+    forcing, then the speeds agree.  In a group-action application, any
+    remaining ambiguity must lie in the stabilizer kernel. -/
+theorem nonzero_orbit_tangent_forces_unique_speed
+    (g a b forcing : ℝ)
+    (hg : g ≠ 0)
+    (ha : a * g = forcing)
+    (hb : b * g = forcing) :
+    a = b := by
+  have hmul : (a - b) * g = 0 := by
+    calc
+      (a - b) * g = a * g - b * g := by ring
+      _ = 0 := by rw [ha, hb]; ring
+  have hab : a - b = 0 := (mul_eq_zero.mp hmul).resolve_right hg
+  linarith
+
 #print axioms skew_rotation_energy_derivative_zero
 #print axioms skew_rotation_norm_sq
 #print axioms common_rotation_relative_speed_sq
@@ -73,5 +90,6 @@ theorem quotient_plus_rotation_triggers_raw
 #print axioms common_mode_rotation_speed_one
 #print axioms positive_common_rotation_not_charged_by_pair_defect
 #print axioms quotient_plus_rotation_triggers_raw
+#print axioms nonzero_orbit_tangent_forces_unique_speed
 
 end NSPVRotationQuotientDrift
