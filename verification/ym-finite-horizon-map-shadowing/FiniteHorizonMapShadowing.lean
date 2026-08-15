@@ -26,7 +26,9 @@ theorem finite_horizon_shadowing
       calc
         err (n + 1) ≤ K * err n + eps n := hstep n
         _ ≤ K * shadowBudget K eps n + eps n := by
-          exact add_le_add_right (mul_le_mul_of_nonneg_left ih hK) (eps n)
+          have hmul : K * err n ≤ K * shadowBudget K eps n :=
+            mul_le_mul_of_nonneg_left ih hK
+          linarith
         _ = shadowBudget K eps (n + 1) := by
           rfl
 
@@ -37,7 +39,7 @@ theorem finite_horizon_orbit_error
     (hstep : ∀ n, err (n + 1) ≤ K * err n + localErr n) :
     ∀ N, err N ≤ shadowBudget K localErr N := by
   apply finite_horizon_shadowing err localErr hK
-  · simpa [hstart]
+  · simp [hstart]
   · exact hstep
 
 #print axioms finite_horizon_shadowing
