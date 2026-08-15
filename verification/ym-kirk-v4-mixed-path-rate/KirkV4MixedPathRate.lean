@@ -77,9 +77,11 @@ theorem mixed_path_exp_bound_zero_endpoint
     (hmu : ∀ i, m ≤ mu i)
     (hgeom : d ≤ ∑ i, len i) :
     Real.exp (-(∑ i, mu i * len i)) ≤ Real.exp (-m * d) := by
+  have hgeom0 : d - 0 ≤ ∑ i, len i := by
+    simpa using hgeom
   simpa using
     (mixed_path_exp_bound mu len hm hlen hmu
-      (C := 0) hgeom)
+      (C := 0) hgeom0)
 
 #print axioms mixed_path_rate_lower
 #print axioms mixed_path_exp_bound
