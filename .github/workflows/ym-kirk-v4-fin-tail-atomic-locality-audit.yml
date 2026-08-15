@@ -1,0 +1,77 @@
+name: YM Kirk v4 finite-tail atomic locality audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-fin-tail-atomic-locality-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-fin-tail-atomic-locality-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract finite-tail atomic-locality contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/fin_tail_atomic_locality'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            'finite-template incidences','finite template','template incidence','bounded rooted shapes',
+            'bounded support','support diameter','fixed template','template family','local support',
+            'actual local support','finite atlas','finite family','finite collection','incidences',
+            'DAS1','DAS2','DAS3','Proposition 6.8','Lemma 6.7','Theorem 5.27',
+            'Lemma 3.7','Definition 3.22','Qtempl','Qtail','complete allocated two-jet'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            for _ in range(80):
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-9000):min(len(text),i+30000)])
+              pos=i+len(needle)
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:80]
+            if chunks:
+              (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['finite-template incidences','Proposition 6.8','Lemma 6.7']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/fin_tail_atomic_locality/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/fin_tail_atomic_locality/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/fin_tail_atomic_locality
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve finite-tail atomic locality contexts'
+          git push origin HEAD:verification/ym-kirk-v4-fin-tail-atomic-locality-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-fin-tail-atomic-locality-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/fin_tail_atomic_locality/
