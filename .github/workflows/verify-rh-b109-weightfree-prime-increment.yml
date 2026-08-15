@@ -1,0 +1,75 @@
+name: Verify RH B109 weight-free prime increment finite core
+
+on:
+  push:
+    branches:
+      - verification/rh-b109-weightfree-prime-increment-20260814-gpt56sol
+    paths:
+      - verification/rh-b109/RHB109WeightFreePrimeIncrementFinite.lean
+      - .github/workflows/verify-rh-b109-weightfree-prime-increment.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and unsafe shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="verification/rh-b109/RHB109WeightFreePrimeIncrementFinite.lean"
+          ! grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"
+
+      - name: Submit exact committed Lean source
+        id: submit
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="verification/rh-b109/RHB109WeightFreePrimeIncrementFinite.lean"
+          SOURCE_JSON=$(jq -Rs . < "$FILE")
+          RESPONSE=$(curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 3 -sS \
+            -X POST "https://lean-compile-farm.replit.app/api/compile" \
+            -H "Content-Type: application/json" \
+            --data "{\"name\":\"rh-b109-weightfree-prime-increment-${GITHUB_SHA}\",\"lean_source\":${SOURCE_JSON}}")
+          JOB_ID=$(jq -er '.id' <<< "$RESPONSE")
+          echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+          echo "AXLE job: $JOB_ID"
+
+      - name: Require VERIFIED with zero sorry
+        shell: bash
+        env:
+          JOB_ID: ${{ steps.submit.outputs.job_id }}
+        run: |
+          set -euo pipefail
+          ENDPOINT="https://lean-compile-farm.replit.app/api/jobs/${JOB_ID}"
+          for attempt in $(seq 1 100); do
+            JOB=$(curl --fail-with-body --retry 3 --retry-all-errors --retry-delay 2 -sS "$ENDPOINT")
+            STATUS=$(jq -er '.status' <<< "$JOB")
+            case "$STATUS" in
+              done)
+                jq '{status,verdict,sorry_count,error,axioms,verified_count}' <<< "$JOB"
+                test "$(jq -r '.verdict' <<< "$JOB")" = "VERIFIED"
+                test "$(jq -r '.sorry_count' <<< "$JOB")" = "0"
+                test "$(jq -r '.error' <<< "$JOB")" = "null"
+                exit 0
+                ;;
+              failed)
+                jq . <<< "$JOB"
+                exit 1
+                ;;
+              pending|compiling)
+                sleep 15
+                ;;
+              *)
+                jq . <<< "$JOB"
+                exit 1
+                ;;
+            esac
+          done
+          exit 1
