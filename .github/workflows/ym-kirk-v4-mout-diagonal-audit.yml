@@ -1,0 +1,92 @@
+name: YM Kirk v4 Mout diagonal audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-mout-diagonal-audit-20260814-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-mout-diagonal-audit.yml
+
+permissions:
+  contents: write
+
+jobs:
+  source-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-mout-diagonal-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable v4 and extract volume/cutoff diagonal contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, urllib.request, time, urllib.error, hashlib
+          UA='millennium-braid-mout-diagonal/1.0'
+          def get(url):
+              last=None
+              for i in range(7):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'*/*'})
+                      with urllib.request.urlopen(req,timeout=60) as r: return r.read(),r.geturl()
+                  except (urllib.error.HTTPError,urllib.error.URLError) as e:
+                      last=e
+                      if isinstance(e,urllib.error.HTTPError) and e.code not in (429,500,502,503,504): raise
+                      time.sleep(min(2**i,32))
+              raise last
+          raw,_=get('https://zenodo.org/api/records/21765806'); rec=json.loads(raw)
+          latest=rec.get('links',{}).get('latest')
+          if latest:
+              raw,_=get(latest); rec=json.loads(raw)
+          pdfs=[f for f in rec.get('files',[]) if str(f.get('key','')).lower().endswith('.pdf')]
+          if len(pdfs)!=1: raise RuntimeError(len(pdfs))
+          url=pdfs[0].get('links',{}).get('content') or pdfs[0].get('links',{}).get('self')
+          pdf,_=get(url); Path('/tmp/kirk.pdf').write_bytes(pdf)
+          out=Path('source_audit/kirk_v4/mout_diagonal'); out.mkdir(parents=True,exist_ok=True)
+          (out/'RECORD.json').write_bytes(raw)
+          (out/'PDF_SHA256.txt').write_text(hashlib.sha256(pdf).hexdigest()+'\n')
+          PY
+          pdftotext -layout /tmp/kirk.pdf /tmp/kirk.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('/tmp/kirk.txt').read_text(encoding='utf-8',errors='replace'); low=text.lower()
+          out=Path('source_audit/kirk_v4/mout_diagonal')
+          phrases=[
+            'Mout','Mout ≥','Mout(n)','Mj ≥ Mout','admissible choice Mout',
+            'common diagonal','diagonal subsequence','common subsequence','joint limit',
+            'volume exhaustion','thermodynamic limit','volume limit','ultraviolet depth',
+            'Theorem 8.11','Corollary 8.12','Theorem 8.46','Lemma 10.6',
+            'n → ∞','M → ∞','L → ∞','simultaneous','directed family'
+          ]
+          chunks=[]; summary=[]
+          for phrase in phrases:
+              pos=0; hits=[]
+              while True:
+                  i=low.find(phrase.lower(),pos)
+                  if i<0: break
+                  hits.append(i); pos=i+max(1,len(phrase))
+              summary.append(f'{phrase}: {len(hits)}')
+              for j,i in enumerate(hits[:20],1):
+                  chunks.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-3500):min(len(text),i+9000)])
+          (out/'CONTEXTS.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit diagonal contexts
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/mout_diagonal
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): expose Kirk v4 output-volume diagonal contexts'
+          git push origin HEAD:verification/ym-kirk-v4-mout-diagonal-audit-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-mout-diagonal
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/mout_diagonal/
