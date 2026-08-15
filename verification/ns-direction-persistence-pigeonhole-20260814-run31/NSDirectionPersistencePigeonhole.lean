@@ -20,7 +20,7 @@ theorem moreWitnessesThanBins_forceCollision
     {N K : ℕ} (hmore : K < N) (slot : Fin N → Fin K) :
     ∃ i j : Fin N, i ≠ j ∧ slot i = slot j := by
   by_contra hno
-  push_neg at hno
+  push Not at hno
   have hinj : Function.Injective slot := by
     intro i j hij
     by_contra hne
