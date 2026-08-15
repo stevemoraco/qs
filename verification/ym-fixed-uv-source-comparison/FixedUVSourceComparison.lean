@@ -37,7 +37,6 @@ theorem scheduled_modulus_row_is_cubic
 quadratic. -/
 theorem cubic_is_quadratic_on_upper_window
     {u uMax : ℝ}
-    (hu : 0 ≤ u)
     (huMax : u ≤ uMax) :
     u ^ 3 ≤ uMax * u ^ 2 := by
   calc
@@ -94,7 +93,7 @@ theorem source_comparison_gives_uniform_quadratic_error
   have hdelta3 : delta * u ^ 2 ≤ u ^ 3 :=
     scheduled_modulus_row_is_cubic hdelta
   have h3 : u ^ 3 ≤ uMax * u ^ 2 :=
-    cubic_is_quadratic_on_upper_window hu huMax
+    cubic_is_quadratic_on_upper_window huMax
   have hinside :
       delta * u ^ 2 + u ^ 3 + flat ≤ (2 * uMax + Q) * u ^ 2 := by
     nlinarith
