@@ -1,0 +1,68 @@
+name: Verify RH B152 prime-gap hinge core
+
+on:
+  push:
+    branches:
+      - verification/rh-b152-prime-gap-hinge-20260815-gpt56sol
+    paths:
+      - verification/rh-b152-prime-gap-hinge/RHB152PrimeGapHingeFinite.lean
+      - .github/workflows/verify-rh-b152-prime-gap-hinge.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and unsafe shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/rh-b152-prime-gap-hinge/RHB152PrimeGapHingeFinite.lean
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'forbidden proof/trust carrier found'
+            exit 1
+          fi
+
+      - name: Submit exact source to AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, time, urllib.request, urllib.error
+          api = 'https://lean-compile-farm.replit.app/api'
+          source = pathlib.Path('verification/rh-b152-prime-gap-hinge/RHB152PrimeGapHingeFinite.lean').read_text()
+          req = urllib.request.Request(
+              api + '/compile',
+              data=json.dumps({'name':'rh-b152-prime-gap-hinge-verifier','lean_source':source}).encode(),
+              headers={'Content-Type':'application/json'},
+              method='POST')
+          with urllib.request.urlopen(req, timeout=120) as r:
+              job = json.load(r)
+          jid = job['id']
+          print('job', jid, flush=True)
+          for _ in range(150):
+              time.sleep(15)
+              try:
+                  with urllib.request.urlopen(api + '/jobs/' + jid, timeout=120) as r:
+                      job = json.load(r)
+              except (urllib.error.URLError, TimeoutError):
+                  continue
+              status = job.get('status')
+              print(status, job.get('verdict'), flush=True)
+              if status in ('done','failed'):
+                  print(json.dumps(job, indent=2), flush=True)
+                  if job.get('verdict') != 'VERIFIED':
+                      raise SystemExit(1)
+                  if job.get('sorry_count', 0) != 0:
+                      raise SystemExit(1)
+                  if job.get('verified_count', 0) < 6:
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('no compiler verdict before timeout')
+          PY
