@@ -12,7 +12,8 @@ finite-volume/nonautonomous orbit and `delta n` is the one-step Abel defect,
 
 then the cumulative clock error is exactly the finite sum of the defects.
 A uniform bound on that signed cumulative defect therefore gives a uniform
-additive clock window.
+additive clock window and, after exponentiation, a positive finite
+multiplicative Lambda window.
 
 This file does not prove any Yang--Mills RG estimate, identify Kirk's finite-
 volume defects, construct a physical mass gap, or prove a Millennium theorem.
@@ -65,9 +66,42 @@ theorem signed_sum_le_sum_abs
     |∑ j ∈ Finset.range N, delta j| ≤ ∑ j ∈ Finset.range N, |delta j| := by
   simpa using Finset.abs_sum_le_sum_abs (s := Finset.range N) delta
 
+/-- Exponentiating a bounded signed clock defect produces a two-sided positive
+multiplicative window.  This is the finite algebra behind the Lambda-ratio
+conclusion once `h` is the positive logarithmic scale step. -/
+theorem exp_neg_mul_window
+    (h E W : ℝ) (hh : 0 ≤ h) (hW : |E| ≤ W) :
+    Real.exp (-(h * W)) ≤ Real.exp (-(h * E)) ∧
+      Real.exp (-(h * E)) ≤ Real.exp (h * W) := by
+  have hbounds := abs_le.mp hW
+  constructor
+  · apply Real.exp_le_exp.mpr
+    have hmul : h * E ≤ h * W := mul_le_mul_of_nonneg_left hbounds.2 hh
+    exact neg_le_neg hmul
+  · apply Real.exp_le_exp.mpr
+    have hmul : h * (-W) ≤ h * E := mul_le_mul_of_nonneg_left hbounds.1 hh
+    have hneg : -(h * E) ≤ -(h * (-W)) := neg_le_neg hmul
+    simpa [mul_neg] using hneg
+
+/-- Direct composition: a bounded cumulative Fatou defect gives the
+corresponding multiplicative Lambda-factor window. -/
+theorem fatou_clock_multiplicative_window
+    (psi delta : ℕ → ℝ)
+    (hstep : ∀ n : ℕ, psi (n + 1) = psi n - 1 + delta n)
+    (N : ℕ) (h W : ℝ) (hh : 0 ≤ h)
+    (hW : |∑ j ∈ Finset.range N, delta j| ≤ W) :
+    Real.exp (-(h * W)) ≤
+        Real.exp (-h * (psi N - (psi 0 - (N : ℝ)))) ∧
+      Real.exp (-h * (psi N - (psi 0 - (N : ℝ)))) ≤ Real.exp (h * W) := by
+  have herr := fatou_clock_error_le_of_signed_sum_le psi delta hstep N W hW
+  simpa [neg_mul] using exp_neg_mul_window h
+    (psi N - (psi 0 - (N : ℝ))) W hh herr
+
 #print axioms fatou_clock_telescope
 #print axioms fatou_clock_error_eq_sum
 #print axioms fatou_clock_error_le_of_signed_sum_le
 #print axioms signed_sum_le_sum_abs
+#print axioms exp_neg_mul_window
+#print axioms fatou_clock_multiplicative_window
 
 end Millennium.YangMills.RGFiniteVolumeFatouClockTelescope
