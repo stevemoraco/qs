@@ -19,6 +19,8 @@ open Filter
 open Finset
 open scoped BigOperators Topology
 
+noncomputable section
+
 namespace NSYuCubicShellBudgetFirewall
 
 /-- The exact raw shell-mass model for a dyadic radius ladder: `r_k^3 = 8^{-k}`. -/
