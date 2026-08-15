@@ -21,8 +21,8 @@ namespace NSDirectionTimePersistence
 /-- Ordered same-time two-sector pair-defect model. -/
 def pairDefect (a b d : ℝ) : ℝ := 2 * d * a * b
 
-/-- If a nonnegative defect is at least `a` at one time, and its change is at
-most `a/2`, then at the nearby time it remains at least `a/2`. -/
+/-- If a defect is at least `a` at one time, and its change is at most `a/2`,
+then at the nearby time it remains at least `a/2`. -/
 theorem half_peak_persists_under_half_error
     {F F0 a : ℝ}
     (hpeak : a ≤ F0)
@@ -32,10 +32,10 @@ theorem half_peak_persists_under_half_error
   linarith
 
 /-- Lipschitz control plus the window condition `2 L |dt| ≤ a` implies the
-half-peak persistence hypothesis. -/
+half-peak persistence hypothesis.  No sign assumption on `L` is required once
+the displayed window inequality itself is given. -/
 theorem lipschitz_window_gives_half_error
     {F F0 a L dt : ℝ}
-    (hL : 0 ≤ L)
     (hlip : |F - F0| ≤ L * |dt|)
     (hwindow : 2 * L * |dt| ≤ a) :
     |F - F0| ≤ a / 2 := by
@@ -48,12 +48,11 @@ window satisfying `2 L |dt| ≤ a`. -/
 theorem lipschitz_peak_persists_half
     {F F0 a L dt : ℝ}
     (hpeak : a ≤ F0)
-    (hL : 0 ≤ L)
     (hlip : |F - F0| ≤ L * |dt|)
     (hwindow : 2 * L * |dt| ≤ a) :
     a / 2 ≤ F := by
   exact half_peak_persists_under_half_error hpeak
-    (lipschitz_window_gives_half_error hL hlip hwindow)
+    (lipschitz_window_gives_half_error hlip hwindow)
 
 /-- If a sector mass starts above `m` and changes by at most `m/2`, it stays
 above `m/2`. -/
