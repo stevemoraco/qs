@@ -7,6 +7,10 @@ on:
     paths:
       - .github/workflows/ym-kirk-v4-supergeometric-scale-sum.yml
       - verification/ym-kirk-v4-supergeometric-scale-sum/KirkV4SupergeometricScaleSum.lean
+  pull_request:
+    paths:
+      - .github/workflows/ym-kirk-v4-supergeometric-scale-sum.yml
+      - verification/ym-kirk-v4-supergeometric-scale-sum/KirkV4SupergeometricScaleSum.lean
   workflow_dispatch:
 
 permissions:
