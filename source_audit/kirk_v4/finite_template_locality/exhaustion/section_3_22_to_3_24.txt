@@ -1,0 +1,40 @@
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
