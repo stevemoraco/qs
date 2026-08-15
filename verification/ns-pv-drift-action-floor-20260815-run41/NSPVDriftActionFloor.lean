@@ -48,9 +48,11 @@ theorem action_below_linear_floor_forces_small_slice
     (hbudget : ∑ k, speed k < (N : ℝ) * δ) :
     ∃ k, speed k < δ := by
   by_contra hno
-  push_neg at hno
+  have hpoint : ∀ k, δ ≤ speed k := by
+    intro k
+    exact le_of_not_gt fun hk => hno ⟨k, hk⟩
   have hfloor := finite_action_has_linear_floor
-    (N := N) (δ := δ) (speed := speed) hno
+    (N := N) (δ := δ) (speed := speed) hpoint
   linarith
 
 theorem finite_action_budget_forces_regular_slice
@@ -85,8 +87,8 @@ theorem residual_budget_below_drift_floor_forces_regularity
   have hspeed : ∀ k, δ ≤ speed k := by
     intro k
     by_contra hnot
-    have hle : speed k ≤ δ := le_of_not_gt hnot
-    exact hbad (trigger k hle)
+    have hlt : speed k < δ := lt_of_not_ge hnot
+    exact hbad (trigger k (le_of_lt hlt))
   have hfloor := residual_charge_has_linear_floor
     (N := N) (δ := δ) (c := c) (speed := speed) (residual := residual)
     hc hspeed hcharge
