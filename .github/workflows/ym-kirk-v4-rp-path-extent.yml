@@ -1,0 +1,74 @@
+name: YM Kirk v4 reflection path extent
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract positive-half path-extent geometry
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/reflection_path_extent'); out.mkdir(parents=True,exist_ok=True)
+          phrases=[
+            'positive schedule','path-extent','path extent','positive closed-half-space','positive closed half-space',
+            'aligned-reflection template','aligned reflection template','fixed reflection boundary',
+            'reflection boundary','reflection cell','boundary template','reflected template',
+            'reflection extension','fine-field restriction','E+','R+','B+ R+','R+ B',
+            'forty-nine-path','signed-corner staples','signed-corner','corner staples',
+            'macro-cell boundaries','macro cell boundaries'
+          ]
+          ledger=[]; counts={}; low=text.lower(); seen=[]
+          for phrase in phrases:
+            pos=0;n=0
+            while True:
+              i=low.find(phrase.lower(),pos)
+              if i<0: break
+              n+=1
+              if not any(abs(i-j)<1200 for j in seen):
+                seen.append(i)
+                ledger.append(f'=== {phrase} hit {n} at {i} ===\n'+text[max(0,i-4500):min(len(text),i+11000)]+'\n')
+              pos=i+len(phrase)
+            counts[phrase]=n
+          (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          PY
+      - name: Preserve immutable path-extent contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/reflection_path_extent/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/reflection_path_extent/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reflection_path_extent
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 reflection path-extent contexts'
+          git push origin HEAD:verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-reflection-path-extent
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/reflection_path_extent/
