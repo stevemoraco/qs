@@ -54,17 +54,17 @@ jobs:
           missing=[x for x in required if counts[x]==0]
           (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
-          # Write compact source files for direct review. Use the first theorem hit and
-          # include enough upstream/downstream context to expose dependency arrows.
+          # Cross-references occur before the actual Section 10 declarations. Use the
+          # final occurrence of each numbered theorem anchor for direct review.
           focused={
-            'THEOREM_10_4.txt':('Theorem 10.4',5000,18000),
-            'THEOREM_10_5.txt':('Theorem 10.5',7000,22000),
-            'LEMMA_10_6.txt':('Lemma 10.6',6500,15000),
-            'COROLLARY_10_7.txt':('Corollary 10.7',6000,13000),
+            'THEOREM_10_4.txt':('Theorem 10.4',6500,18000),
+            'THEOREM_10_5.txt':('Theorem 10.5',8500,22000),
+            'LEMMA_10_6.txt':('Lemma 10.6',7500,16000),
+            'COROLLARY_10_7.txt':('Corollary 10.7',6500,14000),
             'APPENDIX_A.txt':('Appendix A',3500,26000),
           }
           for name,(needle,before,after) in focused.items():
-            i=low.find(needle.lower())
+            i=low.rfind(needle.lower())
             if i<0: raise SystemExit('missing focused anchor '+needle)
             (out/name).write_text(text[max(0,i-before):min(len(text),i+after)],encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
@@ -78,7 +78,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/finite_energy_endpoint
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): split Kirk v4 finite-energy theorem contexts'
+          git commit -m 'audit(ym): target Kirk v4 endpoint theorem declarations'
           git push origin HEAD:verification/ym-kirk-v4-finite-energy-endpoint-audit-20260814-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
