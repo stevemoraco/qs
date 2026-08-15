@@ -21,12 +21,12 @@ jobs:
       - name: Ensure pdftotext
         run: |
           if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
-      - name: Pin immutable v4 and extract reference rereport contexts
+      - name: Pin immutable v4 and extract focused rereport contexts
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import json, urllib.request, time, urllib.error, hashlib
-          UA='millennium-braid-reference-rereport/1.0'
+          UA='millennium-braid-reference-rereport/1.1'
           def get(url):
               last=None
               for i in range(7):
@@ -54,28 +54,34 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           text=Path('/tmp/kirk.txt').read_text(encoding='utf-8',errors='replace'); low=text.lower()
-          out=Path('source_audit/kirk_v4/reference_rereport')
-          phrases=[
-            'complete allocated two-jet','allocated two-jet','reference two-jet','two-jet reference',
-            'quadratic kernel','quadratic form','Hessian','matrix entry','kernel entry','bilinear',
-            'shortest connector path','shortest connector','reported on a shortest','reported on the shortest',
-            'canonical connected hull','canonical hull','each term is reported','each entry','each matrix',
-            'compact Haar completion','Gaussian precision','Qtempl','Qtail','Qref','Q ref',
-            'finite-template incidences','endpoint two-jets','cross activities','cross-core',
-            'determinant endpoint','coarea endpoint','Schur endpoint','connected determinant word',
-            'Definition 3.22','Lemma 3.25','Proposition 6.8','Theorem 6.10','Lemma 6.30'
-          ]
-          chunks=[]; summary=[]
-          for phrase in phrases:
-              pos=0; hits=[]
+          out=Path('source_audit/kirk_v4/reference_rereport/focused'); out.mkdir(parents=True,exist_ok=True)
+          targets={
+            'twojet':'complete allocated two-jet',
+            'quadratic':'quadratic form',
+            'hessian':'hessian',
+            'shortest':'shortest connector path',
+            'eachterm':'each term is reported',
+            'hull':'canonical connected hull',
+            'compact':'compact haar completion',
+            'endpoint':'endpoint two-jets',
+            'crosscore':'cross-core',
+            'detword':'connected determinant word',
+            'prop68':'proposition 6.8',
+            'ht5':'theorem 6.10',
+            'lemma630':'lemma 6.30',
+          }
+          summary=[]
+          for key,phrase in targets.items():
+              hits=[]; pos=0
               while True:
-                  i=low.find(phrase.lower(),pos)
+                  i=low.find(phrase,pos)
                   if i<0: break
-                  hits.append(i); pos=i+max(1,len(phrase))
-              summary.append(f'{phrase}: {len(hits)}')
-              for j,i in enumerate(hits[:30],1):
-                  chunks.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-4500):min(len(text),i+11000)])
-          (out/'CONTEXTS.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+                  hits.append(i); pos=i+len(phrase)
+              summary.append(f'{key} {phrase}: {len(hits)}')
+              parts=[]
+              for j,i in enumerate(hits[:8],1):
+                  parts.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-2600):min(len(text),i+6500)])
+              (out/f'{key}.txt').write_text('\n\n'.join(parts),encoding='utf-8')
           (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
           print('\n'.join(summary))
           PY
@@ -85,11 +91,11 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/reference_rereport
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): expose Kirk v4 reference rereport contexts'
+          git commit -m 'audit(ym): split Kirk reference rereport contexts'
           git push origin HEAD:verification/ym-kirk-v4-reference-rereport-audit-20260814-gpt56sol
       - uses: actions/upload-artifact@v4
         with:
-          name: kirk-v4-reference-rereport
+          name: kirk-v4-reference-rereport-focused
           if-no-files-found: error
           retention-days: 30
           path: source_audit/kirk_v4/reference_rereport/
