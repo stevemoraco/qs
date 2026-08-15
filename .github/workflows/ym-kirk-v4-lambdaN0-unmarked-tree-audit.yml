@@ -1,0 +1,76 @@
+name: YM Kirk v4 LambdaN0 unmarked tree audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-lambdaN0-unmarked-tree-audit-20260814-gpt56sol-auto3
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-lambdaN0-unmarked-tree-audit-20260814-gpt56sol-auto3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract LambdaN0 and dependency contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/lambdaN0_unmarked_tree'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            '(214)','trajectory factor','LambdaN,m','ΛN,m','Lemma A.15','Lemma A.16','Theorem A.20',
+            'At m = 0 the original small rows are re-established','original small rows are re-established',
+            'complete-packet contraction give (231)','marked child row','top marked ancestor','unmarked interaction',
+            'equation (231)','(231)','Theorem A.13','Lemma A.14','Lemma A.17','Lemma A.19',
+            'Theorem 4.30','qsp < 1','qsp','reference, regular and freshly collected irregular entrance factors'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            for _ in range(120):
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-18000):min(len(text),i+42000)])
+              pos=i+len(needle)
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:100]
+            if chunks: (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['(214)','Theorem A.20','(231)']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/lambdaN0_unmarked_tree/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/lambdaN0_unmarked_tree/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/lambdaN0_unmarked_tree
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve LambdaN0 unmarked-tree contexts'
+          git push origin HEAD:verification/ym-kirk-v4-lambdaN0-unmarked-tree-audit-20260814-gpt56sol-auto3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-lambdaN0-unmarked-tree-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/lambdaN0_unmarked_tree/
