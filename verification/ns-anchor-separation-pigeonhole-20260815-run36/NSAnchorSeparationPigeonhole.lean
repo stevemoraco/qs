@@ -30,7 +30,10 @@ theorem half_pair_forces_quarter_anchor
     (x y : ℝ)
     (hcover : (1 : ℝ) / 2 ≤ x + y) :
     (1 : ℝ) / 4 ≤ x ∨ (1 : ℝ) / 4 ≤ y := by
-  simpa using one_leg_pays_half ((1 : ℝ) / 2) x y hcover
+  by_contra h
+  simp only [not_or, not_le] at h
+  norm_num at h hcover
+  linarith
 
 /-- If both anchor legs are strictly below a threshold, their sum is strictly
 below twice that threshold.  This is the hostile contrapositive form. -/
