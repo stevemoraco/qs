@@ -43,15 +43,15 @@ theorem atomic_reopen_cancellation_firewall
     (M : ℝ) (hM : 0 ≤ M) :
     |M + (-M)| = 0 ∧ |M| + |-M| = 2 * M := by
   constructor
-  · norm_num
+  · simp
   · rw [abs_of_nonneg hM, abs_neg, abs_of_nonneg hM]
+    ring
 
 theorem collected_bound_does_not_control_atomic_sum
     (C : ℝ) (hC : 0 ≤ C) :
     ∃ x y : ℝ, |x + y| ≤ C ∧ C < |x| + |y| := by
   refine ⟨C + 1, -(C + 1), ?_, ?_⟩
-  · norm_num
-    exact hC
+  · simpa using hC
   · have hCp : 0 ≤ C + 1 := by linarith
     rw [abs_of_nonneg hCp, abs_neg, abs_of_nonneg hCp]
     linarith
