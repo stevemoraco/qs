@@ -47,6 +47,7 @@ theorem pureSimple_physicalLogCoeff
     (hCA : CA ≠ 0) :
     -(pureSimpleBeta1 CA / (2 * (pureSimpleBeta0 CA)^2)) = -(51 : ℝ) / 121 := by
   rw [pureSimple_twoLoopExponent hCA]
+  ring
 
 #print axioms pureSimple_twoLoopExponent
 #print axioms pureSimple_physicalLogCoeff
