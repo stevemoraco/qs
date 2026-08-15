@@ -1,9 +1,4 @@
-me charged events and with no same-owner
-        cancellation assumption.
- (iii) Before crossing, the full rooted stable map, including wrapping and charged-flat coordinates, is C 2
-        in g with a strictly contracting same-order marked row. At first crossing, the fresh marked family
-        lies in a uniform hybrid pivot–jet polydisc and satisfies the original-link Fourier–Wiener incidence
-        row required by the joint Haar–optical collect.
+optical collect.
   (iv) The crossing contribution and the no-crossing terminal contribution are controlled by one geometri-
         cally summable conditional-packet shell majorant. The same majorant controls the functional and
         its first two g derivatives, extends to the closed crossing cells, and sends the terminal remainder to
@@ -304,4 +299,35 @@ terminal weak logarithm on the fixed coarse torus.
 differentiated. Derivatives are taken inside one crossing cell, where the depth is fixed, and are extended
 to cell boundaries using the original finite-volume C 2 normalized functional. At g = 0 one always uses
 the no-crossing factorization and later sends M → ∞.
-Definition A.7 (Canonical finite-volume off-graph coordinates). For the d
+Definition A.7 (Canonical finite-volume off-graph coordinates). For the directed schedule in Defini-
+tion A.6, put
+                           εi := e−σMi ,     δi := δG (Mi ),    Mi = 2M −i Mout .
+The first quantity records genuine wrapping histories in the interaction; the second records the scalar
+massless finite-size comparison. After each complete connected output has been formed and assigned its
+canonical reported hull, let Piwr select precisely the history certificates containing at least one periodic
+wrapping occurrence at some scale not later than i. If Ri is the exact finite-volume centered interaction
+and R⋆ (ui ) is the rooted-thermodynamic invariant graph, set
+
+                      Ωi := Ri − R⋆ (ui ),       Wi := Piwr Ωi ,     Bi := (I − Piwr )Ωi .               (191)
+
+Thus Ωi = Wi + Bi coefficientwise. Both Ri and R⋆ (ui ) are written in the same exact schedule-fixed
+vacuum and tangent-normalized coupling coordinates. The coordinate intertwining and supportwise
+                                    [2]
+extraction identity therefore give EX Ωi,X = 0 for every reported support X; all three off-graph coordinates
+lie in the actual centered stable fiber. The first coordinate is the canonical sum of histories carrying a
+wrapping certificate. After the tangent-normalized scalar coordinate is extracted, the massless acoustic
+sum–integral correction belongs to the nonautonomous scalar map Fi and is not an off-graph activity.
+By the exact regular interaction comparison and label recombination, the only nonwrapping off-graph
+difference is the slaved U4 charged/atlas complement; this is Bi and is exponentially flat in ui . No flat
+charged coefficient is identified with a wrapping history.
+A.2     Weak recurrence, wrapping control, and crossing cells
+Lemma A.8 (Full rooted finite-torus stable-map comparison). Let Φi (u, R) be the exact scheduled
+one-step map on the centered stable interaction after the vacuum, complete two-jet and tangent-normalized
+coupling coordinates have been extracted, and let Φ∞ (u, R) be the rooted-thermodynamic map in the same
+coordinates. After decreasing the σ in Definition A.7 once, there are c0 > 0 and finite constants such that
+
+                        ∥Φi (u, R⋆ (u)) − Φ∞ (u, R⋆ (u))∥⋆ ≤ Cεi u + Cu−P e−c0 /u ,                      (192)
+                     ∥{DR Φi (u, R) − DR Φ∞ (u, R)}H∥⋆ ≤ C{εi + u−P e−c0 /u }∥H∥⋆ .                      (193)
+
+Moreover, after projecting the output to histories with a periodic certificate,
+          
