@@ -1,0 +1,2373 @@
+=== hit 1 at 275946 ===
+) = Zp,J (ζ)−1 e−hp,J (U ;ζ) dmG (U ).
+                         G
+Then, with no edgewise quotient and with the full J-dependence retained,
+                         Y                        Y                          O
+              e−VJ (U,ζ)   dmG (Up ) = e−H0 (ζ;J)    Zp,J (ζ)e−V≥2,J (UP ,ζ)   νp,ζ,J (dUp ).                    (59)
+                             p∈P                             p∈P                                  p∈P
+
+A J-derivative marks its assigned factor but does not change its original fine-link incidence, so the same
+trichotomy is exhaustive through every fixed source order used below.
+Proof. The reporting theorem lists every Wilson, reference, chart, coarea, determinant, regular, irregular,
+inherited, cutoff, and source factor before normalization. Exact recombination removes the temporary
+inner/collar/outer labels, and the canonical owner assigns each resulting factor and fresh variable once.
+The three possible incidences are mutually exclusive and exhaustive. The separated pivot buffers make
+the sets Yp disjoint, so Fubini first produces the complete partial weights wp,J and then gives Zp,J and
+νp,ζ,J . The zero-pivot row remains H0 , while every factor meeting at least two pivots remains in V≥2,J .
+Differentiation in J marks factors inside the same owned partial integral and does not change their
+geometric support, proving the final claim.
+   Every Zp,J (ζ) remains in the complete optical integral, and every nonpivot compact variable is
+integrated coefficientwise before the optical connected logarithm.
+   For zA,J = e−VA,J − 1 and pivot incidence n(A), define
+
+                                              eℓn(A) ems diam A ∥DJ≤2 zA,J |J=0 ∥[3] ,
+                                          X
+                            ζz (R) := sup                                                     (60)
+                                            p
+                                                A∋p
+
+                                                      eℓn(A) ems diam A ∥DJ≤2 VA,J |J=0 ∥[3] ,
+                                                X
+                               ζV (R) := sup                                                                     (61)
+                                            p
+                                                A∋p
+
+where ℓ > − log θ⋆ and ms > 0 lies below the unused reference/regular/irregular support exponents. The
+multipivot theorem and ∥e−VA − 1∥ ≤ e∥VA ∥ ∥VA ∥ imply ζz (R) + ζV (R) → 0 uniformly on I⋆ .
+
+Incidence-split product-group nuclear row and cycle-safe compact collect. Fix once and for
+all a finite physical-source order Q < ∞; the boundary-to-center theorem consumes only Q = 2.
+Lemma 6.27 (Fixed-order source upgrade at matching). For every fixed Q < ∞, the matching-stage
+product-tube, one-pivot-score, multipivot-activity, positive-denominator, and regular/irregular recombina-
+tion rows printed above with q ≤ 2 remain valid with q ≤ Q. The constants may depend on Q but are
+independent of cutoff, volume, exterior datum, and preceding weak depth. Original-support exponents and
+pivot-incidence charges are unchanged. With the exponential generating normalization in q, the constants
+are bounded on one common disc |tJ | < ρJ .
+Proof. The physical source enters the exact pre-marginal law through the common analytic species
+tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+corresponding finite local source coefficient norm at the incoming interface. This proves the fixed-Q
+upgrade.
+   For a finite pivot set I, write GI = p∈I Gp . For a scalar or finite-dimensional coefficient-valued
+                                          Q
+
+function f on GI , define the product Fourier–Wiener norm
+                                         X                         Y
+                              ∥f ∥AI :=      dλ ∥fb(λ)∥S1 ,  dλ :=     dλp .                        (62)
+                                          bI
+                                        λ∈G                        p∈I
+
+
+The coefficient norm is the fixed projective norm of the finite marked coefficient space.
+
+
+                                                              63
+Lemma 6.28 (Product Fourier–Wiener calculus). For scalar f ∈ AI , convolution by f on L2 (GI ) is
+trace class and
+                                ∥Kf ∥S1 (L2 (GI )) = ∥f ∥AI .                               (63)
+If I ⊂ I ′ , lifting f by independence of the coordinates in I ′ \ I preserves the norm. Pointwise multiplication
+satisfies
+                                              ∥f g∥AI ≤ ∥f ∥AI ∥g∥AI .                                       (64)
+The same inequalities hold coefficientwise in the declared finite projective marked norm. Left/right
+translations, inversion, and coordinate permutations are isometries.
+Proof. Peter–Weyl decomposes L2 (GI ) into the blocks Vλ ⊗ Vλ∗ . Convolution has block fb(λ) ⊗ I, whose
+trace norm is dλ ∥fb(λ)∥S1 ; summing gives (63). A lifted function has only the trivial Fourier block in
+every added coordinate, proving isometry. The standard coefficient-product formula, complete contraction
+in the unitary Clebsch–Gordan maps, and the projective trace norm give (64). The remaining symmetries
+are unitary changes of Peter–Weyl blocks.
+Lemma 6.29 (One-original-pivot nuclear supplier). Let p be one live original-link pivot and let ρp,η,J =
+dνp,η,J /dmG . Write Kp,η,J for convolution by ρp,η,J on L2 (G) and Qp = I − Pp . There are constants
+Ctr,r,q < ∞, 0 ≤ r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+that
+
+                                                     ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+                                    ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+
+Put
+                             (0)
+                           Ctr := max{1, Ctr,0,0 },            mark
+                                                              Ctr,Q := max Ctr,r,q .
+                                                                        r≤3,q≤Q
+
+                                                                                    (0)
+The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+logarithmic density. Together with (48),
+
+                            ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+
+and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+                                                                          X           d2λ
+              ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+                                                               CG,s   =                         < ∞,        (67)
+                                                                    G
+                                                                                (1 + C2 (λ))2sG
+                                                                          λ∈G
+                                                                            b
+so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+removal.
+Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+that
+                   X                           σζr σJq
+               sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+                p                        0≤r≤3 r!  q!
+                    A∋p                   0≤q≤Q
+
+The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+I⋆ as R → ∞.
+
+
+
+
+                                                         64
+Proof. For I of cardinality n, tensorizing (67) gives
+
+                                                          Y
+                                          n
+                                ∥f ∥AI ≤ CG,s G
+                                                                (1 − ∆p )sG f              .            (69)
+                                                          p∈I
+                                                                                L2 (GI )
+
+The joint live-pivot polydisc used in Lemma 6.22 exists simultaneously in all pivot coordinates met
+by one owned factor. Multivariable Cauchy therefore bounds the right side of (69) by CW     n
+                                                                                               times the
+corresponding complex-pivot-tube activity majorant; CW depends only on the fixed pivot tube and not on
+Q. Source Cauchy differentiation contributes only the fixed prefactor CQ ≤ C0 Q!ρ−Q
+                                                                                  J  and does not add a
+factor exponential in n. The reference, regular, and irregular input rows retain unused original-support
+exponents. Repeating the proof of (HT5) with pivot charge λ + log CW + log CG,sG absorbs the pivot
+exponential because diam A or |A| is at least cp R(n(A)−1). Analytic composition zA = e−VA −1 preserves
+the row after increasing the fixed constant. This proves (68).
+   The multipivot factors have two distinct tasks. A scalar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family incidence trace space). For a family F, let U = U (F). Cut every physical
+carrier line at each pivot in U . In every remaining cycle of the physical carrier skeleton choose the least
+closure edge and the least selected pivot on that edge; let Rg (F) be the resulting clean pivot set. Then
+
+                   Rg (F) ∩ U = ∅,        every physical carrier cycle meets U ∪ Rg (F).                  (87)
+
+The actual cut space is                                      O
+                                    Hg,F := L2 (GU ) ⊗                 L2 (G)p .                          (88)
+                                                           p∈Rg (F )
+
+All activity hyperedges are internal to the first product-group convolution operator in (85); no cross-edge
+incidence is declared to be a dimensionless auxiliary flag.
+Lemma 6.37 (Carrier–activity hypergraph coverage and no-reuse allocation). For a connected family
+(g, F) form the finite incidence hypergraph Hg,F whose ordinary edges are the physical carrier segments and
+whose hyperedge A is incident to the selected pivots IP (A). Root the carrier skeleton by the deterministic
+order of Lemma 6.34. Then:
+    (i) cutting every carrier at U (F) ∪ Rg (F) leaves an acyclic carrier graph;
+   (ii) the depth-first first-incidence rule assigns every activity hyperedge A exactly once, at the least
+        incident pivot first reached from the root; its remaining n(A) − 1 incidences are recorded only as
+        possible side branches;
+  (iii) the three payments are disjoint: the product Fourier–Wiener norm pays the tensor-product nuclear
+        cost on U (F), the scalar coverage reserve pays the lost clean-pivot contractions, and the promoted
+        magnitude wA,k(A) is inserted exactly once in the rooted spatial recursion.
+Consequently no same-edge or cross-edge activity, shared carrier tail, closure edge, or cycle-breaking pivot
+is charged twice in (90) or in the recursion (94).
+Proof. By definition, every carrier cycle meeting an activity is cut at all of that activity’s incident pivots,
+and every remaining activity-free carrier cycle is cut at its least closure pivot in Rg (F). Hence a cycle in
+the residual carrier graph would avoid both sets, contradicting (87); this proves (i). On the resulting
+rooted forest, deterministic depth-first exploration gives a total order on first visits to pivots. Assign a
+hyperedge at the first visited member of its incidence set. This assignment is unique, while every other
+incidence can only attach a branch to an already assigned hyperedge, proving (ii). The product-group
+convolution of Lemma 6.35 contains the complete activity factor and all covered one-pivot densities before
+any scalar split. Lemma 6.31 then separates its nuclear loss from the unused scalar incidence reserve.
+The first-incidence exploration retains one and only one copy of the promoted activity magnitude. These
+operations act on distinct factors of the majorant, proving (iii) and the final claim.
+Lemma 6.38 (Multi-pivot nuclear family contraction). Let P = |Pg |, U = |U (F)|, and Rc = |Rg (F)|.
+Before the scalar coverage split and the single denominator are applied, every unmarked family numerator
+satisfies
+                                  |V | (0)
+                                                           Y                 Y
+                ∥Ng,F ∥ ≤ Cend J∗ g (Ctr )U +Rc θ⋆P −U −Rc    ∥e
+                                                               zA,J ∥AIP (A)    e−κcov n(A) .       (89)
+                                                             A∈F                    A∈F
+
+At allocated total passive mark order k ≤ 3 + Q, the same estimate holds with the corresponding fixed
+marked constants and a fixed polynomial in the pivot counts. After applying Lemma 6.31 and the single
+denominator,
+                                                      Rc
+                                             (0)
+                                                                       Y
+                        ∥Ag,F ∥ ≤ Cend Jg,k Ctr eζV /2     θbP −Rc −ℓk   wA,k(A) .               (90)
+                                                                              A∈F
+
+Here A k(A) + kref + kjun = k and 0 ≤ ℓk ≤ k is the number of distinct formerly unmarked pivot
+      P
+payments actually removed by the marks.
+
+
+
+
+                                                      67
+Proof. Work first at finite cutoff. By Lemma 6.35, the pivots in U form one trace-class product-group
+convolution operator KU,F . Tensor it with the clean one-pivot trace-class kernels at Rg (F). Lemma 6.37
+shows that cutting the lines in U ∪ Rg (F) breaks every physical carrier cycle and allocates each activity
+exactly once, so the remaining carrier and junction contraction is a bounded operator on Hg,F . Every
+selected pivot outside the trace set is activity-free and lies on a nontrivial carrier line; integrate it with
+Kp Qp in operator norm and gain θ⋆ . Schatten ideal multiplication and | Tr S| ≤ ∥S∥1 give (89) without a
+cutoff-dimension factor.
+                 (0)
+   The factor (Ctr /θ⋆ )U is paid by (77). Insert the denominator bound exactly once. The remaining
+unmarked factor is
+                                      (0)
+                                                                     Y
+                                   (Ctr eζV /2 )Rc (θ⋆ eζV /2 )P −Rc   wA,0 .
+                                                                           A
+The marked estimate follows coefficientwise from the marked Fourier–Wiener Banach algebra, fixed-order
+Leibniz, and the one denominator quotient rule. Its cutoff-independent right side gives trace-norm cutoff
+removal and dominated convergence.
+  Let ε∞ be the weighted row for a physical discovery edge with no clean trace pivot and let ε1 be the
+row for a clean cycle-breaking edge. Equation (90) gives
+                                                               (0)                 ′
+                       ε∞ ≤ C(1 + N )s θbN ,           ε1 ≤ C(Ctr eζV /2 )(1 + N )s θbN −1 .              (91)
+Activity-hit edges require no separate closure factor: all their incidence pivots belong to the product-group
+nuclear operator, and their nuclear loss is paid by the scalar coverage reserve.
+  For 0 ≤ B ≤ 1 define                            X
+                                    Ξ(B) := sup       ωA,0 (1 + B)n(A)−1 .                                (92)
+                                                   p
+                                                       A∋p
+
+Then
+                                    Ξ(B) ≤ ε×,0,0 ,               Ξ′ (B) ≤ ε×,1,0 .                       (93)
+The first-incidence allocation of Lemma 6.37 assigns each activity once; its other n(A) − 1 incidences are
+only possible side branches. Thus the activity magnitude is never reused.
+   With maximum physical continuation degree D∗ , the complete rooted side sums obey
+                                    h                                            i
+                        Bm+1 ≤ J∗ (1 + ε∞ (1 + Bm ))D∗ −1 (1 + ε1 )D∗ eΞ(Bm ) − 1 .                   (94)
+
+Choose first R and then a finite pivot count N so that
+                              J∗ (1 + 2ε∞ )D∗ −1 (1 + ε1 )D∗ eε×,0,0 − 1 ≤ 1                              (95)
+                                                                       
+
+and
+                                                     h
+                        qsp := J∗ (1 + ε1 )D∗ eε×,0,0 (D∗ − 1)ε∞ (1 + 2ε∞ )D∗ −2
+                                                                                i                         (96)
+                                                        + (1 + 2ε∞ )D∗ −1 ε×,1,0 < 1.
+
+These choices are possible because the promoted Fourier–Wiener activity rows tend to zero with R, while
+the two physical rows tend to zero exponentially with N .
+   For marks, let E∞ (t), E1 (t), and J (t) be the degree-(3 + Q) exponential generating polynomials of the
+corresponding marked rows, and put
+                                             3+Q
+                                             X k   t     X
+                               X (B, t) :=           sup   ωA,k (1 + B)n(A)−1 .                           (97)
+                                                   k! p
+                                             k=0             A∋p
+
+Then                h                                                                    i
+          Bm+1 (t) ≼ J (t) {1 + E∞ (t)(1 + Bm (t))}D∗ −1 {1 + E1 (t)}D∗ eX (Bm (t),t) − 1             .   (98)
+                                                                                               ≤3+Q
+The same-order coefficient is multiplied by at most qsp ; all other terms are lower triangular in total mark
+order.
+   Every physical discovery and clean closure edge carries its full geometric weight µedge + δ, and every
+promoted activity retains wA,k = e−ms diam A ωA,k . Connected geometry gives
+                                                     X                X
+                          diam Yg,F ≤ Ccore + cgeo L       ℓ(e) + c×      diam A.
+                                                             e∈Eg              A∈F
+
+
+                                                             68
+Choose                                                                     
+                                                                µedge ms
+                                            0 < mH < min              ,         .
+                                                                cgeo L c×
+The unused δ, the excess pivot charge κbr − log 2, and the support-exponent reserves pay all polynomial
+root, anchor, incidence, and marked-placement multiplicities. Therefore, for every fixed Q < ∞,
+
+                           emH diam Y ∥Dζ≤3 DJ≤Q aY ∥ ≤ ηH,Q (RG ),
+                    X
+              sup                                                           ηH,Q (RG ) ≤ CQ e−mH RG .     (99)
+                v
+                    Y ∋v
+
+
+The bound is uniform in volume, cutoff, exterior data, preceding weak depth, ordinary-periodic toron
+background, seam/reflection template, and periodic wrapping. Compact vacuum histories remain assigned
+by the exact owner map to one-core references or the pre-existing regular/Gaussian inventory; internally
+nontrivial composite singlets remain in the Haar inventory.
+Theorem 6.39 (Exact incidence-split product-group nuclear compact collect). Choose R and a finite
+pivot count N from the unmarked conditions (84), (95), and (96), with N ≥ 3. These choices are made
+once and are independent of source order. Then, for every fixed Q < ∞, after exact compact integration
+the complete nonvacuum compact coefficients satisfy (99), uniformly through three passive optical marks
+and Q physical-source marks. The constants have the Cauchy growth of one common positive source
+radius.
+Proof. Expand the exact single-denominator amplitude once by Lemma 6.34 and split every activity
+by (71). For each family, absorb all covered-pivot densities and all same-edge or cross-edge activity
+factors into the one product-group convolution operator of Lemma 6.35. Its Fourier–Wiener norm pays
+the actual tensor-product nuclear cost. The scalar incidence reserve pays that cost and every lost Haar
+contraction, while the promoted activity magnitude remains once for the canonical rooted exploration.
+Clean activity-free physical cycles are closed at the deterministic pivots in Rg (F). The strict unmarked
+recursion fixes R and N once. At every finite marked order the same-order coefficient is still qsp < 1
+and all new terms are lower-triangular forcing, so source order changes constants but not the chosen
+geometry. The marked triangular extension sums all carrier branches, physical cycles, shared tails, seams,
+reflections, wrapping edges, and activity hyperedges. The resulting majorant proves absolute convergence
+of the family expansion and permits the cutoff and finite-subfamily limits. The final spatial allocation
+gives (99).
+Corollary 6.40 (Exact post-compact joint partition). Fix the compatible optical-core family after the
+finite RG merge. There are normalized one-core references dµref
+                                                              X,J and one exact cross-core activity
+inventory
+                                AJ = AJG ⊔ AJreg ⊔ AJirr ⊔ AJH
+such that                                   Z O
+                                Z(J)                                X       Y
+                                        =           X,J (ζX )
+                                                  dµref                             zA,J (ζA ).          (100)
+                               Zloc (J)
+                                              X                 F compatible A∈F
+
+Here A G is the exact Gaussian cross-core inventory of Theorem 3.28, A reg and A irr are the exact
+owner-map outputs, and A H is the nonvacuum compact inventory of Theorem 6.39. The scalar Zloc (J)
+is formed only after every variable owned by a one-core reference has been integrated. Every physical,
+normalization, seam, wrapping, determinant, full-incidence compact-vacuum, and source occurrence is
+present exactly once in either a one-core reference or one of the four disjoint cross-core inventories; every
+internally nontrivial compact singlet is in AJH .
+Proof. Start from (53). Apply the exact Gaussian product identity of Theorem 3.28, the canonical owner
+map, and Theorem 6.39. Convert each connected Gaussian or logarithmic cross-core word to its exact
+Mayer factor e−GA − 1. Expand first over arbitrary finite subsets, including overlapping supports. Collect
+each connected overlap component onto its least canonical reported hull; the resulting hull activities have
+disjoint exact histories. Only after this overlap collect is performed are the remaining hull families declared
+compatible. History compatibility therefore makes the four ownership classes disjoint and exhaustive
+without omitting an overlapping Mayer term. Fubini gives (100); no scalar depending on an unintegrated
+variable enters Zloc .
+
+
+
+
+                                                          69
+Lemma 6.41 (Admission to the joint rooted ball). Let δB > 0 be the strict admission threshold in
+Theorem 3.31 and the summed replica–BKAR theorem, and put
+
+                       mbase (u, Rinv , RG ) := C0 η0 (u, Rinv ) + θu + κG (RG ) .         (101)
+                                                                                
+
+Choose the compact first-crossing interval and Rinv , then enlarge RG , so that
+                                                         1                           1
+                           sup mbase (u, Rinv , RG ) ≤     δB ,      CE ηH (RG ) ≤     δB .                 (102)
+                          u∈I⋆                           2                           4
+
+Then the complete joint branch mass is at most 3δB /4, strictly inside the same admission ball.
+Proof. The regular supplier gives η0 ≤ C(uω + ∥R⋆ (u)∥[3] ), the bad-core mass is exponentially small, and
+both κG (RG ) and ηH (RG ) tend to zero as RG → ∞. Choose the parameters in the displayed order. This
+is the same strict inequality consumed by the existing irregular and Gaussian forest theorems.
+Lemma 6.42 (Cycle-safe compact spatial row). The complete compact activity estimate is exactly (99).
+In particular every discovery edge, closure edge, cycle, and off-spine branch is weighted before summation,
+and ηH (RG ) ≤ Ce−mH RG for one mH > 0.
+Proof. This is the final paragraph of Section 6.5.4; the residual edge-weight reserve pays root and anchor
+multiplicity.
+6.5.5 One mixed Haar–optical connected forest
+The regular, irregular, and Gaussian cross-core rows are collected in mbase , while the complete nonvacuum
+compact row is ηH . Lemma 6.41 supplies their common strict admission margin. Thus
+                                                                             3
+                            E := mbase (u, Rinv , RG ) + CE ηH (RG ) ≤
+                           mbr                                                 δB < δB .                    (103)
+                                                                             4
+Theorem 6.43 (Joint Haar–optical two-root theorem). For the complete logarithm (54), every connected
+zero-, one-, or two-source kernel joining two bounded matching-scale buffers A, B satisfies
+
+                                 |Kq (A, B)| ≤ Cq e−mE dist(A,B) ,       q = 0, 1, 2,                       (104)
+
+with exponentially weighted row and column sums uniform in volume, cutoff, exterior configuration, and
+preceding weak depth.
+Proof. Start from the exact physical identity (100). Apply the summed replica–BKAR connected
+logarithm to its still-live optical field. Its vertices are the compact-integrated activities of (99), the regular
+and irregular activities, the exact Gaussian cross-core activities of (5), and the finite local source roots.
+This vertex inventory is exhaustive before any path classification: Lemma 6.7 and Proposition 6.8 allocate
+every original fine-link factor exactly once, and Corollary 6.40 retains every cross-core Gaussian, regular,
+irregular, or compact activity in one disjoint inventory. The summed replica–BKAR theorem, the marked
+Gaussian block-polymer theorem, and (103) sum every branch inside their common strict admission ball.
+   In a connected forest joining A to B, take the unique tree path between the roots. Each object on
+this path is either an optical covariance bond, a compact-integrated Haar activity, or a reported refer-
+ence/regular/irregular, seam, or wrapping connector. Optical bonds pay the exponent of Corollary 4.14;
+the complete compact objects pay the full-support estimate (99), whose proof already includes every
+discovery edge, closure edge, cycle, and off-spine branch; all other reported connectors pay their registered
+support exponent. The triangle inequality on the canonical reported hulls makes the total reported
+length at least dist(A, B) − C. Weakening the minimum exponent once gives mE > 0 and (104). Mixed
+retained/optical vertices are ordinary vertices of this same forest, so no joint composite channel is lost by
+marginalization. Marks through order two promote finitely many vertices and change only Cq .
+Theorem 6.44 (Two composite-root extension). Fix two bounded matching-scale buffers A, B. For any
+prescribed finite source orders QA , QB , first collect every source contact subtree contained in A or B into
+                                                  (Q )         (Q )
+its complete normalized local coefficient. Let RA A and RB B denote the resulting bounded positive-scale
+roots, or normalized local roots measured in the permanent finite source-renormalization norm. Then
+                                        (Q )   (Q )
+                                  K(RA A , RB B ) ≤ CQA ,QB e−mE dist(A,B) ,                                (105)
+
+with the same exponent mE as Theorem 6.43. The constant may depend on the two fixed local source
+orders and root types, but not on volume, cutoff, exterior configuration, or preceding weak depth.
+
+
+                                                         70
+Proof. The arbitrary fixed passive-source theorem and the common analytic species tube form each
+complete contact cluster before the matching collect and bound it in one finite local root norm. Insert
+those two coefficients as the two distinguished roots of the exact joint compact–optical logarithm; do
+not represent their internal source leaves as additional bulk source marks. Every pivot and connector
+lying wholly inside either fixed root buffer is absorbed into its root constant. Outside the two buffers the
+nonroot activity row, incidence-split coverage allocation, multi-pivot nuclear closure estimate, and strict
+branch coefficient are exactly those of Theorem 6.43. The unique connecting path therefore pays the
+same spatial exponent mE . For normalized local fields the weak triangular source theorem supplies the
+finite root seminorm before this matching-scale insertion. Thus arbitrary finite local source order changes
+only CQA ,QB and not the connector exponent.
+
+7    Compact boundary-to-center closure
+Proposition 7.1 (Exact full-joint marked response row). For q = 0, 1, 2, the exact matching-scale
+connected source kernels obey
+                      X                                X
+                  sup     emE d(x,y) |Kq (x, y)| + sup   emE d(x,y) |Kq (x, y)| ≤ Aq < ∞.   (106)
+                    x                             y
+                        y                              x
+
+Proof. This is Theorem 6.43 in weighted Schur form. Its vertex inventory is exact by Lemma 6.7,
+Proposition 6.8, and Corollary 6.40; Corollary 7.8 excludes the only additional acoustic-channel concern.
+
+
+Theorem 7.2 (Retained probe-root influence row). For every bounded centered probe in a fixed matching-
+scale source buffer, the exact normalized response satisfies the zero-, one-, and two-source weighted row
+and column bounds of (106).
+Proof. Insert the probe as one of the two declared root vertices before applying Theorem 6.43. The
+exact owner inventory supplies the three paid path classes, and Corollary 7.8 excludes an additional
+unreported acoustic class. Normalization deletes every probe-disconnected component in the complete
+joint logarithm.
+Theorem 7.3 (Exact local-source retention and Gate–E closure). Let F be a bounded local matching
+observable and let B be any bounded registered exterior perturbation supported at distance at least r from
+F . Through source order two,
+
+                             DJq ⟨F ; B⟩c J=0 ≤ CF,B,q e−mE r ,     q = 0, 1, 2.                      (107)
+
+The same estimate holds for a finite family of compact-boundary or optical chart perturbations whose
+centered score rows are uniformly bounded in the permanent marked norm. This is the boundary-to-center
+statement consumed by the source forest.
+Proof. Use F and B as the two declared roots in Theorem 6.43. The owner inventory is exhaustive at the
+vertex level, and Corollary 7.8 excludes an additional unreported acoustic class. For a finite interpolation
+of compact boundary data, differentiation along a unit-speed group geodesic inserts its centered local
+score as the exterior root; for an admitted optical chart interpolation the affine derivative inserts the
+corresponding registered optical score. The marked row is uniform in the exterior data allowed by the
+exact regular/irregular owner decomposition. Integrating the finite interpolation gives the same estimate.
+No claim for arbitrary uncontrolled boundary measures is needed downstream.
+Corollary 7.4 (Uniform two-buffer connector rows). Let I1 , I2 be bounded source, displacement, stress,
+or retained-link buffers. Every exact connected response meeting both buffers has exponentially weighted
+row and column sums bounded by Aq through source order two, uniformly in volume, cutoff, exterior
+configuration, and preceding weak depth. Use the two buffers as the declared roots in Theorem 6.43; the
+vertex inventory is exact by Lemma 6.7 and Proposition 6.8, while Corollary 7.8 excludes an additional
+unreported acoustic class.
+
+
+
+
+                                                      71
+7.1    Acoustic exclusion at the exact matching call site
+Lemma 7.5 (No massless retained reference at matching). In the exact post-compact joint partition of
+Corollary 6.40, the retained compact field has product normalized Haar reference and has already been
+integrated coefficientwise before the optical connected logarithm is taken. The massless tangent Feynman
+Gaussian used in the weak normal-chart construction is not a live matching reference. The only Gaussian
+reference left live is the normalized optical one-core product, and every cross-core optical term is contained
+in the explicit inventory AJG .
+Proof. The exact compact collect of Theorem 6.39 and the post-compact identity of Corollary 6.40 restore
+product Haar on the retained compact variables and place every nonempty retained dependence into the
+compact, Gaussian, regular, or irregular activity inventories. The weak tangent Gaussian contributes
+no undeclared covariance edge to this matching logarithm. By contrast, the optical one-core references
+remain live, while their off-diagonal quadratic blocks and other cross-core terms occur explicitly in AJG
+and retain the spatial payment used in Theorem 6.43.
+Lemma 7.6 (Vacuum factorization after the complete owner map). Fix the optical variables and expand
+one compact coefficient in Peter–Weyl sectors. Suppose every compact cut separating two declared root
+buffers carries the trivial representation. Remove only the cross-core objects already registered in the
+four disjoint inventories of Corollary 6.40. If no registered connector remains between the roots, the
+residual coefficient factorizes into one-core expectations and empty-support scalars. Its contribution to the
+normalized connected two-root logarithm is zero.
+Proof. Triviality on every separating compact cut permits repeated Haar–Fubini separation. The exact
+incidence-split collect retains every internally nontrivial singlet in AJH , while the owner map assigns every
+other cross-core occurrence to exactly one of AJG , AJreg , AJirr , or AJH . After those registered objects are
+removed, the residual history has no object joining distinct one-core components. It therefore factorizes.
+Empty-support scalars are removed by the normalization, and products of separate one-root expectations
+are removed by the connected logarithm.
+Theorem 7.7 (Exact acoustic exclusion-or-capture). Consider any connected zero-, one-, or two-source
+coefficient joining two bounded matching-scale root buffers in the exact joint logarithm. At least one object
+on the unique root-to-root forest path belongs to one of the following classes:
+   (i) a nonvacuum compact activity controlled by Theorem 6.39 and the spatial row (99);
+  (ii) an optical covariance bond or an optical Gaussian cross-core activity in AJG ;
+ (iii) a registered reference, regular, irregular, seam, reflection, wrapping, normalization, determinant, or
+       source connector with its original support payment.
+There is no fourth class consisting of a massless retained acoustic reference edge.
+Proof. Assume that a connected coefficient contains no object of types (i)–(iii). Absence of (i) makes
+every separating compact cut vacuum. Absence of (iii) leaves no registered physical connector after the
+complete owner map. Lemma 7.6 then reduces the compact contribution to disconnected one-core factors
+and scalars. Absence of (ii) also prevents the still-live optical field from joining the roots. The coefficient
+is therefore disconnected, a contradiction. The only possible remaining concern would be an undeclared
+massless retained covariance, which is excluded by Lemma 7.5.
+
+Corollary 7.8 (No additional acoustic path class). The exact vertex inventory used in Theorem 6.43 ad-
+mits no fourth root-to-root path class consisting of a massless retained acoustic reference edge. Consequently
+the boundary-to-center estimates (104) and (107) require no additional terminal Witten, acoustic-channel,
+or retained-Gaussian gap hypothesis.
+Proof. The vertex inventory is already exhaustive by Lemma 6.7, Proposition 6.8, and Corollary 6.40.
+Apply Theorem 7.7 to exclude the only remaining acoustic fourth-class concern.
+
+8     General invariant jets and Ward identities
+8.1    Multiscale invariant-source trees
+Riemann-scaled sources and block incidence Let ℓ0 > 0 be the fixed matching scale and ℓj = 2−j ℓ0
+the directed ultraviolet resolutions. At resolution m, let Om,z be a centered bounded gauge-invariant
+
+
+
+
+                                                      72
+observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
+                                                        X
+                                       Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+                                                       z∈ℓm Z4
+
+If a fine source Jm is averaged to scale j < m, define
+                                                     X
+                                        Jj (X) = ℓ−4
+                                                  j    ℓ4m Jm (z),                                      (109)
+                                                        z∈X
+
+where X is one scale-j cell.
+Lemma 8.1 (Source-incidence contraction). The block source map satisfies
+                                               X                X
+                        ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+                                                        X                      z
+
+The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+normalization their products are bounded on every fixed finite jet family and do not alter the connector
+exponent.
+Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+follows by the triangle inequality and the partition of the fine cells into coarse cells.
+
+Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+regimes.
+(R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+     ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+     pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+     scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+     weak/irregular recombination has a summable rooted remainder.
+(R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+     macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+     are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+     Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+     common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+     acoustic reference channel beyond the exact owner-map inventory.
+(R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+     column bounds uniform in all exterior variables.
+   Define the quantitative rates
+
+                    mw := ℓ−1
+                           jw min{c0 | log σ|, mopt },
+                                                                     1                                  (111)
+                 mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+                                                                     2
+where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+with the fixed matching bridge has exponential rate at least
+
+                               1                min{c0 | log σ|, mopt }
+                                                                           
+                     m(M ) := min          inf                          , mE ≥ m∗ > 0.
+                               2        jw ≤j≤M           ℓj
+
+The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+M → ∞ cannot decrease the exponent.
+
+
+                                                       73
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+                                                                                                    −cuj
+                                                                                                          .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the
+
+=== hit 2 at 286393 ===
+alar incidence reserve pays every lost Haar
+contraction and every covered-pivot nuclear cost. The remaining Fourier–Wiener activity magnitude is
+retained exactly once for the connected network sum. Choose
+                                                    (0)
+                                 κcov > log(Ctr /θ⋆ ),               κbr > log 2 + 1,                   (70)
+
+and invoke Lemma 6.30 with pivot charge strictly larger than κcov + κbr . Write exactly
+
+                                              zA,J = e−κcov n(A) zeA,J .                                (71)
+
+For total passive mark order k = r + q ≤ 3 + Q, put
+                                                  σζr σJq
+                           wA,k :=        max             ∥Dζr DJq zeA,J |J=0 ∥AIP (A) ,                (72)
+                                     0≤r≤3, 0≤q≤Q r! q!
+                                         r+q=k
+
+                           ωA,k := ems diam A wA,k ,                                                    (73)
+
+and define
+                                                    X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family incidence trace space). For a family F, let U = U (F). Cut every physical
+carrier line at each pivot in U . In every remaining cycle of the physical carrier skeleton choose the least
+closure edge and the least selected pivot on that edge; let Rg (F) be the resulting clean pivot set. Then
+
+                   Rg (F) ∩ U = ∅,        every physical carrier cycle meets U ∪ Rg (F).                  (87)
+
+The actual cut space is                                      O
+                                    Hg,F := L2 (GU ) ⊗                 L2 (G)p .                          (88)
+                                                           p∈Rg (F )
+
+All activity hyperedges are internal to the first product-group convolution operator in (85); no cross-edge
+incidence is declared to be a dimensionless auxiliary flag.
+Lemma 6.37 (Carrier–activity hypergraph coverage and no-reuse allocation). For a connected family
+(g, F) form the finite incidence hypergraph Hg,F whose ordinary edges are the physical carrier segments and
+whose hyperedge A is incident to the selected pivots IP (A). Root the carrier skeleton by the deterministic
+order of Lemma 6.34. Then:
+    (i) cutting every carrier at U (F) ∪ Rg (F) leaves an acyclic carrier graph;
+   (ii) the depth-first first-incidence rule assigns every activity hyperedge A exactly once, at the least
+        incident pivot first reached from the root; its remaining n(A) − 1 incidences are recorded only as
+        possible side branches;
+  (iii) the three payments are disjoint: the product Fourier–Wiener norm pays the tensor-product nuclear
+        cost on U (F), the scalar coverage reserve pays the lost clean-pivot contractions, and the promoted
+        magnitude wA,k(A) is inserted exactly once in the rooted spatial recursion.
+Consequently no same-edge or cross-edge activity, shared carrier tail, closure edge, or cycle-breaking pivot
+is charged twice in (90) or in the recursion (94).
+Proof. By definition, every carrier cycle meeting an activity is cut at all of that activity’s incident pivots,
+and every remaining activity-free carrier cycle is cut at its least closure pivot in Rg (F). Hence a cycle in
+the residual carrier graph would avoid both sets, contradicting (87); this proves (i). On the resulting
+rooted forest, deterministic depth-first exploration gives a total order on first visits to pivots. Assign a
+hyperedge at the first visited member of its incidence set. This assignment is unique, while every other
+incidence can only attach a branch to an already assigned hyperedge, proving (ii). The product-group
+convolution of Lemma 6.35 contains the complete activity factor and all covered one-pivot densities before
+any scalar split. Lemma 6.31 then separates its nuclear loss from the unused scalar incidence reserve.
+The first-incidence exploration retains one and only one copy of the promoted activity magnitude. These
+operations act on distinct factors of the majorant, proving (iii) and the final claim.
+Lemma 6.38 (Multi-pivot nuclear family contraction). Let P = |Pg |, U = |U (F)|, and Rc = |Rg (F)|.
+Before the scalar coverage split and the single denominator are applied, every unmarked family numerator
+satisfies
+                                  |V | (0)
+                                                           Y                 Y
+                ∥Ng,F ∥ ≤ Cend J∗ g (Ctr )U +Rc θ⋆P −U −Rc    ∥e
+                                                               zA,J ∥AIP (A)    e−κcov n(A) .       (89)
+                                                             A∈F                    A∈F
+
+At allocated total passive mark order k ≤ 3 + Q, the same estimate holds with the corresponding fixed
+marked constants and a fixed polynomial in the pivot counts. After applying Lemma 6.31 and the single
+denominator,
+                                                      Rc
+                                             (0)
+                                                                       Y
+                        ∥Ag,F ∥ ≤ Cend Jg,k Ctr eζV /2     θbP −Rc −ℓk   wA,k(A) .               (90)
+                                                                              A∈F
+
+Here A k(A) + kref + kjun = k and 0 ≤ ℓk ≤ k is the number of distinct formerly unmarked pivot
+      P
+payments actually removed by the marks.
+
+
+
+
+                                                      67
+Proof. Work first at finite cutoff. By Lemma 6.35, the pivots in U form one trace-class product-group
+convolution operator KU,F . Tensor it with the clean one-pivot trace-class kernels at Rg (F). Lemma 6.37
+shows that cutting the lines in U ∪ Rg (F) breaks every physical carrier cycle and allocates each activity
+exactly once, so the remaining carrier and junction contraction is a bounded operator on Hg,F . Every
+selected pivot outside the trace set is activity-free and lies on a nontrivial carrier line; integrate it with
+Kp Qp in operator norm and gain θ⋆ . Schatten ideal multiplication and | Tr S| ≤ ∥S∥1 give (89) without a
+cutoff-dimension factor.
+                 (0)
+   The factor (Ctr /θ⋆ )U is paid by (77). Insert the denominator bound exactly once. The remaining
+unmarked factor is
+                                      (0)
+                                                                     Y
+                                   (Ctr eζV /2 )Rc (θ⋆ eζV /2 )P −Rc   wA,0 .
+                                                                           A
+The marked estimate follows coefficientwise from the marked Fourier–Wiener Banach algebra, fixed-order
+Leibniz, and the one denominator quotient rule. Its cutoff-independent right side gives trace-norm cutoff
+removal and dominated convergence.
+  Let ε∞ be the weighted row for a physical discovery edge with no clean trace pivot and let ε1 be the
+row for a clean cycle-breaking edge. Equation (90) gives
+                                                               (0)                 ′
+                       ε∞ ≤ C(1 + N )s θbN ,           ε1 ≤ C(Ctr eζV /2 )(1 + N )s θbN −1 .              (91)
+Activity-hit edges require no separate closure factor: all their incidence pivots belong to the product-group
+nuclear operator, and their nuclear loss is paid by the scalar coverage reserve.
+  For 0 ≤ B ≤ 1 define                            X
+                                    Ξ(B) := sup       ωA,0 (1 + B)n(A)−1 .                                (92)
+                                                   p
+                                                       A∋p
+
+Then
+                                    Ξ(B) ≤ ε×,0,0 ,               Ξ′ (B) ≤ ε×,1,0 .                       (93)
+The first-incidence allocation of Lemma 6.37 assigns each activity once; its other n(A) − 1 incidences are
+only possible side branches. Thus the activity magnitude is never reused.
+   With maximum physical continuation degree D∗ , the complete rooted side sums obey
+                                    h                                            i
+                        Bm+1 ≤ J∗ (1 + ε∞ (1 + Bm ))D∗ −1 (1 + ε1 )D∗ eΞ(Bm ) − 1 .                   (94)
+
+Choose first R and then a finite pivot count N so that
+                              J∗ (1 + 2ε∞ )D∗ −1 (1 + ε1 )D∗ eε×,0,0 − 1 ≤ 1                              (95)
+                                                                       
+
+and
+                                                     h
+                        qsp := J∗ (1 + ε1 )D∗ eε×,0,0 (D∗ − 1)ε∞ (1 + 2ε∞ )D∗ −2
+                                                                                i                         (96)
+                                                        + (1 + 2ε∞ )D∗ −1 ε×,1,0 < 1.
+
+These choices are possible because the promoted Fourier–Wiener activity rows tend to zero with R, while
+the two physical rows tend to zero exponentially with N .
+   For marks, let E∞ (t), E1 (t), and J (t) be the degree-(3 + Q) exponential generating polynomials of the
+corresponding marked rows, and put
+                                             3+Q
+                                             X k   t     X
+                               X (B, t) :=           sup   ωA,k (1 + B)n(A)−1 .                           (97)
+                                                   k! p
+                                             k=0             A∋p
+
+Then                h                                                                    i
+          Bm+1 (t) ≼ J (t) {1 + E∞ (t)(1 + Bm (t))}D∗ −1 {1 + E1 (t)}D∗ eX (Bm (t),t) − 1             .   (98)
+                                                                                               ≤3+Q
+The same-order coefficient is multiplied by at most qsp ; all other terms are lower triangular in total mark
+order.
+   Every physical discovery and clean closure edge carries its full geometric weight µedge + δ, and every
+promoted activity retains wA,k = e−ms diam A ωA,k . Connected geometry gives
+                                                     X                X
+                          diam Yg,F ≤ Ccore + cgeo L       ℓ(e) + c×      diam A.
+                                                             e∈Eg              A∈F
+
+
+                                                             68
+Choose                                                                     
+                                                                µedge ms
+                                            0 < mH < min              ,         .
+                                                                cgeo L c×
+The unused δ, the excess pivot charge κbr − log 2, and the support-exponent reserves pay all polynomial
+root, anchor, incidence, and marked-placement multiplicities. Therefore, for every fixed Q < ∞,
+
+                           emH diam Y ∥Dζ≤3 DJ≤Q aY ∥ ≤ ηH,Q (RG ),
+                    X
+              sup                                                           ηH,Q (RG ) ≤ CQ e−mH RG .     (99)
+                v
+                    Y ∋v
+
+
+The bound is uniform in volume, cutoff, exterior data, preceding weak depth, ordinary-periodic toron
+background, seam/reflection template, and periodic wrapping. Compact vacuum histories remain assigned
+by the exact owner map to one-core references or the pre-existing regular/Gaussian inventory; internally
+nontrivial composite singlets remain in the Haar inventory.
+Theorem 6.39 (Exact incidence-split product-group nuclear compact collect). Choose R and a finite
+pivot count N from the unmarked conditions (84), (95), and (96), with N ≥ 3. These choices are made
+once and are independent of source order. Then, for every fixed Q < ∞, after exact compact integration
+the complete nonvacuum compact coefficients satisfy (99), uniformly through three passive optical marks
+and Q physical-source marks. The constants have the Cauchy growth of one common positive source
+radius.
+Proof. Expand the exact single-denominator amplitude once by Lemma 6.34 and split every activity
+by (71). For each family, absorb all covered-pivot densities and all same-edge or cross-edge activity
+factors into the one product-group convolution operator of Lemma 6.35. Its Fourier–Wiener norm pays
+the actual tensor-product nuclear cost. The scalar incidence reserve pays that cost and every lost Haar
+contraction, while the promoted activity magnitude remains once for the canonical rooted exploration.
+Clean activity-free physical cycles are closed at the deterministic pivots in Rg (F). The strict unmarked
+recursion fixes R and N once. At every finite marked order the same-order coefficient is still qsp < 1
+and all new terms are lower-triangular forcing, so source order changes constants but not the chosen
+geometry. The marked triangular extension sums all carrier branches, physical cycles, shared tails, seams,
+reflections, wrapping edges, and activity hyperedges. The resulting majorant proves absolute convergence
+of the family expansion and permits the cutoff and finite-subfamily limits. The final spatial allocation
+gives (99).
+Corollary 6.40 (Exact post-compact joint partition). Fix the compatible optical-core family after the
+finite RG merge. There are normalized one-core references dµref
+                                                              X,J and one exact cross-core activity
+inventory
+                                AJ = AJG ⊔ AJreg ⊔ AJirr ⊔ AJH
+such that                                   Z O
+                                Z(J)                                X       Y
+                                        =           X,J (ζX )
+                                                  dµref                             zA,J (ζA ).          (100)
+                               Zloc (J)
+                                              X                 F compatible A∈F
+
+Here A G is the exact Gaussian cross-core inventory of Theorem 3.28, A reg and A irr are the exact
+owner-map outputs, and A H is the nonvacuum compact inventory of Theorem 6.39. The scalar Zloc (J)
+is formed only after every variable owned by a one-core reference has been integrated. Every physical,
+normalization, seam, wrapping, determinant, full-incidence compact-vacuum, and source occurrence is
+present exactly once in either a one-core reference or one of the four disjoint cross-core inventories; every
+internally nontrivial compact singlet is in AJH .
+Proof. Start from (53). Apply the exact Gaussian product identity of Theorem 3.28, the canonical owner
+map, and Theorem 6.39. Convert each connected Gaussian or logarithmic cross-core word to its exact
+Mayer factor e−GA − 1. Expand first over arbitrary finite subsets, including overlapping supports. Collect
+each connected overlap component onto its least canonical reported hull; the resulting hull activities have
+disjoint exact histories. Only after this overlap collect is performed are the remaining hull families declared
+compatible. History compatibility therefore makes the four ownership classes disjoint and exhaustive
+without omitting an overlapping Mayer term. Fubini gives (100); no scalar depending on an unintegrated
+variable enters Zloc .
+
+
+
+
+                                                          69
+Lemma 6.41 (Admission to the joint rooted ball). Let δB > 0 be the strict admission threshold in
+Theorem 3.31 and the summed replica–BKAR theorem, and put
+
+                       mbase (u, Rinv , RG ) := C0 η0 (u, Rinv ) + θu + κG (RG ) .         (101)
+                                                                                
+
+Choose the compact first-crossing interval and Rinv , then enlarge RG , so that
+                                                         1                           1
+                           sup mbase (u, Rinv , RG ) ≤     δB ,      CE ηH (RG ) ≤     δB .                 (102)
+                          u∈I⋆                           2                           4
+
+Then the complete joint branch mass is at most 3δB /4, strictly inside the same admission ball.
+Proof. The regular supplier gives η0 ≤ C(uω + ∥R⋆ (u)∥[3] ), the bad-core mass is exponentially small, and
+both κG (RG ) and ηH (RG ) tend to zero as RG → ∞. Choose the parameters in the displayed order. This
+is the same strict inequality consumed by the existing irregular and Gaussian forest theorems.
+Lemma 6.42 (Cycle-safe compact spatial row). The complete compact activity estimate is exactly (99).
+In particular every discovery edge, closure edge, cycle, and off-spine branch is weighted before summation,
+and ηH (RG ) ≤ Ce−mH RG for one mH > 0.
+Proof. This is the final paragraph of Section 6.5.4; the residual edge-weight reserve pays root and anchor
+multiplicity.
+6.5.5 One mixed Haar–optical connected forest
+The regular, irregular, and Gaussian cross-core rows are collected in mbase , while the complete nonvacuum
+compact row is ηH . Lemma 6.41 supplies their common strict admission margin. Thus
+                                                                             3
+                            E := mbase (u, Rinv , RG ) + CE ηH (RG ) ≤
+                           mbr                                                 δB < δB .                    (103)
+                                                                             4
+Theorem 6.43 (Joint Haar–optical two-root theorem). For the complete logarithm (54), every connected
+zero-, one-, or two-source kernel joining two bounded matching-scale buffers A, B satisfies
+
+                                 |Kq (A, B)| ≤ Cq e−mE dist(A,B) ,       q = 0, 1, 2,                       (104)
+
+with exponentially weighted row and column sums uniform in volume, cutoff, exterior configuration, and
+preceding weak depth.
+Proof. Start from the exact physical identity (100). Apply the summed replica–BKAR connected
+logarithm to its still-live optical field. Its vertices are the compact-integrated activities of (99), the regular
+and irregular activities, the exact Gaussian cross-core activities of (5), and the finite local source roots.
+This vertex inventory is exhaustive before any path classification: Lemma 6.7 and Proposition 6.8 allocate
+every original fine-link factor exactly once, and Corollary 6.40 retains every cross-core Gaussian, regular,
+irregular, or compact activity in one disjoint inventory. The summed replica–BKAR theorem, the marked
+Gaussian block-polymer theorem, and (103) sum every branch inside their common strict admission ball.
+   In a connected forest joining A to B, take the unique tree path between the roots. Each object on
+this path is either an optical covariance bond, a compact-integrated Haar activity, or a reported refer-
+ence/regular/irregular, seam, or wrapping connector. Optical bonds pay the exponent of Corollary 4.14;
+the complete compact objects pay the full-support estimate (99), whose proof already includes every
+discovery edge, closure edge, cycle, and off-spine branch; all other reported connectors pay their registered
+support exponent. The triangle inequality on the canonical reported hulls makes the total reported
+length at least dist(A, B) − C. Weakening the minimum exponent once gives mE > 0 and (104). Mixed
+retained/optical vertices are ordinary vertices of this same forest, so no joint composite channel is lost by
+marginalization. Marks through order two promote finitely many vertices and change only Cq .
+Theorem 6.44 (Two composite-root extension). Fix two bounded matching-scale buffers A, B. For any
+prescribed finite source orders QA , QB , first collect every source contact subtree contained in A or B into
+                                                  (Q )         (Q )
+its complete normalized local coefficient. Let RA A and RB B denote the resulting bounded positive-scale
+roots, or normalized local roots measured in the permanent finite source-renormalization norm. Then
+                                        (Q )   (Q )
+                                  K(RA A , RB B ) ≤ CQA ,QB e−mE dist(A,B) ,                                (105)
+
+with the same exponent mE as Theorem 6.43. The constant may depend on the two fixed local source
+orders and root types, but not on volume, cutoff, exterior configuration, or preceding weak depth.
+
+
+                                                         70
+Proof. The arbitrary fixed passive-source theorem and the common analytic species tube form each
+complete contact cluster before the matching collect and bound it in one finite local root norm. Insert
+those two coefficients as the two distinguished roots of the exact joint compact–optical logarithm; do
+not represent their internal source leaves as additional bulk source marks. Every pivot and connector
+lying wholly inside either fixed root buffer is absorbed into its root constant. Outside the two buffers the
+nonroot activity row, incidence-split coverage allocation, multi-pivot nuclear closure estimate, and strict
+branch coefficient are exactly those of Theorem 6.43. The unique connecting path therefore pays the
+same spatial exponent mE . For normalized local fields the weak triangular source theorem supplies the
+finite root seminorm before this matching-scale insertion. Thus arbitrary finite local source order changes
+only CQA ,QB and not the connector exponent.
+
+7    Compact boundary-to-center closure
+Proposition 7.1 (Exact full-joint marked response row). For q = 0, 1, 2, the exact matching-scale
+connected source kernels obey
+                      X                                X
+                  sup     emE d(x,y) |Kq (x, y)| + sup   emE d(x,y) |Kq (x, y)| ≤ Aq < ∞.   (106)
+                    x                             y
+                        y                              x
+
+Proof. This is Theorem 6.43 in weighted Schur form. Its vertex inventory is exact by Lemma 6.7,
+Proposition 6.8, and Corollary 6.40; Corollary 7.8 excludes the only additional acoustic-channel concern.
+
+
+Theorem 7.2 (Retained probe-root influence row). For every bounded centered probe in a fixed matching-
+scale source buffer, the exact normalized response satisfies the zero-, one-, and two-source weighted row
+and column bounds of (106).
+Proof. Insert the probe as one of the two declared root vertices before applying Theorem 6.43. The
+exact owner inventory supplies the three paid path classes, and Corollary 7.8 excludes an additional
+unreported acoustic class. Normalization deletes every probe-disconnected component in the complete
+joint logarithm.
+Theorem 7.3 (Exact local-source retention and Gate–E closure). Let F be a bounded local matching
+observable and let B be any bounded registered exterior perturbation supported at distance at least r from
+F . Through source order two,
+
+                             DJq ⟨F ; B⟩c J=0 ≤ CF,B,q e−mE r ,     q = 0, 1, 2.                      (107)
+
+The same estimate holds for a finite family of compact-boundary or optical chart perturbations whose
+centered score rows are uniformly bounded in the permanent marked norm. This is the boundary-to-center
+statement consumed by the source forest.
+Proof. Use F and B as the two declared roots in Theorem 6.43. The owner inventory is exhaustive at the
+vertex level, and Corollary 7.8 excludes an additional unreported acoustic class. For a finite interpolation
+of compact boundary data, differentiation along a unit-speed group geodesic inserts its centered local
+score as the exterior root; for an admitted optical chart interpolation the affine derivative inserts the
+corresponding registered optical score. The marked row is uniform in the exterior data allowed by the
+exact regular/irregular owner decomposition. Integrating the finite interpolation gives the same estimate.
+No claim for arbitrary uncontrolled boundary measures is needed downstream.
+Corollary 7.4 (Uniform two-buffer connector rows). Let I1 , I2 be bounded source, displacement, stress,
+or retained-link buffers. Every exact connected response meeting both buffers has exponentially weighted
+row and column sums bounded by Aq through source order two, uniformly in volume, cutoff, exterior
+configuration, and preceding weak depth. Use the two buffers as the declared roots in Theorem 6.43; the
+vertex inventory is exact by Lemma 6.7 and Proposition 6.8, while Corollary 7.8 excludes an additional
+unreported acoustic class.
+
+
+
+
+                                                      71
+7.1    Acoustic exclusion at the exact matching call site
+Lemma 7.5 (No massless retained reference at matching). In the exact post-compact joint partition of
+Corollary 6.40, the retained compact field has product normalized Haar reference and has already been
+integrated coefficientwise before the optical connected logarithm is taken. The massless tangent Feynman
+Gaussian used in the weak normal-chart construction is not a live matching reference. The only Gaussian
+reference left live is the normalized optical one-core product, and every cross-core optical term is contained
+in the explicit inventory AJG .
+Proof. The exact compact collect of Theorem 6.39 and the post-compact identity of Corollary 6.40 restore
+product Haar on the retained compact variables and place every nonempty retained dependence into the
+compact, Gaussian, regular, or irregular activity inventories. The weak tangent Gaussian contributes
+no undeclared covariance edge to this matching logarithm. By contrast, the optical one-core references
+remain live, while their off-diagonal quadratic blocks and other cross-core terms occur explicitly in AJG
+and retain the spatial payment used in Theorem 6.43.
+Lemma 7.6 (Vacuum factorization after the complete owner map). Fix the optical variables and expand
+one compact coefficient in Peter–Weyl sectors. Suppose every compact cut separating two declared root
+buffers carries the trivial representation. Remove only the cross-core objects already registered in the
+four disjoint inventories of Corollary 6.40. If no registered connector remains between the roots, the
+residual coefficient factorizes into one-core expectations and empty-support scalars. Its contribution to the
+normalized connected two-root logarithm is zero.
+Proof. Triviality on every separating compact cut permits repeated Haar–Fubini separation. The exact
+incidence-split collect retains every internally nontrivial singlet in AJH , while the owner map assigns every
+other cross-core occurrence to exactly one of AJG , AJreg , AJirr , or AJH . After those registered objects are
+removed, the residual history has no object joining distinct one-core components. It therefore factorizes.
+Empty-support scalars are removed by the normalization, and products of separate one-root expectations
+are removed by the connected logarithm.
+Theorem 7.7 (Exact acoustic exclusion-or-capture). Consider any connected zero-, one-, or two-source
+coefficient joining two bounded matching-scale root buffers in the exact joint logarithm. At least one object
+on the unique root-to-root forest path belongs to one of the following classes:
+   (i) a nonvacuum compact activity controlled by Theorem 6.39 and the spatial row (99);
+  (ii) an optical covariance bond or an optical Gaussian cross-core activity in AJG ;
+ (iii) a registered reference, regular, irregular, seam, reflection, wrapping, normalization, determinant, or
+       source connector with its original support payment.
+There is no fourth class consisting of a massless retained acoustic reference edge.
+Proof. Assume that a connected coefficient contains no object of types (i)–(iii). Absence of (i) makes
+every separating compact cut vacuum. Absence of (iii) leaves no registered physical connector after the
+complete owner map. Lemma 7.6 then reduces the compact contribution to disconnected one-core factors
+and scalars. Absence of (ii) also prevents the still-live optical field from joining the roots. The coefficient
+is therefore disconnected, a contradiction. The only possible remaining concern would be an undeclared
+massless retained covariance, which is excluded by Lemma 7.5.
+
+Corollary 7.8 (No additional acoustic path class). The exact vertex inventory used in Theorem 6.43 ad-
+mits no fourth root-to-root path class consisting of a massless retained acoustic reference edge. Consequently
+the boundary-to-center estimates (104) and (107) require no additional terminal Witten, acoustic-channel,
+or retained-Gaussian gap hypothesis.
+Proof. The vertex inventory is already exhaustive by Lemma 6.7, Proposition 6.8, and Corollary 6.40.
+Apply Theorem 7.7 to exclude the only remaining acoustic fourth-class concern.
+
+8     General invariant jets and Ward identities
+8.1    Multiscale invariant-source trees
+Riemann-scaled sources and block incidence Let ℓ0 > 0 be the fixed matching scale and ℓj = 2−j ℓ0
+the directed ultraviolet resolutions. At resolution m, let Om,z be a centered bounded gauge-invariant
+
+
+
+
+                                                      72
+observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
+                                                        X
+                                       Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+                                                       z∈ℓm Z4
+
+If a fine source Jm is averaged to scale j < m, define
+                                                     X
+                                        Jj (X) = ℓ−4
+                                                  j    ℓ4m Jm (z),                                      (109)
+                                                        z∈X
+
+where X is one scale-j cell.
+Lemma 8.1 (Source-incidence contraction). The block source map satisfies
+                                               X                X
+                        ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+                                                        X                      z
+
+The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+normalization their products are bounded on every fixed finite jet family and do not alter the connector
+exponent.
+Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+follows by the triangle inequality and the partition of the fine cells into coarse cells.
+
+Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+regimes.
+(R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+     ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+     pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+     scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+     weak/irregular recombination has a summable rooted remainder.
+(R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+     macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+     are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+     Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+     common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+     acoustic reference channel beyond the exact owner-map inventory.
+(R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+     column bounds uniform in all exterior variables.
+   Define the quantitative rates
+
+                    mw := ℓ−1
+                           jw min{c0 | log σ|, mopt },
+                                                                     1                                  (111)
+                 mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+                                                                     2
+where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+with the fixed matching bridge has exponential rate at least
+
+                               1                min{c0 | log σ|, mopt }
+                                                                           
+                     m(M ) := min          inf                          , mE ≥ m∗ > 0.
+                               2        jw ≤j≤M           ℓj
+
+The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+M → ∞ cannot decrease the exponent.
+
+
+                                                       73
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+                                                                                                    −cuj
+                                                                                                          .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+before the logarithm is taken, so no all-good denominator occurs. Write
+
+                                     Wm (J) = log Zm (J) − log Zm (0)
+
+for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+finite macrobridge is an identity, not an asymptotic expansion.
+   A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+transported without joining retain their existing components. At the terminal matching logarithm, the
+remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+fixed by the least source label, so isomorphic terms are not counted more than once.
+Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+derivative order n,                                        X
+                             Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+                                                      τ ∈Tm,n
+
+where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+one/two-root bounds control a component while its source leaves remain external. These majorants are
+summable independently of m, so dominated convergence gives the last assertion.
+
+    For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+recursively generated tree, not a choice made after absolute values or bounds have been applied.
+Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local o
+
+=== hit 3 at 287443 ===
+                X
+                                 ε×,0,k := sup              2n(A)−1 ωA,k ,                              (74)
+                                                p
+                                                    A∋p
+                                                    X
+                                 ε×,1,k := sup            (n(A) − 1)2n(A)−2 ωA,k .                      (75)
+                                                p
+                                                    A∋p
+
+Lemma 6.31 (Disjoint coverage and network budgets). For every fixed k ≤ 3 + Q,
+
+                                     ε×,0,k + ε×,1,k −→ 0  (R → ∞)                                      (76)
+
+uniformly on I⋆ . For every selected family F, with U (F) = A∈F IP (A),
+                                                           S
+
+                                                !|U (F )|
+                                          (0)
+                                        Ctr                  Y
+                                                                  e−κcov n(A) ≤ 1.                      (77)
+                                         θ⋆
+                                                            A∈F
+
+Thus the scalar reserve pays the complete covered-pivot loss, while the promoted Fourier–Wiener magnitude
+remains available exactly once.
+Proof. The two branching factors in (75) are bounded by a fixed multiple of eκbr n(A) , so (76) follows from
+                                                                                            (0)
+Lemma 6.30. The second assertion follows from |U (F)| ≤ A∈F n(A) and κcov > log(Ctr /θ⋆ ).
+                                                          P
+
+Lemma 6.32 (Cutoff-uniform junction row). Every fixed bulk, toron, seam, reflection, or wrapping
+junction has operator norm at most one constant J∗ < ∞, independent of the Peter–Weyl cutoff. At
+every fixed passive mark order k ≤ 3 + Q, the corresponding coefficientwise constants J∗,k are finite and
+cutoff independent.
+Proof. In block-first Hilbert normalization, Clebsch–Gordan recouplings are unitary, invariant-channel
+maps are orthogonal projections, and translations and inversion are unitary. All remaining maps belong
+to a finite bounded-incidence template set. Passive marks differentiate only the fixed local coefficient
+maps and are controlled by the fixed-Q marked row.
+
+
+                                                             65
+Definition 6.33 (Complete globally normalized family amplitude). Fix    F a finite geometric compact-flux
+carrier history g. Let Eg be its physical nontrivial carrier edges, Pg = e∈Eg Pe its selected original-link
+pivots, νg = p∈Pg νp,ζ,J , and let A (g) contain every multipivot activity meeting Pg , including every
+              N
+cross-edge activity. With Φg denoting the carrier insertions and fixed junction maps, set
+                                                                 
+                                                 Y
+                                   Dg := Eνg          (1 + zA,J ) ,                                  (78)
+                                                    A∈A (g)
+                                                "                 #
+                                                       Y
+                                Ng,F := Eνg Φg                zA,J ,                                  (79)
+                                                      A∈F
+                                Ag,F := Dg−1 Ng,F ,                                                   (80)
+                                                                                  
+                                                               Y
+                                  Ag := Dg−1 Eνg Φg                    (1 + zA,J ) .                (81)
+                                                              A∈A (g)
+
+There is one denominator for the complete history and no edgewise quotient.
+Lemma 6.34 (One global family expansion and denominator row). At finite volume and Peter–Weyl
+cutoff,                                          X
+                                         Ag =         Ag,F .                              (82)
+                                                      F ⊂A (g)
+
+Positivity gives the unmarked bound
+                                                          
+                                               |Pg |
+                              Dg−1 ≤ exp             ζV (R) ,            ζV (R) −→ 0,                 (83)
+                                                2
+
+where ζV is the unmarked row in (61). Choose R so that
+
+                                                   ζV (R)
+                                                         
+                                     θ := θ⋆ exp
+                                     b                      < 1.                                      (84)
+                                                      2
+The family sum is not consumed in this denominator estimate; it is summed only by the network majorant
+below.
+                                                 P
+                                               −     VA
+Proof. The finite expansion  is the identity            = A (1 + zA ). Since every activity meets at least
+                                                         Q
+                                             e     A
+
+two selected pivots, A ∥VA ∥ ≤ |Pg |ζV /2. Positivity gives the unmarked bound. Fixed-order derivatives
+                    P
+of the single denominator follow directly from the marked V row and the quotient rule; they produce
+only a fixed polynomial in |Pg | and lose only finitely many unmarked pivot payments.
+Lemma 6.35 (Exact product-group convolution tensorization). Fix a family F and put U = U (F). After
+orienting each physical carrier path and introducing cumulative states on the two sides of every selected
+pivot, the complete density/activity factor on the pivots in U is exactly the product-group convolution
+kernel
+                                                           Y               Y
+                                   −1
+         KU,F (Y− , Y+ ) = hU,F (Y−   Y+ ),    hU,F (X) =     ρp,η,J (Xp )   zeA,J ((Xp )p∈IP (A) ). (85)
+                                                                   p∈U                   A∈F
+
+Every factor in the second product is lifted isometrically to GU . Hence
+                                                             (0)
+                                                                          Y
+                       ∥KU,F ∥S1 (L2 (GU )) = ∥hU,F ∥AU ≤ (Ctr )|U | CQ,k   wA,k(A)                   (86)
+                                                                                  A∈F
+
+coefficientwise at every allocated total mark order at most 3 + Q. Here CQ,0 = 1, while CQ,k < ∞ is a
+fixed Cauchy–Leibniz constant: only k factors can be marked, so no marked trace constant is raised to |U |.
+                                                                   −1
+Proof. On an oriented path, write the pivot increment as Xp = Yp,−    Yp,+ . The triangular change from
+pivot increments to successive cumulative products has unit Haar Jacobian. The one-pivot density
+                                             −1
+therefore gives the convolution kernel ρp (Yp,− Yp,+ ). Every multipivot activity depends on the same
+increments and hence multiplies the product-group convolution density hU,F itself; it is not used as a
+Schur multiplier on an already-formed trace-class kernel. Reversed orientations are handled by inversion,
+which is isometric in A.
+
+
+                                                         66
+   Lemma 6.28 identifies the trace norm of convolution on L2 (GU ) with the Fourier–Wiener norm and
+supplies the Banach-algebra and lifting properties. Together with the Lemma 6.29 and the definition of
+wA,k give the unmarked estimate. At order k, Leibniz marks at most k one-pivot densities or activities;
+replacing those unmarked norms by their marked norms produces CQ,k , not an exponential-in-|U | loss. This
+gives (86). This is the step that treats same-edge and cross-edge activities in one actual tensor-product
+cut space.
+Definition 6.36 (Actual family incidence trace space). For a family F, let U = U (F). Cut every physical
+carrier line at each pivot in U . In every remaining cycle of the physical carrier skeleton choose the least
+closure edge and the least selected pivot on that edge; let Rg (F) be the resulting clean pivot set. Then
+
+                   Rg (F) ∩ U = ∅,        every physical carrier cycle meets U ∪ Rg (F).                  (87)
+
+The actual cut space is                                      O
+                                    Hg,F := L2 (GU ) ⊗                 L2 (G)p .                          (88)
+                                                           p∈Rg (F )
+
+All activity hyperedges are internal to the first product-group convolution operator in (85); no cross-edge
+incidence is declared to be a dimensionless auxiliary flag.
+Lemma 6.37 (Carrier–activity hypergraph coverage and no-reuse allocation). For a connected family
+(g, F) form the finite incidence hypergraph Hg,F whose ordinary edges are the physical carrier segments and
+whose hyperedge A is incident to the selected pivots IP (A). Root the carrier skeleton by the deterministic
+order of Lemma 6.34. Then:
+    (i) cutting every carrier at U (F) ∪ Rg (F) leaves an acyclic carrier graph;
+   (ii) the depth-first first-incidence rule assigns every activity hyperedge A exactly once, at the least
+        incident pivot first reached from the root; its remaining n(A) − 1 incidences are recorded only as
+        possible side branches;
+  (iii) the three payments are disjoint: the product Fourier–Wiener norm pays the tensor-product nuclear
+        cost on U (F), the scalar coverage reserve pays the lost clean-pivot contractions, and the promoted
+        magnitude wA,k(A) is inserted exactly once in the rooted spatial recursion.
+Consequently no same-edge or cross-edge activity, shared carrier tail, closure edge, or cycle-breaking pivot
+is charged twice in (90) or in the recursion (94).
+Proof. By definition, every carrier cycle meeting an activity is cut at all of that activity’s incident pivots,
+and every remaining activity-free carrier cycle is cut at its least closure pivot in Rg (F). Hence a cycle in
+the residual carrier graph would avoid both sets, contradicting (87); this proves (i). On the resulting
+rooted forest, deterministic depth-first exploration gives a total order on first visits to pivots. Assign a
+hyperedge at the first visited member of its incidence set. This assignment is unique, while every other
+incidence can only attach a branch to an already assigned hyperedge, proving (ii). The product-group
+convolution of Lemma 6.35 contains the complete activity factor and all covered one-pivot densities before
+any scalar split. Lemma 6.31 then separates its nuclear loss from the unused scalar incidence reserve.
+The first-incidence exploration retains one and only one copy of the promoted activity magnitude. These
+operations act on distinct factors of the majorant, proving (iii) and the final claim.
+Lemma 6.38 (Multi-pivot nuclear family contraction). Let P = |Pg |, U = |U (F)|, and Rc = |Rg (F)|.
+Before the scalar coverage split and the single denominator are applied, every unmarked family numerator
+satisfies
+                                  |V | (0)
+                                                           Y                 Y
+                ∥Ng,F ∥ ≤ Cend J∗ g (Ctr )U +Rc θ⋆P −U −Rc    ∥e
+                                                               zA,J ∥AIP (A)    e−κcov n(A) .       (89)
+                                                             A∈F                    A∈F
+
+At allocated total passive mark order k ≤ 3 + Q, the same estimate holds with the corresponding fixed
+marked constants and a fixed polynomial in the pivot counts. After applying Lemma 6.31 and the single
+denominator,
+                                                      Rc
+                                             (0)
+                                                                       Y
+                        ∥Ag,F ∥ ≤ Cend Jg,k Ctr eζV /2     θbP −Rc −ℓk   wA,k(A) .               (90)
+                                                                              A∈F
+
+Here A k(A) + kref + kjun = k and 0 ≤ ℓk ≤ k is the number of distinct formerly unmarked pivot
+      P
+payments actually removed by the marks.
+
+
+
+
+                                                      67
+Proof. Work first at finite cutoff. By Lemma 6.35, the pivots in U form one trace-class product-group
+convolution operator KU,F . Tensor it with the clean one-pivot trace-class kernels at Rg (F). Lemma 6.37
+shows that cutting the lines in U ∪ Rg (F) breaks every physical carrier cycle and allocates each activity
+exactly once, so the remaining carrier and junction contraction is a bounded operator on Hg,F . Every
+selected pivot outside the trace set is activity-free and lies on a nontrivial carrier line; integrate it with
+Kp Qp in operator norm and gain θ⋆ . Schatten ideal multiplication and | Tr S| ≤ ∥S∥1 give (89) without a
+cutoff-dimension factor.
+                 (0)
+   The factor (Ctr /θ⋆ )U is paid by (77). Insert the denominator bound exactly once. The remaining
+unmarked factor is
+                                      (0)
+                                                                     Y
+                                   (Ctr eζV /2 )Rc (θ⋆ eζV /2 )P −Rc   wA,0 .
+                                                                           A
+The marked estimate follows coefficientwise from the marked Fourier–Wiener Banach algebra, fixed-order
+Leibniz, and the one denominator quotient rule. Its cutoff-independent right side gives trace-norm cutoff
+removal and dominated convergence.
+  Let ε∞ be the weighted row for a physical discovery edge with no clean trace pivot and let ε1 be the
+row for a clean cycle-breaking edge. Equation (90) gives
+                                                               (0)                 ′
+                       ε∞ ≤ C(1 + N )s θbN ,           ε1 ≤ C(Ctr eζV /2 )(1 + N )s θbN −1 .              (91)
+Activity-hit edges require no separate closure factor: all their incidence pivots belong to the product-group
+nuclear operator, and their nuclear loss is paid by the scalar coverage reserve.
+  For 0 ≤ B ≤ 1 define                            X
+                                    Ξ(B) := sup       ωA,0 (1 + B)n(A)−1 .                                (92)
+                                                   p
+                                                       A∋p
+
+Then
+                                    Ξ(B) ≤ ε×,0,0 ,               Ξ′ (B) ≤ ε×,1,0 .                       (93)
+The first-incidence allocation of Lemma 6.37 assigns each activity once; its other n(A) − 1 incidences are
+only possible side branches. Thus the activity magnitude is never reused.
+   With maximum physical continuation degree D∗ , the complete rooted side sums obey
+                                    h                                            i
+                        Bm+1 ≤ J∗ (1 + ε∞ (1 + Bm ))D∗ −1 (1 + ε1 )D∗ eΞ(Bm ) − 1 .                   (94)
+
+Choose first R and then a finite pivot count N so that
+                              J∗ (1 + 2ε∞ )D∗ −1 (1 + ε1 )D∗ eε×,0,0 − 1 ≤ 1                              (95)
+                                                                       
+
+and
+                                                     h
+                        qsp := J∗ (1 + ε1 )D∗ eε×,0,0 (D∗ − 1)ε∞ (1 + 2ε∞ )D∗ −2
+                                                                                i                         (96)
+                                                        + (1 + 2ε∞ )D∗ −1 ε×,1,0 < 1.
+
+These choices are possible because the promoted Fourier–Wiener activity rows tend to zero with R, while
+the two physical rows tend to zero exponentially with N .
+   For marks, let E∞ (t), E1 (t), and J (t) be the degree-(3 + Q) exponential generating polynomials of the
+corresponding marked rows, and put
+                                             3+Q
+                                             X k   t     X
+                               X (B, t) :=           sup   ωA,k (1 + B)n(A)−1 .                           (97)
+                                                   k! p
+                                             k=0             A∋p
+
+Then                h                                                                    i
+          Bm+1 (t) ≼ J (t) {1 + E∞ (t)(1 + Bm (t))}D∗ −1 {1 + E1 (t)}D∗ eX (Bm (t),t) − 1             .   (98)
+                                                                                               ≤3+Q
+The same-order coefficient is multiplied by at most qsp ; all other terms are lower triangular in total mark
+order.
+   Every physical discovery and clean closure edge carries its full geometric weight µedge + δ, and every
+promoted activity retains wA,k = e−ms diam A ωA,k . Connected geometry gives
+                                                     X                X
+                          diam Yg,F ≤ Ccore + cgeo L       ℓ(e) + c×      diam A.
+                                                             e∈Eg              A∈F
+
+
+                                                             68
+Choose                                                                     
+                                                                µedge ms
+                                            0 < mH < min              ,         .
+                                                                cgeo L c×
+The unused δ, the excess pivot charge κbr − log 2, and the support-exponent reserves pay all polynomial
+root, anchor, incidence, and marked-placement multiplicities. Therefore, for every fixed Q < ∞,
+
+                           emH diam Y ∥Dζ≤3 DJ≤Q aY ∥ ≤ ηH,Q (RG ),
+                    X
+              sup                                                           ηH,Q (RG ) ≤ CQ e−mH RG .     (99)
+                v
+                    Y ∋v
+
+
+The bound is uniform in volume, cutoff, exterior data, preceding weak depth, ordinary-periodic toron
+background, seam/reflection template, and periodic wrapping. Compact vacuum histories remain assigned
+by the exact owner map to one-core references or the pre-existing regular/Gaussian inventory; internally
+nontrivial composite singlets remain in the Haar inventory.
+Theorem 6.39 (Exact incidence-split product-group nuclear compact collect). Choose R and a finite
+pivot count N from the unmarked conditions (84), (95), and (96), with N ≥ 3. These choices are made
+once and are independent of source order. Then, for every fixed Q < ∞, after exact compact integration
+the complete nonvacuum compact coefficients satisfy (99), uniformly through three passive optical marks
+and Q physical-source marks. The constants have the Cauchy growth of one common positive source
+radius.
+Proof. Expand the exact single-denominator amplitude once by Lemma 6.34 and split every activity
+by (71). For each family, absorb all covered-pivot densities and all same-edge or cross-edge activity
+factors into the one product-group convolution operator of Lemma 6.35. Its Fourier–Wiener norm pays
+the actual tensor-product nuclear cost. The scalar incidence reserve pays that cost and every lost Haar
+contraction, while the promoted activity magnitude remains once for the canonical rooted exploration.
+Clean activity-free physical cycles are closed at the deterministic pivots in Rg (F). The strict unmarked
+recursion fixes R and N once. At every finite marked order the same-order coefficient is still qsp < 1
+and all new terms are lower-triangular forcing, so source order changes constants but not the chosen
+geometry. The marked triangular extension sums all carrier branches, physical cycles, shared tails, seams,
+reflections, wrapping edges, and activity hyperedges. The resulting majorant proves absolute convergence
+of the family expansion and permits the cutoff and finite-subfamily limits. The final spatial allocation
+gives (99).
+Corollary 6.40 (Exact post-compact joint partition). Fix the compatible optical-core family after the
+finite RG merge. There are normalized one-core references dµref
+                                                              X,J and one exact cross-core activity
+inventory
+                                AJ = AJG ⊔ AJreg ⊔ AJirr ⊔ AJH
+such that                                   Z O
+                                Z(J)                                X       Y
+                                        =           X,J (ζX )
+                                                  dµref                             zA,J (ζA ).          (100)
+                               Zloc (J)
+                                              X                 F compatible A∈F
+
+Here A G is the exact Gaussian cross-core inventory of Theorem 3.28, A reg and A irr are the exact
+owner-map outputs, and A H is the nonvacuum compact inventory of Theorem 6.39. The scalar Zloc (J)
+is formed only after every variable owned by a one-core reference has been integrated. Every physical,
+normalization, seam, wrapping, determinant, full-incidence compact-vacuum, and source occurrence is
+present exactly once in either a one-core reference or one of the four disjoint cross-core inventories; every
+internally nontrivial compact singlet is in AJH .
+Proof. Start from (53). Apply the exact Gaussian product identity of Theorem 3.28, the canonical owner
+map, and Theorem 6.39. Convert each connected Gaussian or logarithmic cross-core word to its exact
+Mayer factor e−GA − 1. Expand first over arbitrary finite subsets, including overlapping supports. Collect
+each connected overlap component onto its least canonical reported hull; the resulting hull activities have
+disjoint exact histories. Only after this overlap collect is performed are the remaining hull families declared
+compatible. History compatibility therefore makes the four ownership classes disjoint and exhaustive
+without omitting an overlapping Mayer term. Fubini gives (100); no scalar depending on an unintegrated
+variable enters Zloc .
+
+
+
+
+                                                          69
+Lemma 6.41 (Admission to the joint rooted ball). Let δB > 0 be the strict admission threshold in
+Theorem 3.31 and the summed replica–BKAR theorem, and put
+
+                       mbase (u, Rinv , RG ) := C0 η0 (u, Rinv ) + θu + κG (RG ) .         (101)
+                                                                                
+
+Choose the compact first-crossing interval and Rinv , then enlarge RG , so that
+                                                         1                           1
+                           sup mbase (u, Rinv , RG ) ≤     δB ,      CE ηH (RG ) ≤     δB .                 (102)
+                          u∈I⋆                           2                           4
+
+Then the complete joint branch mass is at most 3δB /4, strictly inside the same admission ball.
+Proof. The regular supplier gives η0 ≤ C(uω + ∥R⋆ (u)∥[3] ), the bad-core mass is exponentially small, and
+both κG (RG ) and ηH (RG ) tend to zero as RG → ∞. Choose the parameters in the displayed order. This
+is the same strict inequality consumed by the existing irregular and Gaussian forest theorems.
+Lemma 6.42 (Cycle-safe compact spatial row). The complete compact activity estimate is exactly (99).
+In particular every discovery edge, closure edge, cycle, and off-spine branch is weighted before summation,
+and ηH (RG ) ≤ Ce−mH RG for one mH > 0.
+Proof. This is the final paragraph of Section 6.5.4; the residual edge-weight reserve pays root and anchor
+multiplicity.
+6.5.5 One mixed Haar–optical connected forest
+The regular, irregular, and Gaussian cross-core rows are collected in mbase , while the complete nonvacuum
+compact row is ηH . Lemma 6.41 supplies their common strict admission margin. Thus
+                                                                             3
+                            E := mbase (u, Rinv , RG ) + CE ηH (RG ) ≤
+                           mbr                                                 δB < δB .                    (103)
+                                                                             4
+Theorem 6.43 (Joint Haar–optical two-root theorem). For the complete logarithm (54), every connected
+zero-, one-, or two-source kernel joining two bounded matching-scale buffers A, B satisfies
+
+                                 |Kq (A, B)| ≤ Cq e−mE dist(A,B) ,       q = 0, 1, 2,                       (104)
+
+with exponentially weighted row and column sums uniform in volume, cutoff, exterior configuration, and
+preceding weak depth.
+Proof. Start from the exact physical identity (100). Apply the summed replica–BKAR connected
+logarithm to its still-live optical field. Its vertices are the compact-integrated activities of (99), the regular
+and irregular activities, the exact Gaussian cross-core activities of (5), and the finite local source roots.
+This vertex inventory is exhaustive before any path classification: Lemma 6.7 and Proposition 6.8 allocate
+every original fine-link factor exactly once, and Corollary 6.40 retains every cross-core Gaussian, regular,
+irregular, or compact activity in one disjoint inventory. The summed replica–BKAR theorem, the marked
+Gaussian block-polymer theorem, and (103) sum every branch inside their common strict admission ball.
+   In a connected forest joining A to B, take the unique tree path between the roots. Each object on
+this path is either an optical covariance bond, a compact-integrated Haar activity, or a reported refer-
+ence/regular/irregular, seam, or wrapping connector. Optical bonds pay the exponent of Corollary 4.14;
+the complete compact objects pay the full-support estimate (99), whose proof already includes every
+discovery edge, closure edge, cycle, and off-spine branch; all other reported connectors pay their registered
+support exponent. The triangle inequality on the canonical reported hulls makes the total reported
+length at least dist(A, B) − C. Weakening the minimum exponent once gives mE > 0 and (104). Mixed
+retained/optical vertices are ordinary vertices of this same forest, so no joint composite channel is lost by
+marginalization. Marks through order two promote finitely many vertices and change only Cq .
+Theorem 6.44 (Two composite-root extension). Fix two bounded matching-scale buffers A, B. For any
+prescribed finite source orders QA , QB , first collect every source contact subtree contained in A or B into
+                                                  (Q )         (Q )
+its complete normalized local coefficient. Let RA A and RB B denote the resulting bounded positive-scale
+roots, or normalized local roots measured in the permanent finite source-renormalization norm. Then
+                                        (Q )   (Q )
+                                  K(RA A , RB B ) ≤ CQA ,QB e−mE dist(A,B) ,                                (105)
+
+with the same exponent mE as Theorem 6.43. The constant may depend on the two fixed local source
+orders and root types, but not on volume, cutoff, exterior configuration, or preceding weak depth.
+
+
+                                                         70
+Proof. The arbitrary fixed passive-source theorem and the common analytic species tube form each
+complete contact cluster before the matching collect and bound it in one finite local root norm. Insert
+those two coefficients as the two distinguished roots of the exact joint compact–optical logarithm; do
+not represent their internal source leaves as additional bulk source marks. Every pivot and connector
+lying wholly inside either fixed root buffer is absorbed into its root constant. Outside the two buffers the
+nonroot activity row, incidence-split coverage allocation, multi-pivot nuclear closure estimate, and strict
+branch coefficient are exactly those of Theorem 6.43. The unique connecting path therefore pays the
+same spatial exponent mE . For normalized local fields the weak triangular source theorem supplies the
+finite root seminorm before this matching-scale insertion. Thus arbitrary finite local source order changes
+only CQA ,QB and not the connector exponent.
+
+7    Compact boundary-to-center closure
+Proposition 7.1 (Exact full-joint marked response row). For q = 0, 1, 2, the exact matching-scale
+connected source kernels obey
+                      X                                X
+                  sup     emE d(x,y) |Kq (x, y)| + sup   emE d(x,y) |Kq (x, y)| ≤ Aq < ∞.   (106)
+                    x                             y
+                        y                              x
+
+Proof. This is Theorem 6.43 in weighted Schur form. Its vertex inventory is exact by Lemma 6.7,
+Proposition 6.8, and Corollary 6.40; Corollary 7.8 excludes the only additional acoustic-channel concern.
+
+
+Theorem 7.2 (Retained probe-root influence row). For every bounded centered probe in a fixed matching-
+scale source buffer, the exact normalized response satisfies the zero-, one-, and two-source weighted row
+and column bounds of (106).
+Proof. Insert the probe as one of the two declared root vertices before applying Theorem 6.43. The
+exact owner inventory supplies the three paid path classes, and Corollary 7.8 excludes an additional
+unreported acoustic class. Normalization deletes every probe-disconnected component in the complete
+joint logarithm.
+Theorem 7.3 (Exact local-source retention and Gate–E closure). Let F be a bounded local matching
+observable and let B be any bounded registered exterior perturbation supported at distance at least r from
+F . Through source order two,
+
+                             DJq ⟨F ; B⟩c J=0 ≤ CF,B,q e−mE r ,     q = 0, 1, 2.                      (107)
+
+The same estimate holds for a finite family of compact-boundary or optical chart perturbations whose
+centered score rows are uniformly bounded in the permanent marked norm. This is the boundary-to-center
+statement consumed by the source forest.
+Proof. Use F and B as the two declared roots in Theorem 6.43. The owner inventory is exhaustive at the
+vertex level, and Corollary 7.8 excludes an additional unreported acoustic class. For a finite interpolation
+of compact boundary data, differentiation along a unit-speed group geodesic inserts its centered local
+score as the exterior root; for an admitted optical chart interpolation the affine derivative inserts the
+corresponding registered optical score. The marked row is uniform in the exterior data allowed by the
+exact regular/irregular owner decomposition. Integrating the finite interpolation gives the same estimate.
+No claim for arbitrary uncontrolled boundary measures is needed downstream.
+Corollary 7.4 (Uniform two-buffer connector rows). Let I1 , I2 be bounded source, displacement, stress,
+or retained-link buffers. Every exact connected response meeting both buffers has exponentially weighted
+row and column sums bounded by Aq through source order two, uniformly in volume, cutoff, exterior
+configuration, and preceding weak depth. Use the two buffers as the declared roots in Theorem 6.43; the
+vertex inventory is exact by Lemma 6.7 and Proposition 6.8, while Corollary 7.8 excludes an additional
+unreported acoustic class.
+
+
+
+
+                                                      71
+7.1    Acoustic exclusion at the exact matching call site
+Lemma 7.5 (No massless retained reference at matching). In the exact post-compact joint partition of
+Corollary 6.40, the retained compact field has product normalized Haar reference and has already been
+integrated coefficientwise before the optical connected logarithm is taken. The massless tangent Feynman
+Gaussian used in the weak normal-chart construction is not a live matching reference. The only Gaussian
+reference left live is the normalized optical one-core product, and every cross-core optical term is contained
+in the explicit inventory AJG .
+Proof. The exact compact collect of Theorem 6.39 and the post-compact identity of Corollary 6.40 restore
+product Haar on the retained compact variables and place every nonempty retained dependence into the
+compact, Gaussian, regular, or irregular activity inventories. The weak tangent Gaussian contributes
+no undeclared covariance edge to this matching logarithm. By contrast, the optical one-core references
+remain live, while their off-diagonal quadratic blocks and other cross-core terms occur explicitly in AJG
+and retain the spatial payment used in Theorem 6.43.
+Lemma 7.6 (Vacuum factorization after the complete owner map). Fix the optical variables and expand
+one compact coefficient in Peter–Weyl sectors. Suppose every compact cut separating two declared root
+buffers carries the trivial representation. Remove only the cross-core objects already registered in the
+four disjoint inventories of Corollary 6.40. If no registered connector remains between the roots, the
+residual coefficient factorizes into one-core expectations and empty-support scalars. Its contribution to the
+normalized connected two-root logarithm is zero.
+Proof. Triviality on every separating compact cut permits repeated Haar–Fubini separation. The exact
+incidence-split collect retains every internally nontrivial singlet in AJH , while the owner map assigns every
+other cross-core occurrence to exactly one of AJG , AJreg , AJirr , or AJH . After those registered objects are
+removed, the residual history has no object joining distinct one-core components. It therefore factorizes.
+Empty-support scalars are removed by the normalization, and products of separate one-root expectations
+are removed by the connected logarithm.
+Theorem 7.7 (Exact acoustic exclusion-or-capture). Consider any connected zero-, one-, or two-source
+coefficient joining two bounded matching-scale root buffers in the exact joint logarithm. At least one object
+on the unique root-to-root forest path belongs to one of the following classes:
+   (i) a nonvacuum compact activity controlled by Theorem 6.39 and the spatial row (99);
+  (ii) an optical covariance bond or an optical Gaussian cross-core activity in AJG ;
+ (iii) a registered reference, regular, irregular, seam, reflection, wrapping, normalization, determinant, or
+       source connector with its original support payment.
+There is no fourth class consisting of a massless retained acoustic reference edge.
+Proof. Assume that a connected coefficient contains no object of types (i)–(iii). Absence of (i) makes
+every separating compact cut vacuum. Absence of (iii) leaves no registered physical connector after the
+complete owner map. Lemma 7.6 then reduces the compact contribution to disconnected one-core factors
+and scalars. Absence of (ii) also prevents the still-live optical field from joining the roots. The coefficient
+is therefore disconnected, a contradiction. The only possible remaining concern would be an undeclared
+massless retained covariance, which is excluded by Lemma 7.5.
+
+Corollary 7.8 (No additional acoustic path class). The exact vertex inventory used in Theorem 6.43 ad-
+mits no fourth root-to-root path class consisting of a massless retained acoustic reference edge. Consequently
+the boundary-to-center estimates (104) and (107) require no additional terminal Witten, acoustic-channel,
+or retained-Gaussian gap hypothesis.
+Proof. The vertex inventory is already exhaustive by Lemma 6.7, Proposition 6.8, and Corollary 6.40.
+Apply Theorem 7.7 to exclude the only remaining acoustic fourth-class concern.
+
+8     General invariant jets and Ward identities
+8.1    Multiscale invariant-source trees
+Riemann-scaled sources and block incidence Let ℓ0 > 0 be the fixed matching scale and ℓj = 2−j ℓ0
+the directed ultraviolet resolutions. At resolution m, let Om,z be a centered bounded gauge-invariant
+
+
+
+
+                                                      72
+observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
+                                                        X
+                                       Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+                                                       z∈ℓm Z4
+
+If a fine source Jm is averaged to scale j < m, define
+                                                     X
+                                        Jj (X) = ℓ−4
+                                                  j    ℓ4m Jm (z),                                      (109)
+                                                        z∈X
+
+where X is one scale-j cell.
+Lemma 8.1 (Source-incidence contraction). The block source map satisfies
+                                               X                X
+                        ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+                                                        X                      z
+
+The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+normalization their products are bounded on every fixed finite jet family and do not alter the connector
+exponent.
+Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+follows by the triangle inequality and the partition of the fine cells into coarse cells.
+
+Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+regimes.
+(R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+     ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+     pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+     scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+     weak/irregular recombination has a summable rooted remainder.
+(R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+     macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+     are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+     Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+     common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+     acoustic reference channel beyond the exact owner-map inventory.
+(R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+     column bounds uniform in all exterior variables.
+   Define the quantitative rates
+
+                    mw := ℓ−1
+                           jw min{c0 | log σ|, mopt },
+                                                                     1                                  (111)
+                 mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+                                                                     2
+where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+with the fixed matching bridge has exponential rate at least
+
+                               1                min{c0 | log σ|, mopt }
+                                                                           
+                     m(M ) := min          inf                          , mE ≥ m∗ > 0.
+                               2        jw ≤j≤M           ℓj
+
+The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+M → ∞ cannot decrease the exponent.
+
+
+                                                       73
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+                                                                                                    −cuj
+                                                                                                          .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+before the logarithm is taken, so no all-good denominator occurs. Write
+
+                                     Wm (J) = log Zm (J) − log Zm (0)
+
+for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+finite macrobridge is an identity, not an asymptotic expansion.
+   A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+transported without joining retain their existing components. At the terminal matching logarithm, the
+remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+fixed by the least source label, so isomorphic terms are not counted more than once.
+Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+derivative order n,                                        X
+                             Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+                                                      τ ∈Tm,n
+
+where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+one/two-root bounds control a component while its source leaves remain external. These majorants are
+summable independently of m, so dominated convergence gives the last assertion.
+
+    For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+recursively generated tree, not a choice made after absolute values or bounds have been applied.
+Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the d
