@@ -1,0 +1,324 @@
+ Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the reported support. The first statement is Corollary 4.10
+with finite support sums. On the unique tree path between the two roots, the triangle inequality makes the
+sum of edge distances at least the root separation. The remaining branches are summed by the unused
+rooted smallness margin. Fixed marks promote finitely many vertices and change only the constant.
+4.4      Wick-stable jet block
+Coordinate choice. Use the grounded covariances and harmonic extensions constructed in Section 4.3.
+Thus, before the scale-j conditional expectation,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+
+where Cj = Cjd is the exact detail covariance and the second term is the embedded remaining covariance.
+After canonical scale-two identification, Cjc is denoted C≥j+1 . For every finite-degree local gauge-complete
+jet P , define
+                                                          1
+                                                                 
+                                        : P : C≥j = exp − ∆C≥j P.
+                                                          2
+The contraction exponential terminates at finite degree.
+   Let Πext extract:
+1. the vacuum coordinate;
+2. the tangent-normalized reflection-even Yang–Mills coordinate;
+3. every declared marked/contact jet of degree below five;
+4. total differences, Bianchi descendants, and the reflection-odd scalar sector.
+   Put
+                                                       Πirr = I − Πext
+on the jet truncation through degree eight. The stable marked fiber begins at degree five; its unmarked
+scalar subfiber begins at degree six.
+Lemma 4.15 (Marked Gaussian Wick martingale). For every finite-degree gauge-complete jet, with zero,
+one, or two active background marks and every fixed finite family of passive source leaves,
+
+                                  ECj : P (Jj W + ζ) : C≥j =: (P ◦ Jj )(W ) : Cjc .
+
+After the canonical scale-two identification this is the stated passage from scale j to scale j +1. Conditional
+Gaussian expectation therefore preserves homogeneous Wick chaos exactly and creates no lower-chaos
+contraction path.
+Proof. This is Corollary 4.12. Explicitly,
+                                                    C≥j = Cj + Jj Cjc Jj∗ ,
+so the commuting contraction operators give
+                             1          − 12 ∆C≥j                     − 21 ∆C c
+                           e 2 ∆C j e               P (Jj W + ·) 0 = e        j   (P ◦ Jj )(W ).
+The covariance is fixed rather than background dependent. Background and passive-source derivatives
+therefore commute with the contraction operators. Wick contraction is applied to the complete gauge-
+invariant tensor, so gauge, signed-hypercubic, and aligned-reflection covariance are preserved.
+
+Exact forty-nine-path symbol jet.          For ϑ = 7/8, the exact centered linear block symbol is
+                                                                          
+                                                 kµ             Y
+                                 Mµµ (k) = 2 cos     ϑ + (1 − ϑ)    cos kλ  ,
+                                                  2
+                                                                           λ̸=µ
+
+and, for µ ̸= ν,
+                                 1−ϑ            kν
+                    Mµν (k) =        sin kµ sin    [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                                  3             2
+   Let
+                                                                 1
+                                                       N (k) =     M (k)
+                                                                 2
+be the canonically normalized connection symbol.
+
+
+                                                              30
+Lemma 4.16 (Exact low-momentum jet). The printed symbol satisfies:
+                                        N (0) = I,         DN (0) = 0,
+and every total-order-three derivative at zero vanishes. The nonzero quadratic derivatives are generated by
+                                             1                         1
+                              ∂µ2 Nµµ (0) = − ,      ∂λ2 Nµµ (0) = −        (λ ̸= µ),
+                                             4                         8
+and
+                                                    1
+                                        ∂µ ∂ν Nµν (0) = (µ ̸= ν).
+                                                   16
+Consequently the block correction raises engineering degree by an even positive amount. It has no
+same-degree off-diagonal part.
+Proof. For the diagonal entry,
+                                                                                
+                                                                   Y
+                               Nµµ (k) = cos(kµ /2) ϑ + (1 − ϑ)           cos kλ  .
+                                                                   λ̸=µ
+
+It is even in every variable, so all first and third total derivatives at zero vanish. Direct differentiation
+gives ∂µ2 Nµµ (0) = −1/4 and, for λ ̸= µ, ∂λ2 Nµµ (0) = −(1 − ϑ) = −1/8. For µ ̸= ν,
+                            1−ϑ
+                  Nµν (k) =       sin kµ sin(kν /2) [2 cos kα cos kβ + cos kα + cos kβ + 2] .
+                              6
+The bracket equals six at zero, so ∂µ ∂ν Nµν (0) = (1 − ϑ) · (1/2) = 1/16. Its Taylor series begins in total
+degree two and the next terms have total degree four, hence every total-degree-three derivative vanishes.
+These formulas also show that every correction raises engineering degree by an even positive amount.
+
+Stable jet matrix. Order the stable Wick-local jet fiber by increasing declared engineering degree:
+                                           [2]
+                                         Jst = J5 ⊕ J6 ⊕ J7 ⊕ J8 .
+Theorem 4.17 (Stable jet-matrix theorem). At the Gaussian point, the one-step stable derivative is
+                                          Ljet = Πirr S2 Γ(J) Πirr ,
+where Γ(J) is Gaussian second quantization of the harmonic extension and S2 is canonical scale-two
+rescaling.
+   In the displayed degree ordering,
+                                        2 I5    0             0
+                                        −1                        
+                                                      B57
+                                        0   2−2 I6    0     B68 
+                                Ljet = 
+                                        0
+                                                                   ,
+                                                0    2 I7
+                                                      −3
+                                                              0 
+                                          0     0      0    2−4 I8
+after combining all allowed degree-+2r entries into the finite blocks B∆,∆+2r . More generally the matrix
+is block upper triangular and
+                                           gr∆ Ljet = 24−∆ I.
+   All entries are finite and uniform under the standing convention: they are derivatives at the flat point
+of one fixed finite forty-nine-path cell and its fixed finite Wick conversion.
+   Therefore
+                                                             1
+                                                  r(Ljet ) ≤ ,
+                                                             2
+and on the unmarked scalar subfiber,
+                                                             1
+                                                  r(Ljet ) ≤ .
+                                                             4
+Proof. The Wick martingale eliminates every covariance-contraction lowering term. Lemma 4.16 gives
+identity on the same-degree field jet and only degree-+2r corrections. Canonical cell rescaling multiplies
+a homogeneous degree-∆ jet by 24−∆ .
+   The extraction projector removes every declared jet below the stable threshold. Hence the stable matrix
+is block upper triangular with the displayed diagonal. Its entries come from finitely many derivatives of
+finite local analytic maps, so they are finite uniform constants. The spectrum of a finite block triangular
+matrix is the union of the spectra of its diagonal blocks.
+
+
+                                                      31
+4.5    Localization and exact collect
+Fix one finite dyadic macrostep L = 2s . All fields are expressed in the scale-dependent Wick coordinates
+of the stable-jet theorem. Engineering degree includes discrete derivatives and every declared active
+structural mark.
+
+Rooted histories and collect. Let HL be the absolutely summable family of connected regular
+macrostep histories. A history h has a reported connected support P (h), a distinguished root, and a
+canonical hull
+                                             Y = H(h).
+The hull contains the reported supports, shortest covariance connector paths, and the fixed finite atlas
+collar.
+Definition 4.18 (Exact collect). For a coarse connected support Y , define
+                                                     X
+                                        (CL F )Y =         Fh .
+                                                       h∈HL
+                                                      H(h)=Y
+
+The history certificate is retained as a passive label until this sum is formed.
+Lemma 4.19 (Collect is a rooted partition). The sets
+
+                                              {h : H(h) = Y }
+
+partition HL . Hence collect is exact, and for every bounded linear localization operator AY ,
+                                                       X
+                                       AY (CL F )Y =        AY Fh .
+                                                      H(h)=Y
+
+No history is omitted or counted twice.
+Proof. The canonical hull and history certificate are deterministic functions of the reported history.
+Absolute convergence in the rooted activity norm permits bounded linear operations to pass through the
+history sum.
+
+Gauge-covariant local jet projector. For a rooted support Y , choose the canonical root cell r(Y ).
+Parallel-transport every local tensor to r(Y ) along the canonical hull tree and write the resulting local
+field in the finite normal-coordinate atlas.
+    Let JD (Y ) be the finite-dimensional space of gauge-complete, signed-hypercubic covariant, Wick-local
+jets of declared engineering degree at most D, including the extraction sector and the stable jet sector.
+Lemma 4.20 (Discrete covariant localization). There is a projector
+
+                                          LocD,Y : FY 7−→ JD (Y )
+
+with the following properties.
+1. Loc2D,Y = LocD,Y , and it is exact on JD (Y ).
+2. It commutes with gauge transformations, signed-hypercubic symmetries, and aligned reflection.
+3. For 0 ≤ m ≤ 3,
+                                ∥ LocD,Y FY ∥[m] ≤ CD (1 + τ (Y ))pD ∥FY ∥[m] .
+4. If LocD,Y FY = 0, then after canonical scale-L rescaling,
+
+                                 ∥TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+
+  The estimate includes both the nonlocal output and its newly generated local projection:
+
+                ∥ LocD TL FY ∥[m] + ∥(1 − LocD )TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+
+Proof. On each finite local template, take the gauge-complete Taylor expansion in normal coordinates
+and scale-dependent Wick monomials, transport all coefficients to the canonical root, and average over
+the finite stabilizer. The dual coefficient functionals use finitely many derivatives and finite-difference
+
+
+                                                     32
+moments. Transport along a tree of radius τ (Y ) costs at most a polynomial in 1 + τ (Y ), proving the
+third row.
+   If LocD,Y FY = 0, every declared Taylor coefficient through degree D vanishes. The integral form of
+the covariant Taylor remainder begins at degree D + 1. Canonical rescaling gives one root-preimage factor
+L4 and L−(D+1) from the smallest omitted engineering degree. Thus the gain is
+
+                                              L4−(D+1) = L3−D .
+
+The regular linearized block kernel is analytic on the fixed tube and bounded through the three active
+marked rows, so integration and the local coefficient functionals preserve this remainder estimate. Applying
+the projector after integration proves the displayed localization-commutator bound; in particular, a
+remainder cannot feed the finite local block without paying the same L3−D factor.
+
+Exact local block and localization commutator. Let ΠD denote the full local jet projector on the
+                                  [s]
+macrostep activity space and let Ljet be the exact finite stable Wick-jet matrix of Theorem 4.17.
+Lemma 4.21 (Exact block decomposition). At the Gaussian point,
+
+                                           DΦL (0)|stable = JL + NL ,
+
+where
+                                                                       [s]
+                                          JL = ΠD DΦL (0)ΠD = Ljet ,
+and every other block,
+
+            ΠD DΦL (0)(1 − ΠD ),          (1 − ΠD )DΦL (0)ΠD ,           (1 − ΠD )DΦL (0)(1 − ΠD ),
+
+is assigned to NL and obeys the long/short estimates below.
+   In particular, the macrostep envelope LΓ does not multiply the finite local diagonal.
+Proof. On the finite local Wick-jet quotient, Gaussian integration is exact second quantization and
+                                         [s]
+canonical rescaling gives the matrix Ljet proved in Theorem 4.17. This is the local-to-local block.
+   For every coordinate containing a localization remainder, the preceding lemma gives the L3−D gain on
+short supports. Local jets that produce degree above D also lie in the same remainder because the exact
+forty-nine-path symbol raises degree only by even positive amounts. Thus all off-diagonal local/remainder
+blocks belong to NL , while the finite local diagonal is computed before the support-envelope estimate.
+
+Logarithmic support dichotomy. Assume the exact summed regular macrostep envelope
+                                 

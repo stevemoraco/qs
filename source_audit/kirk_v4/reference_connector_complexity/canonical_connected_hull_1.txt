@@ -1,0 +1,316 @@
+hull H(X),
+and exterior ring RX = H(X) \ I(X). Assume
+
+                                  |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|.
+
+Let dµX be the fixed product base measure of the component chart and let
+                                          Z
+                                  GX (η) = ρrefX (z; η) dµX (z) > 0.
+
+
+  Split the exact bad density into curvature, transition-collar, and outer-anchor labels:
+
+                                         X = ρX
+                                        ρbad       + ρcol
+                                                      X + ρX .
+                                              curv         out
+
+
+Theorem 3.20 (Absolute bad-seed and core-variation ledger). Assume the exterior tube and analytic
+residual theorem of the preceding section and the common dominance condition
+
+                                        χ2
+                                           ≥ K Rg2 + 1 + log u−1
+                                                                 
+                                        u
+
+                                                     17
+with K sufficiently large. Use the exact labelled partition of Section 3 and the component reference of
+Section 3.4.
+   Then there are b1 > b0 , c, p, C > 0, uniform under the standing convention, such that
+                                              h         2
+                                                            i|X|/νov
+                                      bu (X) = Cu−p e−cχ /u
+
+and, for every compact-variable derivative |β| ≤ 2sG and every total exterior/structural mark order
+q + |α| ≤ 3,
+
+                                     β    q
+              e−b1 qRX (η) GX (η)−1 Dpiv Dext  α
+                                              Dmark  X (·; η)
+                                                    λbad             ≤ Cβ,q,α (1 + u−pβ )bu (X),
+                                                                TV
+
+
+where pβ < ∞ is fixed for each |β| ≤ 2sG . Here Dpiv denotes differentiation in any fixed left-invariant
+frame of a compact group variable occurring in the core. It is independent of the three structural/exterior
+marks used by the weak renormalization-group norm. The curvature-bad term obeys the same estimate
+uniformly on a smaller complex exterior tube.
+
+Proof. For the curvature-bad term, take absolute values before integration. The sector estimate and
+Proposition 3.6 give
+                                               c∗ χ2 |X|
+                        u−1 Re AX (z; η + h) ≥           − CqRX (h) − C|X|.
+                                               2 u νov
+Together with the residual row and the linear hull-size bound, this yields
+
+                                                          χ2 |X|
+      Z                                                                                           
+         |ρcurv
+           X    (z; η + h)| dµX (z) ≤ [Cu  ]
+                                         −p C|X|
+                                                 exp   −c        + b 0 q RX
+                                                                            (η) + CqR X
+                                                                                        (h) + C|X|   .
+                                                          u νov
+
+For a fixed Cauchy polydisc and b1 > b0 , choose ε > 0 with (1 + ε)b0 < b1 . Then
+
+                                  b0 qRX (η + Re h) ≤ b1 qRX (η) + Cε,δ |X|.
+
+Cauchy’s formula on the fixed domain therefore gives the differentiated total-variation rows without using
+an equal-weight growth improvement.
+   For collar and outer labels, differentiate under the real finite-dimensional integral. Lemma 3.5 shows
+that every derivative of a splice cutoff remains supported on the charged annulus or outer event. All
+remaining terms are finite Bell polynomials in fixed-template derivatives. By Lemma 3.1, the same
+statement holds after any |β| ≤ 2sG compact-variable derivatives. Such derivatives add only a fixed
+polynomial in u−1 , χ−1 , and |X|; they do not alter the charged support. These polynomial losses multiply
+the same action exponential and are absorbed after decreasing its constant c.
+   Lemma 3.19 divides out the reference denominator. Its ud0 |X|/2 , Rg2 |X|, and finite chart losses are
+absorbed by the assumed action dominance after decreasing c. The finite label sum changes only C.
+   The reference density has the same fixed analytic domain without a bad cutoff. Cauchy and the
+trial lower bound control its normalized derivatives. Bell-polynomial differentiation of G−1  X preserves
+only per-core polynomial/exponential losses, which are absorbed when multiplied by the bad numerator
+estimate.
+
+Lemma 3.21 (Concrete one-core insertion). Define
+                                                Z
+                         (TX F )(η) = GX (η) −1
+                                                  F (z, η) dλbad
+                                                             X (z; η).
+
+
+Then, in the weakened exterior regulator,
+
+                                        ∥TX F ∥[3] ≤ Cbu (X)∥F ∥[3] .
+
+Proof. Differentiate by Leibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is used: the absolute-value allocation
+                                                    1
+                               |⟨yX , KXY yY ⟩| ≤     ∥KXY ∥(∥yX ∥2 + ∥yY ∥2 )
+                                                    2
+assigns a nonnegative quadratic regulator to the two incident vertices. The weighted block row makes
+the sum of those regulator matrices at every replica vertex at most Cκ. After enlarging RG so 4Cκ < 1,
+Corollary 4.2 bounds all Gaussian exponential moments uniformly in the replica matrix and in the number
+of cores. The geometric reporting lemma assigns each differentiated tree to its connected core hull. The
+exact 1/n! and Lemma 4.3 absorb the vertex factorials. The resulting rooted tree series has link mass at
+most 4κ and gives the same denominator as the determinant words.
+   A structural or source derivative either differentiates one block of K, one exterior mean, or one one-core
+score. Leibniz distributes at most three marks, producing the fourth power in (2). Finally, replacing dγX
+by a normalized one-core reference changes only the single-core vertices and normalization scores. Their
+assumed upper/lower and score bounds are paid per vertex and do not alter the cross-link mass. The
+connected logarithm removes every empty-support scalar once. This proves the stated uniform row in
+exactly the marked norm consumed downstream.
+
+
+                                                            20
+Lemma 3.27 (Model-specific admission to the marked Gaussian block-polymer theorem). For the actual
+constrained Karcher precision and every admitted exterior history, the three hypotheses of Lemma 3.26
+hold with κ = CκG (RG ):
+         −1/2         −1/2
+  (i) ∥Qdiag Qcross Qdiag ∥aG ,[3] ≤ CκG (RG );
+                                                                                                 1/2
+  (ii) the centered exterior means and their first three marks are uniformly bounded in the QXX metric;
+       and
+ (iii) every normalized one-core reference has logarithmic score rows through order three in the exact [3]
+       norm consumed by Sections 20, 29, and 31.
+The constants are uniform under the standing convention and in core size.
+Proof. For Q ⪰ 2I, holomorphic functional calculus gives
+                                           1 ∞ −1/2
+                                             Z
+                                 Q−1/2 =         t     (Q + t)−1 dt.
+                                           π 0
+Differentiating under the integral through order three expresses every mark as a finite sum of resolvent
+words. The lower bound gives ∥(Q + t)−1 ∥ ≤ (2 + t)−1 ; convolution of the printed exponential precision
+                                                                       −1/2       −1/2
+rows therefore yields the same rooted row for Q−1/2 and for K = Qdiag Qcross Qdiag . This proves (i).
+  The exterior linear term ℓX (η) is a fixed-incidence contraction of the exponentially local precision with
+the common exterior datum. The one-core mean is mX = −Q−1         XX ℓX . The same resolvent formula and
+                                   1/2
+the exterior regulator row give ∥QXX mX ∥[3] ≤ C, proving (ii).
+  Write a normalized one-core density as pX = G−1   X ρX . Then
+
+                                  D log pX = D log ρX − EpX [D log ρX ],
+
+and higher derivatives are finite cumulant polynomials of the corresponding unnormalized scores. The
+exterior-tube bounds, the displayed collar/outer TV rows, and the plateau lower bound for GX bound
+these cumulants through order three without a volume factor. This proves (iii) in the declared rooted
+marked norm.
+Theorem 3.28 (Constrained-core product reference with explicit Gaussian cross activity). Let X be
+       S and condition on the common exterior datum η. Write the actual constrained precision on
+compatible
+I(X ) = X I(X) as
+                                                          M
+                          QX = Qdiag + Qcross ,   Qdiag =      QXX .                          (3)
+                                                                   X∈X
+
+Let dγX ( · | η) be the normalized one-core Gaussian with precision QXX and the exact exterior linear
+term. Then                                                        O
+                            dγX (z | η) = ZG (η)−1 e−Gcross (z;η)   dγX (zX | η),                  (4)
+                                                               X∈X
+
+where Gcross contains every off-diagonal quadratic block and the connected normalization generated by it.
+Its connected activities obey          X
+                                   sup     eaG |A| ∥GA ∥[3] ≤ CκG (RG ).                             (5)
+                                     X
+                                         A∋X
+
+   Place every non-Gaussian factor owned solely by X in the normalized one-core reference ρref    X dγX . All
+Gaussian and non-Gaussian factors meeting at least two cores remain explicit cross-owned activities. The
+exact simultaneous-core integral is therefore the product of the one-core references followed by a convergent
+connected cross-core polymer expansion. A one-core operator depends on another core only through one
+of these displayed cross activities, and every scalar normalization is removed once.
+Proof. The optical lower bound gives QXX ⪰ 2I. Lemma 3.27 verifies the complete marked hypotheses
+of Lemma 3.26; enlarge RG once so its link mass is below 1/8. The normalized Gaussian ratio is exactly
+                                 1
+                                                                                      
+             det(I + K)1/2 exp − ⟨z, Qcross z⟩ + the corresponding exterior-shift terms .
+                                 2
+Apply Lemma 3.26. Its row gives (5) with CκG (RG ) after weakening the constant. Lemma 3.25 assigns
+every remaining factor once. Fubini gives the normalized product one-core reference followed by the
+exact connected cross-core expansion, with all three marks and scalar normalizations in the consumed
+norm.
+
+
+                                                     21
+Lemma 3.29 (History compatibility after exact output formation). At every RG step, form the complete
+connected output first, assign its canonical reported hull, and only then compute its regulator allocation
+and history certificate. Under this rule:
+   (i) every input history has one output owner;
+  (ii) 

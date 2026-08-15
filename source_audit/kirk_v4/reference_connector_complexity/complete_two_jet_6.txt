@@ -1,0 +1,272 @@
+uartic and other non-Gaussian even species start at order g 2 , and the common species tube controls
+all field and source marks. Thus an unmarked species row is Cg, while one or two explicit g derivatives
+remove at most the corresponding powers and give a finite row. The regulator allocations are additive
+under multiplication, and the Gram and Pruefer estimates in the summed replica–BKAR theorem are
+insensitive to the parity of an attached tensor. The ordinary parent-normalized child recursion therefore
+closes for Cg0 below its printed threshold, with two fixed derivative marks handled by Leibniz. The
+C 3 -flat irregular estimate in u = g 2 gives the displayed first and second g-derivative rows after the chain
+rule. In particular the model child gA3 differentiated once by a covariance edge is correctly admitted as
+an O(g) child, and one g derivative of that child is O(1).
+Lemma A.5 (Cellwise complete shell decomposition). Fix the finite directed depth M and one crossing
+cell, including the no-crossing cell. After the selected exact factorization has been completed, apply the
+canonical reported-support selector only to whole normalized packets. The separated part of the two-root
+functional has an exact disjoint decomposition
+                                                       X
+                                          Qb sep (g) =    FM,k (g)                                   (190)
+                                             r,M
+                                                       k≥0
+
+whose coefficients are C 2 on the relative interior of that cell. Every normalization, denominator, localiza-
+tion, irregular and source-motion contact belongs to exactly one selected packet. No assertion that the
+individual coefficients FM,k agree for two different stopping factorizations is needed or made.
+Proof. At fixed finite volume and depth, the reporting-telescope and owner-map identities form a disjoint
+finite or absolutely convergent inventory of complete normalized packets. Their canonical physical reported
+supports therefore admit disjoint scalar dyadic selectors after packet completion. Inside one crossing
+cell the stopping depth and exact factorization are fixed, so the graph-segment C 2 identity and the
+finite marked forest permit termwise differentiation. Summing the selectors gives the unselected exact
+functional, proving (190).
+Definition A.6 (Finite directed continuation and crossing cells). Fix the physical weak scale r, its
+               √
+endpoint gr = ur , and an arbitrary finite further directed depth M . Choose one terminal coarse side
+Mout and set Mi = 2M −i Mout . The side is first chosen admissible for Lemma 6.1 and is enlarged once,
+independently of M , to satisfy the fixed-torus smallness threshold of Theorem A.9. For every 0 ≤ g ≤ gr ,
+use the exact weak recurrence
+
+               u0 (g) = g 2 ,    ui+1 (g) = Fi (ui (g)),   gi (g) = ui (g),   0 ≤ i < M.
+                                                                   p
+
+Let
+                                  NM (g) := min{0 ≤ i ≤ M : ui (g) ≥ ū},
+with NM (g) = ∞ if the set is empty. Uniform outgoing transversality implies that, when NM (g) < ∞,
+
+                               ui (g) < ū   (i < NM (g)),      uNM (g) (g) ∈ I⋆ .
+
+The relative interiors of the sets on which NM (g) = N are called the crossing cells. On such a cell the
+exact factorization consists of N weak conditionals followed by the printed finite macrobridge and joint
+compact–optical logarithm. On the no-crossing cell it consists of all M weak conditionals followed by the
+terminal weak logarithm on the fixed coarse torus.
+
+
+                                                      96
+   This is a choice of exact factorization, not a modification of the measure. The integer NM (g) is never
+differentiated. Derivatives are taken inside one crossing cell, where the depth is fixed, and are extended
+to cell boundaries using the original finite-volume C 2 normalized functional. At g = 0 one always uses
+the no-crossing factorization and later sends M → ∞.
+Definition A.7 (Canonical finite-volume off-graph coordinates). For the directed schedule in Defini-
+tion A.6, put
+                           εi := e−σMi ,     δi := δG (Mi ),    Mi = 2M −i Mout .
+The first quantity records genuine wrapping histories in the interaction; the second records the scalar
+massless finite-size comparison. After each complete connected output has been formed and assigned its
+canonical reported hull, let Piwr select precisely the history certificates containing at least one periodic
+wrapping occurrence at some scale not later than i. If Ri is the exact finite-volume centered interaction
+and R⋆ (ui ) is the rooted-thermodynamic invariant graph, set
+
+                      Ωi := Ri − R⋆ (ui ),       Wi := Piwr Ωi ,     Bi := (I − Piwr )Ωi .               (191)
+
+Thus Ωi = Wi + Bi coefficientwise. Both Ri and R⋆ (ui ) are written in the same exact schedule-fixed
+vacuum and tangent-normalized coupling coordinates. The coordinate intertwining and supportwise
+                                    [2]
+extraction identity therefore give EX Ωi,X = 0 for every reported support X; all three off-graph coordinates
+lie in the actual centered stable fiber. The first coordinate is the canonical sum of histories carrying a
+wrapping certificate. After the tangent-normalized scalar coordinate is extracted, the massless acoustic
+sum–integral correction belongs to the nonautonomous scalar map Fi and is not an off-graph activity.
+By the exact regular interaction comparison and label recombination, the only nonwrapping off-graph
+difference is the slaved U4 charged/atlas complement; this is Bi and is exponentially flat in ui . No flat
+charged coefficient is identified with a wrapping history.
+A.2     Weak recurrence, wrapping control, and crossing cells
+Lemma A.8 (Full rooted finite-torus stable-map comparison). Let Φi (u, R) be the exact scheduled
+one-step map on the centered stable interaction after the vacuum, complete two-jet and tangent-normalized
+coupling coordinates have been extracted, and let Φ∞ (u, R) be the rooted-thermodynamic map in the same
+coordinates. After decreasing the σ in Definition A.7 once, there are c0 > 0 and finite constants such that
+
+                        ∥Φi (u, R⋆ (u)) − Φ∞ (u, R⋆ (u))∥⋆ ≤ Cεi u + Cu−P e−c0 /u ,                      (192)
+                     ∥{DR Φi (u, R) − DR Φ∞ (u, R)}H∥⋆ ≤ C{εi + u−P e−c0 /u }∥H∥⋆ .                      (193)
+
+Moreover, after projecting the output to histories with a periodic certificate,
+                      wr
+                    ∥Pi+1 [Φi (u, R⋆ (u)) − Φ∞ (u, R⋆ (u))]∥⋆ ≤ Cεi+1 {u + u−P e−c0 /u },                (194)
+                                       wr
+                                   ∥Pi+1  DR Φi (u, R)Hnw ∥⋆ ≤ Cεi+1 ∥Hnw ∥⋆                             (195)
+
+whenever Hnw has no prior wrapping certificate. The same two rows hold after zero, one or two physical
+g marks along any no-crossing trajectory. In the marked operator row, the coefficient of the same-order
+marked input is still C{εi + u−P
+                              i e
+                                  −c0 /ui
+                                          }; every term in which a mark hits the map, the scalar trajectory,
+a projector or a newly created periodic atom is a lower-order forcing term bounded by
+                                       1−m/2
+                      Cm (i + 2)pm εi ui       + Cm (i + 2)pm u−P
+                                                               i
+                                                                  m −c0 /ui
+                                                                   e        ,     m ≤ 2.                 (196)
+
+All constants are uniform in cutoff, original volume and finite directed depth.
+Proof. Use the complete labelled connected-history representation before forgetting owners. In the
+scheduled torus and in the rooted thermodynamic step, pair a history whenever its canonically reported
+hull has an injective periodic lift and contains no charged atlas label. The local Karcher, Gaussian, coarea,
+determinant, localization, extraction and collect templates are then literally the same, so paired histories
+and their derivatives cancel coefficientwise. An unpaired regular history has a nontrivial periodic cycle;
+its reported hull has length at least cMi . Weakening the permanent rooted support exponent once gives
+Ce−σ0 Mi . An unpaired charged history belongs to the exactly recombined U4 row and is Cu−P e−c0 /u .
+   For (193), insert H as one distinguished input atom before the connected logarithm. The permanent
+one-step derivative envelope is a rooted absolute sum with that atom retained once. The same periodic-lift
+pairing applies, and the long hull still pays e−σ0 Mi ; no derivative can shorten the already assigned reported
+hull. Vacuum, two-jet and coupling extraction are finite-range linear maps and are paired in the same way.
+
+
+                                                       97
+Passing to the adapted norm is harmless: that norm is a fixed finite sum of rooted norms of powers of the
+rooted-thermodynamic linear map, and each power preserves the preceding paired/unpaired classification.
+   At R = R⋆ (u), the free term cancels because both maps are written in the same schedule-fixed vacuum
+coordinates. The stable tangent uH1 is exponentially local but need not have finite support, so an
+unpaired periodic image may already be of order εi u. This sharp row gives (192); no quadratic stable
+cancellation is asserted. If the output is projected to the wrapping ideal, a charged history without a
+prior periodic certificate must also acquire a new nontrivial periodic cycle. It therefore pays both the
+charged flat row and εi+1 . The same observation applied to a nonwrapping distinguished input proves
+(194) and (195). These are statements about the full centered interaction map, not inferences from the
+scalar comparison.
+   Finally differentiate the labelled identities before summing histories. A g mark either stays on the
+distinguished input or hits one of finitely many local atoms, the scalar orbit, the extraction projector,
+or a new periodic connector. In the first case the same pairing proves the same-order coefficient in the
+statement. In every other case the marked child row and the trajectory ledger give the polynomial factor,
+while the periodic hull or charged event remains present. This proves (196) through two marks.
+
+Theorem A.9 (Fixed-torus no-crossing recurrence and off-graph supplier). There are unc > 0, εnc > 0,
+δnc > 0, 0 < ρwr < 1, and finite constants Kwr , Cm , pm with the following property. Choose
+
+                            ū ≤ unc ,      e−σMout ≤ εnc ,      δG (Mout ) ≤ δnc .
+
+For every finite depth M and every no-crossing cell, the exact scheduled scalar maps satisfy, for q = 0, 1, 2
+and 0 ≤ u ≤ ū,                                                                  
+                        ∂uq {Fi (u) − u − b⋆ u2 } ≤ Cq u3−q + δi u2−q + u−pq e−c/u ,                  (197)
+
+with the flat term extended by zero at u = 0. After decreasing unc and δnc and εnc once, there are constants
+b− , b+ , c− > 0, independent of M and i, such that
+
+                                 b− u2 ≤ Fi (u) − u ≤ b+ u2 ,                                          (198)
+                              1 + b− u ≤ Fi′ (u) ≤ 1 + 3b⋆ u,       |Fi′′ (u)| ≤ C,                    (199)
+                                          1       1
+                                   c− ≤       −      ≤ b+        (ui > 0).                             (200)
+                                         ui     ui+1
+
+Consequently, if uM < ū, then
+                                                 1
+                                  ui ≤                     ,     0 ≤ i ≤ M.                            (201)
+                                         ū−1 + c− (M − i)
+
+No condition of the form εi ≤ ui is used for the wrapping wedge; scalar transversality uses only the fixed
+smallness of δG (Mout ).
+  The canonical wrapping coordinate remains in the enlarged weak wedge
+
+                                           ∥Wi ∥⋆;a;3,N ≤ Kwr εi ui ,                                  (202)
+
+and, through two g marks,
+                                                               1−m/2
+                         ∥∂gm Wi ∥⋆;a;3,N ≤ Cm (i + 2)pm εi ui         ,   m = 0, 1, 2.                (203)
+
+The complementary charged/atlas coordinate obeys, for some cflat > 0 and finite Pm ,
+
+                      ∥∂gm Bi ∥⋆;a;3,N ≤ Cm (i + 2)pm u−P
+                                                       i
+                                                          m −cflat /ui
+                                                           e           ,      m = 0, 1, 2,             (204)
+
+with every right side extended by zero at ui = 0. The wrapping coordinate and its first g derivative vanish
+at the Gaussian endpoint; its second g derivative is uniformly O(εi ). The charged/atlas coordinate remains
+flat through two marks. The full finite-volume entrance R⋆ (ui ) + Wi + Bi therefore stays in one common
+enlarged weak ball, with its zero-, one-, and two-mark rows, uniformly in M , cutoff, and original volume.
+
+Proof. Lemma 5.5 gives the finite-volume comparison
+                                                                    
+                 |∂uq (Fi − F∞ )(u)| ≤ Cq δi u2−q + u3−q + u−pq e−c/u ,               q ≤ 2.
+
+
+
+                                                      98
+The rooted-thermodynamic map satisfies F∞ (u) = u + b⋆ u2 + OG (u3 ) through two derivatives. The
+irregular row is C 3 -flat, so, on a smaller interval, its qth derivative is bounded by an arbitrarily small
+multiple of u3−q . Choose first unc and then Mout so that the cubic, flat, and δi ≤ δG (Mout ) coefficients
+use at most one quarter of the positive b⋆ margin. This proves (197)– (199). Writing Fi (u) = u + βi (u)u2
+with b− ≤ βi ≤ b+ gives
+                                           1      1          βi (u)
+                                             −         =              ,
+                                           u Fi (u)       1 + βi (u)u
+which proves (200); summation backward from uM < ū gives (201). Thus the reciprocal row is proved on
+the actual fixed-depth schedule and no longer by adjoining a different orbit.
+   It remains to control the interaction rather than only its scalar coordinate. By Lemma 3.29, a history
+certificate which already contains a periodic occurrence remains periodic after every exact collect, so the
+old wrapping histories form an output ideal. Let q⋆ < 1 be the full nonlinear rooted-thermodynamic
+stable Lipschitz constant on the chosen weak ball supplied by Theorem 4.30 and the adapted one-step
+mean-value contraction following (29). The operator row (193) gives on the finite torus
+
+                             ∥DR Φi (u, R)H∥⋆ ≤ {q⋆ + C(εi + u−P e−c/u )}∥H∥⋆ .
+
+Choose first the weak interval and then Mout so that the bracket is one fixed ρwr < 1 for every scheduled
+step. The projected creation row (194), the corresponding projected scalar graph displacement, and (195)
+applied to Bi give
+
+                       ∥Wi+1 ∥⋆ ≤ ρwr ∥Wi ∥⋆ + Cεi+1 ui+1 + Cεi+1 ∥Bi ∥⋆ ,              ρwr < 1.               (205)
+
+The initial finite/rooted comparison has the same forcing row. On the chosen weak interval the flat
+bound for Bi is smaller than ui ; no comparison between the flat row and εi is used. Since εi ≤ εi+1 and
+ui ≤ ui+1 , geometric convolution proves (202).
+   Differentiate the exact labelled recurrence before forgetting its history certificate. Lemma A.8 gives
+the same coefficient ρwr on the same-order marked old wrapping packet. Every other mark placement is
+                                                                               (m)
+lower triangular in mark order and has the forcing row (196). Thus, with Wi         = ∥∂gm Wi ∥⋆ ,
+
+            (m)            (m)             (0)         (m−1)                          1−m/2
+         Wi+1 ≤ ρwr Wi           + P m Wi , . . . , W i          + Cm (i + 2)pm εi+1 ui+1      ,   m = 1, 2,
+
+where Pm has no constant or same-order term. The scalar derivative rows and the factorization ui (g) =
+g 2 ψi (g 2 ) bound every lower-order term by the same polynomially weighted forcing. Induction in m and
+geometric convolution prove (203).
+    The remaining nonwrapping difference is not put into the wrapping ideal. The scalar massless finite-size
+term is already retained in Fi and does not enter the off-graph coordinate. The exact regular interaction
+comparison, together with Theorem 3.31 and the twice-g-marked flat row of Lemma A.4, identifies it with
+the recombined U4 charged/atlas coordinate and gives the required rows through order two. Composing
+with ui (g) = g 2 ψi (g 2 ) and absorbing the finite powers created by the chain rule into u−P
+                                                                                            i
+                                                                                               m
+                                                                                                 proves (204);
+flatness makes the extension at ui = 0 C . Finally choose unc and εnc so that R⋆ (u) + W + B lies
+                                                 2
+
+strictly inside the reproduced weak ball. Marked rows are distinguished forcing rows; only the unmarked
+interaction is used for admission.
+
+A.3     Twice-marked conditional packets and even-contact contraction
+Lemma A.10 (Cellwise half-power and two-mark ledger). There are constants Cm and finite exponents
+pm such that, uniformly in M , in the crossing cell, and in every index before the selected terminal factor,
+                      i                                                         i
+                      X                                                         X                 √
+                          uh (g) ≤ C log(i + 2),                                      |gh (g)| ≤ C i + 1,      (206)
+                       h=0                                                      h=0
+        |∂gm ui (g)| + |∂gm gi (g)| ≤ Cm (i + 2)pm ,      m = 0, 1, 2.                                         (207)
+
+The same estimates hold on the no-crossing cell through i = M .
+Proof. On a cell with crossing depth N , the reciprocal comparison from Theorem 6.4 gives ui (g) ≤
+C(N − i + A)−1 before the crossing. On the no-crossing cell the direct fixed-schedule estimate (201) gives
+the same row with N replaced by M ; no extension of the nonautonomous schedule is made. Summation
+gives (206).
+
+
+                                                           99
+   For crossing cells use the printed marked C 3 orbit row. For the no-crossing cell use (199). In either
+case every Fi fixes zero, has positive derivative, and can be written as Fi (u) = uϕi (u) with ϕi positive and
+uniformly C 2 . Its finite composition therefore factors as ui (g) = g 2 ψi (g 2 ) with ψi > 0. Differentiating
+the exact recurrence twicep and using Fi (ui ) ≤
+                                           ′
+                                                    1 + Cui and |Fi′′ (ui )| ≤ C gives polynomial growth in i.
+Consequently gi (g) = g ψi (g ) is an odd C function and no 1/g singularity occurs at the Gaussian
+                                2                2
+
+endpoint. The interaction marks required by the finite conditional forest are simultaneously controlled by
+(203) and (204). All constants are uniform on the compact first-crossing interval and on the enlarged
+no-crossing weak wedge.
+Lemma A.11 (Exact finite-depth twice-marked conditional forest). At finite directed depth M , differen-
+tiate the exact factorization of Definition A.6 with respect to the two curvature roots and at most two
+copies of g. The result is a finite sum of complete scale-labelled packet trees such that:
+    (i) the two source leaves have one unique lowest common ancestor;
+   (

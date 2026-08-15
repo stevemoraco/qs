@@ -1,0 +1,366 @@
+mooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.4 (Finite-cell retention and chart charge). There are constants Cret < ∞, cch > 0, and
+tch > 0, depending only on the fixed cell atlas, such that
+
+                                            DQ (U ) ≤ Cret AQ+ (U )
+
+for every fine configuration. Moreover,
+
+                                   TQ (U ) ≥ tch /4     =⇒     AQ+ (U ) ≥ cch .
+
+The constants are independent of total volume, ultraviolet depth, periodic wrapping, and the aligned-
+reflection template.
+Proof. Use a boundary-rooted tree gauge on the fixed finite contractible cell. By Lemma 3.1, the zero set
+of AQ+ is precisely the flat set. On that set all common-endpoint paths agree, hence DQ = TQ = 0. Near
+the flat set, the representation-normalized quadratic comparison and the grounded finite-cell Poincaré
+inequality give
+                                          AQ+ ≍ ∥dX∥2 ≍ ∥X∥2 ,
+while smoothness of the finite path atlas and the fact that every retained plaquette word equals the
+identity on the flat set give DQ + TQ ≤ C∥X∥2 . This proves the retention inequality on one neighborhood
+of the flat set.
+   Remove a smaller such neighborhood. On the resulting compact set, AQ+ has a strictly positive
+minimum and the smoothly extended DQ is bounded, so their quotient is bounded there as well. This
+
+
+                                                         11
+proves the global displayed inequality without extending a quotient through its zero set. Finally choose
+tch inside the chart reserve. The closed set {TQ ≥ tch /4} is disjoint from the flat set; compactness and
+Lemma 3.1 give a positive minimum cch of AQ+ on it. Taking the finite maximum and minimum over the
+bulk and aligned-reflection templates proves the stated uniformity.
+
+  Choose smooth decreasing cutoffs γD , γ0 , γ1 ∈ [0, 1] with γ0 ≤ γ1 and
+
+                               γD = 1 (DQ ≤ χ2 /4), γD = 0 (DQ ≥ χ2 ),
+                               γ0 = 1 (TQ ≤ tch /8), γ0 = 0 (TQ ≥ tch /4),
+                               γ1 = 1 (TQ ≤ tch /2), γ1 = 0 (TQ ≥ tch ).
+
+Define the exact labelled partition
+
+                Q = γD γ0 ,
+               χin                  χcurv
+                                     Q    = (1 − γD )γ0 ,         Q = γ1 − γ0 ,
+                                                                 χcol              Q = 1 − γ1 .
+                                                                                  χout
+
+Then
+                                           Q + χQ
+                                          χin        + χcol
+                                                        Q + χQ = 1
+                                                curv         out
+
+
+pointwise. The labels are used only inside absolute-value expansions and are recombined before reflection
+positivity is invoked.
+Lemma 3.5 (Charged support of every irregular label). After fixing 0 < χ ≤ χ0 with χ20 ≤ 4cch , every
+curvature, collar, or outer label is supported on
+
+                                                 AQ+ (U ) ≥ c0 χ2
+
+for one fixed c0 > 0. Every derivative of a splice cutoff through order 2sG is supported on the same
+charged event and has a fixed-template polynomial bound in χ−1 and the fixed chart thresholds.
+
+Proof. On the support of 1 − γD , either DQ ≥ χ2 /4 or a derivative of γD is present. The retention
+inequality gives AQ+ ≥ χ2 /(4Cret ). On the collar and outer supports, or on a derivative of γ0 or γ1 , one
+has TQ ≥ tch /8 after decreasing the fixed thresholds once. The compactness argument in Theorem 3.4
+gives a fixed positive action charge, which dominates c0 χ2 for χ ≤ χ0 . The derivative bounds through
+order 2sG follow from the fixed smooth cutoffs, Lemma 3.1, and the finite cell atlas; differentiation changes
+neither transition support nor action charge.
+
+   Fix R0 larger than the diameter of every local variable support in one normalized step. For each
+labelled bad block Q, choose a finite integration core IQ containing every variable on which its cutoff and
+retention estimate depend, and put
+                                             Hb Q = N2R (IQ ).
+                                                        0
+
+
+Join two bad blocks when their H-sets
+                                b     meet. A bad seed X is a connected component of this graph, with
+                          [                     [
+                  I(X) =       IQ ,   H(X) =       HbQ,     H + (X) = NR0 (H(X)).
+                              Q∈X                     Q∈X
+
+There are fixed constants CH and νov < ∞ such that
+
+                                     |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|,
+
+and the enlarged-cell overlap graph admits a νov -coloring.
+Proposition 3.6 (Component action charge). For every bad seed X and every configuration in its labelled
+support,
+                                                            |X|
+                                        AI(X) (U ) ≥ c∗ χ2      .
+                                                            νov
+The statement is uniform under the standing convention.
+Proof. A color class contains a subfamily S ⊂ X of pairwise disjoint enlarged cells with |S| ≥ |X|/νov .
+By Lemma 3.5, every selected cell carries c0 χ2 of faithful Wilson action. The selected action supports are
+disjoint, so their charges add. Enlarging the fixed cores once ensures all selected plaquettes lie in I(X).
+Rename the finite constant.
+
+
+
+                                                            12
+3.1    Permanent support geometry
+Let τ (S) denote the lattice spanning-tree size of a connected reported support. Assume covariance
+connectors obey
+                                 |C(x, y)| ≤ KC e−µd(x,y) ,   µ > 0.
+Lemma 3.7 (Geometric reporting). Let S1 , . . . , Sn be species supports joined by a labelled tree T . Report
+each covariance edge by a shortest connector path and each hard-core edge by its fixed bounded collar. If
+P is the union of all supports, paths, and finite atlas collars, then
+                                           n
+                                           X                  X
+                                τ (P ) ≤         τ (Si ) +            de + Cgeo (n − 1)
+                                           i=1               e∈Tcov
+
+for a finite template constant Cgeo .
+Proof. Choose a spanning tree in each Si . Add the reported connector for every edge of T , and add a
+uniformly bounded number of collar edges for each new attachment. The resulting connected graph spans
+P and has the stated number of edges.
+
+Consequence (Permanent locality exponent).                        For every 0 < κ < µ,
+                        Y          Y
+               eκτ (P )   KC e−µde    KH
+                           e∈Tcov            e∈Thc
+                                                   n−1 Y κτ (Si ) Y −(µ−κ)de
+                        ≤ eκCgeo max{KC , KH eκRH }
+                         
+                                                         e           e        .
+                                                                        i         e∈Tcov
+
+Thus connector and hull reporting preserve the same support exponent.
+Lemma 3.8 (Allocation loss is per vertex). Assume
+                                             X
+                                         sup    eκτ (S) βS ≤ b
+                                                 x
+                                                      S∋x
+
+and |S| ≤ cd (1 + τ (S)). Then every species obeys
+                               βS |S| ≤ Cd,κ b,             Cd,κ = cd sup(1 + t)e−κt .
+                                                                            t≥0
+
+                                                                                                   Creg bn
+                                                                      P
+Consequently a Gaussian regulator factor controlled by                  i βSi |Si | costs at most e        on an n-vertex
+family.
+Proof. Choose any root x ∈ S. The cone gives βS ≤ be−κτ (S) . Multiply by the cardinality bound and
+take the scalar supremum.
+Theorem 3.9 (Corrected support closure). Assume:
+1. the summed replica-BKAR theorem;
+2. the geometric reporting lemma;
+3. the complete-species allocation cone;
+4. the exact dimension-ledger reblocking factor 24−∆ ;
+5. a logarithmic-support localization estimate
+                           qloc (D, L) ≤ C L−3 + (log L)pD LΓ−δD ,
+                                                               
+                                                                                      δD → ∞.
+Choose κ = µ/2. If the rooted regular atom mass and allocation radius are small enough that
+                                                     χeff (u, r, b) < 1,
+then one may choose finite D and finite L = 2s so that the stable regular derivative satisfies
+                                                 ∥DΦreg |stable ∥ < 1
+in the same permanent κ-weighted support norm.
+Proof. The first two lemmas leave a residual connector decay µ − κ > 0 and convert every fixed geometric
+and regulator cost into a per-vertex constant. The summed BKAR tree recursion is therefore geometric
+in the effective rooted link mass χeff . Reblocking is paid by the engineering factor and does not weaken κ.
+Choose D with δD > Γ + 3, then choose finite L so qloc lies inside the strict associated-graded jet gap.
+Finally shrink u, r, b to absorb the nonlinear and irregular source terms.
+
+
+                                                             13
+3.2      Aligned-reflection section
+Let L : Hf → Hc be the canonically rescaled full-lattice flat block and let P : Hc → Hf satisfy
+
+                                                                    1
+                                     LP = I,       ∥P ∥exp,2 ≤ p < √ .
+                                                                     2
+Assume L and P intertwine aligned reflection.
+   Let E+ be reflection extension from the positive closed-half-space coarse space and R+ fine-field
+restriction. Assume                           √
+                                     ∥E+ ∥ ≤ 2,      ∥R+ ∥ ≤ 1,
+and that every retained row in the positive schedule is supported in the positive closed half-space and
+fixed reflection boundary.
+Theorem 3.10 (Reflected linear section). Define
+
+                                               P+ = R+ P E+ .
+
+Then
+                                                 L+ P+ = I
+and                                                       √
+                                         ∥P+ ∥exp,2 ≤         2 p < 1.
+For the forty-nine-path block,
+                                                            16
+                                                ∥P+ ∥22 ≤      .
+                                                            49
+Proof. Closed-half-space support gives L+ R+ = R+ L on reflected fields. Therefore
+
+                                     L+ P+ = R+ LP E+ = R+ E+ = I.
+
+The norm estimate is immediate. On the real Brillouin zone the bulk normal section satisfies ∥P ∥2 ≤ 8/49,
+yielding the displayed sharper bound.
+
+Theorem 3.11 (Reflected nonlinear section). Let S be an exact reflection-equivariant nonlinear bulk
+section,
+                                                            p
+                              B(S(w)) = w,       ∥DS∥ ≤        .
+                                                          1−η
+Define
+                                          S+ (w) = R+ S(E+ w).
+Then
+                                               B+ (S+ (w)) = w
+and                                                         √
+                                                           2p
+                                               ∥DS+ ∥ ≤       .
+                                                          1−η
+In particular, using p < 0.546 and η ≤ 1/10,
+
+                                          ∥DS+ ∥ < 0.859 < 1.
+
+For m = 2, 3,
+                                        ∥Dm S+ ∥ ≤ 2m/2 ∥Dm S∥.
+Proof. The exact path-extent schedule gives
+
+                                               B+ R+ = R+ B
+
+on reflected configurations. Hence
+
+                                     B+ S+ = R+ BSE+ = R+ E+ = I.
+
+The derivative estimates follow from the chain rule and the extension and restriction norms.
+
+
+
+                                                     14
+3.3    Exterior complex tube
+Fix the exact symmetric forty-nine-path fixed-G block. Let X be a connected curvature-bad component,
+I(X) its fixed integration core, and RX its exterior ring. Use the selected-anchor component chart on
+I(X), with every chart Jacobian included in the density.
+Lemma 3.12 (Finite word transport). There are fixed radii δout , δin > 0 and a constant Ctr < ∞,
+uniform under the standing convention, such that the component anchor solve is holomorphic for
+
+                                       η ∈ WRX ,        h ∈ Θδout ,RX ,
+
+and every Wilson word in the owned core atlas obeys
+                               X
+                                    ∥δAℓ (h)∥2 ≤ Ctr u qRX (h) + |X| .
+                                                                    
+
+                                ℓ∈I(X)
+
+Its derivatives through order three have the same rooted local incidence bound.
+Proof. Every owned plaquette is a finite word in the fixed forty-nine-path atlas. On the smaller tube, the
+exponential, logarithm, Karcher solve, and principal-submatrix anchor inverse are holomorphic. Their
+derivatives are bounded on the compact closure of each local template tube. There are only finitely many
+bulk and aligned-reflection local templates; periodic wrapping does not change a rooted local template.
+Summing the finite local row/column incidence bounds gives the displayed estimate.
+Lemma 3.13 (Complex Wilson-sector reserve). For h in the fixed exterior tube,
+
+                                                 1
+                           Re AX (z; η + h) ≥      AX (z; η) − Cu qRX (h) + |X| .
+                                                                               
+                                                 2
+
+By Proposition 3.6, on the curvature-bad support,
+                                                                 |X|
+                                             AX (z; η) ≥ c∗ χ2       ,
+                                                                 νov
+and therefore
+                                                     c∗ χ2 |X|
+                          u−1 Re AX (z; η + h) ≥               − CqRX (h) − C|X|.
+                                                     2 u νov
+Proof. For one normalized fixed-G Wilson word, put w(U ) = wG,ρ (U ). The zero of w is nondegenerate
+at the identity. On a small identity tube, Taylor expansion in a tangent increment H gives
+
+                     |∂w(U )[H]| ≤ CG w(U ) ∥H∥,        |∂ 2 w(U )[H, H]| ≤ CG ∥H∥2 .
+                                       p
+
+
+Away from that tube, w has a positive compact minimum, while its first two derivatives are bounded;
+enlarging CG gives the same inequalities on the complete fixed complex tube. The inequality 2ab ≤ a2 + b2 ,
+followed by the finite word-transport estimate, gives the component bound. Proposition 3.6 gives the
+second display.
+Lemma 3.14 (Fixed-atlas residual). After removing the scalar, complete retained two-jet, and allo-
+cated local determinant endpoint, the sum of Wilson, Haar, inverse-coordinate, coarea, anchor-return,
+determinant-remainder, and finite Schur-connector terms satisfies
+
+                         Re Lfixed
+                             X     (z; η + h) ≤ C|X| + Cuωfix (qRX (η) + qRX (h))
+
+on a smaller fixed tube, for some ωfix > 0.
+Proof. Each fixed local factor has vanishing Taylor coefficients through order two after allocation. Its
+third-order integral remainder is bounded by
+
+                               C∥z∥3phys ,      ∥z∥phys ≤ u1/2−ϵ ,       ϵ < 1/6.
+
+The corresponding complex Hessian is O(u1/2−ϵ ). More explicitly, after their true scalar and quadratic
+splits,
+                                              (≥3)          (≥3)
+                              (≥3)
+                            ∥Rcoa  ∥[3] + ∥Rchart ∥[3] + ∥Rdet ∥[3] ≤ Cu3/2−3ϵ ,
+
+
+                                                      15
+                                                               (≥3)
+                                           X
+                                     sup         em diam A ∥RSch,A ∥[3] ≤ Cu3/2−3ϵ .
+                                      e
+                                           A∋e
+
+The Schur row follows by expanding the finite matrix logarithm around the fixed optical precision and
+using the uniform optical inverse; convolution of its exponential kernels preserves a positive exponent m.
+Rooted local incidence gives the result with
+                                                          1
+                                                 ωfix =     − ϵ > 0,
+                                                          2
+the smaller exponent being the complex-Hessian cost used by the exterior regulator rather than the
+zero-row cubic remainder.
+Lemma 3.15 (Inherited sectorial lifting). Let the incoming regular interaction be holomorphic on the
+permanent tube, real on the real slice, and satisfy
+
+                                                  [R]∂,C;a;3 ≤ r.
+
+Then the inherited terms owned by X obey
+
+                           Re Rinh
+                               X (η + h) ≤ Cr|X| + CrqRX (η) + CrqRX (h).
+
+Proof. Taylor expansion first on the real segment and then on the imaginary segment gives
+                                                                            
+       Re RY (η + ih) ≤ RY (0) + C∥DRY (0)∥2 + C 1 + sup ∥D2 RY (η + ith)∥ qY (η) + qY (h) .
+                                                                                          
+                                                                  t
+
+The linear imaginary term has zero real part because RY is real on the real slice. Rooted support
+summation over the activities owned by X gives the result without a raw volume incidence factor.
+Theorem 3.16 (Exterior tube and analytic residual). Assume the incoming regular interaction lies in
+the reproduced regular complex domain and
+
+                                             C (uωfix + r) < b1 .
+
+Then the curvature-bad density is holomorphic on one fixed exterior/source tube and its complete post-
+two-jet residual satisfies
+
+                            Re Lan
+                                X (z; η + h) ≤ C|X| + b1 qRX (η) + Cδ qRX (h).
+
+Together with the Wilson-sector reserve,
+
+                                                      χ2 |X|
+      Z                                                                                     
+         |ρX (z; η + h)| dµX (z) ≤ [Cu ]
+           curv                        −p C|X|
+                                               exp −c        + b1 qRX (η) + Cδ qRX (h) + C|X| .
+                                                      u νov
+Proof. Holomorphy follows from the fixed-domain component chart, the finite word transport lemma, and
+the reproduced regular complex tube. Add the fixed-atlas and inherited residual bounds. The smallness
+condition absorbs their quadratic coefficient into b1 . Combining with the Wilson-sector reserve and taking
+absolute values before integration gives the final estimate.
+
+3.4    Component plateau and denominator
+Let X be a bad seed with integration core I(X), reported hull H(X), and exterior ring RX = H(X)\I(X).
+Let W be its retained field and η the regular ring datum. All X-owned Haar, coordinate, coarea,
+determinant, and inherited factors are included in the reference density ρref
+                                                                          X (z; η), and
+                                               Z
+                                      GX (η) = ρrefX (z; η) dµX (z).
+
+
+Lemma 3.1
