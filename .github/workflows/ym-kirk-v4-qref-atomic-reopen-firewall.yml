@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verification/ym-kirk-v4-qref-atomic-reopen-firewall-20260814-gpt56sol
+  pull_request:
+    branches:
+      - verification/ym-rg-subleading-coefficient-20260813-gpt56
   workflow_dispatch:
 
 permissions:
