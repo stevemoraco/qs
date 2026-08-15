@@ -77,6 +77,17 @@ jobs:
           lean = r.get('lean_messages', {})
           tool = r.get('tool_messages', {})
           rendered = json.dumps(r)
+          groups = [
+              ('Lean error', lean.get('errors', [])),
+              ('Lean warning', lean.get('warnings', [])),
+              ('Tool error', tool.get('errors', [])),
+              ('Tool warning', tool.get('warnings', [])),
+              ('Failed declaration', r.get('failed_declarations', [])),
+          ]
+          for label, items in groups:
+              for item in items:
+                  msg = json.dumps(item, ensure_ascii=False).replace('\n', ' ')
+                  print(f'::error title={label}::{msg}')
           bad = (not r.get('okay') or lean.get('errors', []) or lean.get('warnings', []) or
                  tool.get('errors', []) or tool.get('warnings', []) or
                  r.get('failed_declarations', []) or 'sorryAx' in rendered or
