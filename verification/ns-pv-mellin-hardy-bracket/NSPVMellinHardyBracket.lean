@@ -16,11 +16,10 @@ vorticity, Navier--Stokes, regularity, blow-up, or a Clay statement.
 
 namespace NSPVMellinHardyBracket
 
-/-- If the bracket work exceeds the nonnegative Hardy remainder by at most
-`eps`, then the nonnegative trace coefficient is at most `4 eps`. -/
+/-- If the bracket work exceeds the Hardy remainder by at most `eps`, then the
+trace coefficient is at most `4 eps`. -/
 theorem trace_bound_of_approx_hardy_dominance
     {L H B eps : ℝ}
-    (hL : 0 ≤ L)
     (hid : L / 4 + H = B)
     (hdom : B ≤ H + eps) :
     L ≤ 4 * eps := by
