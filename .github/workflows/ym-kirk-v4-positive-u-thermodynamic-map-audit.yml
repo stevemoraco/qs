@@ -1,0 +1,77 @@
+name: YM Kirk v4 positive-u thermodynamic map audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-positive-u-thermodynamic-map-audit-20260814-gpt56sol-auto3
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-positive-u-thermodynamic-map-audit-20260814-gpt56sol-auto3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract thermodynamic-value convergence contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/positive_u_thermodynamic_map'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            'rooted-thermodynamic maps','thermodynamic maps','thermodynamic map','thermodynamic limit',
+            'locally uniform','uniform on compact','uniformly on compact','compact subinterval',
+            'F∞','Fj','finite-volume two-jet comparison','Lemma 5.5','Theorem 5.6','Corollary 6.2','Theorem 6.4',
+            'M → ∞','M -> infinity','as M','converges to','converge to','same canonically rescaled local functional',
+            'finite-volume approximants','cofinal thermodynamic volume schedule','directed schedule',
+            'full normalized physical weak measure','rooted support sum','finite volume and thermodynamic'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            for _ in range(160):
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-22000):min(len(text),i+52000)])
+              pos=i+max(1,len(needle))
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:100]
+            if chunks: (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['Lemma 5.5','Corollary 6.2']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/positive_u_thermodynamic_map/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/positive_u_thermodynamic_map/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/positive_u_thermodynamic_map
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve positive-u thermodynamic map contexts'
+          git push origin HEAD:verification/ym-kirk-v4-positive-u-thermodynamic-map-audit-20260814-gpt56sol-auto3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-positive-u-thermodynamic-map-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/positive_u_thermodynamic_map/
