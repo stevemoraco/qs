@@ -31,7 +31,6 @@ namespace NSPVAngularInterpolationFloor
 theorem rotation_activity_forces_asymmetry_product
     {c alpha r a k : ℝ}
     (hc : 0 ≤ c) (halpha : 0 ≤ alpha) (hr : 0 ≤ r)
-    (ha : 0 ≤ a) (hk : 0 ≤ k)
     (hrot : c ≤ alpha * r)
     (hinterp : r ^ 2 ≤ a * k) :
     c ^ 2 ≤ alpha ^ 2 * (a * k) := by
@@ -59,7 +58,7 @@ theorem compact_rotation_window_forces_uniform_product
   have hA0 : 0 ≤ A := le_trans halpha hA
   have hbase : c ^ 2 ≤ alpha ^ 2 * (a * k) :=
     rotation_activity_forces_asymmetry_product
-      hc halpha hr ha hk hrot hinterp
+      hc halpha hr hrot hinterp
   have hdiff : 0 ≤ A - alpha := sub_nonneg.mpr hA
   have hsum : 0 ≤ A + alpha := add_nonneg hA0 halpha
   have halpha_sq : alpha ^ 2 ≤ A ^ 2 := by
@@ -92,7 +91,7 @@ theorem curvature_cap_forces_half_activity_tail
   have hN2 : 0 < N ^ 2 := sq_pos_of_pos hN
   have hmul : N ^ 2 * (2 * tail) ≤ N ^ 2 * r0 ^ 2 := by
     nlinarith [htailK, hchoice]
-  exact (mul_le_mul_left hN2).mp hmul
+  nlinarith [hmul, hN2]
 
 /-- If total first-derivative activity is at least `r0²` and the high-frequency
 tail is at most half that amount, then the complementary low band carries at
