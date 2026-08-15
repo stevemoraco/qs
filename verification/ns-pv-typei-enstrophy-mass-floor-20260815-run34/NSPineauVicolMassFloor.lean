@@ -26,19 +26,18 @@ theorem superlevel_mass_floor
     theta ^ 2 < 32 * K ^ 2 * q := by
   nlinarith
 
-/-- A positive L2 floor and finite positive pointwise envelope force a genuinely
-positive high-amplitude mass in the scalar budget. -/
+/-- A positive L2 floor forces genuinely positive high-amplitude mass in this
+scalar budget; positivity of `K` need not be assumed separately. -/
 theorem superlevel_mass_positive
     (theta K E q : ℝ)
     (htheta : 0 < theta)
-    (hK : 0 < K)
     (hLower : theta ^ 2 / 4 < E)
     (hUpper : E ≤ theta ^ 2 / 8 + 4 * K ^ 2 * q) :
     0 < q := by
   have hFloor : theta ^ 2 < 32 * K ^ 2 * q :=
     superlevel_mass_floor theta K E q hLower hUpper
   have hthetaSq : 0 < theta ^ 2 := sq_pos_of_pos htheta
-  have hKSq : 0 < K ^ 2 := sq_pos_of_pos hK
+  have hKSq : 0 ≤ K ^ 2 := sq_nonneg K
   nlinarith
 
 /-- If total high-amplitude mass is covered by at most `N` equal upper cell
@@ -50,7 +49,8 @@ theorem finite_cover_cell_floor
     (hN : 0 < N)
     (hcover : mass ≤ N * cell) :
     mass / N ≤ cell := by
-  exact (div_le_iff₀ hN).2 hcover
+  apply (div_le_iff₀ hN).2
+  simpa [mul_comm] using hcover
 
 /-- Combining a positive total mass with a finite positive cover count forces a
 positive cell budget. -/
