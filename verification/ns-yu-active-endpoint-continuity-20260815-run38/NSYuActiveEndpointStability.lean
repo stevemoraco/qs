@@ -18,10 +18,10 @@ Navier–Stokes, or any Clay theorem.
 namespace NSYuActiveEndpointStability
 
 /-- A lower magnitude bound survives an additive error of at most half the
-reference lower bound. -/
+reference lower bound.  No sign assumption on `kappa` is needed for this affine
+inequality. -/
 theorem magnitude_floor_after_half_error
     {kappa raw filtered : ℝ}
-    (hkappa : 0 ≤ kappa)
     (hraw : kappa ≤ raw)
     (herr : |filtered - raw| ≤ kappa / 2) :
     kappa / 2 ≤ filtered := by
@@ -29,14 +29,11 @@ theorem magnitude_floor_after_half_error
   linarith
 
 /-- Two direction perturbations, each at most one quarter of the original gap,
-preserve at least half of that gap.  The quantities here are scalar distances;
-vector triangle inequalities are deliberately external to this finite core. -/
+preserve at least half of that gap.  Nonnegativity of the error variables is
+unnecessary: only their upper error budgets enter the conclusion. -/
 theorem direction_gap_survives_two_quarter_errors
     {delta rawGap filteredGap err₁ err₂ : ℝ}
-    (hdelta : 0 ≤ delta)
     (hraw : delta ≤ rawGap)
-    (herr₁ : 0 ≤ err₁)
-    (herr₂ : 0 ≤ err₂)
     (hbudget₁ : err₁ ≤ delta / 4)
     (hbudget₂ : err₂ ≤ delta / 4)
     (htransfer : rawGap - err₁ - err₂ ≤ filteredGap) :
@@ -68,7 +65,7 @@ theorem weighted_pair_floor_from_component_floors
 
 /-- Combined finite endpoint: two half-magnitude errors and two quarter-direction
 errors preserve a strictly positive weighted pair contribution whenever the
-unfiltered lower bounds are positive. -/
+unfiltered lower bounds are nonnegative. -/
 theorem filtered_weighted_pair_floor
     {kappa delta rawA rawB filteredA filteredB rawGap filteredGap err₁ err₂ : ℝ}
     (hkappa : 0 ≤ kappa)
@@ -78,19 +75,17 @@ theorem filtered_weighted_pair_floor
     (hAerr : |filteredA - rawA| ≤ kappa / 2)
     (hBerr : |filteredB - rawB| ≤ kappa / 2)
     (hrawGap : delta ≤ rawGap)
-    (herr₁ : 0 ≤ err₁)
-    (herr₂ : 0 ≤ err₂)
     (hbudget₁ : err₁ ≤ delta / 4)
     (hbudget₂ : err₂ ≤ delta / 4)
     (htransfer : rawGap - err₁ - err₂ ≤ filteredGap) :
     kappa ^ 3 * delta / 16 ≤ filteredA ^ 2 * filteredB * filteredGap := by
   have hAf : kappa / 2 ≤ filteredA :=
-    magnitude_floor_after_half_error hkappa hrawA hAerr
+    magnitude_floor_after_half_error hrawA hAerr
   have hBf : kappa / 2 ≤ filteredB :=
-    magnitude_floor_after_half_error hkappa hrawB hBerr
+    magnitude_floor_after_half_error hrawB hBerr
   have hgf : delta / 2 ≤ filteredGap :=
     direction_gap_survives_two_quarter_errors
-      hdelta hrawGap herr₁ herr₂ hbudget₁ hbudget₂ htransfer
+      hrawGap hbudget₁ hbudget₂ htransfer
   exact weighted_pair_floor_from_component_floors hkappa hdelta hAf hBf hgf
 
 #print axioms magnitude_floor_after_half_error
