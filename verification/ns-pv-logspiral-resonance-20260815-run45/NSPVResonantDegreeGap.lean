@@ -8,12 +8,12 @@ the first-order rotated self-similar operator on a formal `r^(-k)` mode leaves
 only the scalar homogeneity eigenvalue `(1-k)/2`.
 
 Thus degree `k=1` is critical/resonant, while degree `k=3` has eigenvalue `-1`.
-This is the finite coefficient shadow of the observation that the Type-I
-`r^(-1)` tail is resonant but the schematic `r^(-3)` diffusion/nonlinear
-corrections are not resonant for the same first-order operator.
+More generally every formal odd correction degree `k=1+2m` has eigenvalue `-m`,
+so no positive correction level is first-order resonant.
 
-This file does NOT formalize powers of radius, logarithms, trigonometric modes,
-asymptotic expansions, the Pineau--Vicol equation, or Navier--Stokes.
+This is only coefficient algebra.  It does NOT prove that a Navier--Stokes RSS
+admits such an asymptotic expansion, nor does it solve divergence, pressure,
+or nonlinear matching.
 -/
 
 namespace NSPVResonantDegreeGap
@@ -71,10 +71,26 @@ theorem critical_cubic_eigenvalue_gap :
     degreeEigenvalue 1 = 0 ∧ degreeEigenvalue 3 = -1 := by
   norm_num [degreeEigenvalue]
 
+/-- Every formal odd correction degree `1+2m` has eigenvalue exactly `-m`. -/
+theorem odd_correction_eigenvalue (m : ℝ) :
+    degreeEigenvalue (1 + 2 * m) = -m := by
+  unfold degreeEigenvalue
+  ring
+
+/-- Positive correction level means the corresponding odd-degree eigenvalue is
+strictly negative, hence it cannot share the degree-one first-order resonance. -/
+theorem positive_odd_correction_nonresonant
+    {m : ℝ} (hm : 0 < m) :
+    degreeEigenvalue (1 + 2 * m) < 0 := by
+  rw [odd_correction_eigenvalue]
+  linarith
+
 #print axioms degree_mode_reduction
 #print axioms critical_degree_one_kernel
 #print axioms cubic_degree_three_minus_identity
 #print axioms cubic_degree_three_activity
 #print axioms critical_cubic_eigenvalue_gap
+#print axioms odd_correction_eigenvalue
+#print axioms positive_odd_correction_nonresonant
 
 end NSPVResonantDegreeGap
