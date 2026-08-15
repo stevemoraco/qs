@@ -1,0 +1,80 @@
+name: Verify RH B133 Mertens perturbation finite core
+
+on:
+  push:
+    branches:
+      - verification/rh-b133-mertens-perturbation-finite-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/rh-b133/RHB133MertensPerturbationFinite.lean
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'forbidden proof/trust carrier found'
+            exit 1
+          fi
+
+      - name: Submit exact source to AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          api = 'https://lean-compile-farm.replit.app/api'
+          source = pathlib.Path('verification/rh-b133/RHB133MertensPerturbationFinite.lean').read_text()
+          req = urllib.request.Request(
+              f'{api}/compile',
+              data=json.dumps({
+                  'name': 'rh-b133-mertens-perturbation-finite',
+                  'lean_source': source,
+                  'lean_version': '4.30.0',
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=120) as response:
+              job = json.load(response)
+          job_id = job['id']
+          print('job', job_id, flush=True)
+
+          for poll in range(160):
+              time.sleep(15)
+              try:
+                  with urllib.request.urlopen(f'{api}/jobs/{job_id}', timeout=120) as response:
+                      job = json.load(response)
+              except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as exc:
+                  print('transient poll error', repr(exc), flush=True)
+                  continue
+              status = job.get('status')
+              print('poll', poll, status, job.get('verdict'), flush=True)
+              if status == 'done':
+                  print(json.dumps(job, indent=2), flush=True)
+                  if job.get('verdict') != 'VERIFIED':
+                      raise SystemExit(1)
+                  if job.get('sorry_count') not in (0, None):
+                      raise SystemExit(1)
+                  if job.get('error') not in (None, ''):
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+              if status == 'failed':
+                  print(json.dumps(job, indent=2), flush=True)
+                  raise SystemExit(1)
+          raise SystemExit('AXLE verdict timeout')
+          PY
