@@ -1,22 +1,25 @@
 import Mathlib
 
 /-!
-# RH B136 prime-endpoint finite core
+# RH B136/B136A prime-endpoint finite core
 
 Finite algebra only.
 
-This file formalizes three load-bearing deterministic shadows of the B136
-ordinary-prime endpoint reduction:
+This file formalizes deterministic shadows of the B136 ordinary-prime endpoint
+reduction and the B136A square-checkpoint sparsification:
 
 * a chord lower bound plus nonnegative endpoint values forces a nonnegative
   interior value;
 * the finite prefix reweighting identity used to rewrite
   `X * sum(log p / p) - theta(X)` as one weighted prime-prefix sum;
-* zero negative-entry count is exactly coordinatewise nonnegativity.
+* zero negative-entry count is exactly coordinatewise nonnegativity;
+* one square cell has physical width at most `2 n + 1`;
+* a negative excursion survives transport when the transport error is smaller
+  than its depth.
 
 It does **not** formalize Zhao's analytic theorem, prime numbers, Mertens'
-theorem, concavity of the actual mean-Mertens function, zeta, BGST matrices,
-or the Riemann hypothesis.
+theorem, concavity or Lipschitz control of the actual mean-Mertens function,
+zeta, BGST matrices, or the Riemann hypothesis.
 -/
 
 namespace RHB136PrimeEndpointConcavityFinite
@@ -45,7 +48,7 @@ theorem chord_nonnegative_of_endpoint_nonnegative
   nlinarith
 
 /-- Exact finite reweighting identity behind the B136 prime-endpoint formula.
-No primality hypothesis is present: `t i` can be any nonzero event location. -/
+No primality hypothesis is present: `t i` can be any event location. -/
 theorem finite_prefix_reweight_identity
     {ι : Type*} (s : Finset ι)
     (X : ℝ) (t ell : ι → ℝ) :
@@ -70,8 +73,33 @@ theorem negativeCount_eq_zero_iff
   classical
   simp [negativeCount, not_lt]
 
+/-- B136A square-cell geometry: if `x` lies between `n²` and `(n+1)²`, then
+its distance from the lower square is at most `2n+1`. -/
+theorem square_cell_distance_bound
+    (n x : ℝ) (hn : 0 ≤ n)
+    (hlo : n ^ 2 ≤ x) (hhi : x ≤ (n + 1) ^ 2) :
+    0 ≤ x - n ^ 2 ∧ x - n ^ 2 ≤ 2 * n + 1 := by
+  constructor
+  · linarith
+  · nlinarith
+
+/-- If a value is negative by depth `depth`, and transport changes it by at most
+`err < depth`, the transported value is still negative. This is the finite
+firewall used when moving an off-grid negative excursion to the nearest square
+checkpoint. -/
+theorem negative_survives_bounded_transport
+    (atX atY depth err : ℝ)
+    (hX : atX ≤ -depth)
+    (hmove : |atY - atX| ≤ err)
+    (hstrict : err < depth) :
+    atY < 0 := by
+  have hupper : atY - atX ≤ err := (abs_le.mp hmove).2
+  linarith
+
 #print axioms chord_nonnegative_of_endpoint_nonnegative
 #print axioms finite_prefix_reweight_identity
 #print axioms negativeCount_eq_zero_iff
+#print axioms square_cell_distance_bound
+#print axioms negative_survives_bounded_transport
 
 end RHB136PrimeEndpointConcavityFinite
