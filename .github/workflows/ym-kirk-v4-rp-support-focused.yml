@@ -1,0 +1,88 @@
+name: YM Kirk v4 reflection support focused
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact reflection/block theorem bodies
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/reflection_support_focused'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'Proposition 1.2','Proposition 2.2','Proposition 2.9','Theorem 3.11',
+            'Lemma 6.14','Corollary 6.19','Lemma 8.14','Theorem 9.1'
+          ]
+          summary=[]
+          for target in targets:
+            m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+            if not m:
+              summary.append(target+': NOT FOUND'); continue
+            # extract until next numbered theorem-ish heading, bounded generously
+            start=max(0,m.start()-2500)
+            tail=text[m.start()+len(target):]
+            nxt=re.search(r'(?m)^\s*(?:Lemma|Theorem|Proposition|Corollary)\s+\d+\.\d+\b',tail)
+            end=m.start()+len(target)+(nxt.start() if nxt else 15000)
+            end=min(len(text),max(end,m.start()+6000))
+            slug=target.lower().replace(' ','_').replace('.','_')
+            (out/(slug+'.txt')).write_text(text[start:end],encoding='utf-8')
+            summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          # Extract local contexts for every occurrence of key support phrases without duplicate giant overlaps
+          phrases=['positive-time links','aligned reflection','reflection-equivariant','reflection compatible',
+                   'half-cylinder','reflection plane','positive half','positive-time observable','time support']
+          ledger=[]
+          low=text.lower()
+          seen=[]
+          for phrase in phrases:
+            pos=0
+            while True:
+              i=low.find(phrase.lower(),pos)
+              if i<0: break
+              if not any(abs(i-j)<1000 for j in seen):
+                seen.append(i)
+                ledger.append(f'=== {phrase} at {i} ===\n'+text[max(0,i-3500):min(len(text),i+8000)]+'\n')
+              pos=i+len(phrase)
+          (out/'SUPPORT_LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Preserve focused immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/reflection_support_focused/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/reflection_support_focused/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reflection_support_focused
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve focused Kirk v4 reflection-support theorems'
+          git push origin HEAD:verification/ym-kirk-v4-rp-support-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-reflection-support-focused
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/reflection_support_focused/
