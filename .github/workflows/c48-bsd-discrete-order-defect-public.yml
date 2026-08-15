@@ -1,0 +1,81 @@
+name: C48 BSD discrete-order defect public replay
+
+on:
+  push:
+    branches:
+      - agent/c48-bsd-discrete-order-defect-public-20260815
+    paths:
+      - 'verification/c48-bsd-discrete-order-defect/DiscreteOrderDefect.lean'
+      - '.github/workflows/c48-bsd-discrete-order-defect-public.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Source trust scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=verification/c48-bsd-discrete-order-defect/DiscreteOrderDefect.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$f"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$f"; then exit 1; fi
+          git hash-object "$f"
+          sha256sum "$f"
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p /tmp/c48-bsd
+          cd /tmp/c48-bsd
+          cat > lakefile.toml <<'EOF'
+          name = "C48BSD"
+          version = "0.1.0"
+          defaultTargets = ["C48BSD"]
+
+          [[require]]
+          name = "mathlib"
+          git = "https://github.com/leanprover-community/mathlib4.git"
+          rev = "v4.31.0"
+
+          [[lean_lib]]
+          name = "C48BSD"
+          EOF
+          echo 'leanprover/lean4:v4.31.0' > lean-toolchain
+          lake update
+          lake exe cache get
+          lean --version
+
+      - name: Compile exact mirrored source and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cp verification/c48-bsd-discrete-order-defect/DiscreteOrderDefect.lean /tmp/c48-bsd/DiscreteOrderDefect.lean
+          cd /tmp/c48-bsd
+          lake env lean DiscreteOrderDefect.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then exit 1; fi
+          python3 - <<'PY'
+          import pathlib, re
+          text = pathlib.Path('lean-output.log').read_text()
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          reports = re.findall(r"'([^']+)' depends on axioms:\s*\[(.*?)\]", text, re.S)
+          reports += [(x, '') for x in re.findall(r"'([^']+)' does not depend on any axioms", text)]
+          if len(reports) < 3:
+              raise SystemExit(f'expected >=3 axiom reports, found {len(reports)}')
+          for th, payload in reports:
+              deps = {x.strip() for x in payload.split(',') if x.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(f'{th}: nonfoundation {sorted(extra)}')
+          print('VERIFIED', len(reports), 'axiom reports')
+          PY
