@@ -1,0 +1,75 @@
+name: YM Kirk v4 third-jet normal-family audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-third-jet-normal-family-audit-20260814-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-third-jet-normal-family-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract possible normal-family third-jet shortcut
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/third_jet_normal_family'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            'holomorphic in u','holomorphic in the coupling','complex coupling','complex u','coupling disc',
+            'normal family','Montel','Vitali','uniform on compact','locally uniform','Cauchy estimate','Cauchy formula',
+            'thermodynamic limit','rooted-thermodynamic','uniform C 3','uniform C3','C 3 theorem','three derivatives in u',
+            'Lemma 5.3','Lemma 5.4','Lemma 5.5','Lemma 5.15','Theorem 5.16','Theorem 5.27'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            for _ in range(60):
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-8000):min(len(text),i+28000)])
+              pos=i+len(needle)
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:80]
+            if chunks: (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['Lemma 5.3','Lemma 5.5','Theorem 5.27']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/third_jet_normal_family/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/third_jet_normal_family/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/third_jet_normal_family
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve third-jet normal-family contexts'
+          git push origin HEAD:verification/ym-kirk-v4-third-jet-normal-family-audit-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-third-jet-normal-family-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/third_jet_normal_family/
