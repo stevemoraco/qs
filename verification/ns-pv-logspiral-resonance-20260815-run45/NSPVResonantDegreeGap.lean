@@ -19,12 +19,12 @@ asymptotic expansions, the Pineau--Vicol equation, or Navier--Stokes.
 namespace NSPVResonantDegreeGap
 
 /-- Remaining homogeneity eigenvalue after the log-spiral phase cancels rotation. -/
-def degreeEigenvalue (k : ℝ) : ℝ :=
+noncomputable def degreeEigenvalue (k : ℝ) : ℝ :=
   (1 - k) / 2
 
 /-- Formal coefficient pair for one angular mode after including rotation,
 logarithmic radial twist, and an `r^(-k)` homogeneity contribution. -/
-def degreeModeOperator
+noncomputable def degreeModeOperator
     (alpha n k a b : ℝ) : ℝ × ℝ :=
   (alpha * (-n * b) + alpha * n * b + degreeEigenvalue k * a,
    alpha * (n * a) - alpha * n * a + degreeEigenvalue k * b)
@@ -34,13 +34,20 @@ theorem degree_mode_reduction
     (alpha n k a b : ℝ) :
     degreeModeOperator alpha n k a b =
       (degreeEigenvalue k * a, degreeEigenvalue k * b) := by
-  ext <;> simp [degreeModeOperator, degreeEigenvalue] <;> ring
+  apply Prod.ext
+  · change alpha * (-n * b) + alpha * n * b + degreeEigenvalue k * a =
+      degreeEigenvalue k * a
+    ring
+  · change alpha * (n * a) - alpha * n * a + degreeEigenvalue k * b =
+      degreeEigenvalue k * b
+    ring
 
 /-- The critical `r^-1` degree is exactly resonant. -/
 theorem critical_degree_one_kernel
     (alpha n a b : ℝ) :
     degreeModeOperator alpha n 1 a b = (0, 0) := by
-  simp [degree_mode_reduction, degreeEigenvalue]
+  rw [degree_mode_reduction]
+  norm_num [degreeEigenvalue]
 
 /-- The schematic `r^-3` correction degree has eigenvalue exactly `-1`. -/
 theorem cubic_degree_three_minus_identity
