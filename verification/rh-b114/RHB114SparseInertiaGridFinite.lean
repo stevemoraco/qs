@@ -3,8 +3,8 @@ import Mathlib
 /-!
 # RH B114 sparse shifted-inertia grid finite core
 
-This file formalizes only the finite ordered-real algebra behind the B114
-logarithmic shift-grid reduction.
+This file formalizes only the finite ordered-real algebra behind the B114/B114A
+logarithmic shift-grid and hinge reductions.
 
 It does not formalize primes, zeta, the B109B centered-gap stream, asymptotics,
 negative index of matrices, the PNT ceiling, or the Riemann hypothesis.
@@ -105,6 +105,49 @@ theorem sampled_bound_closes_true_bound
     (hbudget : rho * sampled ≤ target) :
     true ≤ target := htrue.trans hbudget
 
+/-- Scalar hinge duality upper bound: every selector in `[0,1]` is dominated by
+the positive part of the threshold excess. -/
+theorem selector_term_le_hinge
+    {x lam phi : ℝ}
+    (hphi0 : 0 ≤ phi)
+    (hphi1 : phi ≤ 1) :
+    phi * (x - lam) ≤ max (x - lam) 0 := by
+  by_cases hnonpos : x - lam ≤ 0
+  · have hmul : phi * (x - lam) ≤ 0 :=
+      mul_nonpos_of_nonneg_of_nonpos hphi0 hnonpos
+    simpa [max_eq_right hnonpos] using hmul
+  · have hpos : 0 ≤ x - lam := le_of_lt (lt_of_not_ge hnonpos)
+    have hmul : phi * (x - lam) ≤ 1 * (x - lam) :=
+      mul_le_mul_of_nonneg_right hphi1 hpos
+    simpa [max_eq_left hpos] using hmul
+
+/-- If the next lower hinge level is at most half the target threshold, every
+exceedance above the target pays at least half the target inside that hinge. -/
+theorem exceedance_paid_by_lower_hinge
+    {x target lower : ℝ}
+    (hlower0 : 0 ≤ lower)
+    (htarget : 2 * lower ≤ target)
+    (hexceed : target < x) :
+    target ≤ 2 * (x - lower) := by
+  nlinarith
+
+/-- The last geometric cell above the dimension floor is paid by the grid ratio. -/
+theorem bottom_cell_paid_by_dimension
+    {target count dim rho : ℝ}
+    (hdim0 : 0 < dim)
+    (hcount0 : 0 ≤ count)
+    (hcount : count ≤ dim)
+    (hrho0 : 0 ≤ rho)
+    (htarget : target ≤ rho / dim) :
+    target * count ≤ rho := by
+  have hcoef : 0 ≤ rho / dim := div_nonneg hrho0 (le_of_lt hdim0)
+  have h1 : target * count ≤ (rho / dim) * dim := by
+    exact mul_le_mul htarget hcount hcount0 hcoef
+  have hdimne : dim ≠ 0 := ne_of_gt hdim0
+  calc
+    target * count ≤ (rho / dim) * dim := h1
+    _ = rho := by field_simp [hdimne]
+
 #print axioms bracketed_threshold_transfer
 #print axioms tiny_threshold_paid_by_dimension
 #print axioms above_ceiling_has_zero_product
@@ -112,5 +155,8 @@ theorem sampled_bound_closes_true_bound
 #print axioms fixed_gap_can_hide_depth
 #print axioms fixed_gap_lower_sample_is_one
 #print axioms sampled_bound_closes_true_bound
+#print axioms selector_term_le_hinge
+#print axioms exceedance_paid_by_lower_hinge
+#print axioms bottom_cell_paid_by_dimension
 
 end RHB114SparseInertiaGridFinite
