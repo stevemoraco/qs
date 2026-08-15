@@ -84,10 +84,38 @@ theorem strict_relative_reservoir_forces_positive_diffusion
   have hηP : 0 < η * P := lt_of_lt_of_le hleft hcore
   nlinarith
 
+/-- Under Yu's admissible geometry `0 < σ ≤ ρ ≤ 1/4`, the bare scale factor
+`ρ^2 σ^-5` is never small: it is at least `64`.  Thus choosing a smaller
+filter ratio cannot make the lower-order reservoir coefficient perturbative. -/
+theorem admissible_filter_ratio_factor_ge_sixty_four
+    {σ ρ : ℝ}
+    (hσ : 0 < σ)
+    (hσρ : σ ≤ ρ)
+    (hρ : ρ ≤ (1 : ℝ) / 4) :
+    64 ≤ ρ ^ 2 / σ ^ 5 := by
+  have hρpos : 0 < ρ := lt_of_lt_of_le hσ hσρ
+  have hσ5 : σ ^ 5 ≤ ρ ^ 5 := by
+    gcongr
+  have hρ3 : ρ ^ 3 ≤ ((1 : ℝ) / 4) ^ 3 := by
+    gcongr
+  have hρ3' : 64 * ρ ^ 3 ≤ 1 := by
+    norm_num at hρ3 ⊢
+    nlinarith
+  have h64 : 64 * σ ^ 5 ≤ ρ ^ 2 := by
+    calc
+      64 * σ ^ 5 ≤ 64 * ρ ^ 5 := by nlinarith
+      _ = 64 * ρ ^ 2 * ρ ^ 3 := by ring
+      _ ≤ ρ ^ 2 := by
+        have hρ2 : 0 ≤ ρ ^ 2 := sq_nonneg ρ
+        nlinarith
+  have hσ5pos : 0 < σ ^ 5 := pow_pos hσ 5
+  exact (le_div_iff₀ hσ5pos).2 h64
+
 #print axioms positive_defect_zero_diffusion_countermodel
 #print axioms upper_absorption_does_not_force_positive_diffusion
 #print axioms reservoir_ratio_gap_reverse_coercivity
 #print axioms relative_reservoir_fraction_reverse_coercivity
 #print axioms strict_relative_reservoir_forces_positive_diffusion
+#print axioms admissible_filter_ratio_factor_ge_sixty_four
 
 end NSYuReservoirGapFirewall
