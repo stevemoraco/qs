@@ -47,8 +47,10 @@ theorem fixed_total_pivots_pay_charge_from_one_separation
     (hbudget : lam * N + slack ≤ mu * R) :
     lam * n + slack ≤ mu * cost := by
   calc
-    lam * n + slack ≤ lam * N + slack :=
-      add_le_add_right (fixed_total_pivots_bound_charge n N lam hlam hnN) slack
+    lam * n + slack ≤ lam * N + slack := by
+      simpa [add_comm] using
+        (add_le_add_right
+          (fixed_total_pivots_bound_charge n N lam hlam hnN) slack)
     _ ≤ mu * R := hbudget
     _ ≤ mu * cost := mul_le_mul_of_nonneg_left hspan hmu
 
