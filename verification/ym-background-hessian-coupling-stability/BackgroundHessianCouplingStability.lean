@@ -28,7 +28,7 @@ theorem backgroundHessian_halfError_bounds
     (hH : 0 < H)
     (herr : |Hn - H| ≤ H / 2) :
     H / 2 ≤ Hn ∧ Hn ≤ 3 * H / 2 := by
-  have habs : -H / 2 ≤ Hn - H ∧ Hn - H ≤ H / 2 := abs_le.mp herr
+  have habs : -(H / 2) ≤ Hn - H ∧ Hn - H ≤ H / 2 := abs_le.mp herr
   constructor <;> linarith
 
 /-- The same half-error hypothesis prevents the regulated Hessian denominator
@@ -48,7 +48,6 @@ theorem inverseHessian_difference_identity
     (hHn : Hn ≠ 0) :
     1 / Hn - 1 / H = (H - Hn) / (Hn * H) := by
   field_simp [hH, hHn]
-  ring
 
 /-- Under the half-error hypothesis, the positive denominator in the inverse
 coupling difference is bounded below by `H^2/2`. -/
