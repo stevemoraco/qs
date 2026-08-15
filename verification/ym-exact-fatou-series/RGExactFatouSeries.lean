@@ -110,8 +110,9 @@ theorem inverseOrbit_forward_shift
   | zero =>
       simpa using hGF
   | succ n ih =>
-      simp only [inverseOrbit_succ]
-      rw [ih]
+      rw [inverseOrbit_succ]
+      rw [inverseOrbit_succ]
+      exact congrArg G ih
 
 theorem inverseOrbit_residual_abs_summable
     (G rho : ℝ → ℝ) (u : ℝ)
