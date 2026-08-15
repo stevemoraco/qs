@@ -1,0 +1,277 @@
+ed above. Each
+analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+one/two-root bounds control a component while its source leaves remain external. These majorants are
+summable independently of m, so dominated convergence gives the last assertion.
+
+    For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+recursively generated tree, not a choice made after absolute values or bounds have been applied.
+Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+separated-group exponential.
+Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood of the
+origin, every finite source functional is analytic uniformly in resolution and volume. Thermodynamic
+and zero-spacing limits of all fixed finite source derivatives exist along one common diagonal subsequence.
+If two groups of source supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      cl
+                                                                                             is globally smooth,
+linear in v, finite range, gauge equivariant, signed-hypercubic covariant, and reflection compatible. All
+group derivatives of its local coefficient through arbitrary fixed order are bounded independently of volume,
+apart from the explicit canonical factor a−1 in (124).
+Proof. The projected sine coordinate (122) is a smooth matrix function followed by the fixed equivariant
+projection Πρ , hence is smooth on the whole group. Under a lattice gauge transformation, a based
+plaquette is conjugated by the gauge value at its base point; conjugation equivariance of Ωsin gives
+Cµν (x) 7→ g(x)Cµν (x)g(x)−1 . Consequently Yx,ν Uν (x) transforms as a tangent vector to the link from x
+to x + aν̂. Signed permutations reindex the two oriented plaquettes and the profile components, while
+the orientation sign in (123) is exactly the sign of the transformed two-form. All derivative bounds follow
+from finite support and compactness of the group.
+
+Exact vacuum Haar divergence Use an orthonormal anti-H

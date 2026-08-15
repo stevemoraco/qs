@@ -1,0 +1,282 @@
+−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+separated-group exponential.
+Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood of the
+origin, every finite source functional is analytic uniformly in resolution and volume. Thermodynamic
+and zero-spacing limits of all fixed finite source derivatives exist along one common diagonal subsequence.
+If two groups of source supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      cl
+                                                                                             is globally smooth,
+linear in v, finite range, gauge equivariant, signed-hypercubic covariant, and reflection compatible. All
+group derivatives of its local coefficient through arbitrary fixed order are bounded independently of volume,
+apart from the explicit canonical factor a−1 in (124).
+Proof. The projected sine coordinate (122) is a smooth matrix function followed by the fixed equivariant
+projection Πρ , hence is smooth on the whole group. Under a lattice gauge transformation, a based
+plaquette is conjugated by the gauge value at its base point; conjugation equivariance of Ωsin gives
+Cµν (x) 7→ g(x)Cµν (x)g(x)−1 . Consequently Yx,ν Uν (x) transforms as a tangent vector to the link from x
+to x + aν̂. Signed permutations reindex the two oriented plaquettes and the profile components, while
+the orientation sign in (123) is exactly the sign of the transformed two-form. All derivative bounds follow
+from finite support and compactness of the group.
+
+Exact vacuum Haar divergence Use an orthonormal anti-Hermitian basis T A and the left-invariant
+product-Haar frame ∇A
+                    x,ν . Since left-invariant fields have zero Haar divergence,
+                                                     X
+                                       divH Xa,v
+                                              cl
+                                                  =      ∇A     A
+                                                           x,ν Yx,ν .                     (125)
+                                                         x,ν,A
+
+Lemma 8.18 (The vacuum diagonal block vanishes edgewise). At U = 1,
+                                       DAν (x) Cµν (x) U =1 = 0     (µ ̸= ν),                             (126)
+so
+                                               divH Xa,v
+                                                     cl
+                                                         U =1
+                                                              =0                                          (127)
+for every profile, with no cell or volume summation.
+Proof. Linearize (121). Both P+µ,ν (x) and P−µ,ν (x) end with Uν (x)−1 , so their logarithms have the
+same diagonal derivative −Id with respect to the Lie-algebra coordinate of the distinguished ν-link. The
+difference in (123) cancels those derivatives exactly. Summing the zero diagonal blocks gives (127).
+Lemma 8.19 (No field-linear color trace). The first field-dependent term in the diagonal derivative of
+(123) is a finite sum of adjoint commutator matrices. Its color trace vanishes identically:
+                                                   Trg ad(q) = 0.                                         (128)
+Thus the Haar divergence has neither a vacuum term nor a field-linear gauge-invariant term.
+Proof. The quadratic BCH term is a sum of brackets of link coordinates. Differentiating one slot leaves
+[q, ·]. In structure constants its trace is f aba = 0. Higher terms are local analytic gauge-invariant jets and
+are classified together with the complete score below.
+
+
+                                                         79
+Second-order agreement with the geometric strip Let B be a smooth continuum connection and
+let the lattice links be its exact edge holonomies. Write
+                                              Z a
+                                 Sµν (x; B) =     AdUν (x;0,s) Fµν (x + sν̂) ds,      (129)
+                                               0
+
+where the curvature is parallel transported to x along the initial part of the ν-edge.
+Lemma 8.20 (Covariant two-plaquette expansion). On every bounded smooth background set, uniformly
+with zero/one/two background derivatives,
+                                                             a 
+                          Cµν (x) = a2 AdUν (x;0,a/2) Fµν x + ν̂ + a4 Rµνcl
+                                                                             (x; B),         (130)
+                                                              2
+                                                            a  
+                       Sµν (x; B) = a AdUν (x;0,a/2) Fµν x + ν̂ + a3 Rµνstrip
+                                                                              (x; B),        (131)
+                                                             2
+where the remainders are local covariant differential polynomials with two additional derivatives or one
+additional curvature and have uniform bounds.
+Proof. Write Pρσ = exp ωρσ on a smooth background. By (122), Ωsin (eω ) = (dρ)−1 Πρ [sinh(dρ(ω))] =
+ω + O(∥ω∥3 ). Since ω = O(a2 ), replacing the plaquette logarithm by the projected sine coordinate
+changes the expansion only at order a6 . Apply the covariant BCH/nonabelian-Stokes expansion to the
+two plaquettes sharing the distinguished link. After parallel transport to the common base point x,
+their centers are x + aν̂/2 ± aµ̂/2. Multiplication by the orientation sign and averaging cancels every
+term odd in the transverse displacement. The leading term is therefore a2 Fµν at the link midpoint,
+parallel transported to x, and the first surviving transverse defect is a4 Dµ2 F . The finite area average
+also contributes only two-extra-derivative or curvature-quadratic terms at order a4 . This proves (130).
+Covariant midpoint Taylor expansion of the one-dimensional integral (129) gives (131). Analyticity of
+the finite Wilson words permits two background derivatives with the same powers of a.
+Proposition 8.21 (Per-link and bounded-source error). 
