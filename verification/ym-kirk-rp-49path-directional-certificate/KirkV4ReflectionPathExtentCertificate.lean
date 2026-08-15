@@ -24,7 +24,6 @@ theorem spatial_template_positive_half
 
 theorem spatial_template_positive_half_scaled
     (B anchor offset : ℤ)
-    (hB : 0 ≤ B)
     (hAnchor : B ≤ anchor)
     (hOffset : -B ≤ offset) :
     0 ≤ anchor + offset := by
