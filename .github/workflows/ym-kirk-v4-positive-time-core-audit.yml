@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verification/ym-kirk-v4-positive-time-core-audit-20260814-gpt56sol
+  pull_request:
+    branches:
+      - verification/ym-kirk-v4-third-jet-convergence-audit-20260814-gpt56sol
   workflow_dispatch:
 
 permissions:
@@ -29,7 +32,6 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
           out=Path('source_audit/kirk_v4/positive_time_core'); out.mkdir(parents=True,exist_ok=True)
           targets=[
