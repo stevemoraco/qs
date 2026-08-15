@@ -26,7 +26,6 @@ one half and three halves of the reference coupling. -/
 theorem o2_scheme_local_window
     {u v C : ℝ}
     (hu : 0 < u)
-    (hC : 0 ≤ C)
     (hsmall : C * u ≤ 1 / 2)
     (herr : |v - u| ≤ C * u ^ 2) :
     u / 2 ≤ v ∧ v ≤ 3 * u / 2 := by
@@ -40,11 +39,10 @@ theorem o2_scheme_local_window
 theorem o2_scheme_ratio_window
     {u v C : ℝ}
     (hu : 0 < u)
-    (hC : 0 ≤ C)
     (hsmall : C * u ≤ 1 / 2)
     (herr : |v - u| ≤ C * u ^ 2) :
     (1 : ℝ) / 2 ≤ v / u ∧ v / u ≤ 3 / 2 := by
-  have hwin := o2_scheme_local_window hu hC hsmall herr
+  have hwin := o2_scheme_local_window hu hsmall herr
   constructor
   · exact (le_div_iff₀ hu).2 (by nlinarith [hwin.1])
   · exact (div_le_iff₀ hu).2 (by nlinarith [hwin.2])
@@ -60,8 +58,15 @@ theorem o2_scheme_cross_bound
     |u - v| ≤ 2 * C * (u * v) := by
   have hswap : |u - v| = |v - u| := abs_sub_comm u v
   rw [hswap]
+  have huv2 : u ≤ 2 * v := by
+    linarith
+  have hCu : 0 ≤ C * u :=
+    mul_nonneg hC (le_of_lt hu)
+  have hmul : (C * u) * u ≤ (C * u) * (2 * v) :=
+    mul_le_mul_of_nonneg_left huv2 hCu
   have hquad : C * u ^ 2 ≤ 2 * C * (u * v) := by
-    nlinarith
+    ring_nf at hmul ⊢
+    exact hmul
   exact le_trans herr hquad
 
 /-- A uniform `O(u^2)` finite scheme error produces a uniform reciprocal
@@ -75,7 +80,7 @@ theorem o2_scheme_reciprocal_bound
     (hsmall : C * u ≤ 1 / 2)
     (herr : |v - u| ≤ C * u ^ 2) :
     |1 / v - 1 / u| ≤ 2 * C := by
-  have hwin := o2_scheme_local_window hu hC hsmall herr
+  have hwin := o2_scheme_local_window hu hsmall herr
   have hv : 0 < v := by linarith [hwin.1]
   have hcross := o2_scheme_cross_bound hu hC hwin.1 herr
   have huv : 0 < u * v := mul_pos hu hv
