@@ -1,0 +1,57 @@
+name: Verify RH B115 near-trace Schatten finite core
+
+on:
+  push:
+    branches:
+      - verification/rh-b115-neartrace-schatten-20260814-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and unsafe shortcuts
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='verification/rh-b115-neartrace-schatten/RHB115NearTraceSchattenFinite.lean'
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'forbidden proof/trust carrier found'
+            exit 1
+          fi
+
+      - name: Submit exact source to AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, time, urllib.request
+          api='https://lean-compile-farm.replit.app/api'
+          src=pathlib.Path('verification/rh-b115-neartrace-schatten/RHB115NearTraceSchattenFinite.lean').read_text()
+          req=urllib.request.Request(
+              api+'/compile',
+              data=json.dumps({'name':'rh-b115-neartrace-schatten-public','lean_source':src}).encode(),
+              headers={'Content-Type':'application/json'},
+              method='POST')
+          with urllib.request.urlopen(req, timeout=120) as r:
+              job=json.load(r)
+          jid=job['id']
+          print('job',jid,flush=True)
+          for _ in range(120):
+              time.sleep(10)
+              with urllib.request.urlopen(api+'/jobs/'+jid, timeout=120) as r:
+                  job=json.load(r)
+              print(job.get('status'),job.get('verdict'),flush=True)
+              if job.get('status') in ('done','failed'):
+                  print(json.dumps(job,indent=2),flush=True)
+                  if job.get('status')!='done' or job.get('verdict')!='VERIFIED' or job.get('sorry_count')!=0:
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('compile farm timeout')
+          PY
