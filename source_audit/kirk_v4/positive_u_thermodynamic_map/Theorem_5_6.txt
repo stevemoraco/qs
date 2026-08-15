@@ -1,0 +1,1088 @@
+=== hit 1 at 172341 ===
++3
+                                                                       
+                                            R(L) =     log L
+                                                    κ
+   and δD → ∞.
+   Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+                                           ∥DΦL (0)|stable ∥ < 1.
+No upper bound of the form maxm Km < 4 is required.
+Proof. Fix the finite number Γ. Choose D so that
+                                                  δD > Γ + 2.
+On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+equivalent finite-dimensional norm with
+                                      ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+Choose ϵL = L−1 . Thus
+                                                 ∥JL ∥ ≤ 2L−1 .
+  The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+depending only on the fixed D, L, never on volume or weak depth. Since
+                                                  δD − Γ > 2,
+the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+one finite L such that
+                             2L−1 + Clong
+                                     ′
+                                          L−3 + CD′
+                                                    (1 + R(L))pD LΓ−δD < 1.
+This gives the strict macrostep contraction.
+Lemma 4.31 (Finite one-step supplier bound). Let
+                             SRBK      chart       coarea       loc          hull      rec
+                            Km    ,   Km     ,    Km      ,    Km   ,       Km    ,   Km
+be the rooted one-step constants supplied respectively by the summed replica-BKAR logarithm, normal
+fiber return, coarea logarithm, localization, canonical hull assignment, and output recertification. If each
+is finite and uniform in volume and weak depth, then one may take
+                                   SRBK chart coarea loc hull rec
+                             Km ≤ Km   Km Km        Km Km Km < ∞.
+
+
+                                                       38
+Proof. Compose the six bounded maps in the declared rooted marked norm and apply the chain rule
+through order m. Replacing the product by the finite Bell-polynomial sum only changes the right side by
+a finite m-dependent combinatorial factor.
+
+5       Invariant graph and universal coefficient
+The marginal coordinate is u = g 2 . Inputs SI–6, SI–6B, SI–7, and SI–7M are used only to compute
+the local perturbative Taylor coefficient of the complete fine Wilson vector-minus-ghost quotient. The
+coefficient of the exact Karcher map is identified internally by evaluating one local standard background
+coordinate on the two equal measures related by the exact Karcher pushforward, followed by unit-tangent
+conjugacy on the centered invariant family. No unrestricted Haar-translated background functional, global
+background-gauge section, or application of Reisz power counting to the optical conditional covariance is
+consumed.
+   In the canonical squared-coupling normalization,
+
+                                                       11 CA (G) log 2
+                                               bAF =                   .
+                                                           24π 2
+The factor log 2 is the physical scale-two interval. The complete coordinate-intertwining theorem is
+printed after the centered invariant graph, where exact measure equality and parabolic conjugacy identify
+the one-step coefficient.
+5.1     Centered invariant graph
+Let
+                                         R(u, R) = f (u, R), Φ(u, R)
+                                                                    
+
+be C 3 on a uniform Banach ball. Assume
+
+                            DR f (0, 0) = 0,      DR Φ(0, 0) = L,          ∥L∥ ≤ q < 1.
+
+Write
+                             f (u, R) = u + b0 u2 + u m(R) + q(R, R) + O3 (u, R)
+and
+                          Φ(u, R) = LR + uS1 + u2 S2 + uAR + B(R, R) + O3 (u, R).
+Theorem 5.1 (Centered graph with the slaved coefficient). Define
+
+                                                H1 = (I − L)−1 S1 ,
+
+                                        b⋆ = b0 + m(H1 ) + q(H1 , H1 ),
+and
+                              H2 = (I − L)−1 [S2 + AH1 + B(H1 , H1 ) − b⋆ H1 ] .
+Then, after decreasing the common ball, there is a unique invariant graph
+
+                                       R⋆ (u) = uH1 + u2 H2 + OG (u3 ).
+
+In a tangent-to-identity marginal coordinate v and the centered irrelevant coordinate
+                                                 e = R − R⋆ (u),
+                                                 R
+
+the exact map satisfies
+                                           v+ = v + b⋆ v 2 + OG (v 3 )
+on the graph and
+                                       ∥R
+                                        e+ ∥ ≤ ρ⋆ ∥R∥,
+                                                   e            q < ρ⋆ < 1.
+                                                       3
+All constants are uniform whenever the input C and contraction rows are uniform.
+Proof. Comparing powers of u in
+
+                                        R⋆ (f (u, R⋆ (u))) = Φ(u, R⋆ (u))
+
+gives the displayed equations for H1 , H2 and b⋆ .
+
+
+                                                           39
+  After the shift
+                                           R = uH1 + u2 H2 + ρ,
+the marginal row is
+                                u+ = u + b⋆ u2 + u c(ρ) + q(ρ, ρ) + O3 (u, ρ),
+where
+                                             c = m + 2q(H1 , ·).
+The cohomological equations
+                                     α − αL = c,       d − d(L·, L·) = q
+have convergent Neumann-series solutions because ∥L∥ < 1. The coordinate
+                                          v = u + uα(ρ) + d(ρ, ρ)
+removes the uρ and ρ2 marginal feeding through second order.
+  The centered irrelevant row has the form
+                                     ρ+ = Lρ + O(v∥ρ∥ + ∥ρ∥2 + v 3 ).
+The exponentially flat irregular term is absorbed in the same cubic row after shrinking the weak interval.
+The graph transform on weighted C 2 graphs has Lipschitz constant q + C v̄ < 1. Its unique fixed point
+gives the graph, and the mean-value theorem gives centered contraction.
+
+5.2     Standard-scheme conjugacy and coefficient
+The coefficient is extracted from a local background renormalization condition on the full weak measure.
+The background is not inserted as a freely translatable factor in an unrestricted Haar integral, and no
+global gauge section or equality of globally gauge-fixed partition functions is asserted.
+5.2.1 The exact marginal map on the invariant graph
+Let
+                                       R(u, R) = f (u, R), Φ(u, R)
+                                                                   
+
+be the infinite-volume canonically rescaled exact Karcher step on the common analytic weak tube. On
+the centered invariant graph put
+                                          FK (u) = f u, R⋆ (u) .
+                                                              
+
+Lemma 5.2 (Invariant-graph marginal coefficient). The reduced map is analytic and
+                                        FK (u) = u + b⋆ u2 + OG (u3 ).
+                                                                  e = u + O(u2 ).
+The number b⋆ is invariant under every analytic reparametrization u
+Proof. Substitute R⋆ (u) = uH1 + O(u2 ) into the complete quadratic Taylor expansion of f . If h(u) =
+u + cu2 + OG (u3 ), direct substitution in h ◦ FK ◦ h−1 leaves the quadratic coefficient unchanged.
+5.2.2 A nonexceptional background coordinate on weak measures
+For a finite lattice spacing a, let µa;u,R denote the full weak Wilson measure with interaction R, before
+any Karcher conditioning. Fix a retained acoustic background B in the common weak tube and write, on
+a based local background slice,
+                               U = Va (B)eA ,      d∗B,a A = 0,     A(v0 ) = 0.
+Let χ(A) be one fixed smooth cutoff equal to one on the smaller weak tube and supported in the larger
+tube. Define                           Z
+                                                             A
+                    Wa (B; µ) := − log     χ(A) e−Sµ (Va (B)e ) JB,a (A) ∆B,a (A) dA.             (7)
+                                          SB,a
+
+Here Sµ is the logarithmic density of the full weak measure, JB,a is the local exponential/coarea density,
+and ∆B,a is the local based Faddeev–Popov determinant. The integral is a based-slice renormalization
+functional; it is not used as a global representation of µ.
+    Fix m⋆ ≥ 16 and q⋆ = (2π/m⋆ , 0, 0, 0) at the retained scale. On periodic sides divisible by m⋆ , let
+P⋆ be the signed-hypercubic-orbit average of the transverse background Hessian at q⋆ , divided by |b      q⋆ |2
+and averaged over color polarizations. The directed sides are rounded upward to such multiples, a
+bounded refinement that preserves every wrapping estimate. Fix a compact orbit neighborhood Q⋆ with
+inf q∈Q⋆ |b
+          q | =: ρ⋆ > 0. Define ga (µ) as the inverse of P⋆ DB
+                                                             2
+                                                               Wa (0; µ) after the same canonical rescaling of
+lattice and profile at both ends of a step. The pure quadratic Wilson Hessian gives ga = u. Thus this is
+one scale-normalized nonexceptional momentum-subtraction coordinate; no derivative at q = 0 is used.
+
+
+                                                      40
+Lemma 5.3 (Nonexceptional slice coordinate with finite-order flat complement). On the common weak
+domain, the nonexceptional background coordinate evaluated on the full normalized weak measure, including
+exact irregular-label recombination, extends as a C 3 function of (u, R) to u = 0 and satisfies
+
+                                    ga (µa;u,R ) = u + O(u2 + u∥R∥ + ∥R∥2 ).                               (8)
+
+Changing the based local slice, cutoff, or finite local gauge fermion changes ga by one scale-normalized
+C 3 unit-tangent reparametrization. If ϵirr denotes the contribution of the charged complement, then for
+0 ≤ k ≤ 3 and the two background marks used by ga ,
+
+                                    |∂uk ϵirr (u, R)| ≤ Ck u−pk e−c/u ,         u > 0,
+
+so its extension at u = 0 is C 3 and has vanishing derivatives through order three. No real-analytic
+extension of this flat term is asserted.
+   More explicitly, let t 7→ χt be a C 3 interpolation of admissible cutoffs, each equal to one on the smaller
+weak tube and supported in the same larger tube, and put
+                                                                            A
+                                                     χ̇t (A)e−Sµa;u,R (Va (B)e ) JB,a (A)∆B,a (A) dA
+                                          R
+                                              SB,a
+                   ϵχ,t (B; u, R) := − R                                    A                          .
+                                              SB,a
+                                                     χt (A)e−Sµa;u,R (Va (B)e ) JB,a (A)∆B,a (A) dA
+
+For 0 ≤ k ≤ 3 and every background multi-index |α| ≤ 2 consumed by the coupling coordinate,
+
+                      sup     sup       ∂uk DB
+                                             α
+                                               ϵχ,t (B; u, R) ≤ Ck,α u−pk,α e−c/u ,         u > 0,
+                     t∈[0,1] B∈Tsmall
+
+with constants uniform in volume, cutoff, and preceding weak depth. Thus the cutoff interpolation
+contributes only a C 3 -flat unit-tangent scheme term.
+Proof. The based background-slice map is a finite-dimensional analytic diffeomorphism on the        √ common
+tube by the inverse-function theorem and the uniform grounded Hessian bound. Rescale A = u a before
+taking the two background-amplitude marks at the fixed orbit of q⋆ . On the inner tube, dominated
+differentiation of the Wilson, chart, coarea, Jacobian,
+                                                  √          gauge-coordinate, and interaction factors gives
+three derivatives in u uniformly; odd powers of u vanish after the signed-hypercubic orbit average. This
+proves the C 3 expansion and the unit tangent. Every interaction term in R has vanishing extracted scalar
+and complete retained two-jet, so it cannot alter the linear term in (8).
+   Two local slice choices are joined by a finite interpolation of background-covariant gauge fermions.
+The variation is BRS exact. The SI–6 counterterm classification and the supportwise SI–7M estimate of
+Lemma 5.14 show that the change is a finite CR3 scheme term with unit tangent.
+   For a cutoff interpolation, differentiate − log χt e−Sµ J∆ before taking the two background-amplitude
+marks and the fixed projector P⋆ . This gives exactly ϵχ,t . The factor χ̇t is supported in the annulus between
+the smaller and larger weak tubes. After exact label recombination, every numerator term is therefore
+a charged U4 activity; a background or coupling derivative may hit the action, the coarea/Jacobian
+factor, or the determinant; the fixed factor χ̇t keeps every term on the same charged annular support.
+The differentiated U4 total-variation row, through the three coupling and two background derivatives
+displayed in the statement, bounds the numerator by the positive denominator times Ck,α u−pk,α e−c/u .
+The good-cutoff plateau and its trial-ball lower bound make this ratio uniform in t, volume, cutoff, and
+preceding weak depth. Integrating in t proves that changing χ adds only the printed C 3 -flat scheme term.
+The same U4 row gives the charged complement bound. Such terms are C 3 -flat, not analytic, and this
+finite-order regularity is all that is consumed below.
+Lemma 5.4 (Massless nonexceptional sum–integral comparison). Let M be divisible by m⋆ and let
+ΓM = (2π/M )Z4M be the loop-momentum grid. For every pure-Wilson or stable-marked complete one-loop
+BPHZL packet contributing to the quadratic background coefficient, and through the two background marks
+consumed by ga , there is a finite soft set S(q) ⊂ T4 such that, away from that set,
+                                                                         
+                                                     X
+                     k RX (q, 1; k) ≤ Cα PX
+                   ∇α   LZ                    1 +       dT4 (k, ξ)−2−|α|  ,   |α| ≤ 2.            (9)
+                                                             ξ∈S(q)
+
+Here PX = 1 for a pure-Wilson packet and otherwise PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 . At a grounded
+soft momentum the finite-volume summand is omitted. Uniformly for every grid-compatible q ∈ Q⋆ ∩ ΓM
+
+
+                                                              41
+(in particular for the fixed signed-hypercubic orbit of q⋆ ),
+                      ′
+                1 X LZ                                        d4 k
+                                          Z
+                              (q, 1;            LZ
+                                                   (q, 1;           ≤ CPX M −2 1 + log(2 + M ) .           (10)
+                                                                                              
+                          R          k) −     R           k)
+               M4           X
+                                           T4
+                                                X
+                                                             (2π) 4
+                   k∈ΓM
+
+The same estimate holds after the two background marks. After the rooted support sum it therefore
+compares the finite-volume and thermodynamic quadratic Taylor coefficients of the local background
+coordinate and of the standard one-step map.
+Proof. The complete-forest admission in Lemma 5.12 gives the degree-two soft majorant (23). Differenti-
+ating a complete sector packet in loop momentum once or twice lowers its verified infrared degree by
+the number of derivatives and gives (9). The finite SI–7M sector family, the nonexceptional compact set
+Q⋆ , and the two background marks change only the constant and the support polynomial. No separated
+Lowenstein Taylor piece is used.
+   Put h = 2π/M and partition the momentum torus into the periodic Voronoi cubes Qℓ centered at the
+grid points. The finitely many cubes meeting S(q) contribute O(PX h2 ) to the integral by the d(k, ξ)−2
+row; their singular grounded samples are absent from the primed sum. On every remaining cube use the
+symmetric second-order Taylor formula about its center. Bounded overlap of twice-enlarged cubes gives
+                                                                                            
+                X ′           Z                              X Z
+             h4      RX (k) − RX (k) d4 k ≤ CPX h2 1 +                       d(k, ξ)−4 d4 k  .
+               k∈ΓM                                                 ξ∈S(q)   h≤d(k,ξ)≤1
+
+
+The radial integral is O(1 + log M ), proving (10) after the fixed normalization of the Brillouin torus. The
+strict rooted support reserve absorbs PX before the support sum. The pure-Wilson and stable-marked
+packets exhaust the quadratic coefficient by Lemmas 5.10 and 5.14.
+   Fix the localized wrapping exponent σ > 0 supplied by permanent support closure. Define the
+fixed-group finite-size modulus
+                            δG (M ) := CG e−σM + M −2 1 + log(2 + M ) ,                   (11)
+                                                                    
+
+where the exponential term retains the permanently localized wrapping row and the polynomial term is
+the massless acoustic sum–integral row.
+   Fix once and for all a tail-compatible admissible directed schedule s of the form (32). Write aj = 2j a0 ,
+let Mj be the scheduled periodic side at scale aj , and let µ   bsj,u be the full normalized physical weak
+measure at that scale, including the centered regular coordinate and the exactly recombined U4 irregular
+and wrapping sectors. The exact reduced one-step map on that tail is denoted by Fj . Define
+                                               hj (u) := gaj (b
+                                                              µsj,u ).                                     (12)
+Let F∞ , h∞ , and Σ∞ denote the corresponding rooted-thermodynamic maps obtained from the same
+canonically rescaled local functional. The finite-volume symbols are nonautonomous; no fixed-volume
+Taylor coefficient is identified with the thermodynamic coefficient merely from an estimate along one
+orbit.
+Lemma 5.5 (Finite-volume two-jet comparison and orbitwise finite-size row). There are c > 0 and finite
+Ck , pk such that, for 0 ≤ k ≤ 2,
+                          ∂uk (hj − h∞ )(u) + ∂uk (Σj − Σ∞ )(u) + ∂uk (Fj − F∞ )(u)
+                                     h                                 i
+                                ≤ Ck δG (Mj )u2−k + u3−k + u−pk e−c/u .                                    (13)
+
+For Σj , the derivative is in its scalar argument. This is a comparison through the quadratic jet; no
+exponential or polynomial all-orders convergence rate for the full massless functional is asserted. If
+(uj , Mj ) is a directed orbit and
+                                              δG (Mj ) ≤ uj ,                                     (14)
+then
+                  Fj (uj ) = F∞ (uj ) + OG (u3j ),                       ∂u (Fj − F∞ )(uj ) = OG (u2j ),   (15)
+             Σj (hj (uj )) = Σ∞ (h∞ (uj )) + OG (u3j ).                                                    (16)
+The same rows hold through the two background marks used by ga . All constants are independent of j,
+preceding weak depth, cutoff, volume, and the scheduled orbit with terminal coupling in the fixed interval
+I⋆ ; they may depend on G and I⋆ .
+
+
+                                                          42
+Proof. On the inner weak chart the uniform marked C 3 theorem gives, for each of hj , Σj , and Fj , a
+Taylor expansion with a remainder whose kth scalar derivative is bounded by Ck u3−k , 0 ≤ k ≤ 2. The
+exactly recombined charged complement contributes the displayed C 3 -flat row. Tree level and the unit
+tangent are volume independent. Lemma 5.4 compares the remaining quadratic coefficients of hj and
+Σj with their thermodynamic coefficients by CδG (Mj ); permanently localized histories contribute the
+exponential part already included in (11).
+   For the reduced map, expand the exact finite-volume intertwining identity
+
+                                             hj+1 ◦ Fj = Σj ◦ hj
+
+through second order. If the quadratic coefficients of hj , hj+1 , and Σj are aj , aj+1 , and bj , respectively,
+then the quadratic coefficient of Fj is bj + aj − aj+1 . Since Mj+1 = Mj /2 and δG (Mj /2) ≤ CG δG (Mj ) on
+the admitted range, the same finite-size row holds for Fj . Taylor’s theorem and the flat charged row now
+give (13). Under (14), the finite-size term and its first derivative are cubic and quadratic, respectively,
+while the flat term is smaller than every power. Composition with the unit-tangent hj proves (16).
+5.2.3 Measure-level intertwining
+For each scheduled step let Bj∗ be the exact Karcher pushforward from scale aj to aj+1 , including
+canonical rescaling and exact regular/irregular label recombination. Define the corresponding finite-
+volume standard-scheme map by
+                                     Σj gaj (µ) := gaj+1 (Bj∗ µ).                               (17)
+                                               
+
+This evaluates the local renormalization condition after the exact physical pushforward and does not
+push a gauge condition through the block. Let Σ∞ = Σstd denote the autonomous rooted-thermodynamic
+comparison obtained from the same local functional. The scheduled comparison through the quadratic
+jet is O(δG (Mj )u2 + u3 ) + O(u−p e−c/u ) through the two background marks, and becomes OG (u3j ) after
+evaluation on an admissible directed orbit.
+Theorem 5.6 (Nonautonomous full-measure coordinate intertwining). For the fixed tail-compatible
+schedule s and all sufficiently small u,
+
+                             hj+1 ◦ Fj = Σj ◦ hj         for every scheduled step j.                       (18)
+
+The autonomous identity is only the common C 3 endpoint comparison. For another schedule or the
+regular-only inner-chart measure, the quadratic-jet comparison is the row of Lemma 5.5. On an admissible
+directed orbit it is OG (u3j ) in value and OG (u2j ) after one scalar derivative. No vanishing finite-volume
+two-jet and no exponential acoustic wrapping row is asserted.
+Proof. The definition of the exact scheduled RG step gives the literal finite-volume measure identity
+
+                                                bsj,u = µ
+                                            Bj∗ µ       bsj+1,Fj (u) .
+
+The coarea density, normal-fiber Jacobian, gauge-coordinate density, determinant activity, regular sector,
+periodic wrapping term, and exact irregular-label sum occur once each. Applying the scale-aj+1 local
+functional gives (18). The comparison with a second schedule is Lemma 5.5; the regular-only comparison
+is Lemma 5.3 and U4. Gauge fixing occurs only inside the local definition of g after equality of the
+physical measures, so no global gauge-orbit pushforward identity is used.
+5.2.4 The standard coefficient on the actual stable fiber
+The comparison is made in the actual stable activity space defined by the Wick extraction projector; no
+quotient kernel or supportwise annihilation theorem is substituted for it.
+Definition 5.7 (Actual supportwise marked stable fiber). For every rooted support X, let
+                               [2]                 [2]             [2]          [2]
+                              EX FX := Πext LocX FX ,            Pirr,X := I − EX ,
+
+be the complete local extraction and its complementary activity projector after zero, one, or two
+active background marks. The localization is the fixed Taylor/Wick localization used in Step (E4), so
+  [2]       [2]
+(EX )2 = EX ; on the finite local jet its complement is the already defined Πirr = I − Πext . It contains
+the vacuum coordinate, the tangent-normalized Yang–Mills coordinate, every declared marked/contact
+jet below degree five, and every low-jet row in that finite marked block, including the explicitly listed
+total-difference, Bianchi, and reflection-odd rows. Define
+                               [3,2]                       [2]
+                             Airr := {F = (FX )X : EX FX = 0 for every X}.
+
+
+                                                         43
+Equivalently, after localization the output jet is acted on by the existing projector Πirr = I − Πext . This
+is the stable marked fiber used by the permanent one-step envelope; no quotient by a null sector is taken.
+Theorem 5.8 (The marked invariant graph remains in the actual stable fiber). The regular one-step
+map, including its two active background marks, has the supportwise form
+                                                                                      [2]
+                          (u, R) 7−→ f (u, R), Φirr (u, R) ,               Φirr,X = Pirr,X Φreg,X .
+                                                          
+
+           [3,2]
+It maps Airr       into itself. The centered invariant graph constructed by the graph transform therefore
+satisfies
+                                                                   [3,2]
+                                                    R⋆ (u) ∈ Airr .
+For its tangent H = R⋆′ (0) =
+                                 P
+                                   X HX one has, support by support,
+
+                                             [2]
+                                            EX HX = 0             for every X.                            (19)
+
+The same identity holds after every finite passive-source mark consumed by the local background coordinate.
+Proof. Step (E4) localizes each exact connected history, transfers the extracted jet to the finite coordinate
+block, and retains the complementary activity. The exact Loc/collect dichotomy proves that localizing
+before canonical hull collect is identical to collecting first and applying the projector on the final
+                                                                                   [2]
+rooted hull. Hence, with X denoting that final hull, the retained output is Pirr,X Φreg,X and satisfies
+ [2]                                          [2]      [2]
+EX Φirr,X = 0 by the projector identity EX (I − EX ) = 0. The projector and the finite marked localization
+are independent of u and of the passive source parameters, so differentiation commutes with this identity.
+Conditional Gaussian expectation preserves the Wick splitting by the marked Gaussian martingale, and
+every localization commutator is re-extracted before the stable output is declared. Hence the graph
+                                                       [3,2]
+transform is a self-map of the closed Banach space Airr . Its unique fixed graph and all marked derivatives
+remain in that space. This proves the supportwise identity, not merely a cancellation after summing
+supports.
+Lemma 5.9 (Marked two-quantum-leg reduction in the actual stable fiber). Let H = X HX be the
+                                                                                           P
+tangent from Theorem 5.8. Choose 0 < a0 < κ and η = (κ − a0 )/2. Then
+                                         X
+                                     sup    e(a0 +η)τ (X) ∥HX ∥a;3,2 < ∞.
+                                        e
+                                            X∋e
+
+After the two background marks are taken, every finite-support background/quantum/ghost kernel of
+HX has zero complete local jet below engineering degree five. In the reflection-even physical background
+two-point sector, degree five is absent by signed-hypercubic reflection, so the first nonzero associated-graded
+component has degree at least six. The two-quantum-leg kernel is a sum of at most C|X|2 rooted edge-pair
+terms, with coefficients bounded by C(1 + diam X)q ∥HX ∥a;3,2 .
+
+Proof. The exponential row is the differentiated invariant-graph bound with an unused support reserve.
+Equation (19) removes, after the active marks, every local jet carried by Πext ; in particular it removes
+the marked B 2 A2 row that invalidates an unmarked centering argument. At first order in the tangent
+insertion, the one-loop identity L = I − V + 1 = 1 shows that every additional quantum vertex is
+a tree attachment to the unique loop; after those tree attachments are collected, the insertion enters
+the background two-point amplitude through one effective two-quantum-leg kernel. Two fluctuation
+derivatives choose an ordered pair of edges in X, producing at most C|X|2 terms. Rooted parallel
+transport and finite localization cost only a support polynomial. Reflection excludes an odd engineering
+degree in the physical scalar two-point sector.
+Lemma 5.10 (Mixed one-loop topology and subtraction ledger). Fix one rooted support X and expand
+the nonexceptional background two-point coefficient to first order in the invariant-graph tangent and to
+the finite Wilson order required at one loop. A forest renormalization part means a proper connected
+1PI subgraph with an internal line and the SI–6 subtraction degree; the effective two-quantum-leg HX
+kernel is one indivisible vertex. After tree attachments are collected, the reduced graph is unicyclic and
+every marked vertex lies on its unique cycle. Every complete BPHZL packet is exactly one of: (W) a
+pure-Wilson packet; (H1) one marked insertion, with only pure-Wilson contractions or one mixed cycle
+contraction; (H≥ 2) several marked insertions with the same alternatives; or (Hfar) a diam X > 1. A
+
+
+                                                             44
+mixed contraction is loop-free. A loop-bearing mixed quotient retains a marked kernel whose complete jet
+through degree four vanishes and whose physical even component begins in degree six. Hence only (W)
+can carry an unsuppressed P⋆ log a term; every row has polynomial support multiplicity, and (Hfar) is
+O(aN ) for every fixed N after the rooted sum.
+
+Proof. A connected one-loop graph has one simple cycle; every other internal edge is a bridge. A connected
+1PI subgraph cannot contain an internal bridge, so a nontrivial mixed renormalization part must contain
+the full unique cycle. Contracting it removes the sole loop. This also settles nested and overlapping
+forests: after one mixed contraction every outer quotient is loop-free, disjoint mixed parts are impossible,
+and a forest with no mixed member leaves one marked loop. Lemma 5.9 supplies its degree-six kernel;
+the unused support exponent absorbs the finite edge-pair and localization polynomials.
+
+Definition 5.11 (Lowenstein infrared dimension at the coefficient interface). Give a vector, background-
+vector, ghost, or antighost leg infrared dimension one, and give a lattice difference and the Lowenstein
+variable 1 − s infrared dimension one. For a periodic vertex symbol V let νIR (V ) be its lower Taylor order
+when all incident soft momenta and 1 − s are scaled together, and put
+
+                               ρ(V ) := νIR (V ) + nA (V ) + nc (V ) + nc̄ (V ),
+
+where background-vector legs are counted in nA . The SI–7M vertex condition used here is
+
+                                                   ρ(V ) ≥ 4                                           (20)
+
+for every elementary or reduced local vertex entering a Lowenstein forest. For a connected soft graph γ
+whose massless vector and ghost lines have order −2, incidence and Lγ = Iγ − |Vγ | + 1 give
+                                          X                        X
+                     ω(γ) = 4Lγ − 2Iγ +       νIR (Vv ) = 4 − Eγ +     ρ(Vv ) − 4 .                 (21)
+                                                                                 
+
+                                           v∈Vγ                         v∈Vγ
+
+
+Lemma 5.12 (Complete infrared vertex and forest admission). Fix X with a diam X ≤ 1, a graph in
+Lemma 5.10, q ∈ Q⋆ , and at most two background-amplitude marks. With Lowenstein parameter s, write
+                                                X
+                                  RGLZ
+                                       (q, s) =     TFLZ IG (q, s),                            (22)
+                                                   F ∈F(G)
+
+
+where TFLZ is the ordered SI–6B/SI–7M forest operator. At s = 1 only this complete packet is evaluated.
+  Every elementary vertex and every reduced vertex admitted by the forest satisfies (20). More explicitly,
+
+                       vertex family                 νIR       number of dimension-one legs    ρ
+             vector or ghost quadratic symbol         2                     2                  4
+           three-vector or ghost–vector vertex       ≥1                     3                 ≥4
+         four-vector, seagull, or tadpole vertex     ≥0                     4                 ≥4
+             pure-Wilson reduced local vertex       4−n                     n                  4
+           loop-bearing marked reduced vertex       ≥6−n                    n                 ≥ 6.
+
+The two background marks create external legs and do not differentiate external momentum, so they do
+not lower these orders. A mixed forest contraction is loop-free. A pure-Wilson contraction produces only
+a standard dimension-four background-field vertex, while every quotient that retains the stable insertion
+retains its degree-six marked vertex.
+   Consequently every subtraction-generated exceptional configuration is covered by the SI–7M forest
+theorem, not estimated as a separated Taylor piece. In particular, for the one-loop two-point classes the
+complete list of soft degrees is
+
+                                   ω vector bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                   ω ghost bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                  ω seagull/tadpole = 4 − 2 = 2.
+
+These values also cover the exceptional zero-momentum configurations created inside the Lowenstein
+operators. A loop-bearing marked quotient has at least two additional infrared degrees. Thus every complete
+packet has strictly positive lower infrared degree in every soft subspace.
+
+
+                                                      45
+   The pure-Wilson ultraviolet degrees are the SI–6 degrees. By the one-cycle ledger, a mixed contraction
+consumes the loop; otherwise the quotient retains a degree-six marked kernel and has ultraviolet excess at
+least two. Hence all overall and proper-quotient ultraviolet degrees required by SI–7 are admissible. After
+the finite SI–7M sector decomposition, uniformly in the periodic side M and through the two marks, the
+grouped packet obeys
+                                                       
+                                       X
+            RGLZ
+                 (q, 1; k) ≤ C PX 1 +     dT4 (k, ξ)−2  ,     PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 ,       (23)
+                                      ξ∈SG
+
+with the evident omission of PX for a pure-Wilson packet and with a finite soft set SG . A radius-r shell
+contains O(M 4 r4 ) lattice momenta, so (23) contributes O(r2 ) after M −4 normalization. The dyadic shell
+sum is uniform in M ; deleting a grounded zero mode only decreases it. SI–7 and SI–7M therefore give the
+cutoff and s ↑ 1 limits of the complete packet, and the unused rooted support exponent absorbs PX before
+the thermodynamic sum.
+Proof. The quadratic, cubic, quartic, gauge-fixing, and ghost rows are the finite Taylor rows of the local
+Wilson background action and based Faddeev–Popov density. Their derivative and leg counts give the
+first four rows of the table. The marked row is Lemma 5.9; the one-cycle classification in Lemma 5.10
+shows that forest reduction either removes the loop or leaves that row intact. Equation (21) then proves
+the displayed infrared ledger, including the simultaneous two-line soft configuration at a subtraction point.
+This verifies the general vertex hypothesis of SI–7M for the original graph and all reduced vertices. The
+SI–7M complete-forest conclusion supplies the grouped sector majorant; the explicit degree two gives the
+exponent in (23). The shell count and the strict rooted reserve prove the stated uniform limits.
+Lemma 5.13 (Finite-support marked power-counting consequence). Let HX satisfy (19). For a diam X ≤
+1, the BPHZL-subtracted one-loop nonexceptional background packet has the form
+                    (2)
+                   IX (a, q⋆ ) = AX (q⋆ ) + O a2 | log a| C(1 + diam X)q1 ∥HX ∥a;3,2 ,         (24)
+                                                         
+
+                                       (2)
+where AX (q⋆ ) is finite and [log a] P⋆ IX = 0. Supports with a diam X > 1 have rooted total O(aN ) for
+every fixed N .
+Proof. Fix one support and q ∈ Q⋆ , keeping background, quantum, and ghost momenta separate. Apply
+the complete SI–6B/SI–7M packet and the graph classification of Lemma 5.10. Lemma 5.12 verifies, for
+every complete packet and through the two consumed background marks, lattice periodicity, denominator
+scaling, numerator smoothness, all overall and proper-subgraph degrees, the pure-Wilson/loop-free-
+local/loop-bearing marked trichotomy, support-polynomial control, and uniform rooted domination.
+SI–7M is therefore applicable to every complete loop-bearing post-contraction packet. Pure-Wilson
+proper divergent subgraphs are removed in the SI–6 scheme, while every quotient that still contains
+the distinguished stable insertion has irrelevant excess at least two. Lemma 5.9 gives a finite sum of
+two-quantum-leg symbols whose complete marked local Taylor jet starts at engineering degree d ≥ 6. The
+complete marked Taylor polynomial of the insertion through degree four is zero by (19). Subtractions
+may produce local power rows but cannot restore a marginal input exponent; the remaining symbol
+carries ad−4 .
+   On each fixed unit loop-momentum annulus, the verified SI–7/SI–7M hypotheses give the uniform
+marked bound used below. Write the ultraviolet annuli as |k| ≍ 2j with 0 ≤ j ≤ J(a) = O(| log a|). A
+marked component of engineering degree d contributes to P⋆ with an explicit ad−4 and an annulus row
+bounded by C2(d−4)j . If d > 4, the annulus sum is geometric:
+                                                   J(a)
+                                                   X
+                                         a   d−4
+                                                          2(d−4)j = O(1),
+                                                   j=0
+
+so it produces a finite local scheme row and no logarithm. A logarithm occurs only at the marginal
+exponent d − 4 = 0. Higher external-momentum Taylor coefficients can lower the annulus exponent to
+zero, but then they retain the explicit ad−4 ; for d ≥ 6 their logarithmic row is O(a2 | log a|). Hence an
+unsuppressed P⋆ log a term would require a nonzero marked degree-four input jet, which is absent. No
+assertion that a redundant dimension-four insertion is annihilated support by support is used: such rows
+have already been extracted and are not present in HX .
+   Finite-support multiplicity is polynomial in diam X; for a diam X > 1, the strict support reserve
+dominates every prescribed power of a.
+
+
+                                                           46
+Lemma 5.14 (Uniform quasi-local marked universality). For the actual stable graph tangent H, the
+one-loop nonexceptional background packet is an absolutely and uniformly convergent rooted sum of (24).
+For some finite q,
+                           (2)
+                         |IX (a)| ≤ C(1 + diam X)q e−(a0 +η)τ (X) (1 + a2 | log a|).
+The unsuppressed physical logarithm vanishes support by support:
+                                                   (2)
+                                     [log a] P⋆ IX = 0        for every X.                                (25)
+Thus the full centered invariant family differs from the canonically normalized Wilson family by one finite,
+scale-independent C 2 scheme map through the two consumed background marks.
+Proof. The support polynomial in Lemma 5.13 is absorbed by the strict exponent reserve. The finite-
+support amplitudes and their two background derivatives may therefore be summed before removing the
+cutoff. At the quadratic order in the marginal coordinate needed for the one-step coefficient, apply the
+complete SI–6B/SI–7M lattice BPHZL packet, the exhaustive ledger of Lemma 5.10, and the complete
+post-contraction admission check of Lemma 5.12 to every mixed Wilson/stable term. A marginal proper
+subgraph containing only Wilson vertices is exactly a standard background-field subgraph and is subtracted
+in the SI–6 scheme. After all such subgraphs are contracted, every remaining quotient graph contains at
+least one stable marked insertion and hence has positive irrelevant excess, at least two in the reflection-even
+physical sector. Its overall annulus sum is therefore a power row or an explicitly a2 | log a|-suppressed
+row, not an unsuppressed logarithm. Multiple stable insertions only increase that excess. The marked
+stable-fiber identity removes every degree-four input row before this forest analysis. Uniform convergence
+leaves one finite C 2 local scheme term and no new unsuppressed logarithmic coefficient.
+Lemma 5.15 (Scale-independent finite scheme map). Let gW be the local standard coupling on the
+canonically rescaled pure Wilson family and let g⋆ be the same local functional on the full centered
+invariant family. On the common weak interval there is one C 2 map
+                                  s(g) = g + cs g 2 + O(g 3 ),      s′ (0) = 1,
+independent of the dyadic lattice spacing, such that
+                                                    g⋆ = s(gW )
+at both ends of every factor-two step. Consequently
+                                            Σstd = s ◦ ΣW ◦ s−1 .
+The C 3 -flat irregular complement is included in s; no analyticity at g = 0 is claimed or needed.
+Proof. Evaluate the same canonically rescaled nonexceptional projector P⋆ on the two full weak families.
+Their tree Hessians coincide. Their first difference is the invariant-graph tangent uH1 , whose vacuum
+scalar and complete dimension-four retained projection vanish. Lemma 5.14 proves, rather than assumes,
+that the entire exponentially quasi-local insertion family contributes a finite scale-independent transverse
+scheme row and no new unsuppressed log a coefficient. SI–6 excludes an independent background
+dimension-four counterterm. The inner-chart difference is therefore a finite C 2 unit-tangent redefinition.
+U4 adds a C 3 -flat term through the two consumed background marks, which changes neither s′ (0) nor its
+quadratic coefficient. Canonical rescaling identifies the profile, gauge fermion, subtraction projector, and
+cutoff with the same unit-lattice template at every dyadic scale, so the same map s occurs before and
+after the step. The displayed conjugacy follows from the definitions.
+Theorem 5.16 (Thermodynamic standard-scheme coefficient and scheduled orbit row). The rooted-
+thermodynamic standard map satisfies
+                                                   11 CA (G) log 2 2
+                                 Σ∞ (v) = v +                     v + OG (v 3 ).                          (26)
+                                                       24π 2
+If vj = hj (uj ) lies on an admissible directed orbit, then
+                                                   11 CA (G) log 2 2
+                                 Σj (vj ) = vj +                  vj + OG (vj3 ),                         (27)
+                                                       24π 2
+uniformly along the orbit. No assertion is made that a fixed finite-volume map Σj (v) has exactly this
+second derivative at v = 0.
+
+
+                                                         47
+Proof. SI–8 gives b0 (G) = 11CA (G)/(48π 2 ) in the pure-G flow µ dg/dµ = −b0 (G)g 3 + OG (g 5 ). Hence
+µ du/dµ = −11CA (G)u2 /(24π 2 ) + OG (u3 ) for u = g 2 ; reversing to increasing physical length and
+integrating over one factor-two interval gives 11CA (G) log 2/(24π 2 ). SI–6, SI–6B, SI–7, and SI–7M
+identify this coefficient in the Wilson nonexceptional background scheme. Lemma 5.14 shows that the
+complete centered tangent family adds no unsuppressed logarithmic coefficient, while Lemma 5.15 gives a
+C 2 unit-tangent finite scheme change. This proves (26). The orbitwise comparison of Lemma 5.5 changes
+the finite-volume value by O(δG (Mj )vj2 + vj3 ) + O(vj−p e−c/vj ) = OG (vj3 ) and gives (27).
+Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+rooted-thermodynamic reduced map satisfies
+
+                                               11 CA (G) log 2 2
+                                F∞ (u) = u +                  u + OG (u3 ).
+                                                   24π 2
+For every admissible directed orbit,
+                                                  11 CA (G) log 2 2
+                                Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+                                                      24π 2
+uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+the shooting and first-crossing theorems.
+Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+differentiated at fixed Mj .
+
+5.3    Domain compactness and chart invariance
+Let Ba,N be the rooted activity space with norm
+                                               X
+                                 ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+                                                  e
+                                                      X∋e
+
+where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+connected support shapes of size at most m occur.
+Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and a′ < a, every bounded subset of Ba,N ,
+N ≥ 1, is relatively compact in Ba′ ,N −1 .
+Proof. Let F be bounded by M in Ba,N . For a cutoff L,
+                                 X      ′                        ′
+                            sup       ea |X| ∥FX ∥C N −1 ≤ e−(a−a )L M,
+                                  e
+                                        X∋e
+                                       |X|>L
+
+uniformly in F ∈ F.
+  For |X| ≤ L, only finitely many rooted support shapes occur. On each shape, the C N (KX ) bound is
+uniform, and the compact embedding
+                                           C N (KX ) ⋐ C N −1 (KX )
+follows from Arzela–Ascoli in finitely many coordinate charts. A diagonal subsequence converges on
+all shapes of size at most L. Letting L increase and using the uniform tail estimate proves relative
+compactness in Ba′ ,N −1 .
+Theorem 5.19 (Exact fiber-chart invariance). Let Ψ1 (w, z1 ) and Ψ2 (w, z2 ) be two exact C 1 fiber charts
+for the same finite-dimensional submersion B(U ) = w. Suppose their images agree on the integration
+region and their transition map is orientation preserving. Then, for every integrable density F ,
+                      Z                                   Z
+                         F (Ψ1 (w, z1 )) J1 (w, z1 ) dz1 = F (Ψ2 (w, z2 )) J2 (w, z2 ) dz2 .
+
+Consequently the normalized conditional expectation, its connected logarithm, and every background
+derivative of the complete local standard-scheme coordinate and its quadratic coefficient are independent
+of the chosen exact fiber chart.
+
+
+                                                        48
+Proof. The first identity is the ordinary change-of-variables theorem on the fiber. Division by the same
+fiber mass gives equality of normalized conditional expectations. Connected logarithms are functions
+of those expectations. Differentiation is permitted on any common dominated marked domain. The
+determinant statement follows because the two Jacobians are related by the determinant of the transition
+map, which cancels under the change of variables. It must not be inserted a second time.
+
+5.4    Ultraviolet supplier closure
+The finite-volume normal chart, strict macrostep contraction, and irregular Fréchet flatness used below
+are not separate inputs: they are respectively Theorem 2.5, Theorem 4.30, and Theorem 3.31.
+Lemma 5.20 (Adapted one-step mean-value contraction). The adapted one-step norm required in the
+endpoint argument is the standard finite-power norm
+                                           s−1
+                                           X
+                                  ∥x∥⋆ =         λ−j ∥Lj x∥,   qs < λs < 1,                             (29)
+                                           j=0
+
+for which ∥Lx∥⋆ ≤ λ∥x∥⋆ . By the mean-value theorem the exact one-step map contracts on a smaller ball
+whenever sup ∥DΦ − L∥⋆ < 1 − λ. This change of stable norm does not alter the marginal coordinate or
+its dyadic coefficient.
+5.5    Finite triangular source transport
+Lemma 5.21 (Finite graded curvature-jet quotient). Fix an engineering cutoff D. Modulo vacuum
+constants, total lattice differences, gauge and Bianchi identities, equation-of-motion/redundant directions,
+and the extracted dimension-four Yang–Mills coordinate, the local gauge-invariant curvature jets of
+dimension at most D form a finite graded space
+                                                      M
+                                               J≤D =       J∆ .
+                                                         ∆≤D
+
+The same remains true after adjoining any fixed finite collection of retained, source, displacement, profile,
+stress, rotation-defect, and one/two-root marks.
+Proof. After a boundary-rooted tree gauge, one enlarged block cell contains a finite alphabet of Lie-algebra
+variables and difference labels. Jets of bounded engineering dimension form a finite polynomial span.
+Every listed quotient relation is linear on that span, and adjoining finitely many marks gives a finite
+direct sum.
+Lemma 5.22 (No reflection-even scalar of engineering dimension five). In four-dimensional pure fixed-G
+lattice gauge theory, the signed-hypercubic and reflection-even gauge-invariant scalar jet quotient has no
+engineering-dimension-five component.
+Proof. A nonvacuum dimension-five scalar would have to contain two curvature factors and one covariant
+difference, hence five coordinate indices before contraction. The invariant tensors of the signed hypercubic
+group are generated by even-rank Kronecker contractions and the rank-four alternating tensor. They
+cannot contract an odd total of five indices to a scalar without a preferred vector. Total differences and
+Bianchi descendants are already removed in the quotient. Thus the reflection-even scalar sector jumps
+from the extracted dimension-four Yang–Mills density to dimension at least six.
+
+Lemma 5.23 (No reflection-even rank-two curvature jet of dimension five). In the local gauge-invariant
+rank-two curvature-jet quotient relevant to the stress/displacement source, the reflection-even engineering-
+dimension-five component is zero.
+Proof. A dimension-five curvature bilinear has the schematic Lorentz-index content F DF , hence five
+tensor indices before contractions. To leave exactly two free rank-two indices one would have to contract
+an odd set of three indices. The signed-hypercubic invariant tensors available in the reflection-even
+sector are products of Kronecker deltas and pairs of Levi–Civita tensors, all of even rank. A single
+Levi–Civita tensor is reflection odd. Thus no reflection-even constant coefficient tensor can perform the
+required contraction. Terms in which the derivative is moved onto the whole bilinear are total differences,
+while Bianchi and equation-of-motion descendants are already quotiented. The next possible rank-two
+complement after dimension four therefore begins at dimension six.
+
+
+
+                                                        49
+Proposition 5.24 (Finite-order marked RG bridge to the associated-graded block). Let
+
+                                           TD (u, ϱ) : J≤D −→ J≤D
+
+be the exact normalized marked one-step source transport on the common centered weak tube. The map
+extends C 1 to (u, ϱ) = (0, 0) in the finite jet matrix norm, satisfies
+
+                                                  TD (0, 0) = LD ,
+
+and on the invariant cone ∥ϱ∥ ≤ Ku3 obeys
+
+                                  ∥TD (u, ϱ) − LD ∥ ≤ CD (u + ∥ϱ∥) ≤ CD
+                                                                      ′
+                                                                        u.
+
+On degree ∆, the associated-graded multiplier is 24−∆ I.
+Proof. Project the exact marked
+                             √     one-step map to the finite-dimensional quotient J≤D . On the regular
+inner chart, rescaling A = u a and differentiating
+                                                 √ the finite marked integral once in u gives a uniform
+endpoint derivative; reflection removes the odd u terms. U4 and the corrected irregular Fréchet theorem
+give a coupling derivative of the complementary contribution bounded by u−p e−c/u , which extends by
+zero continuously at the endpoint. Hence the complete finite matrix is C 1 at (0, 0).
+   At the endpoint the exact block is the Gaussian/Wick block. Wick localization preserves the highest-
+degree symbol and canonical scale-two rescaling multiplies a degree-∆ source by 24−∆ ; contractions and
+nonlinear coordinate terms lower the filtration. Thus TD (0, 0) = LD on the associated graded. The finite-
+dimensional mean-value theorem gives
+
+                                      ∥TD (u, ϱ) − LD ∥ ≤ CD (u + ∥ϱ∥),
+
+and the centered cone gives the final O(u) row. No analytic extension in the singular coupling variable is
+assumed.
+Lemma 5.25 (Logarithmically   bounded principal transport and strict complementary contraction). Let
+uj ≤ Cu /(1 + j) and j u2j < ∞. On the normalized dimension-four principal block,
+                    P
+
+                       (4)
+                     Tj      = I + uj Aj + Rj ,          sup ∥Aj ∥ ≤ CA ,            ∥Rj ∥ ≤ CR u2j .
+                                                          j
+
+Then the fundamental matrices and inverses satisfy
+                                                                               pD
+                                                                        1+j
+                                                                    
+                                      ∥Φk,j ∥ + ∥Φ−1
+                                                  k,j ∥ ≤ CD                         .
+                                                                        1+k
+   On every reflection-even source type whose first complementary degree is six – in particular the scalar
+block by Lemma 5.22 and the rank-two stress block by Lemma 5.23 – one has
+                                                              1
+                                              ∥Tj⊥ ∥ ≤          + CD uj .
+                                                              4
+After decreasing the weak threshold once,
+
+                                                  ∥Tj⊥ ∥ ≤ qD < 1
+
+uniformly in j.
+Proof. The principal product estimate follows from
+                                                   (4)
+                                           log ∥Tj ∥ ≤ C1 uj + C2 u2j
+
+and the analogous inverse estimate, together with
+                                   j−1
+                                   X                     1+j            X
+                                         um ≤ C log          ,              u2m < ∞.
+                                                         1+k            m
+                                   m=k
+
+The complementary associated-graded multiplier is 24−6 = 1/4. Proposition 5.24 gives an O(uj ) pertur-
+bation, which remains strictly below one on a smaller weak tube.
+
+
+                                                              50
+Theorem 5.26 (Weak-regime finite triangular source renormalization). For every fixed engineering cutoff
+D, there are normalized source coordinates in the weak regime such that:
+   (i) principal same-degree transport and its inverse grow by at most a fixed power of the running
+       logarithm;
+  (ii) the complementary scalar source block is strictly contracting;
+ (iii) a dimension-∆ + 2 defect relative to a principal dimension-∆ source contributes
+
+                                                     r2 L(r)pD
+
+      at physical scale r;
+ (iv) all fixed marked rows obey uniform finite Schwartz-seminorm bounds.
+  This theorem stops at the compact first-crossing handoff. It does not invoke the later macrobridge or
+matching transfer.
+Proof. Normalize each principal block by the fundamental matrix in Lemma 5.25. The strict complemen-
+tary contraction sums the triangular inhomogeneous forcing by a geometric series. Canonical dimensional
+scaling supplies the factor r2 for a degree-∆ + 2 defect; conjugation by the principal frame contributes at
+most L(r)pD . The finite marked fiber and the exact marked one-step bounds give the stated Schwartz
+estimates.
+
+5.6     Ultraviolet closure theorem
+Fix an arbitrary passive-source order N < ∞. Activities carry at most three active structural derivatives,
+source derivatives through order N , and zero, one, or two passive exterior roots.
+Theorem 5.27 (Uniform centered ultraviolet renormalization). There are a rooted support exponent
+a > 0, a uniformly equivalent one-step norm ∥ · ∥⋆ , constants
+
+                                   u⋆ , K, σ, cN , pN > 0,       0 < ρ < 1,
+
+and a domain D(a; 3, N ), independent of finite volume, microscopic cutoff, and preceding weak depth,
+such that the exact forty-nine-path weighted Karcher step has the following properties.
+   Write
+                                           Rphys = R⋆ (u) + ϱ.
+ (U1) The normalized conditional logarithm exists on one common hybrid domain, has an exact connected
+      rooted activity decomposition, and owns every vacuum, pressure, determinant, coarea, gauge-
+      coordinate, source, and history normalization exactly once.
+ (U2)
+                                             11 CA (G) log 2 2
+                                    u+ = u +                u + r(u, ϱ; M ),
+                                                  24π 2
+      with
+                        |r(u, ϱ; M )| ≤ CN u3 + u2 ∥ϱ∥⋆ + u∥ϱ∥2⋆ + ∥ϱ∥3⋆ + δG (M )u2 .
+                                                                                   
+
+ (U3)
+                                ∥ϱ+ ∥⋆;a;3,N ≤ ρ∥ϱ∥⋆;a;3,N ,       ∥ϱ∥⋆;a;3,N ≤ Ku3
+      is a forward-invariant cone.
+ (U4) The exact irregular component obeys
+
+                               ∥Eirr ∥⋆;a;3,N + ∥DR Eirr ∥⋆;a;3,N ≤ CN u−pN e−cN /u .
+
+      The derivative includes both inherited-vertex hits and bad-core-operator hits.
+ (U5) The same domain controls the zero-, one-, and two-root connector rows, three active structural
+      derivatives, and every prescribed finite passive source order N .
+ (U6) Gauge covariance, signed-hypercubic covariance, the corrected aligned-reflection schedule, reflection-
+      positive recombination, and exact fiber/coarea ownership are preserved.
+ (U7) For every prescribed number of weak dyadic steps, the wrapping estimate admits a directed periodic-
+      volume schedule. On every such fixed schedule the reduced scalar map is C 1 on the centered cone,
+      with the cubic value and derivative rows consumed by the scheduled shooting theorem below.
+
+
+
+
+                                                     51
+    Along a schedule satisfying
+                                                δG (Mj ) ≤ uj ,
+the tuned orbit obeys
+                                                11 CA (G) log 2 2
+                                  uj+1 = uj +                  uj + OG (u3j ).
+                                                    24π 2
+Proof. U1 follows by composing the model-specific normal chart with permanent support closure, exact
+coarea ownership, the summed replica–BKAR theorem, and output recertification on the common hybrid
+domain.
+   For U2, the centered analytic graph theorem gives the full remainder with an initially named graph
+coefficient. The scheme-universality theorem identifies that coefficient with 11 CA (G) log 2/(24π 2 ) without
+assuming the direct ASC2 shell comparison. The rooted finite-volume comparison supplies the combined
+localized-wrapping and massless acoustic finite-size term.
+   The Wick associated-graded theorem, permanent envelope, localization/collect dichotomy, macrostep
+contraction, and graph transform give U3. The bad-seed and rooted irregular-transfer theorems give U4.
+The bi-graded marked theorem gives U5. Exact algebra, reflected section, ownership, and recombination
+give U6. Finally, U2, U3, domain compactness, and the directed schedule give U7.
+
+6     Directed handoff and higher-order Peter–Weyl landing
+The purpose of this section is to replace the phrase “fixed compact first-crossing section” by a quantitative
+object and to print the exact norm bound consumed by the compact-group macrobridge. Fix once and
+for all
+                                 1
+                       0 < ū < u⋆ ,       Σ⋆ := {(u, ϱ) : u = ū, ∥ϱ∥⋆;a;3,N ≤ K ū3 }.                 (30)
+                                 2
+Thus the crossing functional is
+                                              χ(u, ϱ) := u − ū,                                         (31)
+and an outgoing crossing means χ(uj , ϱj ) < 0 ≤ χ(uj+1 , ϱj+1 ). No geometric section is left implicit.
+6.1     Directed volume schedule and scalar transversality
+For a trajectory of n weak dyadic steps, choose a terminal coarse torus of side Mout and put
+                                      Mj = 2n−j Mout ,        0 ≤ j ≤ n.                                   (32)
+Lemma 6.1 (Admissible directed periodic-volume schedule). Assume the centered weak step satisfies, on
+the invariant cone,
+                                         uj+1 ≤ uj + Bu2j
+with B independent of volume, cutoff, and preceding weak depth. There is a finite M∗ , independent of n,
+such that every choice Mout ≥ M∗ and every backward weak orbit ending at un = ū obey
+                                       δG (Mj ) ≤ uj ,      0 ≤ j ≤ n.                                     (33)
+Consequently the finite-size quadratic row satisfies δG (Mj )u2j ≤ u3j at every step. The same choice retains
+the separate exponentially localized wrapping bound e−σMj ≤ CG uj .
+Proof. Put k = n − j. After decreasing u⋆ once, backward iteration gives
+                                                         1
+                                             uj ≥              .
+                                                    ū−1 + 2Bk
+For Mj = 2k Mout ,
+                          CG                                                                       k
+ (ū−1 + 2Bk)δG (Mj ) ≤    2   (ū−1 + 2Bk)4−k [1 + log(2 + Mout ) + k log 2] + CG (ū−1 + 2Bk)e−σ2 Mout .
+                          Mout
+The supremum over k ≥ 0 is finite and tends to zero as Mout → ∞. Choose M∗ so that it is at most one.
+This proves the displayed condition and its cubic consequence.
+Corollary 6.2 (Cofinal thermodynamic volume schedule). Let Mout (n) ≥ M∗ be any integer sequence,
+rounded to the fixed m⋆ divisibility class, with Mout (n) → ∞. The shooting and first-crossing construction
+                                                 (n)
+remains admissible for every n. Writing a0 = 2−n ℓ⋆ for the microscopic spacing of the depth-n
+                                             (n) (n)
+trajectory, its physical periodic side is M0 a0 = Mout (n)ℓ⋆ → ∞. Thus the same directed sequence
+sends microscopic spacing to zero and physical periodic volume to infinity.
+
+
+                                                      52
+   For a fixed admissible schedule, restrict the exact weak map to the slaved centered trajectory. Denote
+the resulting nonautonomous scalar maps by
+                                                                            11 CA (G) log 2
+                           Fj (u) = u + b⋆ u2 + rj (u),             b⋆ =                    .            (34)
+                                                                                24π 2
+The common marked C 3 ultraviolet theorem, the finite-volume two-jet comparison, and the exactly
+recombined flat charged row give, after reducing u⋆ once,
+           |rj (u)| ≤ C⋆ u3 + δG (Mj )u2 ,     |rj′ (u)| ≤ C⋆ u2 + δG (Mj )u , 0 ≤ u ≤ ū,  (35)
+                                                                           
+
+with one constant independent of j, n, volume, and cutoff. On every admissible orbit, (33) reduces these
+rows to |rj (uj )| ≤ 2C⋆ u3j and |rj′ (uj )| ≤ 2C⋆ u2j .
+Lemma 6.3 (Uniform outgoing transversality). Decrease ū and then enlarge M∗ once, if necessary, so
+that δG is decreasing on [M∗ , ∞) and
+                                              C⋆ ū + δG (M∗ ) ≤ b⋆ /4.                             (36)
+                                                              
+
+Then every scheduled reduced map satisfies
+                                      b⋆ 2
+                         Fj (u) − u ≥   u ,     Fj′ (u) ≥ 1 + b⋆ u, 0 < u ≤ ū.                   (37)
+                                      2
+In particular, every crossing of Σ⋆ is outgoing and transverse, and Fj has a unique increasing inverse
+branch on the interval needed below.
+Proof. For every admitted schedule, Mj ≥ Mout ≥ M∗ , hence δG (Mj ) ≤ δG (M∗ ). The first estimate
+follows from Fj (u) − u = b⋆ u2 + rj (u) and
+                                        |rj (u)| ≤ C⋆ u + δG (Mj ) u2 .
+                                                                  
+
+The second follows from Fj′ (u) = 1 + 2b⋆ u + rj′ (u) and
+                                         |rj′ (u)| ≤ C⋆ u + δG (Mj ) u.
+                                                                    
+
+The smallness condition (36) leaves more than the stated margin in both rows.
+
+6.2    Exact backward shooting and dimensional transmutation
+Theorem 6.4 (Scheduled dyadic shooting to the printed section). For every integer n ≥ 1 and every
+                                                                             (n)
+admissible choice Mout ≥ M∗ in (32), there is a unique microscopic coupling u0 ∈ (0, ū) such that
+                                             (n)                      (n)
+                        Fn−1 ◦ · · · ◦ F0 (u0 ) = ū,            0 < uj     < ū   (0 ≤ j < n).          (38)
+The corresponding centered interaction rows remain in
+                                                   ∥ϱj ∥⋆;a;3,N ≤ Ku3j
+and the endpoint lies in the explicit section Σ⋆ . The schedule need not be unique; the microscopic coupling
+is unique after schedule fixation.
+   Moreover,
+                                            1           1
+                                           (n)
+                                               = b⋆ n + + O(log n),                                     (39)
+                                          u             ū
+                                             0
+where the implicit constant is independent of the schedule within the admissible class.
+Proof. By Lemma 6.3, Fj is strictly increasing, Fj (0) = 0, and Fj (ū) > ū. Hence ū lies in the range of a
+unique inverse branch Ij , with 0 < Ij (v) < v for 0 < v ≤ ū. Backward composition
+                                         (n)
+                                        uj       = Ij ◦ Ij+1 ◦ · · · ◦ In−1 (ū)
+constructs the orbit and proves uniqueness. Forward invariance of the centered cone supplies the interaction
+bound.
+  Along the orbit, Lemma 6.1 and (35) give rj (uj ) = O(u3j ), hence
+                                             1     1
+                                                −      = b⋆ + O(uj ).
+                                             uj   uj+1
+                                                                                                  Pn−1
+The resulting two-sided recurrence gives uj ≍ (n − j + A)−1 , uniformly in n, and therefore        j=0 uj =
+O(log n). Summing the reciprocal identity proves (39).
+
+
+                                                            53
+Corollary 6.5 (Fixed physical matching length). For a prescribed matching length ℓ∗ > 0, set
+                                                         (n)
+                                                        a0     = 2−n ℓ∗ .                                        (40)
+       (n)            (n)
+Then a0      → 0, 2n a0     = ℓ∗ exactly, and
+                                                                                           !
+                                              ℓ∗         log 2                       1
+                                       log    (n)
+                                                    =          (n)
+                                                                     + O log         (n)
+                                                                                               .                 (41)
+                                             a0         b⋆ u0                       u0
+
+All first-crossing and finite-macrobridge constants below are independent of n.
+Proof. The first two assertions follow from the definition. Substitute (39) into n log 2 to obtain the final
+row.
+
+6.3       Two-scale weak-to-Haar landing
+Let PYM be the normalized marginal activity and let R⋆ (u) be the invariant irrelevant graph. Fix
+
+                                             I⋆ = [ū, ū + Ccr ū2 ] ⋐ (0, u⋆ )
+
+and 0 < a0 < a. The weak output radius is
+
+                       Mwk := sup u∥PYM ∥a;3,N + ∥R⋆ (u)∥⋆;a;3,N + Ku3 .
+                                                                     
+                                      u∈I⋆
+
+This is a bound on the interaction relative to the scale-normalized Gaussian reference. It is not a
+Haar-relative oscillation bound.
+  Let F⋆ be the exact first-crossing family
+
+                      Φ(u, ϱ) = uPYM + R⋆ (u) + ϱ,                     u ∈ I⋆ ,            ∥ϱ∥⋆;a;3,N ≤ Ku3 ,
+
+and let
+                                                                     Ba0 ,2,N
+                                                    C⋆ = F⋆                     .
+Theorem 6.6 (Compact weak first-crossing class). The class C⋆ is compact in Ba0 ,2,N and every member
+satisfies the weak-reference row bounded by Mwk , uniformly in finite volume, cutoff, exterior configuration,
+and preceding weak depth. No Haar-relative smallness is asserted by this theorem.
+Proof. The family is bounded in the stronger Ba,3,N topology. The support reserve e−(a−a0 )|X| and
+Arzelà–Ascoli on the finitely many bounded rooted shapes give compactness from C 3 to C 2 .
+Lemma 6.7 (Reporting completeness and depth telescoping). Let µj be the exact retained measure after
+j weak steps, before the next logarithm is taken. For every finite depth n there is an exact representation
+                                                   reg
+                             dµj = Zj−1 exp{−Qref
+                                              j − Rj } dHj + Ij ,                                  0 ≤ j ≤ n,   (HT1)
+
+where dHj is product Haar on the retained links, Qref  j is the complete allocated scalar/two-jet reference,
+Rjreg is the collected regular residual, and Ij is the recombined irregular operator. Every pre-logarithmic
+factor of the exact step occurs in exactly one of these three rows, and the scalar normalizations satisfy
+                                                                                    n−1
+                                                                                    Y
+                                        Zj+1 = Zj zj ,                Zn = Z0              zj ,                 (HT2)
+                                                                                    j=0
+
+with no zj reappearing as a nonempty-support activity. The representation and its zero/one/two marked
+versions are uniform in depth.
+Proof. The assertion is proved by induction on j. At j = 0, the Wilson–Haar measure and the exact
+inner/collar/outer partition give (HT1): the complete quadratic reference is Qref
+                                                                              0 , the post-two-jet inner
+density is the regular row, and the recombined collar/outer/curvature labels are I0 .
+   Assume (HT1) at step j. Apply the exact joint Gaussian/Karcher disintegration before taking a
+connected logarithm. DAS3 retains the scalar normalization of that one joint law once at the exterior
+endpoint; call it zj . The empty-support part therefore multiplies Zj and gives (HT2). All nonempty
+factors are first reported on their actual local support or on the canonical hull of their exponential
+
+
+                                                                54
+connector. The factor inventory is exhaustive: Wilson words, product-Haar coordinate factors, coarea
+and normal returns, gauge-coordinate endpoints, Gaussian/Schur endpoints, inherited activities, cutoffs,
+and source leaves are exactly the ownership inventory in row (U1) of Theorem 5.27, implemented by
+the one-step maps (E1)–(E6), together with the labelled inner/collar/outer partition. The labels sum
+pointwise to one before logarithms, so an atlas-boundary factor cannot be lost between branches.
+   Definition 3.22 assigns every reported nonempty factor to precisely one of the regular, one-core, or
+cross rows; Lemma 3.25 does the same f
