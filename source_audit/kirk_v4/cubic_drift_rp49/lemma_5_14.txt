@@ -1,0 +1,68 @@
+Lemma 5.14 show that the change is a finite CR3 scheme term with unit tangent.
+   For a cutoff interpolation, differentiate − log χt e−Sµ J∆ before taking the two background-amplitude
+marks and the fixed projector P⋆ . This gives exactly ϵχ,t . The factor χ̇t is supported in the annulus between
+the smaller and larger weak tubes. After exact label recombination, every numerator term is therefore
+a charged U4 activity; a background or coupling derivative may hit the action, the coarea/Jacobian
+factor, or the determinant; the fixed factor χ̇t keeps every term on the same charged annular support.
+The differentiated U4 total-variation row, through the three coupling and two background derivatives
+displayed in the statement, bounds the numerator by the positive denominator times Ck,α u−pk,α e−c/u .
+The good-cutoff plateau and its trial-ball lower bound make this ratio uniform in t, volume, cutoff, and
+preceding weak depth. Integrating in t proves that changing χ adds only the printed C 3 -flat scheme term.
+The same U4 row gives the charged complement bound. Such terms are C 3 -flat, not analytic, and this
+finite-order regularity is all that is consumed below.
+Lemma 5.4 (Massless nonexceptional sum–integral comparison). Let M be divisible by m⋆ and let
+ΓM = (2π/M )Z4M be the loop-momentum grid. For every pure-Wilson or stable-marked complete one-loop
+BPHZL packet contributing to the quadratic background coefficient, and through the two background marks
+consumed by ga , there is a finite soft set S(q) ⊂ T4 such that, away from that set,
+                                                                         
+                                                     X
+                     k RX (q, 1; k) ≤ Cα PX
+                   ∇α   LZ                    1 +       dT4 (k, ξ)−2−|α|  ,   |α| ≤ 2.            (9)
+                                                             ξ∈S(q)
+
+Here PX = 1 for a pure-Wilson packet and otherwise PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 . At a grounded
+soft momentum the finite-volume summand is omitted. Uniformly for every grid-compatible q ∈ Q⋆ ∩ ΓM
+
+
+                                                              41
+(in particular for the fixed signed-hypercubic orbit of q⋆ ),
+                      ′
+                1 X LZ                                        d4 k
+                                          Z
+                              (q, 1;            LZ
+                                                   (q, 1;           ≤ CPX M −2 1 + log(2 + M ) .           (10)
+                                                                                              
+                          R          k) −     R           k)
+               M4           X
+                                           T4
+                                                X
+                                                             (2π) 4
+                   k∈ΓM
+
+The same estimate holds after the two background marks. After the rooted support sum it therefore
+compares the finite-volume and thermodynamic quadratic Taylor coefficients of the local background
+coordinate and of the standard one-step map.
+Proof. The complete-forest admission in Lemma 5.12 gives the degree-two soft majorant (23). Differenti-
+ating a complete sector packet in loop momentum once or twice lowers its verified infrared degree by
+the number of derivatives and gives (9). The finite SI–7M sector family, the nonexceptional compact set
+Q⋆ , and the two background marks change only the constant and the support polynomial. No separated
+Lowenstein Taylor piece is used.
+   Put h = 2π/M and partition the momentum torus into the periodic Voronoi cubes Qℓ centered at the
+grid points. The finitely many cubes meeting S(q) contribute O(PX h2 ) to the integral by the d(k, ξ)−2
+row; their singular grounded samples are absent from the primed sum. On every remaining cube use the
+symmetric second-order Taylor formula about its center. Bounded overlap of twice-enlarged cubes gives
+                                                                                            
+                X ′           Z                              X Z
+             h4      RX (k) − RX (k) d4 k ≤ CPX h2 1 +                       d(k, ξ)−4 d4 k  .
+               k∈ΓM                                                 ξ∈S(q)   h≤d(k,ξ)≤1
+
+
+The radial integral is O(1 + log M ), proving (10) after the fixed normalization of the Brillouin torus. The
+strict rooted support reserve absorbs PX before the support sum. The pure-Wilson and stable-marked
+packets exhaust the quadratic coefficient by Lemmas 5.10 and 5.14.
+   Fix the localized wrapping exponent σ > 0 supplied by permanent support closure. Define the
+fixed-group finite-size modulus
+                            δG (M ) := CG e−σM + M −2 1 + log(2 + M ) ,                   (11)
+                                                                    
+
+where the exponential term retains the permanently localized wrapping row and the polyn

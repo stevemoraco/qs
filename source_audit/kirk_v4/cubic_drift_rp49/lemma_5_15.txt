@@ -1,0 +1,68 @@
+Lemma 5.15 (Scale-independent finite scheme map). Let gW be the local standard coupling on the
+canonically rescaled pure Wilson family and let g⋆ be the same local functional on the full centered
+invariant family. On the common weak interval there is one C 2 map
+                                  s(g) = g + cs g 2 + O(g 3 ),      s′ (0) = 1,
+independent of the dyadic lattice spacing, such that
+                                                    g⋆ = s(gW )
+at both ends of every factor-two step. Consequently
+                                            Σstd = s ◦ ΣW ◦ s−1 .
+The C 3 -flat irregular complement is included in s; no analyticity at g = 0 is claimed or needed.
+Proof. Evaluate the same canonically rescaled nonexceptional projector P⋆ on the two full weak families.
+Their tree Hessians coincide. Their first difference is the invariant-graph tangent uH1 , whose vacuum
+scalar and complete dimension-four retained projection vanish. Lemma 5.14 proves, rather than assumes,
+that the entire exponentially quasi-local insertion family contributes a finite scale-independent transverse
+scheme row and no new unsuppressed log a coefficient. SI–6 excludes an independent background
+dimension-four counterterm. The inner-chart difference is therefore a finite C 2 unit-tangent redefinition.
+U4 adds a C 3 -flat term through the two consumed background marks, which changes neither s′ (0) nor its
+quadratic coefficient. Canonical rescaling identifies the profile, gauge fermion, subtraction projector, and
+cutoff with the same unit-lattice template at every dyadic scale, so the same map s occurs before and
+after the step. The displayed conjugacy follows from the definitions.
+Theorem 5.16 (Thermodynamic standard-scheme coefficient and scheduled orbit row). The rooted-
+thermodynamic standard map satisfies
+                                                   11 CA (G) log 2 2
+                                 Σ∞ (v) = v +                     v + OG (v 3 ).                          (26)
+                                                       24π 2
+If vj = hj (uj ) lies on an admissible directed orbit, then
+                                                   11 CA (G) log 2 2
+                                 Σj (vj ) = vj +                  vj + OG (vj3 ),                         (27)
+                                                       24π 2
+uniformly along the orbit. No assertion is made that a fixed finite-volume map Σj (v) has exactly this
+second derivative at v = 0.
+
+
+                                                         47
+Proof. SI–8 gives b0 (G) = 11CA (G)/(48π 2 ) in the pure-G flow µ dg/dµ = −b0 (G)g 3 + OG (g 5 ). Hence
+µ du/dµ = −11CA (G)u2 /(24π 2 ) + OG (u3 ) for u = g 2 ; reversing to increasing physical length and
+integrating over one factor-two interval gives 11CA (G) log 2/(24π 2 ). SI–6, SI–6B, SI–7, and SI–7M
+identify this coefficient in the Wilson nonexceptional background scheme. Lemma 5.14 shows that the
+complete centered tangent family adds no unsuppressed logarithmic coefficient, while Lemma 5.15 gives a
+C 2 unit-tangent finite scheme change. This proves (26). The orbitwise comparison of Lemma 5.5 changes
+the finite-volume value by O(δG (Mj )vj2 + vj3 ) + O(vj−p e−c/vj ) = OG (vj3 ) and gives (27).
+Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+rooted-thermodynamic reduced map satisfies
+
+                                               11 CA (G) log 2 2
+                                F∞ (u) = u +                  u + OG (u3 ).
+                                                   24π 2
+For every admissible directed orbit,
+                                                  11 CA (G) log 2 2
+                                Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+                                                      24π 2
+uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+the shooting and first-crossing theorems.
+Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+differentiated at fixed Mj .
+
+5.3    Domain compactness and chart invariance
+Let Ba,N be the rooted activity space with norm
+                                               X
+                                 ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+                                                  e
+                                                      X∋e
+
+where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+connected support shapes of size at most m occur.
+Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and 

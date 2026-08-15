@@ -1,0 +1,71 @@
+Lemma 5.10 (Mixed one-loop topology and subtraction ledger). Fix one rooted support X and expand
+the nonexceptional background two-point coefficient to first order in the invariant-graph tangent and to
+the finite Wilson order required at one loop. A forest renormalization part means a proper connected
+1PI subgraph with an internal line and the SI–6 subtraction degree; the effective two-quantum-leg HX
+kernel is one indivisible vertex. After tree attachments are collected, the reduced graph is unicyclic and
+every marked vertex lies on its unique cycle. Every complete BPHZL packet is exactly one of: (W) a
+pure-Wilson packet; (H1) one marked insertion, with only pure-Wilson contractions or one mixed cycle
+contraction; (H≥ 2) several marked insertions with the same alternatives; or (Hfar) a diam X > 1. A
+
+
+                                                             44
+mixed contraction is loop-free. A loop-bearing mixed quotient retains a marked kernel whose complete jet
+through degree four vanishes and whose physical even component begins in degree six. Hence only (W)
+can carry an unsuppressed P⋆ log a term; every row has polynomial support multiplicity, and (Hfar) is
+O(aN ) for every fixed N after the rooted sum.
+
+Proof. A connected one-loop graph has one simple cycle; every other internal edge is a bridge. A connected
+1PI subgraph cannot contain an internal bridge, so a nontrivial mixed renormalization part must contain
+the full unique cycle. Contracting it removes the sole loop. This also settles nested and overlapping
+forests: after one mixed contraction every outer quotient is loop-free, disjoint mixed parts are impossible,
+and a forest with no mixed member leaves one marked loop. Lemma 5.9 supplies its degree-six kernel;
+the unused support exponent absorbs the finite edge-pair and localization polynomials.
+
+Definition 5.11 (Lowenstein infrared dimension at the coefficient interface). Give a vector, background-
+vector, ghost, or antighost leg infrared dimension one, and give a lattice difference and the Lowenstein
+variable 1 − s infrared dimension one. For a periodic vertex symbol V let νIR (V ) be its lower Taylor order
+when all incident soft momenta and 1 − s are scaled together, and put
+
+                               ρ(V ) := νIR (V ) + nA (V ) + nc (V ) + nc̄ (V ),
+
+where background-vector legs are counted in nA . The SI–7M vertex condition used here is
+
+                                                   ρ(V ) ≥ 4                                           (20)
+
+for every elementary or reduced local vertex entering a Lowenstein forest. For a connected soft graph γ
+whose massless vector and ghost lines have order −2, incidence and Lγ = Iγ − |Vγ | + 1 give
+                                          X                        X
+                     ω(γ) = 4Lγ − 2Iγ +       νIR (Vv ) = 4 − Eγ +     ρ(Vv ) − 4 .                 (21)
+                                                                                 
+
+                                           v∈Vγ                         v∈Vγ
+
+
+Lemma 5.12 (Complete infrared vertex and forest admission). Fix X with a diam X ≤ 1, a graph in
+Lemma 5.10, q ∈ Q⋆ , and at most two background-amplitude marks. With Lowenstein parameter s, write
+                                                X
+                                  RGLZ
+                                       (q, s) =     TFLZ IG (q, s),                            (22)
+                                                   F ∈F(G)
+
+
+where TFLZ is the ordered SI–6B/SI–7M forest operator. At s = 1 only this complete packet is evaluated.
+  Every elementary vertex and every reduced vertex admitted by the forest satisfies (20). More explicitly,
+
+                       vertex family                 νIR       number of dimension-one legs    ρ
+             vector or ghost quadratic symbol         2                     2                  4
+           three-vector or ghost–vector vertex       ≥1                     3                 ≥4
+         four-vector, seagull, or tadpole vertex     ≥0                     4                 ≥4
+             pure-Wilson reduced local vertex       4−n                     n                  4
+           loop-bearing marked reduced vertex       ≥6−n                    n                 ≥ 6.
+
+The two background marks create external legs and do not differentiate external momentum, so they do
+not lower these orders. A mixed forest contraction is loop-free. A pure-Wilson contraction produces only
+a standard dimension-four background-field vertex, while every quotient that retains the stable insertion
+retains its degree-six marked vertex.
+   Consequently every subtraction-generated exceptional configuration is covered by the SI–7M forest
+theorem, not estimated as a separated Taylor piece. In particular, for the one-loop two-point classes the
+complete list of soft degrees is
+
+                                   ω vector bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                   ω ghost 

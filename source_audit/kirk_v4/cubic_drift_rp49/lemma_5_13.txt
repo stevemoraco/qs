@@ -1,0 +1,64 @@
+Lemma 5.13 (Finite-support marked power-counting consequence). Let HX satisfy (19). For a diam X ≤
+1, the BPHZL-subtracted one-loop nonexceptional background packet has the form
+                    (2)
+                   IX (a, q⋆ ) = AX (q⋆ ) + O a2 | log a| C(1 + diam X)q1 ∥HX ∥a;3,2 ,         (24)
+                                                         
+
+                                       (2)
+where AX (q⋆ ) is finite and [log a] P⋆ IX = 0. Supports with a diam X > 1 have rooted total O(aN ) for
+every fixed N .
+Proof. Fix one support and q ∈ Q⋆ , keeping background, quantum, and ghost momenta separate. Apply
+the complete SI–6B/SI–7M packet and the graph classification of Lemma 5.10. Lemma 5.12 verifies, for
+every complete packet and through the two consumed background marks, lattice periodicity, denominator
+scaling, numerator smoothness, all overall and proper-subgraph degrees, the pure-Wilson/loop-free-
+local/loop-bearing marked trichotomy, support-polynomial control, and uniform rooted domination.
+SI–7M is therefore applicable to every complete loop-bearing post-contraction packet. Pure-Wilson
+proper divergent subgraphs are removed in the SI–6 scheme, while every quotient that still contains
+the distinguished stable insertion has irrelevant excess at least two. Lemma 5.9 gives a finite sum of
+two-quantum-leg symbols whose complete marked local Taylor jet starts at engineering degree d ≥ 6. The
+complete marked Taylor polynomial of the insertion through degree four is zero by (19). Subtractions
+may produce local power rows but cannot restore a marginal input exponent; the remaining symbol
+carries ad−4 .
+   On each fixed unit loop-momentum annulus, the verified SI–7/SI–7M hypotheses give the uniform
+marked bound used below. Write the ultraviolet annuli as |k| ≍ 2j with 0 ≤ j ≤ J(a) = O(| log a|). A
+marked component of engineering degree d contributes to P⋆ with an explicit ad−4 and an annulus row
+bounded by C2(d−4)j . If d > 4, the annulus sum is geometric:
+                                                   J(a)
+                                                   X
+                                         a   d−4
+                                                          2(d−4)j = O(1),
+                                                   j=0
+
+so it produces a finite local scheme row and no logarithm. A logarithm occurs only at the marginal
+exponent d − 4 = 0. Higher external-momentum Taylor coefficients can lower the annulus exponent to
+zero, but then they retain the explicit ad−4 ; for d ≥ 6 their logarithmic row is O(a2 | log a|). Hence an
+unsuppressed P⋆ log a term would require a nonzero marked degree-four input jet, which is absent. No
+assertion that a redundant dimension-four insertion is annihilated support by support is used: such rows
+have already been extracted and are not present in HX .
+   Finite-support multiplicity is polynomial in diam X; for a diam X > 1, the strict support reserve
+dominates every prescribed power of a.
+
+
+                                                           46
+Lemma 5.14 (Uniform quasi-local marked universality). For the actual stable graph tangent H, the
+one-loop nonexceptional background packet is an absolutely and uniformly convergent rooted sum of (24).
+For some finite q,
+                           (2)
+                         |IX (a)| ≤ C(1 + diam X)q e−(a0 +η)τ (X) (1 + a2 | log a|).
+The unsuppressed physical logarithm vanishes support by support:
+                                                   (2)
+                                     [log a] P⋆ IX = 0        for every X.                                (25)
+Thus the full centered invariant family differs from the canonically normalized Wilson family by one finite,
+scale-independent C 2 scheme map through the two consumed background marks.
+Proof. The support polynomial in Lemma 5.13 is absorbed by the strict exponent reserve. The finite-
+support amplitudes and their two background derivatives may therefore be summed before removing the
+cutoff. At the quadratic order in the marginal coordinate needed for the one-step coefficient, apply the
+complete SI–6B/SI–7M lattice BPHZL packet, the exhaustive ledger of Lemma 5.10, and the complete
+post-contraction admission check of Lemma 5.12 to every mixed Wilson/stable term. A marginal proper
+subgraph containing only Wilson vertices is exactly a standard background-field subgraph and is subtracted
+in the SI–6 scheme. After all such subgraphs are contracted, every remaining quotient graph contains at
+least one stable marked insertion and hence has positive irrelevant excess, at least two in the reflection-even
+physical sector. Its overall annulus sum is therefore a power row or an explicitly a2 | log a|-suppressed
+row, not an unsuppressed logarithm. Multiple stable insertions only increase that excess. The marked
+stable-fiber identity removes every degree-four input row before this forest analysis. Uniform convergence
+leaves one finite C 2 local scheme term and no new

@@ -1,0 +1,72 @@
+
+
+Lemma 5.12 (Complete infrared vertex and forest admission). Fix X with a diam X ≤ 1, a graph in
+Lemma 5.10, q ∈ Q⋆ , and at most two background-amplitude marks. With Lowenstein parameter s, write
+                                                X
+                                  RGLZ
+                                       (q, s) =     TFLZ IG (q, s),                            (22)
+                                                   F ∈F(G)
+
+
+where TFLZ is the ordered SI–6B/SI–7M forest operator. At s = 1 only this complete packet is evaluated.
+  Every elementary vertex and every reduced vertex admitted by the forest satisfies (20). More explicitly,
+
+                       vertex family                 νIR       number of dimension-one legs    ρ
+             vector or ghost quadratic symbol         2                     2                  4
+           three-vector or ghost–vector vertex       ≥1                     3                 ≥4
+         four-vector, seagull, or tadpole vertex     ≥0                     4                 ≥4
+             pure-Wilson reduced local vertex       4−n                     n                  4
+           loop-bearing marked reduced vertex       ≥6−n                    n                 ≥ 6.
+
+The two background marks create external legs and do not differentiate external momentum, so they do
+not lower these orders. A mixed forest contraction is loop-free. A pure-Wilson contraction produces only
+a standard dimension-four background-field vertex, while every quotient that retains the stable insertion
+retains its degree-six marked vertex.
+   Consequently every subtraction-generated exceptional configuration is covered by the SI–7M forest
+theorem, not estimated as a separated Taylor piece. In particular, for the one-loop two-point classes the
+complete list of soft degrees is
+
+                                   ω vector bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                   ω ghost bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                  ω seagull/tadpole = 4 − 2 = 2.
+
+These values also cover the exceptional zero-momentum configurations created inside the Lowenstein
+operators. A loop-bearing marked quotient has at least two additional infrared degrees. Thus every complete
+packet has strictly positive lower infrared degree in every soft subspace.
+
+
+                                                      45
+   The pure-Wilson ultraviolet degrees are the SI–6 degrees. By the one-cycle ledger, a mixed contraction
+consumes the loop; otherwise the quotient retains a degree-six marked kernel and has ultraviolet excess at
+least two. Hence all overall and proper-quotient ultraviolet degrees required by SI–7 are admissible. After
+the finite SI–7M sector decomposition, uniformly in the periodic side M and through the two marks, the
+grouped packet obeys
+                                                       
+                                       X
+            RGLZ
+                 (q, 1; k) ≤ C PX 1 +     dT4 (k, ξ)−2  ,     PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 ,       (23)
+                                      ξ∈SG
+
+with the evident omission of PX for a pure-Wilson packet and with a finite soft set SG . A radius-r shell
+contains O(M 4 r4 ) lattice momenta, so (23) contributes O(r2 ) after M −4 normalization. The dyadic shell
+sum is uniform in M ; deleting a grounded zero mode only decreases it. SI–7 and SI–7M therefore give the
+cutoff and s ↑ 1 limits of the complete packet, and the unused rooted support exponent absorbs PX before
+the thermodynamic sum.
+Proof. The quadratic, cubic, quartic, gauge-fixing, and ghost rows are the finite Taylor rows of the local
+Wilson background action and based Faddeev–Popov density. Their derivative and leg counts give the
+first four rows of the table. The marked row is Lemma 5.9; the one-cycle classification in Lemma 5.10
+shows that forest reduction either removes the loop or leaves that row intact. Equation (21) then proves
+the displayed infrared ledger, including the simultaneous two-line soft configuration at a subtraction point.
+This verifies the general vertex hypothesis of SI–7M for the original graph and all reduced vertices. The
+SI–7M complete-forest conclusion supplies the grouped sector majorant; the explicit degree two gives the
+exponent in (23). The shell count and the strict rooted reserve prove the stated uniform limits.
+Lemma 5.13 (Finite-support marked power-counting consequence). Let HX satisfy (19). For a diam X ≤
+1, the BPHZL-subtracted one-loop nonexceptional background packet has the form
+                    (2)
+                   IX (a, q⋆ ) = AX (q⋆ ) + O a2 | log a| C(1 + diam X)q1 ∥HX ∥a;3,2 ,         (24)
+                                                         
+
+                                       (2)
+where AX (q⋆ ) is finite and [log a] P⋆ IX = 0. Supports with a diam X > 1 have rooted total O(aN ) for
+every fixed N .
+Proof. Fix one support and q ∈ Q⋆ , keeping background, quantum, and ghost momenta separat

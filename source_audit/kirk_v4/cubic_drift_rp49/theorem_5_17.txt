@@ -1,0 +1,78 @@
+Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+rooted-thermodynamic reduced map satisfies
+
+                                               11 CA (G) log 2 2
+                                F∞ (u) = u +                  u + OG (u3 ).
+                                                   24π 2
+For every admissible directed orbit,
+                                                  11 CA (G) log 2 2
+                                Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+                                                      24π 2
+uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+the shooting and first-crossing theorems.
+Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+differentiated at fixed Mj .
+
+5.3    Domain compactness and chart invariance
+Let Ba,N be the rooted activity space with norm
+                                               X
+                                 ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+                                                  e
+                                                      X∋e
+
+where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+connected support shapes of size at most m occur.
+Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and a′ < a, every bounded subset of Ba,N ,
+N ≥ 1, is relatively compact in Ba′ ,N −1 .
+Proof. Let F be bounded by M in Ba,N . For a cutoff L,
+                                 X      ′                        ′
+                            sup       ea |X| ∥FX ∥C N −1 ≤ e−(a−a )L M,
+                                  e
+                                        X∋e
+                                       |X|>L
+
+uniformly in F ∈ F.
+  For |X| ≤ L, only finitely many rooted support shapes occur. On each shape, the C N (KX ) bound is
+uniform, and the compact embedding
+                                           C N (KX ) ⋐ C N −1 (KX )
+follows from Arzela–Ascoli in finitely many coordinate charts. A diagonal subsequence converges on
+all shapes of size at most L. Letting L increase and using the uniform tail estimate proves relative
+compactness in Ba′ ,N −1 .
+Theorem 5.19 (Exact fiber-chart invariance). Let Ψ1 (w, z1 ) and Ψ2 (w, z2 ) be two exact C 1 fiber charts
+for the same finite-dimensional submersion B(U ) = w. Suppose their images agree on the integration
+region and their transition map is orientation preserving. Then, for every integrable density F ,
+                      Z                                   Z
+                         F (Ψ1 (w, z1 )) J1 (w, z1 ) dz1 = F (Ψ2 (w, z2 )) J2 (w, z2 ) dz2 .
+
+Consequently the normalized conditional expectation, its connected logarithm, and every background
+derivative of the complete local standard-scheme coordinate and its quadratic coefficient are independent
+of the chosen exact fiber chart.
+
+
+                                                        48
+Proof. The first identity is the ordinary change-of-variables theorem on the fiber. Division by the same
+fiber mass gives equality of normalized conditional expectations. Connected logarithms are functions
+of those expectations. Differentiation is permitted on any common dominated marked domain. The
+determinant statement follows because the two Jacobians are related by the determinant of the transition
+map, which cancels under the change of variables. It must not be inserted a second time.
+
+5.4    Ultraviolet supplier closure
+The finite-volume normal chart, strict macrostep contraction, and irregular Fréchet flatness used below
+are not separate inputs: they are respectively Theorem 2.5, Theorem 4.30, and Theorem 3.31.
+Lemma 5.20 (Adapted one-step mean-value contraction). The adapted one-step norm required in the
+endpoint argument is the standard finite-power norm
+                                           s−1
+                                           X
+                                  ∥x∥⋆ =         λ−j ∥Lj x∥,   qs < λs < 1,                             (29)
+                                           j=0
+
+for which ∥Lx∥⋆ ≤ λ∥x∥⋆ . By the mean-value theorem the exact one-step map contracts on a smaller ball
+whenever sup ∥DΦ − L∥⋆ < 1 − λ. This change of stable norm does not alter the marginal coordinate or
+its dyadic coefficient.
+5.5    Finite triangular source transport
+Lemma 5.21 (Finite graded curvature-jet quotient). Fix an engineering cutoff D. Modulo vacuum
+constants, total lattice differences, gauge and Bianchi identities, equation-of-motion/redundant directions,
+and the extracted dimension-four Yang–Mills coord
