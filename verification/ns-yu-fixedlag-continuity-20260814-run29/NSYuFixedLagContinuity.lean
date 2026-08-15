@@ -46,7 +46,6 @@ theorem cubic_difference_abs_budget
 half of that floor. -/
 theorem positive_work_survives_half_error
     (ε oldWork newWork : ℝ)
-    (hε : 0 ≤ ε)
     (hold : ε ≤ oldWork)
     (herr : |oldWork - newWork| ≤ ε / 2) :
     ε / 2 ≤ newWork := by
@@ -62,7 +61,7 @@ theorem positive_work_remains_strict
     (herr : |oldWork - newWork| ≤ ε / 2) :
     0 < newWork := by
   have hhalf : ε / 2 ≤ newWork :=
-    positive_work_survives_half_error ε oldWork newWork (le_of_lt hε) hold herr
+    positive_work_survives_half_error ε oldWork newWork hold herr
   linarith
 
 #print axioms cubic_difference_identity
