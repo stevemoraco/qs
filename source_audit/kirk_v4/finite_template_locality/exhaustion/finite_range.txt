@@ -1,0 +1,2142 @@
+===== finite range hit 1 at 71947 =====
+≤ CuRg2 + Cu.
+
+The displayed dominance condition makes this less than both χ2 /8 and tch /8 after one common threshold
+reduction. By the cutoff definitions in Section 3, χin
+                                                    Q = 1 on the complete ball.
+
+Lemma 3.19 (Reference trial plateau). There are fixed d0 < ∞, c, C > 0 such that
+                                                   h             2
+                                                                         i|X|
+                               eb0 qRX (η) GX (η) ≥ cud0 /2 e−C(Rg +1+r)      .
+
+All constants are uniform under the standing convention and in X.
+Proof. Integrate only over the plateau ball. Its number of real coordinates is at most d0 |X|, hence its
+product volume is bounded below by (cud0 /2 )|X| . On that ball the Wilson action divided by u costs at
+most CRg2 |X|. Every fixed Haar, coordinate, coarea, determinant, and anchor-return factor is bounded
+above and below on the common finite atlas. The reproduced regular interaction and the cutoff-free
+boundary reserve of the exterior-tube theorem cost at most
+
+                                         C(1 + r)|X| + b0 qRX (η).
+
+All good cutoffs equal one by Lemma 3.18. Multiplying the bounds and moving the exterior regulator to
+the left gives the result.
+
+3.5    Hybrid bad seeds
+Let X be a connected bad seed with fixed selected-anchor integration core I(X), reported hull H(X),
+and exterior ring RX = H(X) \ I(X). Assume
+
+                                  |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|.
+
+Let dµX be the fixed product base measure of the component chart and let
+                                          Z
+                                  GX (η) = ρrefX (z; η) dµX (z) > 0.
+
+
+  Split the exact bad density into curvature, transition-collar, and outer-anchor labels:
+
+                                         X = ρX
+                                        ρbad       + ρcol
+                                                      X + ρX .
+                                              curv         out
+
+
+Theorem 3.20 (Absolute bad-seed and core-variation ledger). Assume the exterior tube and analytic
+residual theorem of the preceding section and the common dominance condition
+
+                                        χ2
+                                           ≥ K Rg2 + 1 + log u−1
+                                                                 
+                                        u
+
+                                                     17
+with K sufficiently large. Use the exact labelled partition of Section 3 and the component reference of
+Section 3.4.
+   Then there are b1 > b0 , c, p, C > 0, uniform under the standing convention, such that
+                                              h         2
+                                                            i|X|/νov
+                                      bu (X) = Cu−p e−cχ /u
+
+and, for every compact-variable derivative |β| ≤ 2sG and every total exterior/structural mark order
+q + |α| ≤ 3,
+
+                                     β    q
+              e−b1 qRX (η) GX (η)−1 Dpiv Dext  α
+                                              Dmark  X (·; η)
+                                                    λbad             ≤ Cβ,q,α (1 + u−pβ )bu (X),
+                                                                TV
+
+
+where pβ < ∞ is fixed for each |β| ≤ 2sG . Here Dpiv denotes differentiation in any fixed left-invariant
+frame of a compact group variable occurring in the core. It is independent of the three structural/exterior
+marks used by the weak renormalization-group norm. The curvature-bad term obeys the same estimate
+uniformly on a smaller complex exterior tube.
+
+Proof. For the curvature-bad term, take absolute values before integration. The sector estimate and
+Proposition 3.6 give
+                                               c∗ χ2 |X|
+                        u−1 Re AX (z; η + h) ≥           − CqRX (h) − C|X|.
+                                               2 u νov
+Together with the residual row and the linear hull-size bound, this yields
+
+                                                          χ2 |X|
+      Z                                                                                           
+         |ρcurv
+           X    (z; η + h)| dµX (z) ≤ [Cu  ]
+                                         −p C|X|
+                                                 exp   −c        + b 0 q RX
+                                                                            (η) + CqR X
+                                                                                        (h) + C|X|   .
+                                                          u νov
+
+For a fixed Cauchy polydisc and b1 > b0 , choose ε > 0 with (1 + ε)b0 < b1 . Then
+
+                                  b0 qRX (η + Re h) ≤ b1 qRX (η) + Cε,δ |X|.
+
+Cauchy’s formula on the fixed domain therefore gives the differentiated total-variation rows without using
+an equal-weight growth improvement.
+   For collar and outer labels, differentiate under the real finite-dimensional integral. Lemma 3.5 shows
+that every derivative of a splice cutoff remains supported on the charged annulus or outer event. All
+remaining terms are finite Bell polynomials in fixed-template derivatives. By Lemma 3.1, the same
+statement holds after any |β| ≤ 2sG compact-variable derivatives. Such derivatives add only a fixed
+polynomial in u−1 , χ−1 , and |X|; they do not alter the charged support. These polynomial losses multiply
+the same action exponential and are absorbed after decreasing its constant c.
+   Lemma 3.19 divides out the reference denominator. Its ud0 |X|/2 , Rg2 |X|, and finite chart losses are
+absorbed by the assumed action dominance after decreasing c. The finite label sum changes only C.
+   The reference density has the same fixed analytic domain without a bad cutoff. Cauchy and the
+trial lower bound control its normalized derivatives. Bell-polynomial differentiation of G−1  X preserves
+only per-core polynomial/exponential losses, which are absorbed when multiplied by the bad numerator
+estimate.
+
+Lemma 3.21 (Concrete one-core insertion). Define
+                                                Z
+                         (TX F )(η) = GX (η) −1
+                                                  F (z, η) dλbad
+                                                             X (z; η).
+
+
+Then, in the weakened exterior regulator,
+
+                                        ∥TX F ∥[3] ≤ Cbu (X)∥F ∥[3] .
+
+Proof. Differentiate by Leibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is used: the absolute-value allocation
+                                                    1
+                               |⟨yX , KXY yY ⟩| ≤     ∥KXY ∥(∥yX ∥2 + ∥yY ∥2 )
+                                                    2
+assigns a nonnegative quadratic regulator to the two incident vertices. The weighted block row makes
+the sum of those regulator matrices at every replica vertex at most Cκ. After enlarging RG so 4Cκ < 1,
+Corollary 4.2 bounds all Gaussian exponential moments uniformly in the replica matrix and in the number
+of cores. The geometric reporting lemma assigns each differentiated tree to its connected core hull. The
+exact 1/n! and Lemma 4.3 absorb the vertex factorials. The resulting rooted tree series has link mass at
+most 4κ and gives the same denominator as the determinant words.
+   A structural or source derivative either differentiates one block of K, one exterior mean, or one one-core
+score. Leibniz distributes at most three marks, producing the fourth power in (2). Finally, replacing dγX
+by a normalized one-core reference changes only the single-core vertices and normalization scores. Their
+assumed upper/lower and score bounds are paid per vertex and do not alter the cross-link mass. The
+connected logarithm removes every empty-support scalar once. This proves the stated uniform row in
+exactly the marked norm consumed downstream.
+
+
+                                                            20
+Lemma 3.27 (Model-specific admission to the marked Gaussian block-polymer theorem). For the actual
+constrained Karcher precision and every admitted exterior history, the three hypotheses of Lemma 3.26
+hold with κ = CκG (RG ):
+         −1/2         −1/2
+  (i) ∥Qdiag Qcross Qdiag ∥aG ,[3] ≤ CκG (RG );
+                                                                                                 1/2
+  (ii) the centered exterior means and their first three marks are uniformly bounded in the QXX metric;
+       and
+ (iii) every normalized one-core reference has logarithmic score rows through order three in the exact [3]
+       norm consumed by Sections 20, 29, and 31.
+The constants are uniform under the standing convention and in core size.
+Proof. For Q ⪰ 2I, holomorphic functional calculus gives
+                                           1 ∞ −1/2
+                                             Z
+                                 Q−1/2 =         t     (Q + t)−1 dt.
+                                           π 0
+Differentiating under the integral through order three expresses every mark as a finite sum of resolvent
+words. The lower bound gives ∥(Q + t)−1 ∥ ≤ (2 + t)−1 ; convolution of the printed exponential precision
+                                                                       −1/2       −1/2
+rows therefore yields the same rooted row for Q−1/2 and for K = Qdiag Qcross Qdiag . This proves (i).
+  The exterior linear term ℓX (η) is a fixed-incidence contraction of the exponentially local precision with
+the common exterior datum. The one-core mean is mX = −Q−1         XX ℓX . The same resolvent formula and
+                                   1/2
+the exterior regulator row give ∥QXX mX ∥[3] ≤ C, proving (ii).
+  Write a normalized one-core density as pX = G−1   X ρX . Then
+
+                                  D log pX = D log ρX − EpX [D log ρX ],
+
+and higher derivatives are finite cumulant polynomials of the corresponding unnormalized scores. The
+exterior-tube bounds, the displayed collar/outer TV rows, and the plateau lower bound for GX bound
+these cumulants through order three without a volume factor. This proves (iii) in the declared rooted
+marked norm.
+Theorem 3.28 (Constrained-core product reference with explicit Gaussian cross activity). Let X be
+       S and condition on the common exterior datum η. Write the actual constrained precision on
+compatible
+I(X ) = X I(X) as
+                                                          M
+                          QX = Qdiag + Qcross ,   Qdiag =      QXX .                          (3)
+                                                                   X∈X
+
+Let dγX ( · | η) be the normalized one-core Gaussian with precision QXX and the exact exterior linear
+term. Then                                                        O
+                            dγX (z | η) = ZG (η)−1 e−Gcross (z;η)   dγX (zX | η),                  (4)
+                                                               X∈X
+
+where Gcross contains every off-diagonal quadratic block and the connected normalization generated by it.
+Its connected activities obey          X
+                                   sup     eaG |A| ∥GA ∥[3] ≤ CκG (RG ).                             (5)
+                                     X
+                                         A∋X
+
+   Place every non-Gaussian factor owned solely by X in the normalized one-core reference ρref    X dγX . All
+Gaussian and non-Gaussian factors meeting at least two cores remain explicit cross-owned activities. The
+exact simultaneous-core integral is therefore the product of the one-core references followed by a convergent
+connected cross-core polymer expansion. A one-core operator depends on another core only through one
+of these displayed cross activities, and every scalar normalization is removed once.
+Proof. The optical lower bound gives QXX ⪰ 2I. Lemma 3.27 verifies the complete marked hypotheses
+of Lemma 3.26; enlarge RG once so its link mass is below 1/8. The normalized Gaussian ratio is exactly
+                                 1
+                                                                                      
+             det(I + K)1/2 exp − ⟨z, Qcross z⟩ + the corresponding exterior-shift terms .
+                                 2
+Apply Lemma 3.26. Its row gives (5) with CκG (RG ) after weakening the constant. Lemma 3.25 assigns
+every remaining factor once. Fubini gives the normalized product one-core reference followed by the
+exact connected cross-core expansion, with all three marks and scalar normalizations in the consumed
+norm.
+
+
+                                                     21
+Lemma 3.29 (History compatibility after exact output formation). At every RG step, form the complete
+connected output first, assign its canonical reported hull, and only then compute its regulator allocation
+and history certificate. Under this rule:
+   (i) every input history has one output owner;
+  (ii) no input allocation is copied to two incompatible output histories;
+ (iii) concatenation of successive certificates is associative;
+ (iv) summing over all certificates recovers the exact unlabelled connected output.
+Proof. For one step, canonical collect is a partition of the finite set of labelled connected histories by the
+least rooted hull in the fixed ordering. Thus there is one owner and the unlabelled sum is unchanged.
+The output allocation is a function of the already collected output gradient and complex Hessian, not of
+an input branch. Induct on the number of steps. At the next step the complete preceding certificate
+is treated as one input label, so a new canonical hull is appended once. This proves associativity and
+excludes copying. Forgetting the labels at every stage gives the exact iterated conditional logarithm by
+Fubini and the connected exponential formula.
+  Let ζY (u, R) be the complete regular insertion family and define
+                    X                                               X
+    η0 (u, R) = sup     ea|Y | ∥ζY (u, R)∥[3] , η1 (u, R) = sup sup   ea|Y | ∥DR ζY (u, R)[H]∥[3] .
+                  e                                                   ∥H∥[3] ≤1    e
+                      Y ∋e                                                             Y ∋e
+
+The regular supplier gives
+
+                              η0 (u, R) ≤ C(uω + ∥R∥[3] ),                 η1 (u, R) ≤ C.
+
+For a connected bad core let
+                           h            2
+                                            i|X|/νov
+                  bu (X) = Cb u−p e−cb χ /u          ,                ∥TX F ∥[3] ≤ C0 bu (X)∥F ∥[3] .
+
+Put                                                  X
+                                       θu = sup            eac |X| C0 bu (X).
+                                                 e
+                                                     X∋e
+
+Lemma 3.30 (Rooted bad-core mass). If the number of connected core animals of size n containing a
+                       n
+fixed cell is at most Can , then, for sufficiently small u,
+                                                            ′     ′    2
+                                            θu ≤ Cu−p e−c χ /u .
+
+Proof. Sum the geometric series
+                                     X                           1/νov n
+                                             ac       −p −cb χ2 /u
+                                θu ≤   Can e      Cb u e                     .
+                                     n≥1
+
+The bracket is below one half on the declared weak interval.
+  Let P (X , Y) be the canonical reported hull and suppose
+                                                           !
+                                        X          X
+                       |P (X , Y)| ≤ cP     |X| +      |Y | ,                     cP ab < ac < a.
+                                           X∈X             Y ∈Y
+
+Theorem 3.31 (Irregular C 1 flatness with discharged composition). There is δ > 0 such that, whenever
+
+                                  m∗ := C(η0 (u, R) + θu + κG (RG )) < δ,
+
+the exact connected irregular map satisfies
+                                                                          θu
+                                     ∥Eirr (u, R)∥ab ,[3] ≤ C                    ,
+                                                                      (1 − m∗ )4
+
+and
+                                                                                  θu
+                              ∥DR Eirr (u, R)∥L([3],[3]) ≤ Cη1 (u, R)                    .
+                                                                              (1 − m∗ )5
+
+                                                           22
+Consequently
+                                                                                                 ′       ′   2
+                               ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace id
+
+===== finite range hit 2 at 72642 =====
+rdinates is at most d0 |X|, hence its
+product volume is bounded below by (cud0 /2 )|X| . On that ball the Wilson action divided by u costs at
+most CRg2 |X|. Every fixed Haar, coordinate, coarea, determinant, and anchor-return factor is bounded
+above and below on the common finite atlas. The reproduced regular interaction and the cutoff-free
+boundary reserve of the exterior-tube theorem cost at most
+
+                                         C(1 + r)|X| + b0 qRX (η).
+
+All good cutoffs equal one by Lemma 3.18. Multiplying the bounds and moving the exterior regulator to
+the left gives the result.
+
+3.5    Hybrid bad seeds
+Let X be a connected bad seed with fixed selected-anchor integration core I(X), reported hull H(X),
+and exterior ring RX = H(X) \ I(X). Assume
+
+                                  |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|.
+
+Let dµX be the fixed product base measure of the component chart and let
+                                          Z
+                                  GX (η) = ρrefX (z; η) dµX (z) > 0.
+
+
+  Split the exact bad density into curvature, transition-collar, and outer-anchor labels:
+
+                                         X = ρX
+                                        ρbad       + ρcol
+                                                      X + ρX .
+                                              curv         out
+
+
+Theorem 3.20 (Absolute bad-seed and core-variation ledger). Assume the exterior tube and analytic
+residual theorem of the preceding section and the common dominance condition
+
+                                        χ2
+                                           ≥ K Rg2 + 1 + log u−1
+                                                                 
+                                        u
+
+                                                     17
+with K sufficiently large. Use the exact labelled partition of Section 3 and the component reference of
+Section 3.4.
+   Then there are b1 > b0 , c, p, C > 0, uniform under the standing convention, such that
+                                              h         2
+                                                            i|X|/νov
+                                      bu (X) = Cu−p e−cχ /u
+
+and, for every compact-variable derivative |β| ≤ 2sG and every total exterior/structural mark order
+q + |α| ≤ 3,
+
+                                     β    q
+              e−b1 qRX (η) GX (η)−1 Dpiv Dext  α
+                                              Dmark  X (·; η)
+                                                    λbad             ≤ Cβ,q,α (1 + u−pβ )bu (X),
+                                                                TV
+
+
+where pβ < ∞ is fixed for each |β| ≤ 2sG . Here Dpiv denotes differentiation in any fixed left-invariant
+frame of a compact group variable occurring in the core. It is independent of the three structural/exterior
+marks used by the weak renormalization-group norm. The curvature-bad term obeys the same estimate
+uniformly on a smaller complex exterior tube.
+
+Proof. For the curvature-bad term, take absolute values before integration. The sector estimate and
+Proposition 3.6 give
+                                               c∗ χ2 |X|
+                        u−1 Re AX (z; η + h) ≥           − CqRX (h) − C|X|.
+                                               2 u νov
+Together with the residual row and the linear hull-size bound, this yields
+
+                                                          χ2 |X|
+      Z                                                                                           
+         |ρcurv
+           X    (z; η + h)| dµX (z) ≤ [Cu  ]
+                                         −p C|X|
+                                                 exp   −c        + b 0 q RX
+                                                                            (η) + CqR X
+                                                                                        (h) + C|X|   .
+                                                          u νov
+
+For a fixed Cauchy polydisc and b1 > b0 , choose ε > 0 with (1 + ε)b0 < b1 . Then
+
+                                  b0 qRX (η + Re h) ≤ b1 qRX (η) + Cε,δ |X|.
+
+Cauchy’s formula on the fixed domain therefore gives the differentiated total-variation rows without using
+an equal-weight growth improvement.
+   For collar and outer labels, differentiate under the real finite-dimensional integral. Lemma 3.5 shows
+that every derivative of a splice cutoff remains supported on the charged annulus or outer event. All
+remaining terms are finite Bell polynomials in fixed-template derivatives. By Lemma 3.1, the same
+statement holds after any |β| ≤ 2sG compact-variable derivatives. Such derivatives add only a fixed
+polynomial in u−1 , χ−1 , and |X|; they do not alter the charged support. These polynomial losses multiply
+the same action exponential and are absorbed after decreasing its constant c.
+   Lemma 3.19 divides out the reference denominator. Its ud0 |X|/2 , Rg2 |X|, and finite chart losses are
+absorbed by the assumed action dominance after decreasing c. The finite label sum changes only C.
+   The reference density has the same fixed analytic domain without a bad cutoff. Cauchy and the
+trial lower bound control its normalized derivatives. Bell-polynomial differentiation of G−1  X preserves
+only per-core polynomial/exponential losses, which are absorbed when multiplied by the bad numerator
+estimate.
+
+Lemma 3.21 (Concrete one-core insertion). Define
+                                                Z
+                         (TX F )(η) = GX (η) −1
+                                                  F (z, η) dλbad
+                                                             X (z; η).
+
+
+Then, in the weakened exterior regulator,
+
+                                        ∥TX F ∥[3] ≤ Cbu (X)∥F ∥[3] .
+
+Proof. Differentiate by Leibniz. Bound every differentiated density by the theorem and every differentiated
+insertion by its declared norm. Derivatives of G−1 X are finite Bell polynomials in normalized reference
+scores.
+
+
+
+
+                                                     18
+3.6    Irregular ownership and C 1 flatness
+The irregular map must be assembled from the exact labelled density before any absolute-value estimate
+is taken. This section fixes the ownership rule that was previously left as four composition hypotheses.
+   Let X = {X1 , . . . , Xm } be a compatible family of bad cores. Compatibility means that the enlarged
+integration cores I + (Xi ) are pairwise disjoint. Every pre-logarithmic local factor carries its actual finite
+support; every exponentially local inverse, coarea, or Schur factor is first expanded in the permanent
+exponential matrix algebra and each term is reported on its canonical connected hull.
+Definition 3.22 (Canonical owner). For a reported connected factor A with support S(A) define
+                               
+                               Xi ,
+                                        S(A) ∩ I(Xi ) ̸= ∅ and S(A) ∩ I(Xj ) = ∅ (j ̸= i),
+                ownX (A) = cross, S(A) meets at least two integration cores,
+                                 reg,    S(A) meets no integration core.
+                               
+                               
+
+If a fixed-template boundary factor meets an integration core only through its prescribed ring, it is
+assigned to that core precisely when its canonical root lies in I(Xi ); otherwise it remains regular. Ties
+are therefore impossible.
+Definition 3.23 (Gaussian/determinant allocation separation). For the exact joint fresh-detail law, let
+H0 denote the finite-range ambient precision before the Karcher constraint and let Qopt be the actual
+constrained precision of Theorem 4.9. Fix a separation collar RG . Cores closer than RG after their
+ordinary interaction collars are merged into one core. A remaining compatible family satisfies:
+(DAS1) every determinant endpoint whose two-jet enters the reference has an actual support of diameter
+         at most the fixed number Rdet ;
+(DAS2) complementary projectors Pvac + Pret + Popt + Pirr = I allocate every endpoint two-jet exactly
+         once;
+(DAS3) all stagewise Gaussian conditionals are the chain-rule disintegration of one normalized joint law,
+         with scalar normalization retained once at the exterior endpoint;
+(DAS4) H0 is finite range, while Qopt and its inverse have uniform exponentially decaying kernels;
+(DAS5) for distinct compatible cores,
+                    X                  ′
+               sup       eaG d(I(X),I(X )) ∥Qopt,I(X),I(X ′ ) ∥[3] ≤ κG (RG ), κG (RG ) ≤ CG e−mG RG . (1)
+                X
+                    X ′ ̸=X
+
+Lemma 3.24 (The exact forty-nine-path block satisfies DAS). The Wilson Hessian, local Haar and
+coarea endpoint two-jets, the optical projector, and the compatible-core geometry satisfy Definition 3.23,
+uniformly in finite volume and weak depth. The collar RG may be chosen once so that κG (RG ) < 1/8.
+Proof. The Wilson plaquette Hessian and Feynman grounding term have fixed finite range. The forty-nine-
+path constraint and each chart/coarea endpoint live on one fixed block template. The coefficient projectors
+are the complementary projections of the complete two-jet extraction, and the stagewise conditionals are
+chain-rule factors of one normalized joint law. The actual constrained precision is Qopt = T ∗ Hf T . The
+analytic-strip proof of Corollary 4.10 applies to T , Hf , and Qopt itself, so both precision and covariance
+have uniform exponential kernel rows. Restricting that row to two cores separated by RG gives (1).
+Merging the finitely many cores that violate the separation condition preserves the action charge and
+leaves one compatible family. Enlarge RG until the displayed smallness holds.
+Lemma 3.25 (Exact connected coarea allocation). On the permanent weak tube the field-dependent
+coarea logarithm has an absolutely convergent connected expansion
+                                           X               X
+                    − log det(I + DN P ) =     dA ,    sup     eacoa |A| ∥dA ∥[3] < ∞.
+                                                             e
+                                               A                 A∋e
+
+For every compatible X the owner map of Definition 3.22 gives the exact identity
+                                 X                X
+                                   dA = Dreg +        DX + Dcross ,
+                                      A               X∈X
+
+where each connected term occurs once. The same statement holds for the Haar-coordinate logarithm,
+normal-section return factors, local determinant remainders, exponentially reported Schur factors, and
+the connected Gaussian normalization below.
+
+
+                                                      19
+Proof. In the exponential matrix algebra, ∥DN P ∥ < η < 1 and the matrix logarithm has its absolutely
+convergent word expansion. Report every word on the union of its canonical connector paths. The
+permanent support estimate pays all convolutions. Every reported word has one connected support, so
+the owner cases are disjoint and exhaustive. The other factors are treated by their Taylor or matrix-log
+expansions in the same algebra.
+Lemma 3.26 (Marked Gaussian block-polymer estimate). Let {HX }X∈X be finite-dimensional core
+spaces and let
+                                                    −1/2        −1/2
+                           M
+                   Qdiag =     QXX ⪰ 2I,      K = Qdiag Qcross Qdiag .
+                                       X
+For 0 ≤ q ≤ 3 define the rooted block row
+                                                   X
+                             ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+                                               X                    0≤j≤q
+                                                   Y ̸=X
+
+Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+  1/2
+QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+connected core-polymer logarithm
+                                           dγX           X
+                                     log N          =             GA
+                                            X dγX             A⊂X mconn
+
+with                                       X                               κ
+                                  sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+                                   X                                   (1 − 4κ)4
+                                        A∋X
+The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+under the standing convention and in the number and sizes of cores.
+                                                             1/2
+Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+                                 1                 1 X (−1)n+1
+                                   Tr log(I + K) =             Tr K n .
+                                 2                 2      n
+                                                             n≥1
+
+Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+and using the weighted block row gives, after q ≤ 3 marks,
+                                   X                         κ
+                                       nq (4κ)n /n ≤ Cq             .
+                                                        (1 − 4κ)q+1
+                                       n≥1
+
+Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+rooted words.
+                                                                                               1/2
+   For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+        1/2
+tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+of KXY is used: the absolute-value allocation
+                                                    1
+                               |⟨yX , KXY yY ⟩| ≤     ∥KXY ∥(∥yX ∥2 + ∥yY ∥2 )
+                                                    2
+assigns a nonnegative quadratic regulator to the two incident vertices. The weighted block row makes
+the sum of those regulator matrices at every replica vertex at most Cκ. After enlarging RG so 4Cκ < 1,
+Corollary 4.2 bounds all Gaussian exponential moments uniformly in the replica matrix and in the number
+of cores. The geometric reporting lemma assigns each differentiated tree to its connected core hull. The
+exact 1/n! and Lemma 4.3 absorb the vertex factorials. The resulting rooted tree series has link mass at
+most 4κ and gives the same denominator as the determinant words.
+   A structural or source derivative either differentiates one block of K, one exterior mean, or one one-core
+score. Leibniz distributes at most three marks, producing the fourth power in (2). Finally, replacing dγX
+by a normalized one-core reference changes only the single-core vertices and normalization scores. Their
+assumed upper/lower and score bounds are paid per vertex and do not alter the cross-link mass. The
+connected logarithm removes every empty-support scalar once. This proves the stated uniform row in
+exactly the marked norm consumed downstream.
+
+
+                                                            20
+Lemma 3.27 (Model-specific admission to the marked Gaussian block-polymer theorem). For the actual
+constrained Karcher precision and every admitted exterior history, the three hypotheses of Lemma 3.26
+hold with κ = CκG (RG ):
+         −1/2         −1/2
+  (i) ∥Qdiag Qcross Qdiag ∥aG ,[3] ≤ CκG (RG );
+                                                                                                 1/2
+  (ii) the centered exterior means and their first three marks are uniformly bounded in the QXX metric;
+       and
+ (iii) every normalized one-core reference has logarithmic score rows through order three in the exact [3]
+       norm consumed by Sections 20, 29, and 31.
+The constants are uniform under the standing convention and in core size.
+Proof. For Q ⪰ 2I, holomorphic functional calculus gives
+                                           1 ∞ −1/2
+                                             Z
+                                 Q−1/2 =         t     (Q + t)−1 dt.
+                                           π 0
+Differentiating under the integral through order three expresses every mark as a finite sum of resolvent
+words. The lower bound gives ∥(Q + t)−1 ∥ ≤ (2 + t)−1 ; convolution of the printed exponential precision
+                                                                       −1/2       −1/2
+rows therefore yields the same rooted row for Q−1/2 and for K = Qdiag Qcross Qdiag . This proves (i).
+  The exterior linear term ℓX (η) is a fixed-incidence contraction of the exponentially local precision with
+the common exterior datum. The one-core mean is mX = −Q−1         XX ℓX . The same resolvent formula and
+                                   1/2
+the exterior regulator row give ∥QXX mX ∥[3] ≤ C, proving (ii).
+  Write a normalized one-core density as pX = G−1   X ρX . Then
+
+                                  D log pX = D log ρX − EpX [D log ρX ],
+
+and higher derivatives are finite cumulant polynomials of the corresponding unnormalized scores. The
+exterior-tube bounds, the displayed collar/outer TV rows, and the plateau lower bound for GX bound
+these cumulants through order three without a volume factor. This proves (iii) in the declared rooted
+marked norm.
+Theorem 3.28 (Constrained-core product reference with explicit Gaussian cross activity). Let X be
+       S and condition on the common exterior datum η. Write the actual constrained precision on
+compatible
+I(X ) = X I(X) as
+                                                          M
+                          QX = Qdiag + Qcross ,   Qdiag =      QXX .                          (3)
+                                                                   X∈X
+
+Let dγX ( · | η) be the normalized one-core Gaussian with precision QXX and the exact exterior linear
+term. Then                                                        O
+                            dγX (z | η) = ZG (η)−1 e−Gcross (z;η)   dγX (zX | η),                  (4)
+                                                               X∈X
+
+where Gcross contains every off-diagonal quadratic block and the connected normalization generated by it.
+Its connected activities obey          X
+                                   sup     eaG |A| ∥GA ∥[3] ≤ CκG (RG ).                             (5)
+                                     X
+                                         A∋X
+
+   Place every non-Gaussian factor owned solely by X in the normalized one-core reference ρref    X dγX . All
+Gaussian and non-Gaussian factors meeting at least two cores remain explicit cross-owned activities. The
+exact simultaneous-core integral is therefore the product of the one-core references followed by a convergent
+connected cross-core polymer expansion. A one-core operator depends on another core only through one
+of these displayed cross activities, and every scalar normalization is removed once.
+Proof. The optical lower bound gives QXX ⪰ 2I. Lemma 3.27 verifies the complete marked hypotheses
+of Lemma 3.26; enlarge RG once so its link mass is below 1/8. The normalized Gaussian ratio is exactly
+                                 1
+                                                                                      
+             det(I + K)1/2 exp − ⟨z, Qcross z⟩ + the corresponding exterior-shift terms .
+                                 2
+Apply Lemma 3.26. Its row gives (5) with CκG (RG ) after weakening the constant. Lemma 3.25 assigns
+every remaining factor once. Fubini gives the normalized product one-core reference followed by the
+exact connected cross-core expansion, with all three marks and scalar normalizations in the consumed
+norm.
+
+
+                                                     21
+Lemma 3.29 (History compatibility after exact output formation). At every RG step, form the complete
+connected output first, assign its canonical reported hull, and only then compute its regulator allocation
+and history certificate. Under this rule:
+   (i) every input history has one output owner;
+  (ii) no input allocation is copied to two incompatible output histories;
+ (iii) concatenation of successive certificates is associative;
+ (iv) summing over all certificates recovers the exact unlabelled connected output.
+Proof. For one step, canonical collect is a partition of the finite set of labelled connected histories by the
+least rooted hull in the fixed ordering. Thus there is one owner and the unlabelled sum is unchanged.
+The output allocation is a function of the already collected output gradient and complex Hessian, not of
+an input branch. Induct on the number of steps. At the next step the complete preceding certificate
+is treated as one input label, so a new canonical hull is appended once. This proves associativity and
+excludes copying. Forgetting the labels at every stage gives the exact iterated conditional logarithm by
+Fubini and the connected exponential formula.
+  Let ζY (u, R) be the complete regular insertion family and define
+                    X                                               X
+    η0 (u, R) = sup     ea|Y | ∥ζY (u, R)∥[3] , η1 (u, R) = sup sup   ea|Y | ∥DR ζY (u, R)[H]∥[3] .
+                  e                                                   ∥H∥[3] ≤1    e
+                      Y ∋e                                                             Y ∋e
+
+The regular supplier gives
+
+                              η0 (u, R) ≤ C(uω + ∥R∥[3] ),                 η1 (u, R) ≤ C.
+
+For a connected bad core let
+                           h            2
+                                            i|X|/νov
+                  bu (X) = Cb u−p e−cb χ /u          ,                ∥TX F ∥[3] ≤ C0 bu (X)∥F ∥[3] .
+
+Put                                                  X
+                                       θu = sup            eac |X| C0 bu (X).
+                                                 e
+                                                     X∋e
+
+Lemma 3.30 (Rooted bad-core mass). If the number of connected core animals of size n containing a
+                       n
+fixed cell is at most Can , then, for sufficiently small u,
+                                                            ′     ′    2
+                                            θu ≤ Cu−p e−c χ /u .
+
+Proof. Sum the geometric series
+                                     X                           1/νov n
+                                             ac       −p −cb χ2 /u
+                                θu ≤   Can e      Cb u e                     .
+                                     n≥1
+
+The bracket is below one half on the declared weak interval.
+  Let P (X , Y) be the canonical reported hull and suppose
+                                                           !
+                                        X          X
+                       |P (X , Y)| ≤ cP     |X| +      |Y | ,                     cP ab < ac < a.
+                                           X∈X             Y ∈Y
+
+Theorem 3.31 (Irregular C 1 flatness with discharged composition). There is δ > 0 such that, whenever
+
+                                  m∗ := C(η0 (u, R) + θu + κG (RG )) < δ,
+
+the exact connected irregular map satisfies
+                                                                          θu
+                                     ∥Eirr (u, R)∥ab ,[3] ≤ C                    ,
+                                                                      (1 − m∗ )4
+
+and
+                                                                                  θu
+                              ∥DR Eirr (u, R)∥L([3],[3]) ≤ Cη1 (u, R)                    .
+                                                                              (1 − m∗ )5
+
+                                                           22
+Consequently
+                                                                                                 ′       ′   2
+                               ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                            
+
+===== finite range hit 3 at 318418 =====
+ the exact joint logarithm. At least one object
+on the unique root-to-root forest path belongs to one of the following classes:
+   (i) a nonvacuum compact activity controlled by Theorem 6.39 and the spatial row (99);
+  (ii) an optical covariance bond or an optical Gaussian cross-core activity in AJG ;
+ (iii) a registered reference, regular, irregular, seam, reflection, wrapping, normalization, determinant, or
+       source connector with its original support payment.
+There is no fourth class consisting of a massless retained acoustic reference edge.
+Proof. Assume that a connected coefficient contains no object of types (i)–(iii). Absence of (i) makes
+every separating compact cut vacuum. Absence of (iii) leaves no registered physical connector after the
+complete owner map. Lemma 7.6 then reduces the compact contribution to disconnected one-core factors
+and scalars. Absence of (ii) also prevents the still-live optical field from joining the roots. The coefficient
+is therefore disconnected, a contradiction. The only possible remaining concern would be an undeclared
+massless retained covariance, which is excluded by Lemma 7.5.
+
+Corollary 7.8 (No additional acoustic path class). The exact vertex inventory used in Theorem 6.43 ad-
+mits no fourth root-to-root path class consisting of a massless retained acoustic reference edge. Consequently
+the boundary-to-center estimates (104) and (107) require no additional terminal Witten, acoustic-channel,
+or retained-Gaussian gap hypothesis.
+Proof. The vertex inventory is already exhaustive by Lemma 6.7, Proposition 6.8, and Corollary 6.40.
+Apply Theorem 7.7 to exclude the only remaining acoustic fourth-class concern.
+
+8     General invariant jets and Ward identities
+8.1    Multiscale invariant-source trees
+Riemann-scaled sources and block incidence Let ℓ0 > 0 be the fixed matching scale and ℓj = 2−j ℓ0
+the directed ultraviolet resolutions. At resolution m, let Om,z be a centered bounded gauge-invariant
+
+
+
+
+                                                      72
+observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
+                                                        X
+                                       Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+                                                       z∈ℓm Z4
+
+If a fine source Jm is averaged to scale j < m, define
+                                                     X
+                                        Jj (X) = ℓ−4
+                                                  j    ℓ4m Jm (z),                                      (109)
+                                                        z∈X
+
+where X is one scale-j cell.
+Lemma 8.1 (Source-incidence contraction). The block source map satisfies
+                                               X                X
+                        ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+                                                        X                      z
+
+The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+normalization their products are bounded on every fixed finite jet family and do not alter the connector
+exponent.
+Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+follows by the triangle inequality and the partition of the fine cells into coarse cells.
+
+Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+regimes.
+(R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+     ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+     pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+     scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+     weak/irregular recombination has a summable rooted remainder.
+(R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+     macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+     are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+     Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+     common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+     acoustic reference channel beyond the exact owner-map inventory.
+(R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+     column bounds uniform in all exterior variables.
+   Define the quantitative rates
+
+                    mw := ℓ−1
+                           jw min{c0 | log σ|, mopt },
+                                                                     1                                  (111)
+                 mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+                                                                     2
+where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+with the fixed matching bridge has exponential rate at least
+
+                               1                min{c0 | log σ|, mopt }
+                                                                           
+                     m(M ) := min          inf                          , mE ≥ m∗ > 0.
+                               2        jw ≤j≤M           ℓj
+
+The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+M → ∞ cannot decrease the exponent.
+
+
+                                                       73
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+                                                                                                    −cuj
+                                                                                                          .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+before the logarithm is taken, so no all-good denominator occurs. Write
+
+                                     Wm (J) = log Zm (J) − log Zm (0)
+
+for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+finite macrobridge is an identity, not an asymptotic expansion.
+   A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+transported without joining retain their existing components. At the terminal matching logarithm, the
+remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+fixed by the least source label, so isomorphic terms are not counted more than once.
+Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+derivative order n,                                        X
+                             Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+                                                      τ ∈Tm,n
+
+where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+one/two-root bounds control a component while its source leaves remain external. These majorants are
+summable independently of m, so dominated convergence gives the last assertion.
+
+    For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+recursively generated tree, not a choice made after absolute values or bounds have been applied.
+Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+separated-group exponential.
+Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood of the
+origin, every finite source functional is analytic uniformly in resolution and volume. Thermodynamic
+and zero-spacing limits of all fixed finite source derivatives exist along one common diagonal subsequence.
+If two groups of source supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differen
+
+===== finite range hit 4 at 342421 =====
+local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      cl
+                                                                                             is globally smooth,
+linear in v, finite range, gauge equivariant, signed-hypercubic covariant, and reflection compatible. All
+group derivatives of its local coefficient through arbitrary fixed order are bounded independently of volume,
+apart from the explicit canonical factor a−1 in (124).
+Proof. The projected sine coordinate (122) is a smooth matrix function followed by the fixed equivariant
+projection Πρ , hence is smooth on the whole group. Under a lattice gauge transformation, a based
+plaquette is conjugated by the gauge value at its base point; conjugation equivariance of Ωsin gives
+Cµν (x) 7→ g(x)Cµν (x)g(x)−1 . Consequently Yx,ν Uν (x) transforms as a tangent vector to the link from x
+to x + aν̂. Signed permutations reindex the two oriented plaquettes and the profile components, while
+the orientation sign in (123) is exactly the sign of the transformed two-form. All derivative bounds follow
+from finite support and compactness of the group.
+
+Exact vacuum Haar divergence Use an orthonormal anti-Hermitian basis T A and the left-invariant
+product-Haar frame ∇A
+                    x,ν . Since left-invariant fields have zero Haar divergence,
+                                                     X
+                                       divH Xa,v
+                                              cl
+                                                  =      ∇A     A
+                                                           x,ν Yx,ν .                     (125)
+                                                         x,ν,A
+
+Lemma 8.18 (The vacuum diagonal block vanishes edgewise). At U = 1,
+                                       DAν (x) Cµν (x) U =1 = 0     (µ ̸= ν),                             (126)
+so
+                                               divH Xa,v
+                                                     cl
+                                                         U =1
+                                                              =0                                          (127)
+for every profile, with no cell or volume summation.
+Proof. Linearize (121). Both P+µ,ν (x) and P−µ,ν (x) end with Uν (x)−1 , so their logarithms have the
+same diagonal derivative −Id with respect to the Lie-algebra coordinate of the distinguished ν-link. The
+difference in (123) cancels those derivatives exactly. Summing the zero diagonal blocks gives (127).
+Lemma 8.19 (No field-linear color trace). The first field-dependent term in the diagonal derivative of
+(123) is a finite sum of adjoint commutator matrices. Its color trace vanishes identically:
+                                                   Trg ad(q) = 0.                                         (128)
+Thus the Haar divergence has neither a vacuum term nor a field-linear gauge-invariant term.
+Proof. The quadratic BCH term is a sum of brackets of link coordinates. Differentiating one slot leaves
+[q, ·]. In structure constants its trace is f aba = 0. Higher terms are local analytic gauge-invariant jets and
+are classified together with the complete score below.
+
+
+                                                         79
+Second-order agreement with the geometric strip Let B be a smooth continuum connection and
+let the lattice links be its exact edge holonomies. Write
+                                              Z a
+                                 Sµν (x; B) =     AdUν (x;0,s) Fµν (x + sν̂) ds,      (129)
+                                               0
+
+where the curvature is parallel transported to x along the initial part of the ν-edge.
+Lemma 8.20 (Covariant two-plaquette expansion). On every bounded smooth background set, uniformly
+with zero/one/two background derivatives,
+                                                             a 
+                          Cµν (x) = a2 AdUν (x;0,a/2) Fµν x + ν̂ + a4 Rµνcl
+                                                                             (x; B),         (130)
+                                                              2
+                                                            a  
+                       Sµν (x; B) = a AdUν (x;0,a/2) Fµν x + ν̂ + a3 Rµνstrip
+                                                                              (x; B),        (131)
+                                                             2
+where the remainders are local covariant differential polynomials with two additional derivatives or one
+additional curvature and have uniform bounds.
+Proof. Write Pρσ = exp ωρσ on a smooth background. By (122), Ωsin (eω ) = (dρ)−1 Πρ [sinh(dρ(ω))] =
+ω + O(∥ω∥3 ). Since ω = O(a2 ), replacing the plaquette logarithm by the projected sine coordinate
+changes the expansion only at order a6 . Apply the covariant BCH/nonabelian-Stokes expansion to the
+two plaquettes sharing the distinguished link. After parallel transport to the common base point x,
+their centers are x + aν̂/2 ± aµ̂/2. Multiplication by the orientation sign and averaging cancels every
+term odd in the transverse displacement. The leading term is therefore a2 Fµν at the link midpoint,
+parallel transported to x, and the first surviving transverse defect is a4 Dµ2 F . The finite area average
+also contributes only two-extra-derivative or curvature-quadratic terms at order a4 . This proves (130).
+Covariant midpoint Taylor expansion of the one-dimensional integral (129) gives (131). Analyticity of
+the finite Wilson words permits two background derivatives with the same powers of a.
+Proposition 8.21 (Per-link and bounded-source error). Let Xa,v    geo
+                                                                      denote the infinitesimal anchored
+curvature-strip displacement. Then on smooth backgrounds
+                                 cl     geo
+                                                 U (x)−1 = a3 Rx,ν (B; v),                        (132)
+                                            
+                                Xa,v − Xa,v   x,ν ν
+
+with uniform zero/one/two background bounds. If a geometric source has uniformly bounded physical
+one-dimensional measure, its total differentiated holonomy error is O(a2 ). In the local score, the difference
+is an a2 dimension-six root.
+Proof. Divide (130) by a and subtract (131). A bounded-length lattice representative contains O(a−1 )
+links, so summing an O(a3 ) insertion gives O(a2 ). In a four-dimensional local density, the same two-
+extra-derivative remainder is exactly a dimension-six operator carrying a2 under canonical scaling.
+
+The complete score and the dimension-four quotient                    Define the exact finite-cutoff score
+
+                       Ta (v) = Xa,v
+                                 cl
+                                     Φa − divH Xa,v
+                                                cl
+                                                    ,          Ea [Xa,v
+                                                                    cl
+                                                                        F ] = Ea [F Ta (v)].                 (133)
+
+It is local, gauge invariant after the local orbit sum, signed-hypercubic covariant, and linear in v.
+8.2.2 Complete dimension-four mixing block
+The finite regulator is only signed-hypercubic invariant. Consequently the renormalized dimension-four
+score may mix with every signed-hypercubic rank-two curvature quadratic of the same engineering
+dimension. In particular, the diagonal tensor
+                                                      1
+                                                            
+                         Hµν = δµν Tr(Fµα Fµα ) − Tr F 2           (no sum over µ)                    (134)
+                                                      4
+is retained in the mixing block; it is not declared irrelevant from its classical principal symbol.
+          (2)
+   Let W4 be the finite-dimensional real vector space of all local, reflection-even, gauge-invariant rank-
+two curvature quadratics with constant coefficient tensors, modulo vacuum terms, total differences, and
+the declared equation-of-motion contacts. The coefficient tensors carry a formal algebraic O(4) action ρ4 .
+Averaging an inner product over O(4) makes this action orthogonal and gives canonical isotypic projectors
+                                                Z
+                                       Pλ = dλ        χλ (R)ρ4 (R) dR.                               (135)
+                                                   O(4)
+
+
+                                                          80
+Write
+                                           (2)
+                                          W4     = Wsc ⊕ Wst ⊕ Wextra ,                                   (136)
+where Wsc is generated by δµν Tr F , Wst is generated by
+                                      2
+
+
+                                                        1
+                                          Tr(Fµα Fνα ) − δµν Tr F 2 ,
+                                                        4
+and Wextra is the sum of all remaining O(4) isotypic components. The tensor (134) has, in general, a
+nonzero component in Wextra .
+                                                        (2)
+   Choose once and for all a basis q1 , . . . , qm of W4 and reflection-symmetric clover lattice representatives
+Qa,1 , . . . , Qa,m . Let P4 be the direct sum of this complete rank-two block with the complete reflection-even
+scalar dimension-four block used for the curvature source. Fix an even engineering cutoff D ≥ 6 and let
+                                                  ȷ4 : P4 −→ J≤D
+be the inclusion with zero components in every degree different from four. Write P≤D for the complete
+localization onto the finite jet quotient and Q>D = I − P≤D for the reported remainder. The exact source
+map before localization is denoted by Ta→b .
+Lemma 8.22 (The active source space contains the full tensor block). The coefficient-labelled represen-
+tatives Qa,1 , . . . , Qa,m form a finite subspace of the active jet module J≤D , and the weak source transport
+of Theorem 5.26 acts on their complete span. In particular, no component is removed merely because its
+coefficient is not invariant under the full O(4) group.
+Proof. Lemma 5.21 allows arbitrary fixed tensor, profile, stress, and rotation-defect marks. Treating the
+constant coefficient tensor as a finite passive label therefore places every qβ in one finite direct summand
+of J≤D . Signed-hypercubic symmetry constrains the matrix entries but does not quotient out source
+labels. Hence the complete filtered transport retains the whole span used below.
+Definition 8.23 (Complete one-step low-jet matrices and fundamental matrix). Let a = ℓ0 < ℓ1 < · · · <
+ℓn = r be the dyadic weak scales. Define
+                                          Tj≤D := P≤D Tℓj →ℓj+1 J                                         (137)
+                                                                         ≤D
+
+
+and
+                                                     ≤D         ≤D
+                                            Φ≤D
+                                             a,r := Tn−1 · · · T0  .                                      (138)
+Every off-diagonal route among dimensions at most D is retained in these matrices. A route that leaves
+J≤D is not silently projected back into the product; it belongs to the reported remainder below.
+Theorem 8.24 (Complete filtered pullback normalization). After decreasing the common weak threshold
+once, every Tj≤D and hence Φ≤Da,r is invertible. In the terminally weighted coefficient norm
+
+                                                       X  a ∆−4
+                                     ∥x∥a⇝r,D :=                         ∥P∆ x∥,                          (139)
+                                                               r
+                                                      ∆≤D
+
+its inverse on a fixed finite source family has at most a fixed power of the running logarithm. For v ∈ P4
+define
+                                            a,r (v) := (Φa,r )                                        (140)
+                                                         ≤D −1
+                                           ι[D]                ȷ4 v.
+Then the complete truncated low-jet evolution is normalized exactly:
+                                                 Φ≤D
+                                                  a,r ιa,r (v) = ȷ4 v.
+                                                       [D]
+                                                                                                          (141)
+Thus every same-dimension hypercubic channel and every generated degree-six through D component is
+removed by one finite filtered inverse, not by an inverse of the projected dimension-four block.
+Proof. On the associated graded, every one-step diagonal multiplier is 24−∆ ̸= 0. Proposition 5.24
+therefore makes each finite matrix Tj≤D invertible on a smaller weak tube. Order the basis by engineering
+degree and conjugate the jth matrix by the diagonal terminal weights (ℓj /r)∆−4 . Canonical dimensional
+factors cancel the graded multipliers, while every off-diagonal localization coefficient is bounded by the
+finite marked template norm. The resulting finite matrices and their Schur complements are I + O(uj )
+on principal blocks and uniformly invertible on complementary blocks. Lemma 5.25 and finite induction
+in engineering degree give the stated logarithmic product and inverse-product bounds. Equation (141) is
+the defining identity for this complete finite cocycle.
+
+
+                                                          81
+Lemma 8.25 (Exact finite cocycle and reported high-jet remainder). For every intermediate dyadic
+scale a < b < r,
+                                   ≤D ≤D                         [D]
+                          Φ≤D
+                           a,r = Φb,r Φa,b ,   Φ≤D
+                                                 a,b ιa,r (v) = ιb,r (v).
+                                                      [D]
+                                                                                           (142)
+For the exact untruncated source transport, define
+                                     [D]
+                                    Ea,r (v) := P≤D Ta→r ι[D]
+                                                          a,r (v) − ȷ4 v.                             (143)
+
+       [D]
+Then Ea,r is the sum of histories with a first exit through Q>D , and for every fixed marked source family
+                                 [D]
+                               ∥Ea,r (v)∥r,[N ] ≤ CD,N rD−4 L(r)pD,N pN (v).                          (144)
+
+The same estimate holds after one coupling derivative. Consequently the full exact sources are projectively
+                                                                                        (4)      (4) (4)
+compatible up to a displayed defect that vanishes as r ↓ 0. The projected identity Za,r = Zb,r Za,b is
+neither asserted nor needed.
+
+Proof. The first display is the associativity of the finite matrix product and its inverse. To compare with
+exact transport, expand the difference between P≤D Ta→r |J≤D and the product (138) by the first scale at
+which a source history leaves J≤D . Each summand contains one factor Q>D Tℓj →ℓj+1 P≤D , followed by
+exact transport and final localization. The first omitted reflection-even scalar or rank-two degree is at
+least D + 2. Canonical scaling to the physical localization scale, strict complementary contraction, and
+the finite marked source-tree estimate give a geometric sum bounded by rD−4 L(r)pD,N . A coupling mark
+uses the same common marked tube and changes only the finite constant. This proves (144).
+8.2.3 Dimension-raised defect after the finite counterterm
+The clover expansion and centered covariant differences are even under the combined orientation reversal
+and a 7→ −a. Their direct discretization error therefore has no dimension-five term and begins with a2
+times a finite dimension-six jet. The important point is that this statement is applied only after the
+complete filtered low-jet matrix has been normalized.
+Theorem 8.26 (Improved score and dimension-raised rotation defect). Let v be a compactly supported
+smooth displacement profile and apply the complete filtered pullback (140) to the rank-two source block
+before differentiating the normalized functional. Then, at physical localization scale r,
+
+                                                 1
+                                                        
+                                                           a 2 (6)
+                  Ta→r Ta (v) = Tr e0 (v) + Θr     ∂· v +      Ra,r (v) + rD−4 R(>D)
+                                                                                  a,r (v),         (145)
+                                         
+                                                 4         r
+
+where the two remainders are normalized source roots of engineering degree at least six and strictly greater
+than D, respectively, and
+                                                                       p6
+                      a,r (v)∥r,[2] + ∥Ra,r (v)∥r,[2] ≤ CD 1 + log(r/a)
+                   ∥R(6)                                                   L(r)p6 pN (v).              (146)
+                                        (>D)
+
+
+Equivalently, modulo the declared vacuum/contact sectors, the complete engineering-dimension-four part
+of the improved score is
+
+                                                 1
+                                                                         
+                         (∂µ vν ) cT Tr Fµα Fνα − δµν Tr F 2 + cy δµν Tr F 2 .                   (147)
+                                                 4
+
+The raw score may contain the tensor (134); its same-dimension coefficient is canceled by the complete
+finite inverse, not reclassified as dimension six.
+Proof. Apply Theorem 8.24 on the complete finite jet space. At the localization scale r, every component
+through degree D is exactly the prescribed vector ȷ4 v. Choosing that vector in Wst ⊕ Wsc therefore
+removes every Wextra component, including the hypercubic diagonal channel, while preserving the contact
+normalization because contacts are retained in the same complete filtered matrix.
+   The difference between the geometric clover representative and its retained low jet gives the first term
+in (145); histories that exit the finite jet space give the second term by Lemma 8.25. The symmetric
+two-plaquette clover expansion of Lemma 8.20, the bounded-source error of Proposition 8.21, and centered-
+difference parity show that the bare complementary defect has two extra derivatives or one extra curvature
+and carries a2 . The weak finite-jet transport theorem converts the geometric defect into the canonical
+factor (a/r)2 and at most a fixed power of the running logarithm. The reported high-jet history has the
+explicit factor rD−4 . The marked hierarchy supplies (146).
+
+
+                                                     82
+Lemma 8.27 (Exact profile division). At every fixed field degree, the constant-profile vector kernel of the
+complete improved local score through engineering dimension four vanishes at zero profile momentum. It
+therefore admits exact finite Laurent division
+                                               X
+                                     Vµ (p) =   (eiapα − 1)Wµα (p).                                   (148)
+                                                      α
+
+Thus the apparent factor v/a in (124) is converted before absolute root summation into a bounded discrete
+derivative of v.
+Proof. A zero-profile-momentum coefficient would be a local, reflection-compatible, gauge-invariant vector
+of engineering dimension at most four. No such vector exists: a connection mass term is not gauge
+invariant; Tr dρ(Fµν ) = 0 because g is semisimple; traces of dρ(DF ) reduce to derivatives of the same
+zero trace; and two curvature two-forms cannot be contracted with invariant metric tensors while leaving
+exactly one free vector index. The 
+
+===== finite range hit 5 at 362645 =====
+the product; it belongs to the reported remainder below.
+Theorem 8.24 (Complete filtered pullback normalization). After decreasing the common weak threshold
+once, every Tj≤D and hence Φ≤Da,r is invertible. In the terminally weighted coefficient norm
+
+                                                       X  a ∆−4
+                                     ∥x∥a⇝r,D :=                         ∥P∆ x∥,                          (139)
+                                                               r
+                                                      ∆≤D
+
+its inverse on a fixed finite source family has at most a fixed power of the running logarithm. For v ∈ P4
+define
+                                            a,r (v) := (Φa,r )                                        (140)
+                                                         ≤D −1
+                                           ι[D]                ȷ4 v.
+Then the complete truncated low-jet evolution is normalized exactly:
+                                                 Φ≤D
+                                                  a,r ιa,r (v) = ȷ4 v.
+                                                       [D]
+                                                                                                          (141)
+Thus every same-dimension hypercubic channel and every generated degree-six through D component is
+removed by one finite filtered inverse, not by an inverse of the projected dimension-four block.
+Proof. On the associated graded, every one-step diagonal multiplier is 24−∆ ̸= 0. Proposition 5.24
+therefore makes each finite matrix Tj≤D invertible on a smaller weak tube. Order the basis by engineering
+degree and conjugate the jth matrix by the diagonal terminal weights (ℓj /r)∆−4 . Canonical dimensional
+factors cancel the graded multipliers, while every off-diagonal localization coefficient is bounded by the
+finite marked template norm. The resulting finite matrices and their Schur complements are I + O(uj )
+on principal blocks and uniformly invertible on complementary blocks. Lemma 5.25 and finite induction
+in engineering degree give the stated logarithmic product and inverse-product bounds. Equation (141) is
+the defining identity for this complete finite cocycle.
+
+
+                                                          81
+Lemma 8.25 (Exact finite cocycle and reported high-jet remainder). For every intermediate dyadic
+scale a < b < r,
+                                   ≤D ≤D                         [D]
+                          Φ≤D
+                           a,r = Φb,r Φa,b ,   Φ≤D
+                                                 a,b ιa,r (v) = ιb,r (v).
+                                                      [D]
+                                                                                           (142)
+For the exact untruncated source transport, define
+                                     [D]
+                                    Ea,r (v) := P≤D Ta→r ι[D]
+                                                          a,r (v) − ȷ4 v.                             (143)
+
+       [D]
+Then Ea,r is the sum of histories with a first exit through Q>D , and for every fixed marked source family
+                                 [D]
+                               ∥Ea,r (v)∥r,[N ] ≤ CD,N rD−4 L(r)pD,N pN (v).                          (144)
+
+The same estimate holds after one coupling derivative. Consequently the full exact sources are projectively
+                                                                                        (4)      (4) (4)
+compatible up to a displayed defect that vanishes as r ↓ 0. The projected identity Za,r = Zb,r Za,b is
+neither asserted nor needed.
+
+Proof. The first display is the associativity of the finite matrix product and its inverse. To compare with
+exact transport, expand the difference between P≤D Ta→r |J≤D and the product (138) by the first scale at
+which a source history leaves J≤D . Each summand contains one factor Q>D Tℓj →ℓj+1 P≤D , followed by
+exact transport and final localization. The first omitted reflection-even scalar or rank-two degree is at
+least D + 2. Canonical scaling to the physical localization scale, strict complementary contraction, and
+the finite marked source-tree estimate give a geometric sum bounded by rD−4 L(r)pD,N . A coupling mark
+uses the same common marked tube and changes only the finite constant. This proves (144).
+8.2.3 Dimension-raised defect after the finite counterterm
+The clover expansion and centered covariant differences are even under the combined orientation reversal
+and a 7→ −a. Their direct discretization error therefore has no dimension-five term and begins with a2
+times a finite dimension-six jet. The important point is that this statement is applied only after the
+complete filtered low-jet matrix has been normalized.
+Theorem 8.26 (Improved score and dimension-raised rotation defect). Let v be a compactly supported
+smooth displacement profile and apply the complete filtered pullback (140) to the rank-two source block
+before differentiating the normalized functional. Then, at physical localization scale r,
+
+                                                 1
+                                                        
+                                                           a 2 (6)
+                  Ta→r Ta (v) = Tr e0 (v) + Θr     ∂· v +      Ra,r (v) + rD−4 R(>D)
+                                                                                  a,r (v),         (145)
+                                         
+                                                 4         r
+
+where the two remainders are normalized source roots of engineering degree at least six and strictly greater
+than D, respectively, and
+                                                                       p6
+                      a,r (v)∥r,[2] + ∥Ra,r (v)∥r,[2] ≤ CD 1 + log(r/a)
+                   ∥R(6)                                                   L(r)p6 pN (v).              (146)
+                                        (>D)
+
+
+Equivalently, modulo the declared vacuum/contact sectors, the complete engineering-dimension-four part
+of the improved score is
+
+                                                 1
+                                                                         
+                         (∂µ vν ) cT Tr Fµα Fνα − δµν Tr F 2 + cy δµν Tr F 2 .                   (147)
+                                                 4
+
+The raw score may contain the tensor (134); its same-dimension coefficient is canceled by the complete
+finite inverse, not reclassified as dimension six.
+Proof. Apply Theorem 8.24 on the complete finite jet space. At the localization scale r, every component
+through degree D is exactly the prescribed vector ȷ4 v. Choosing that vector in Wst ⊕ Wsc therefore
+removes every Wextra component, including the hypercubic diagonal channel, while preserving the contact
+normalization because contacts are retained in the same complete filtered matrix.
+   The difference between the geometric clover representative and its retained low jet gives the first term
+in (145); histories that exit the finite jet space give the second term by Lemma 8.25. The symmetric
+two-plaquette clover expansion of Lemma 8.20, the bounded-source error of Proposition 8.21, and centered-
+difference parity show that the bare complementary defect has two extra derivatives or one extra curvature
+and carries a2 . The weak finite-jet transport theorem converts the geometric defect into the canonical
+factor (a/r)2 and at most a fixed power of the running logarithm. The reported high-jet history has the
+explicit factor rD−4 . The marked hierarchy supplies (146).
+
+
+                                                     82
+Lemma 8.27 (Exact profile division). At every fixed field degree, the constant-profile vector kernel of the
+complete improved local score through engineering dimension four vanishes at zero profile momentum. It
+therefore admits exact finite Laurent division
+                                               X
+                                     Vµ (p) =   (eiapα − 1)Wµα (p).                                   (148)
+                                                      α
+
+Thus the apparent factor v/a in (124) is converted before absolute root summation into a bounded discrete
+derivative of v.
+Proof. A zero-profile-momentum coefficient would be a local, reflection-compatible, gauge-invariant vector
+of engineering dimension at most four. No such vector exists: a connection mass term is not gauge
+invariant; Tr dρ(Fµν ) = 0 because g is semisimple; traces of dρ(DF ) reduce to derivatives of the same
+zero trace; and two curvature two-forms cannot be contracted with invariant metric tensors while leaving
+exactly one free vector index. The epsilon tensor has the wrong reflection parity. Hence the finite Laurent
+polynomial Vµ (z) vanishes at z1 = · · · = z4 = 1. Successive telescoping in the variables zα writes it in the
+ideal generated by zα − 1 and preserves finite range, proving (148).
+
+Displacement-root closure Let e0 (v), ω(v) = 14 ∂ · v, and a(v) denote the symmetric traceless, scalar,
+and antisymmetric parts of ∂µ vν .
+Theorem 8.28 (Explicit clover displacement-root theorem). Insert the source (124) before the complete
+normalized conditional logarithm. On the common weak domain, after exact weak/irregular splitting and
+transport to the joint Haar–optical matching logarithm,
+
+                          Tj (v) = Tj0 (e0 (v)) + Θj (ω(v)) + Aj (a(v)) + Rdisp
+                                                                           j    (v).                    (149)
+
+The regular one-displacement-mark remainder obeys
+
+                               Rdisp
+                                j    (v)              ≤ Cℓj p2 (v) + Cϵirr (uj )p1 (v),                 (150)
+                                           root,[2]
+
+
+and the corresponding two-displacement-mark row obeys
+
+                                   Dv2 Rdisp
+                                        j    (v1 )                   ≤ Cp2 (v1 )p2 (v2 ).               (151)
+                                                          root,[2]
+
+The constants are independent of cutoff, finite volume, weak depth, and fine-cell count. Moreover, on the
+bounded geometric source core, replacing the exact anchored displacement by X cl changes every matrix
+element by O(a2 ) before the continuum limit.
+Proof. The source is a globally smooth fixed-range function of finitely many links. On the regular weak
+chart its Taylor jets satisfy the common marked-C 3 theorem, while on the complement its fixed group
+derivatives enter the already established irregular activity row. Lemma 8.18 removes the vacuum Haar
+trace before any support norm, and Lemma 8.19 removes the field-linear color trace. Taylor-expand the
+smooth profile on each link neighborhood. Lemma 8.27 moves the potentially dangerous constant-profile
+low jet onto ∇v by a signed algebraic identity. Theorem 8.26 identifies the dimension-four quotient
+with the traceless stress and scalar coupling-conjugate channels; the antisymmetric part is the already
+controlled rotation/total-difference row. Every other regular term contains a second profile derivative,
+two additional lattice derivatives, an equation-of-motion contact, or a nonreference root. After canonical
+rescaling these give Cℓj p2 (v).
+    There is no source-chart singularity on the irregular complement: Ωsin and all of its group derivatives
+are bounded globally. Use the same regular/irregular partition and Wilson-deficit estimate as the all-stage
+local activity theorem. The exact profile division and canonical dimension separation are performed
+before absolute root summation, so the explicit lattice-scale factor produces either a discrete derivative
+of the profile or a dimension-six remainder. The remaining fixed local derivative losses are absorbed by
+ϵirr (uj ). Root at the first source link, preserve signs through the vacuum and Laurent identities, and
+then invoke Theorem 7.3 and Corollary 7.4. A second source derivative acts on finitely many local profile
+factors and is controlled by the same common marked-C 3 row. Exact conditional pushforward and the
+joint matching connector preserve these bounds with a fixed factor. Finally Proposition 8.21 gives the
+O(a2 ) replacement error on bounded geometric representatives.
+
+
+                                                             83
+Corollary 8.29 (Finite-cutoff Ward identity with vanishing geometric defect). For every bounded
+geometric source Fa and compactly supported smooth profile v,
+
+                                        Ea [δvgeo Fa ] = Ea [Fa Ta (v)] + O(a2 ),                      (152)
+
+with the same statement after passage through the exact projective conditional system. Along the common
+continuum subsequence, the error vanishes and the local translation Ward identity is represented by the
+projective limits of Tj0 and Θj .
+
+Proof. Apply finite-dimensional Haar integration by parts to X cl and use Proposition 8.21 on the left-hand
+side. Theorem 8.28 supplies uniform integrability and projective transport on the right.
+
+Finite incidence identities The finite clover and incidence formulas satisfy:
+1. exact cancellation of the distinguished-link derivative in the two-plaquette clover;
+2. exact gauge covariance under arbitrary lattice G gauge transformations;
+3. midpoint/reflection cancellation showing an O(a3 ) per-link strip defect;
+4. exact signed-hypercubic covariance of the linear incidence stencil;
+5. the zero trace of every first nonlinear adjoint diagonal block.
+These identities, together with the all-stage marked theorem and the terminal joint Haar–optical connector
+established in Part III, complete the finite-cutoff source construction.
+8.2.4 Stress distribution and Ward hierarchy
+Finite tensor roots and exact transport Let ℓj ↓ 0 be the common directed physical resolutions
+and let Tj,z;µν
+          0
+                be the symmetric traceless dimension-four local root obtained from the complete mixing
+block of Theorem 8.26 in the scale-j cell z. Total differences, the declared equation-of-motion contact
+convention, the scalar coupling-conjugate root, and the antisymmetric rotation root are kept in separate
+blocks. For a compactly supported smooth symmetric traceless profile f , set
+                                                       X
+                                         Tj (f ) = ℓ4j   f µν (z)Tj,z;µν
+                                                                   0
+                                                                         .                           (153)
+                                                          z
+
+The factor ℓ4j is the physical Riemann weight.
+   Let Aj f be the exact block average of f onto the next scale. Differentiating the complete normalized
+block map in the tensor-source direction gives
+
+                                         Bj Tj (f ) = Tj+1 (Aj f ) + Rj (f ).                          (154)
+
+Lemma 8.30 (Summable tensor-profile remainder). For arbitrary bounded exterior geometric marks,
+
+                  ∥Rj (f )∥root,[2] ≤ Cℓj pN (f ) + CℓD−4
+                                                      j   L(ℓj )pD pN (f ) + Cϵirr (uj )pN (f ),       (155)
+
+where N is fixed, the constants are independent of cutoff and volume, and
+                                 X
+                                      ℓj + ℓD−4 L(ℓj )pD + ϵirr (uj ) < ∞.                             (156)
+                                                                     
+                                            j
+                                    j
+
+The same bound holds with one additional bounded source mark.
+Proof. The global clover theorem identifies the tensor coefficient before absolute summation and proves
+that every nonmarginal regular term has either one extra physical profile derivative or two extra lattice
+derivatives. Block averaging changes f by a first Taylor difference of size Cℓj pN (f ). The dimension-six
+complement contracts by 1/4 + O(uj ). Histories that leave the retained finite jet block contribute
+CℓD−4
+   j   L(ℓj )pD by Lemma 8.25; both terms are summable after weakening one support exponent. The
+globally smooth sine-coordinate remainder and the weak/irregular partition carry the established stretched-
+exponential irregular charge. The common marked-C 3 theorem permits one additional exterior mark
+without a volume factor.
+Lemma 8.31 (Conditional transport through the joint matching connector). Equation (154) and bound
+(155) survive every exact weak or macrobridge conditional pushforward. At the terminal matching scale,
+stress and geometric-source derivatives are inserted as local marked roots in the complete joint Haar–optical
+logarithm. Theorem 6.43 and Corollary 7.4 give their zero/one/two-mark connector rows directly, with no
+terminal ground-state conjugation or separately assumed Perron gap.
+
+
+                                                           84
+Proof. At each weak or bridge block, conditional differentiation gives the coarse score as the conditional
+expectation of the fine score and normalization centers it; the marked rooted bounds control the resulting
+local rows. At matching, the stress insertion remains one of the finite local curvature-jet roots in the exact
+joint law. The complete matching logarithm is differentiated before either compact or optical variables
+are marginalized, so normalization contacts, mixed retained/optical histories, and the geometric Ward
+contact remain in the same connected forest. The marked two-root theorem supplies the required local
+row with a fixed factor, and the exact change-of-variables coefficient of the Ward contact remains one.
+
+Projective convergence with bounded exterior sources Let A1 , . . . , An be bounded compatible
+geometric cylinders and use their exact representatives at scale j. Define
+                                                                      n
+                                                                            !
+                                                                      Y
+                               Wj (f ; A1 , . . . , An ) = Sj Tj (f )   Ai,j .           (157)
+                                                                         i=1
+
+Theorem 8.32 (One-stress all-order source-tree bound). There are fixed N, C, a > 0 such that
+                                                                             n
+                                                                             Y
+                              |Wj (f ; A1 , . . . , An )| ≤ C n n! pN (f )         ∥Ai ∥∞ ,             (158)
+                                                                             i=1
+
+uniformly in j, cutoff, volume and boundary conditions. Connected versions obey the same physical
+spanning-tree decay as the bounded-source theorem, with the stress buffer used as one distinguished root.
+Proof. Expand the stress-marked connected logarithm into background families and bounded source
+atoms. Root the canonical labelled exploration at the stress buffer. Each edge of the extracted spanning
+tree requires at most the stress root and one bounded source buffer, so Corollary 7.4 applies exactly
+as in the bounded-source tree theorem. Families confined to a fixed buffer are absorbed into the exact
+local conditional. Every nonlocal attachment pays the physical connector kernel; excess attachments
+are summed by the unused KP margin. Lemma 8.30 bounds the stress root uniformly and adds no
+source-count factor.
+Theorem 8.33 (Projective stress Schwinger distribution). Along the common directed subsequence, the
+limit
+                           W(f ; A1 , . . . , An ) = lim Wj (f ; A1 , . . . , An )            (159)
+                                                         j→∞
+
+exists simultaneously for the countable rational Schwartz/source core and extends uniquely by continuity.
+It is:
+(S1) linear and Schwartz tempered in f ;
+(S2) multilinear and continuous in bounded exterior cylinders;
+(S3) local relative to the common gauge-invariant source system;
+(S4) continuously translation covariant and signed-hypercubic covariant;
+(S5) independent of the compatible microscopic representative.
+Proof. Apply (154) between consecutive resolutions. The exact finite cocycle moves the retained leading
+jet to the next scale, while the reported high-jet route is part of Rj ; Lemma 8.30 bounds the total
+difference by the summable sequence (156). Thus every matrix element is Cauchy. The uniform tree bound
+gives a finite Schwartz seminorm and permits diagonal extraction on the countable core. Translation
+continuity, locality, clustering, and representative independence follow from the uniform rooted source-tree
+bound and the summable recurrence above. The tensor source is signed-hypercubic at finite cutoff. Its
+complete filtered low-jet block is normalized by Theorem 8.24; the remaining antisymmetric regulator
+response is two engineering dimensions higher after one or two geometric marks. The angular Ward
+theorem below then integrates the resulting infinitesimal action to O(4) covariance.
+
+Ward identity and contact hierarchy For a compactly supported smooth vector field v, let
+                                                1                   1
+                                   e0µν (v) =     (∂µ vν + ∂ν vµ ) − δµν ∂ · v.
+                                                2                   4
+The scalar strain is represented separately by the coupling-conjugate insertion Θ( 14 ∂ · v), and the
+antisymmetric strain by the rotation action.
+
+
+                                                         85
+Theorem 8.34 (Exact continuum translation Ward identity). For every compactly supported smooth v
+and bounded geometric cylinders A1 , . . . , An ,
+
+                                                    1
+                                                                         
+                  W(e (v); A1 , . . . , An ) + Θ ∂ · v; A1 , . . . , An
+                       0
+                                                                              + A(a(v); A1 , . . . , An )
+                                                    4
+                              X n                                                                           (160)
+                           =          S(A1 · · · δv Ai · · · An ).
+                                i=1
+
+
+The coefficient of every contact is exactly one. Repeated differentiation gives the complete contact hierarchy,
+including the finite tensor-spin Lie derivative for nonscalar insertions.
+Proof. At finite cutoff, compact-Haar integration by parts for the globally smooth clover vector field gives
+the exact score identity. The global clover theorem shows that its action on each bounded geometric
+representative differs from the anchored geometric displacement by O(ℓ2j ), uniformly after bounded
+exterior insertions. The right side therefore converges to the geometric derivatives. Theorem 8.33 passes
+the score decomposition on the left. Exact conditional pushforward and the joint matching transport
+preserve the score identity by Lemma 8.31. Differentiating the source functional repeatedly distributes
+the derivation among the inserted observables, so all collision contacts are fixed rather than independently
+chosen.
+Corollary 8.35 (Distributional conservation away from contacts). For pairwise separated scalar inser-
+tions,                 *                   +                       * n         +
+                                Yn              Xn                  Y
+                    ∂µ Tµν (x)     Oi (xi ) = −     δ(x − xi )∂xνi     Oi (xi ) ,               (161)
+                                      i=1                i=1                       i=1
+
+where T denotes the complete tensor distribution consisting of the traceless and scalar strain channels.
+For tensor insertions, ∂xi is replaced by the full infinitesimal Lie derivative.
+Proof. Integrate (160) by parts in v and use the arbitrariness of the compactly supported profile. Locality
+separates the ordinary contact terms from pairwise-disjoint supports.
+Proposition 8.36 (Noncollapse and canonical normalization). The stress Schwinger distribution is
+nonzero. Its normalization is fixed uniquely by the unit contact coefficient in (160); no independent finite
+factor is available.
+Proof. The reflected curvature source of Theorem 10.5 (proved independently in Section 10) defines
+a nonzero centered local vector. Common physical clustering gives its time-translation correlation a
+finite positive spectral measure supported away from zero; hence that correlation is not constant and its
+distributional translation derivative is nonzero for suitable separated test profiles. Choose v supported
+near one insertion. The right side of (160) is then nonzero, so the tensor insertion on the left cannot
+vanish. Multiplying the tensor by a finite constant would multiply the left contact coefficient but not the
+geometric derivation on the right, forcing the constant to be one.
+
+Result and local-field realization
+Theorem 8.37 (Stress/Ward construction). The global displacement theorem plus the projective construc-
+tion above produce a nonzero tempered Euclidean tensor insertion on the bounded geometric Schwinger
+algebra, with exact translation contacts and signed-hypercubic covariance. The later angular Ward theorem
+promotes its continuum multiplet to O(4) covariance.
+8.2.5 Euclidean rotation covariance
+Low-dimensional rotation-defect classification.
+Lemma 8.38 (No low-dimensional gauge-invariant vector). For every compact simple G there is no
+nonzero local, reflection-compatible, gauge-invariant vector source of engineering dimension at most four,
+modulo vacuum terms and total derivatives.
+Proof. A connection mass term is not gauge invariant. At dimension two, Tr dρ(Fµν ) = 0 by semisimplicity.
+At dimension three, traces of dρ(DF ) reduce to derivatives of Tr dρ(F ) and vanish. A dimension-four
+gauge-invariant vector cannot be formed from two curvature two-forms using only the metric while leaving
+one free index; an epsilon tensor would have the wrong reflection parity. Total derivatives are excluded
+by the stated quotient.
+
+
+                                                         86
+Lemma 8.39 (Antisymmetric stress defect begins at dimension six). A local signed-hypercubic, reflection-
+even, gauge-invariant antisymmetric rank-two source has no component of engineering dimension four or
+five. Its first possible nonzero continuum jet has dimension at least six.
+Proof. At dimension four the quadratic curvature tensors are generated by Tr(Fµα Fνα ), δµν Tr F 2 , and
+the corresponding dual-curvature contractions. The first is symmetric; the dual contraction is proportional
+to a diagonal pseudoscalar tensor; none has an antisymmetric part. Reflection symmetry excludes the
+odd-derivative dimension-five sector.
+Corollary 8.40 (Vanishing rotation regulator). In the projective stress Ward identity, the antisymmetric
+regulator insertion is a2 times a normalized family of dimension-six roots. The marked source bounds
+therefore make it vanish in the zero-spacing limit. The cutoff rotation Ward identities integrate to full O(4)
+covariance once the already established translation, reflection, and tensor-source continuity statements are
+inserted.
+
+Stress Ward identity and the antisymmetric regulator source                        For a compactly supported
+smooth vector field v, write
+                                             1                   1
+                                    e0µν (v) = (∂µ vν + ∂ν vµ ) − δµν ∂ · v,
+                                             2                   4
+                                             1
+                                    aµν (v) = (∂µ vν − ∂ν vµ ).
+                                             2
+The global smooth clover displacement theorem and Haar integration by parts give, after projective source
+transport,
+                                                           n
+                                 1
+                                                        X
+              T (e (v); O) + Θ ∂ · v; O + A(a(v); O) =
+                  0
+                                                              Sn (O1 , . . . , δv Oi , . . . , On ), (162)
+                                 4                        i=1
+
+where O = (O1 , . . . , On ) is a finite family of local gauge-invariant source fields. The contact coefficient is
+one, and for tensor fields δv is the full geometric Lie derivative, including the finite spin action.
+   The first two terms in (162) are the symmetric traceless and scalar metric strains. The third is the
+regulator response to the antisymmetric part of the lattice displacement.
+Lemma 8.41 (Vanishing antisymmetric-strain source). For every fixed finite source family and compactly
+supported antisymmetric profile ω µν , the finite-cutoff antisymmetric insertion ha
