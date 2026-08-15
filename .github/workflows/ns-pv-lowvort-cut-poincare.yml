@@ -29,7 +29,8 @@ jobs:
           set -euo pipefail
           for SRC in \
             verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSPVLowVortCutVariance.lean \
-            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSAnchorTemporalConeBudget.lean
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSAnchorTemporalConeBudget.lean \
+            verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSGMFilteredSeparationBudget.lean
           do
             test -s "$SRC"
             if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
@@ -49,6 +50,7 @@ jobs:
           files = [
               pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSPVLowVortCutVariance.lean'),
               pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSAnchorTemporalConeBudget.lean'),
+              pathlib.Path('verification/ns-pv-lowvort-cut-poincare-20260815-run37/NSGMFilteredSeparationBudget.lean'),
           ]
           for p in files:
               payload = json.dumps({
@@ -82,6 +84,7 @@ jobs:
           paths = [
               pathlib.Path('NSPVLowVortCutVariance-axle-response.json'),
               pathlib.Path('NSAnchorTemporalConeBudget-axle-response.json'),
+              pathlib.Path('NSGMFilteredSeparationBudget-axle-response.json'),
           ]
           for p in paths:
               if not p.exists():
