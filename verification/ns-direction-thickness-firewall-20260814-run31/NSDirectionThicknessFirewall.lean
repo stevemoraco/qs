@@ -40,9 +40,9 @@ theorem thinOutlierDefect_nonneg
   positivity
 
 /-- Fixed nonzero support separation alone gives no positive defect floor: the
-weighted defect is at most twice the outlier mass. -/
-theorem thinOutlierDefect_le_two_eps
-    {eps : ℝ} (h0 : 0 ≤ eps) (h1 : eps ≤ 1) :
+weighted defect is at most twice the outlier mass.  This algebraic inequality
+actually holds for every real `eps`. -/
+theorem thinOutlierDefect_le_two_eps (eps : ℝ) :
     thinOutlierDefect eps ≤ 2 * eps := by
   rw [thinOutlierDefect_eq]
   nlinarith [sq_nonneg eps]
@@ -50,10 +50,9 @@ theorem thinOutlierDefect_le_two_eps
 /-- Hence any requested positive defect threshold can be beaten once the
 outlier mass is small enough. -/
 theorem thinOutlierDefect_lt_target
-    {eps eta : ℝ} (h0 : 0 ≤ eps) (h1 : eps ≤ 1)
-    (hsmall : 2 * eps < eta) :
+    {eps eta : ℝ} (hsmall : 2 * eps < eta) :
     thinOutlierDefect eps < eta := by
-  exact lt_of_le_of_lt (thinOutlierDefect_le_two_eps h0 h1) hsmall
+  exact lt_of_le_of_lt (thinOutlierDefect_le_two_eps eps) hsmall
 
 /-- If two separated sectors each carry at least mass `m`, their ordered
 cross-pair defect is bounded below by the corresponding thickness floor. -/
@@ -86,7 +85,7 @@ pair-defect budget forces the second sector's mass to be small after weighting
 by the separation and the mass floor. -/
 theorem smallDefect_forces_weightedSecondSectorThin
     {a b m d eps : ℝ}
-    (hm : 0 ≤ m) (hd : 0 ≤ d)
+    (hd : 0 ≤ d)
     (ha : m ≤ a) (hb : 0 ≤ b)
     (hdef : twoClusterDefect a b d ≤ eps) :
     2 * m * d * b ≤ eps := by
