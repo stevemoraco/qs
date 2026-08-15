@@ -16,12 +16,15 @@ Formalized here:
 * the exact determinant of the realified consecutive-Hankel source pencil for
   one nonreal conjugate pair;
 * the resulting no-real-root / displacement-blindness firewall;
-* the characteristic polynomial of the corresponding real multiplication map.
+* the characteristic polynomial of the corresponding real multiplication map;
+* the generic conjugation-compatible scalar-filter source block, proving that
+  scalar nodewise weighting changes eigenvalue depth but not its one-plus /
+  one-minus inertia signature away from exact annihilation.
 
-These are the finite load-bearing identities in the human B123 reduction.  This
-file does **not** formalize primes, the B46 kernel, PNT error bounds, zeta zeros,
-contour integration, Hankel spectral theory, the Riemann hypothesis, or any
-Clay conclusion.
+These are the finite load-bearing identities in the human B123/B123C reduction.
+This file does **not** formalize primes, the B46 kernel, PNT error bounds, zeta
+zeros, contour integration, Hankel spectral theory, the Riemann hypothesis, or
+any Clay conclusion.
 -/
 
 /-- A finite signed row of total mass zero is unchanged when every state value is
@@ -43,7 +46,7 @@ theorem zero_mass_centering
     _ = (∑ i ∈ s, a i * z i) - (∑ i ∈ s, a i) * λ := by
           rw [Finset.sum_mul]
     _ = ∑ i ∈ s, a i * z i := by rw [hzero]; ring
-  
+
 /-- Scalar form of a weighted quadratic cost after the finite weights have been
 collapsed to total mass `A`, first moment `Z`, and second moment `Q`. -/
 def quadraticCost (A Z Q λ : ℝ) : ℝ :=
@@ -112,6 +115,38 @@ theorem pair_multiplication_charpoly_positive
   have ht2 : 0 ≤ (t - a) ^ 2 := sq_nonneg (t - a)
   nlinarith
 
+/-- Determinant of the generic realified pair source block associated with one
+conjugation-compatible scalar node weight `r + i s`. -/
+def scalarPairBlockDet (r s : ℝ) : ℝ :=
+  r * (-r) - (-s) * (-s)
+
+/-- Every scalar-filter pair block has determinant `-(r²+s²)`. -/
+theorem scalar_pair_block_det_factorization (r s : ℝ) :
+    scalarPairBlockDet r s = -(r ^ 2 + s ^ 2) := by
+  unfold scalarPairBlockDet
+  ring
+
+/-- Unless the scalar filter annihilates the node exactly, the pair block has
+strictly negative determinant and hence cannot lose its one-plus/one-minus
+signature merely because the scalar depth becomes small. -/
+theorem scalar_pair_block_det_negative
+    {r s : ℝ} (hne : r ≠ 0 ∨ s ≠ 0) :
+    scalarPairBlockDet r s < 0 := by
+  rw [scalar_pair_block_det_factorization]
+  rcases hne with hr | hs
+  · have hr2 : 0 < r ^ 2 := sq_pos_of_ne_zero hr
+    have hs2 : 0 ≤ s ^ 2 := sq_nonneg s
+    nlinarith
+  · have hs2 : 0 < s ^ 2 := sq_pos_of_ne_zero hs
+    have hr2 : 0 ≤ r ^ 2 := sq_nonneg r
+    nlinarith
+
+/-- Characteristic polynomial identity for the generic scalar-filter source
+block `[[r,-s],[-s,-r]]`; the eigenvalue depths are `±sqrt(r²+s²)`. -/
+theorem scalar_pair_block_charpoly_identity (r s t : ℝ) :
+    (t - r) * (t + r) - s ^ 2 = t ^ 2 - (r ^ 2 + s ^ 2) := by
+  ring
+
 #print axioms zero_mass_centering
 #print axioms quadratic_cost_complete_square
 #print axioms quadratic_cost_minimized_at_mean
@@ -120,5 +155,8 @@ theorem pair_multiplication_charpoly_positive
 #print axioms pair_pencil_has_no_real_root
 #print axioms pair_multiplication_charpoly_identity
 #print axioms pair_multiplication_charpoly_positive
+#print axioms scalar_pair_block_det_factorization
+#print axioms scalar_pair_block_det_negative
+#print axioms scalar_pair_block_charpoly_identity
 
 end RHB123WeightedVarianceHankelPencil
