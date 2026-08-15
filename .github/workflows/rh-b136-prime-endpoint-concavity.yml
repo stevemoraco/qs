@@ -52,7 +52,7 @@ jobs:
                 jq '{status,verdict,sorry_count,error,axioms,verified_count}' <<< "$JOB"
                 test "$(jq -r '.verdict' <<< "$JOB")" = "VERIFIED"
                 test "$(jq -r '.sorry_count' <<< "$JOB")" = "0"
-                test "$(jq -r '.verified_count' <<< "$JOB")" -ge 3
+                test "$(jq -r '.verified_count' <<< "$JOB")" -ge 5
                 test "$(jq -r '.error' <<< "$JOB")" = "null"
                 exit 0
                 ;;
