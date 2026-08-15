@@ -1,0 +1,1085 @@
+===== quadratic form hit 1 at 932 =====
+ Yang–Mills Existence, Mass Gap, and Nontriviality
+for Fixed Compact Simple Gauge Groups via Karcher
+      Blocking and Exact Haar–Pivot Matching
+                                             Harold D. Kirk III1,2,∗
+                         1
+                             University of Memphis, Memphis, Tennessee 38152, USA
+                                        2
+                                            ORCID: 0009-0000-6014-8451
+
+                                                August 3, 2026
+
+
+                                                     Abstract
+        Let G be a fixed compact connected simple Lie group and let ρ be a fixed faithful finite-dimensional
+    unitary representation. We construct four-dimensional pure G Yang–Mills theory as a zero-spacing,
+    infinite-volume limit of reflection-positive Wilson lattice measures. The Wilson plaquette function
+    is normalized at the identity to the background quadratic form used to define the coupling u = g 2 .
+    A weighted forty-nine-path Karcher block, complete sixteen-alias normal section, charged chart-
+    complement partition, and permanent rooted domain produce a uniform scale-two map on a centered
+    invariant graph,
+                                                 11 CA (G) log 2
+                               u(2L) = u(L) +                    u(L)2 + OG (u(L)3 ).
+                                                     24π 2
+
+    The complete linear block certificate is independent of color and tensors with Ig ; all nonlinear
+    constants are finite and may depend on G. At the physical handoff, a group-dependent product
+    Sobolev order 2sG > dG /2 gives a Peter–Weyl Fourier–Wiener landing for the exact one-pivot and
+    multipivot densities. Separated Haar pivots contract nonvacuum compact flux, optical covariance
+    contracts normal-field stretches, and all remaining vertices retain their support charge. A single
+    marked replica–BKAR forest then gives a boundary-to-center two-root connector and one physical
+    clustering rate. General invariant-jet transport, displacement and stress Ward identities, finite
+    dimension-four mixing, and a dimension-six rotation regulator yield a tempered, reflection-positive,
+    translation-continuous, O(4)-covariant Schwinger family. Osterwalder–Schrader reconstruction gives a
+    positive-energy Poincaré-covariant local theory with unique vacuum and a strictly positive Hamiltonian
+    gap. Endpoint-safe curvature-source transport produces a nonzero local vector with positive spectral
+    mass in a finite interval above the gap. The theorem concerns the local gauge-invariant curvature-jet
+    observable theory. No estimate is asserted uniformly over the class of compact simple groups.
+
+
+
+
+ ∗ hkirk@memphis.edu
+
+
+
+
+                                                         1
+Contents
+1 The compact-simple-group theorem and proof boundary             3
+
+2 Fixed-group Wilson geometry and Karcher blocking                5
+
+3 Charged chart complement and irregular sector                  10
+
+4 Permanent weak renormalization group                           23
+
+5 Invariant graph and universal coefficient                      39
+
+6 Directed handoff and higher-order Peter–Weyl landing           52
+
+7 Compact boundary-to-center closure                             71
+
+8 General invariant jets and Ward identities                     72
+
+9 Continuum reconstruction and spectral gap                      89
+
+10 Nontriviality and finite spectral window                      90
+
+11 Completion for arbitrary fixed compact simple gauge groups    94
+
+A Endpoint packet-shell verification                             94
+
+B Root data and representation normalization                    109
+
+C The fixed-group Sobolev and Peter–Weyl ledger                 110
+
+D Ordinary periodic torons, seams, and wrapping templates       110
+
+E Invariant tensor spaces through engineering dimension six     111
+
+F Theorem-level specialization and dependency map               112
+
+G Representative fixed-group certifications                     113
+
+
+
+
+                                              2
+1     The compact-simple-group theorem and proof boundary
+1.1    Problem and result
+The constructive Yang–Mills problem asks for a nontrivial quantum gauge field theory on R4 satisfying
+the Osterwalder–Schrader and Wightman requirements and possessing a strictly positive mass gap [1].
+The physical scale, thermodynamic limit, zero lattice spacing, Euclidean covariance, local spectral content,
+and non-abelian field geometry must be controlled in one compatible construction.
+   Fix throughout a compact connected simple Lie group G, a faithful unitary representation ρ : G → U (Vρ )
+of dimension dρ , and a positive normalization of the invariant quadratic form for which the adjoint color
+factor is denoted CA (G). The Wilson plaquette function is
+                                                        1
+                                                                    
+                                   wG,ρ (U ) = cρ 1 −     Re Tr ρ(U ) ,
+                                                       dρ
+where cρ > 0 is chosen once so that the Hessian at the identity is the quadratic form used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG           
+
+===== quadratic form hit 2 at 4787 =====
+ield a tempered, reflection-positive,
+    translation-continuous, O(4)-covariant Schwinger family. Osterwalder–Schrader reconstruction gives a
+    positive-energy Poincaré-covariant local theory with unique vacuum and a strictly positive Hamiltonian
+    gap. Endpoint-safe curvature-source transport produces a nonzero local vector with positive spectral
+    mass in a finite interval above the gap. The theorem concerns the local gauge-invariant curvature-jet
+    observable theory. No estimate is asserted uniformly over the class of compact simple groups.
+
+
+
+
+ ∗ hkirk@memphis.edu
+
+
+
+
+                                                         1
+Contents
+1 The compact-simple-group theorem and proof boundary             3
+
+2 Fixed-group Wilson geometry and Karcher blocking                5
+
+3 Charged chart complement and irregular sector                  10
+
+4 Permanent weak renormalization group                           23
+
+5 Invariant graph and universal coefficient                      39
+
+6 Directed handoff and higher-order Peter–Weyl landing           52
+
+7 Compact boundary-to-center closure                             71
+
+8 General invariant jets and Ward identities                     72
+
+9 Continuum reconstruction and spectral gap                      89
+
+10 Nontriviality and finite spectral window                      90
+
+11 Completion for arbitrary fixed compact simple gauge groups    94
+
+A Endpoint packet-shell verification                             94
+
+B Root data and representation normalization                    109
+
+C The fixed-group Sobolev and Peter–Weyl ledger                 110
+
+D Ordinary periodic torons, seams, and wrapping templates       110
+
+E Invariant tensor spaces through engineering dimension six     111
+
+F Theorem-level specialization and dependency map               112
+
+G Representative fixed-group certifications                     113
+
+
+
+
+                                              2
+1     The compact-simple-group theorem and proof boundary
+1.1    Problem and result
+The constructive Yang–Mills problem asks for a nontrivial quantum gauge field theory on R4 satisfying
+the Osterwalder–Schrader and Wightman requirements and possessing a strictly positive mass gap [1].
+The physical scale, thermodynamic limit, zero lattice spacing, Euclidean covariance, local spectral content,
+and non-abelian field geometry must be controlled in one compatible construction.
+   Fix throughout a compact connected simple Lie group G, a faithful unitary representation ρ : G → U (Vρ )
+of dimension dρ , and a positive normalization of the invariant quadratic form for which the adjoint color
+factor is denoted CA (G). The Wilson plaquette function is
+                                                        1
+                                                                    
+                                   wG,ρ (U ) = cρ 1 −     Re Tr ρ(U ) ,
+                                                       dρ
+where cρ > 0 is chosen once so that the Hessian at the identity is the quadratic form used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     
+
+===== quadratic form hit 3 at 5219 =====
+auge-invariant curvature-jet
+    observable theory. No estimate is asserted uniformly over the class of compact simple groups.
+
+
+
+
+ ∗ hkirk@memphis.edu
+
+
+
+
+                                                         1
+Contents
+1 The compact-simple-group theorem and proof boundary             3
+
+2 Fixed-group Wilson geometry and Karcher blocking                5
+
+3 Charged chart complement and irregular sector                  10
+
+4 Permanent weak renormalization group                           23
+
+5 Invariant graph and universal coefficient                      39
+
+6 Directed handoff and higher-order Peter–Weyl landing           52
+
+7 Compact boundary-to-center closure                             71
+
+8 General invariant jets and Ward identities                     72
+
+9 Continuum reconstruction and spectral gap                      89
+
+10 Nontriviality and finite spectral window                      90
+
+11 Completion for arbitrary fixed compact simple gauge groups    94
+
+A Endpoint packet-shell verification                             94
+
+B Root data and representation normalization                    109
+
+C The fixed-group Sobolev and Peter–Weyl ledger                 110
+
+D Ordinary periodic torons, seams, and wrapping templates       110
+
+E Invariant tensor spaces through engineering dimension six     111
+
+F Theorem-level specialization and dependency map               112
+
+G Representative fixed-group certifications                     113
+
+
+
+
+                                              2
+1     The compact-simple-group theorem and proof boundary
+1.1    Problem and result
+The constructive Yang–Mills problem asks for a nontrivial quantum gauge field theory on R4 satisfying
+the Osterwalder–Schrader and Wightman requirements and possessing a strictly positive mass gap [1].
+The physical scale, thermodynamic limit, zero lattice spacing, Euclidean covariance, local spectral content,
+and non-abelian field geometry must be controlled in one compatible construction.
+   Fix throughout a compact connected simple Lie group G, a faithful unitary representation ρ : G → U (Vρ )
+of dimension dρ , and a positive normalization of the invariant quadratic form for which the adjoint color
+factor is denoted CA (G). The Wilson plaquette function is
+                                                        1
+                                                                    
+                                   wG,ρ (U ) = cρ 1 −     Re Tr ρ(U ) ,
+                                                       dρ
+where cρ > 0 is chosen once so that the Hessian at the identity is the quadratic form used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not su
+
+===== quadratic form hit 4 at 7200 =====
+ construction.
+   Fix throughout a compact connected simple Lie group G, a faithful unitary representation ρ : G → U (Vρ )
+of dimension dρ , and a positive normalization of the invariant quadratic form for which the adjoint color
+factor is denoted CA (G). The Wilson plaquette function is
+                                                        1
+                                                                    
+                                   wG,ρ (U ) = cρ 1 −     Re Tr ρ(U ) ,
+                                                       dρ
+where cρ > 0 is chosen once so that the Hessian at the identity is the quadratic form used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not supplied by the input
+ SI–1      BKAR forest             Exact finite-replica           Permanent domain, allocation, marked
+           formula [4]             connected logarithm.           estimates, and recertification.
+ SI–2      Kotecký–Preiss          Rooted smallness implies       Activities, group-dependent support
+           theorem [5]             convergence of the             charges, Haar contraction, and uniform
+                                   connected polymer              constants.
+                                   logarithm.
+ SI–5      Osterwalder–            The printed OS axioms          The limiting Schwinger family,
+           Schrader                reconstruct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional mo
+
+===== quadratic form hit 5 at 335792 =====
+ source derivatives exist along one common diagonal subsequence.
+If two groups of source supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      
+
+===== quadratic form hit 6 at 335881 =====
+supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      cl
+                                                                                      
+
+===== quadratic form hit 7 at 399591 =====
+wo g-derivatives uniformly as M → ∞.
+
+
+
+
+                                                      90
+Consequently there is one finite Cf , depending only on the fixed profile and finite source order, such that
+
+                                  sup |Q
+                                       b ′′r (g)| ≤ Cf ,          sup |Q
+                                                                       b ′r (g)| ≤ Cf g,                 (170)
+                              0≤g≤gr                             0≤g≤gr
+
+uniformly in all cutoff and volume parameters. The same bound holds after one finite defect root. The
+fixed dyadic r may then be inserted into the countable source algebra before the single common diagonal
+extraction.
+Proof. The exact graph segment and derivative identity are established immediately below. The weak-orbit,
+crossing-cell, pre-owner compact-entrance, and terminal-shell estimates are collected in Theorem 10.4;
+its single summable majorant controls the functional and its first two derivatives and includes the cell-
+boundary and no-crossing limits. This proves the first estimate in (170). Exact evenness gives Q
+                                                                                               b ′ (0) = 0,
+                                                                                                 r
+and integration gives the second. The common-diagonal statement follows from the compatibility argument
+at the end of this subsection.
+Lemma 10.3 (Existence of the graph-segment interpolation). After choosing r in the common weak
+corridor, the segment 0 ≤ g ≤ gr lies in the same real marked domain. At finite cutoff and volume,
+evaluate the exact interaction at (g 2 , R⋆ (g 2 )) and express its quadratic part relative to the fixed g = 0
+grounded Gaussian. This gives a real C 2 family Vg,r with positive finite normalization. In fixed Gaussian
+coordinates its complete local expansion has the exact grading
+                           X
+                   Vg,r =      g ν Vn,ν;r ,     ν ≥ max{n − 2, 0},       ν ≡ n (mod 2).                   (171)
+                            n,ν
+
+Here n is field degree. The Wilson row attains the lower exponent ν = n − 2; Haar, chart, coarea,
+determinant, and graph-return rows carry additional nonnegative powers. The grading is read only after
+each complete BRS/reflection packet is collected. The graph is C 3 in u, so g 7→ (g 2 , R⋆ (g 2 )) is C 2 at
+g = 0. The Wilson word, Haar density, normal return, coarea, determinant, and finite Schur endpoint are
+analytic in the physical field A = ga. After the Gaussian quadratic form is removed, a Wilson term of field
+degree n carries g n−2 ; species without the g −2 Wilson prefactor carry higher powers. Analyticity under
+A = ga and the even dependence of the graph coefficients on g give the congruence in (171). Gauge/ghost
+partners and coordinate Jacobians are collected before the grading is read, so BRS and reflection relations
+are retained. No C 1 statement in the squared coupling u is used. Finite-volume Gaussian equivalence and
+the common analytic tube give positivity, integrability, and uniform C 2 control in g.
+   The exact weak block therefore gives the normalized family
+
+                                          F (A)e−Vg,r (A) dγr (A)
+                                        R
+                              ⟨F ⟩g,r =                           , 0 ≤ g ≤ gr ,                      (172)
+                                             e−Vg,r (A) dγr (A)
+                                           R
+
+with V0,r = 0.
+   Let qf ∈ P4 and O b + (f ) = ȷ4 qf be the fixed normalized curvature target. Using the complete filtered
+                      r
+source matrix at (g , R⋆ (g 2 )), define
+                   2
+
+
+                                                                 [D]
+                                               +
+                                              Oa;g,r (f ) := ιa,r;g2 (qf ).                              (173)
+
+Exact transport gives
+                                   +
+                                  Og,r =O
+                                        b + + E +,≤D + H +,>D = O
+                                          r    g,r      g,r
+                                                                br+ + Dg,r
+                                                                       +
+                                                                           ,                             (174)
+where
+                                       +,≤D
+                                  P≤D Eg,r  = Eg,r
+                                               +,≤D
+                                                    ,                       +,>D
+                                                                       P≤D Hg,r  = 0.                    (175)
+     −
+Put Og,r = ΘOg,r
+             +
+                 and
+                                             ±
+                                            Yg,r := Og,r
+                                                     ±       ±
+                                                         − ⟨Og,r ⟩g,r 1.                                 (176)
+Define
+                            Qr (g) := ⟨Og,r
+                                        −
+                                            ; Og,r
+                                               + c
+                                                   ⟩g,r ,         b r (g) := ⟨O
+                                                                  Q           b− ; O
+                                                                               r
+                                                                                   b + ⟩c .
+                                                                                     r g,r               (177)
+The exact change of variables A 7→ −A gives
+                                                 b r (−g) = Q
+                                                 Q          b r (g).                                     (178)
+
+The principal curvature sources are fixed and reflection even; the measure depends on the physical
+combination gA and on g 2 graph coefficients, while the Gaussian reference is even.
+
+
+                                                            91
+Exact g-derivative identity. At finite cutoff and volume,
+                                d
+                                   Qr (g) = ⟨∂g Dg,r
+                                                 −
+                                                     ; Og,r
+                                                        + c
+                                                            ⟩ + ⟨Og,r−
+                                                                          ; ∂g Dg,r
+                                                                                + c
+                                                                                    ⟩
+                                dg
+                                                 −
+                                            − ⟨Og,r ; Og,r
+                                                        +
+                                                           ; ∂g Vg,r ⟩c .                               (179)
+
+Use the normalized generating functional
+                                                                       −        +
+                                                          e−Vg,r +η− Og,r +η+ Og,r dγr
+                                                      R
+                              Wg,r (η− , η+ ) = log             R                      .                (180)
+                                                                  e−Vg,r dγr
+
+Differentiate first in g and then in the two source variables. The principal target is fixed; all source
+motion is exactly ∂g D ± . The logarithm supplies the connected subtractions.
+Theorem 10.4 (Endpoint packet-shell supplier). For the graph-segment family constructed above, the
+complete twice-marked endpoint expansion has the following properties.
+    (i) The grounded periodic covariance has volume-independent AA, AF , and F F rows of orders two,
+        three, and four. After the exact global contact is subtracted, every complete reflection/BRS packet
+        has two lattice-difference factors and therefore gains (r/ℓi )2 at weak scale i.
+   (ii) The exact weak recurrence admits a finite crossing-cell decomposition. On each fixed cell, both g
+        derivatives are taken before the labelled large-field partition and before bad-core ownership. The
+        differentiated partition is then recollected with the same charged events and with no same-owner
+        cancellation assumption.
+ (iii) Before crossing, the full rooted stable map, including wrapping and charged-flat coordinates, is C 2
+        in g with a strictly contracting same-order marked row. At first crossing, the fresh marked family
+        lies in a uniform hybrid pivot–jet polydisc and satisfies the original-link Fourier–Wiener incidence
+        row required by the joint Haar–optical collect.
+  (iv) The crossing contribution and th
+
+===== quadratic form hit 8 at 413329 =====
+th,
+
+                             |Sur (ΘYr (f )Yr (f )) − V0 (f )| ≤ Cf u(r) + r2 L(r)pf .                  (186)
+                                                                                   
+
+Consequently, for sufficiently small fixed dyadic r,
+                                                            1
+                                        ∥[Yr (f )]∥2OS ≥      V0 (f ) > 0.                             (187)
+                                                            2
+Proof. The master endpoint theorem, equivalently Theorem 10.2, and evenness give
+                                                    Z gr
+                              |Qr (gr ) − Qr (0)| ≤
+                               b          b              Cf g dg ≤ Cf ur .
+                                                           0
+
+At g = 0 the law is the grounded tangent Gaussian and the principal source is the Gaussian Wick source,
+so Q
+   b r (0) = V0 (f ). Add the dimension-six source-defect estimate below; its source error is Cf r2 L(r)pf .
+Choose r and the common subsequence by the compatibility argument above; the total error is then at
+most V0 (f )/2. Reflection-positive recombination identifies the finite-cutoff form with the squared OS
+norm, and the same lemma passes the lower bound to the common limit.
+
+10.4     Limiting curvature vector and finite spectral window
+Lemma 10.6 (Survival of the reflected curvature vector in the common limit). Let Yr (f ) be a fixed
+positive-time reflected local curvature functional. Suppose along the common diagonal subsequence:
+   (i) every Schwinger function entering Sa,L (ΘYr (f )Yr (f )) converges;
+  (ii) reflection-positive recombination has already been performed;
+ (iii) uniformly in cutoff and volume,
+                                                                    1
+                                       Sa,L (ΘYr (f )Yr (f )) ≥       V0 (f ) > 0.
+                                                                    2
+   Then the limiting Osterwalder–Schrader vector
+
+                                                ψY = [Yr (f )]
+
+is nonzero and satisfies
+                                                                         1
+                            ∥ψY ∥2OS = lim Sa,L (ΘYr (f )Yr (f )) ≥        V0 (f ) > 0.
+                                                                         2
+
+                                                       93
+Proof. The OS norm of this fixed local polynomial is a finite linear combination of the convergent limiting
+Schwinger functions. Therefore its finite-cutoff values converge to the limiting quadratic form. The
+uniform positive lower bound passes to the limit.
+Corollary 10.7 (Finite positive local spectral window without Wilson pushforward). Let ψY be the
+nonzero limiting curvature vector from Lemma 10.6. If common physical clustering and the OS spectral
+argument give
+                                    supp µY ⊂ [m⋆ , ∞),  m⋆ > 0,
+then there exists a finite MY ≥ m⋆ such that
+
+                                           µY ([m⋆ , MY ]) > 0.
+
+No exact Wilson pushforward, Wilson moment identity, or reducing retained Hilbert subspace is used.
+
+Proof. The finite spectral measure has total mass
+
+                                    0 < µY ([m⋆ , ∞)) = ∥ψY ∥2OS < ∞.
+
+Since [m⋆ , n] ↑ [m⋆ , ∞), continuity from below implies that some finite n has positive mass. Set
+MY = n.
+
+11     Completion for arbitrary fixed compact simple gauge groups
+Theorem 11.1 (Completion of the fixed-group construction). For every fixed compact connected simple
+G and faithful unitary representation ρ, the group register CG is finite and all hypotheses consumed by
+Sections 2–10 are satisfied. Consequently Theorem 1.1 holds.
+Proof. Compactness and the analytic bi-invariant geometry give the Karcher, logarithm, coarea, and
+faithful-action constants of Section 2. The complete folded block symbol is spacetime-only and tensors
+with Ig , so the strict right-inverse and optical coercivity constants are unchanged. The chart complement
+is charged by the faithful Wilson action and the irregular activity is exponentially small. The permanent
+weak map, centered graph, and BPHZL packet use the same finite-dimensional Lie-algebra tensor calculus,
+with the universal color factor CA (G).
+   The Peter–Weyl spectral sum converges at the fixed order sG , and the higher hybrid-polydisc argument
+supplies the one-pivot nuclear and multipivot Fourier–Wiener rows. The ordinary-periodic toron, seam,
+reflection, and wrapping templates are admitted by Theorem D.3; no twisted sector or finite-volume bundle
+sum is used. The invariant-jet theorem supplies the complete low-dimensional mixing and dimension-six
+regulator spaces. The joint Haar–optical forest, source transport, Ward hierarchy, OS reconstruction,
+and noncollapse theorem then apply with constants depending on G but uniform in cutoff, volume, and
+directed depth. Appendix F, specifically Table 3, records every independent entry of CG , the first proof
+call at which its G-dependence enters, and the subsequent consumers. Thus no additional estimate
+uniform in G is hidden in this completion step: after those finite calls, each remaining mechanism is
+color-free, tensors with Ig , or takes a finite maximum in a registered finite-dimensional space.
+Corollary 11.2 (The SU(N ) family). For every fixed integer N ≥ 2, the theorem holds for G = SU(N )
+in the defining representation, and the scale-two map is
+                                               11N log 2
+                             u(2L) = u(L) +              u(L)2 + ON (u(L)3 ).
+                                                 24π 2
+No estimate uniform as N → ∞ is asserted.
+Remark 11.3 (Logical scope). The construction is a fixed-group theorem. The directed subsequence,
+curvature-jet observable scope, and absence of a large-rank uniformity claim are part of the statement,
+not omitted conclusions.
+
+A     Endpoint packet-shell verification
+This appendix supplies the detailed proof of Theorem 10.4. It is part of the same manuscript and
+uses the standing uniformity convention of Section 1. The main text isolates the logical endpoint
+theorem; the statements below retain the full finite-volume, crossing-cell, pre-owner, compact-entrance,
+and terminal-shell verification needed for that theorem.
+
+
+                                                    94
+A.1     Grounded covariance, contact subtraction, and weak admission
+                                                                  (L)
+Lemma A.1 (Grounded-torus curvature covariance). Let Cr be the zero-mode-removed transverse
+covariance remaining after the weak flow is stopped at scale r on a periodic torus of side L ≥ 4r. For
+j = 0, 1, 2,
+                           |∇j Cr(L) (x, y)| ≤ Cj r−2−j (1 + dL (x, y)/r)−(2+j) ,
+with constants independent of L. The corresponding AA, AF , and F F rows have decay orders two, three,
+and four.
+                (L)  R∞
+Proof. Write Cr = r2 (e−t∆L − Π0 )ΠT dt. For t ≤ L2 , periodization gives
+                                (L)                                2
+                             |Kt (x, y) − L−4 | ≤ Ct−2 e−cdL (x,y) /t + CL−4 ,
+and derivative rows without the constant term. For t ≥ L2 , use the nonzero spectral gap. The
+transverse projector commutes with the heat semigroup and has the standard scalar-plus-two-derivative
+representation. Integration gives the stated rows; the scalar L−4 contribution is O(L−2 ) and is absorbed
+because dL ≤ 2L.
+Definition A.2 (Globally subtracted even packet kernels). Let Tµν        ab
+                                                                            (p) be the complete two-open-leg
+coefficient of the normalized generating functional after all longitudinal, ghost, determinant, normalization,
+and source contacts have been included. The background Ward identity identifies its exact local contact
+T (0). Define T ren (p) = T (p) − T (0) before any absolute value is taken.
+   A packet selector is a scalar, color-blind, translation-covariant and reflection-invariant function of the
+exact conditional scale labels and reported support geometry. Apply such a selector     Ponly after the whole
+BRS/reflection packet and its normalization contacts have been collected. If T = λ Tλ is the resulting
+disjoint packet decomposition, absolute convergence gives the exact allocation
+                                                    X
+                                        T ren (p) =    Tλ (p) − Tλ (0) .
+                                                                      
+
+                                                   λ
+
+No cut through an individual packet and no shellwise Ward identity is used.
+Lemma A.3 (Exact even-contact division of complete packets). For every complete packet class λ,
+the one-open-leg coefficient vanishes by global color invariance. The renormalized two-open-leg packet is
+reflection even, vanishes at p = 0, and admits the exact second-order division
+                                                      X
+                                    Tλ (p) − Tλ (0) =    pbα pbβ Sλ,αβ (p). 

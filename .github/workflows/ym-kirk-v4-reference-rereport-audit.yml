@@ -1,0 +1,101 @@
+name: YM Kirk v4 reference rereport audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-reference-rereport-audit-20260814-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-reference-rereport-audit.yml
+
+permissions:
+  contents: write
+
+jobs:
+  source-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-reference-rereport-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable v4 and extract focused rereport contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, urllib.request, time, urllib.error, hashlib
+          UA='millennium-braid-reference-rereport/1.1'
+          def get(url):
+              last=None
+              for i in range(7):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'*/*'})
+                      with urllib.request.urlopen(req,timeout=60) as r: return r.read(),r.geturl()
+                  except (urllib.error.HTTPError,urllib.error.URLError) as e:
+                      last=e
+                      if isinstance(e,urllib.error.HTTPError) and e.code not in (429,500,502,503,504): raise
+                      time.sleep(min(2**i,32))
+              raise last
+          raw,_=get('https://zenodo.org/api/records/21765806'); rec=json.loads(raw)
+          latest=rec.get('links',{}).get('latest')
+          if latest:
+              raw,_=get(latest); rec=json.loads(raw)
+          pdfs=[f for f in rec.get('files',[]) if str(f.get('key','')).lower().endswith('.pdf')]
+          if len(pdfs)!=1: raise RuntimeError(len(pdfs))
+          url=pdfs[0].get('links',{}).get('content') or pdfs[0].get('links',{}).get('self')
+          pdf,_=get(url); Path('/tmp/kirk.pdf').write_bytes(pdf)
+          out=Path('source_audit/kirk_v4/reference_rereport'); out.mkdir(parents=True,exist_ok=True)
+          (out/'RECORD.json').write_bytes(raw)
+          (out/'PDF_SHA256.txt').write_text(hashlib.sha256(pdf).hexdigest()+'\n')
+          PY
+          pdftotext -layout /tmp/kirk.pdf /tmp/kirk.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('/tmp/kirk.txt').read_text(encoding='utf-8',errors='replace'); low=text.lower()
+          out=Path('source_audit/kirk_v4/reference_rereport/focused'); out.mkdir(parents=True,exist_ok=True)
+          targets={
+            'twojet':'complete allocated two-jet',
+            'quadratic':'quadratic form',
+            'hessian':'hessian',
+            'shortest':'shortest connector path',
+            'eachterm':'each term is reported',
+            'hull':'canonical connected hull',
+            'compact':'compact haar completion',
+            'endpoint':'endpoint two-jets',
+            'crosscore':'cross-core',
+            'detword':'connected determinant word',
+            'prop68':'proposition 6.8',
+            'ht5':'theorem 6.10',
+            'lemma630':'lemma 6.30',
+          }
+          summary=[]
+          for key,phrase in targets.items():
+              hits=[]; pos=0
+              while True:
+                  i=low.find(phrase,pos)
+                  if i<0: break
+                  hits.append(i); pos=i+len(phrase)
+              summary.append(f'{key} {phrase}: {len(hits)}')
+              parts=[]
+              for j,i in enumerate(hits[:8],1):
+                  parts.append(f'===== {phrase} hit {j} at {i} =====\n'+text[max(0,i-2600):min(len(text),i+6500)])
+              (out/f'{key}.txt').write_text('\n\n'.join(parts),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit focused contexts
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/reference_rereport
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): split Kirk reference rereport contexts'
+          git push origin HEAD:verification/ym-kirk-v4-reference-rereport-audit-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-reference-rereport-focused
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/reference_rereport/

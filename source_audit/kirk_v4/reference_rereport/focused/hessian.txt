@@ -1,0 +1,1113 @@
+===== hessian hit 1 at 5188 =====
+he theorem concerns the local gauge-invariant curvature-jet
+    observable theory. No estimate is asserted uniformly over the class of compact simple groups.
+
+
+
+
+ ∗ hkirk@memphis.edu
+
+
+
+
+                                                         1
+Contents
+1 The compact-simple-group theorem and proof boundary             3
+
+2 Fixed-group Wilson geometry and Karcher blocking                5
+
+3 Charged chart complement and irregular sector                  10
+
+4 Permanent weak renormalization group                           23
+
+5 Invariant graph and universal coefficient                      39
+
+6 Directed handoff and higher-order Peter–Weyl landing           52
+
+7 Compact boundary-to-center closure                             71
+
+8 General invariant jets and Ward identities                     72
+
+9 Continuum reconstruction and spectral gap                      89
+
+10 Nontriviality and finite spectral window                      90
+
+11 Completion for arbitrary fixed compact simple gauge groups    94
+
+A Endpoint packet-shell verification                             94
+
+B Root data and representation normalization                    109
+
+C The fixed-group Sobolev and Peter–Weyl ledger                 110
+
+D Ordinary periodic torons, seams, and wrapping templates       110
+
+E Invariant tensor spaces through engineering dimension six     111
+
+F Theorem-level specialization and dependency map               112
+
+G Representative fixed-group certifications                     113
+
+
+
+
+                                              2
+1     The compact-simple-group theorem and proof boundary
+1.1    Problem and result
+The constructive Yang–Mills problem asks for a nontrivial quantum gauge field theory on R4 satisfying
+the Osterwalder–Schrader and Wightman requirements and possessing a strictly positive mass gap [1].
+The physical scale, thermodynamic limit, zero lattice spacing, Euclidean covariance, local spectral content,
+and non-abelian field geometry must be controlled in one compatible construction.
+   Fix throughout a compact connected simple Lie group G, a faithful unitary representation ρ : G → U (Vρ )
+of dimension dρ , and a positive normalization of the invariant quadratic form for which the adjoint color
+factor is denoted CA (G). The Wilson plaquette function is
+                                                        1
+                                                                    
+                                   wG,ρ (U ) = cρ 1 −     Re Tr ρ(U ) ,
+                                                       dρ
+where cρ > 0 is chosen once so that the Hessian at the identity is the quadratic form used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consum
+
+===== hessian hit 2 at 7830 =====
+orm used by the
+background-field coupling coordinate u = g 2 . This choice is a finite linear normalization of the bare
+Wilson coupling and is part of the fixed-group input register.
+Theorem 1.1 (Four-dimensional Yang–Mills construction for fixed compact simple G). For every fixed
+pair (G, ρ) as above, there is a directed sequence of reflection-positive Wilson lattice measures, with
+microscopic spacing tending to zero and periodic volume tending to infinity, whose local gauge-invariant
+curvature-jet Schwinger functions converge to a nontrivial Euclidean field theory on R4 .
+   The limiting Schwinger family is tempered, permutation symmetric, reflection positive, translation
+continuous, exponentially clustering, and O(4) covariant. Osterwalder–Schrader reconstruction yields a
+positive-energy Poincaré-covariant local theory with a unique vacuum and a number m⋆ (G) > 0 such that
+                                              H Ω⊥ ≥ m⋆ (G).
+On the centered invariant weak trajectory, the exact scale-two coupling map is
+                                            11 CA (G) log 2
+                           u(2L) = u(L) +                   u(L)2 + OG (u(L)3 ),
+                                                 24π 2
+with uniform volume and cutoff control in the permanent weak regime. The reconstructed theory contains
+a nonzero reflected local curvature vector and positive spectral mass in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not supplied by the input
+ SI–1      BKAR forest             Exact finite-replica           Permanent domain, allocation, marked
+           formula [4]             connected logarithm.           estimates, and recertification.
+ SI–2      Kotecký–Preiss          Rooted smallness implies       Activities, group-dependent support
+           theorem [5]             convergence of the             charges, Haar contraction, and uniform
+                                   connected polymer              constants.
+                                   logarithm.
+ SI–5      Osterwalder–            The printed OS axioms          The limiting Schwinger family,
+           Schrader                reconstruct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one const
+
+===== hessian hit 3 at 9228 =====
+in a finite interval [m⋆ (G), M⋆ (G)].
+1.2    Fixed-group conventions and finite register
+Write g = Lie(G) and dG = dim G. All Haar measures are normalized. The finite-volume approximants
+use the ordinary periodic link space GE(Λ) with periodic gauge transformations; no twisted boundary
+condition or nontrivial finite-volume bundle sector is summed. This is sufficient for the claimed local
+theory on the contractible space R4 . The bi-invariant metric, exponential coordinates, Laplacian ∆G ,
+Casimir eigenvalues, and operator norms are those determined by the declared quadratic form. In
+curvature formulas, Tr(XY ) denotes this normalized invariant bilinear pairing; raw representation traces
+are written Tr ρ(·). Let                     
+                                              dG                    dG
+                                      sG :=       + 1,      2sG >       .
+                                               4                      2
+The fixed-group constant register CG consists of the finite quantities used below: the injectivity and
+convexity radii, a positive local Karcher radius, finite holomorphic BCH and logarithm bounds through
+order 2sG + 3, the faithful-action Hessian and complement charge, the Peter–Weyl constant, the finite
+ordinary-periodic toron/seam template register, the adjoint color factor, and the finite invariant-jet
+dimensions through the retained degree. Every statement called uniform is uniform in cutoff, volume,
+directed depth, periodic wrapping, admitted exterior histories, and the finite reflected template family,
+but its constants may depend on CG .
+Proposition 1.2 (Reflection-positive Wilson input). For every finite periodic lattice Λ and u > 0, in the
+ordinary periodic link sector,
+                                                "                    #
+                             G,ρ
+                                                       X                Y
+                                        −1
+                          dµΛ,u (U ) = ZΛ,u exp −u  −1
+                                                           wG,ρ (Up )     dmG (Ue )
+                                                         p             e
+
+is gauge invariant and reflection positive for coordinate reflections. Moreover wG,ρ ≥ 0, its zero set is the
+identity, and on one fixed identity neighborhood
+                                     cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2 .
+
+
+                                                     3
+Proof. The normalized character satisfies Re Tr ρ(U ) ≤ dρ , with equality only when ρ(U ) = I; faithfulness
+gives U = e. The Hessian statement follows from the chosen normalization and compactness. Up to a field-
+independent constant, each plaquette factor is exp{t(χρ +χρ )} with t > 0. Its power series is a nonnegative
+linear combination of characters of tensor products of ρ and ρ̄, and their irreducible decompositions
+have nonnegative integer multiplicities. The standard character-expansion reflection-positivity argument
+therefore applies.
+
+1.3     Proof architecture
+The proof has four stages. First, the exact Karcher block is placed in a complete full-alias normal chart
+and combined with a charged chart-complement partition, permanent analytic domain, marked connected
+logarithm, Wick-stable jet block, and centered invariant graph. The folded spacetime symbol tensors
+with Ig , while all nonlinear estimates are admitted by the finite register CG .
+   Second, exact background-scheme conjugacy identifies the universal marginal coefficient      and a directed
+schedule reaches the compact matching scale. The higher product Sobolev operator p (1 − ∆p )sG replaces
+                                                                                       Q
+the rank-one order and supplies the fixed-G Fourier–Wiener rows.
+   Third, complete Haar and optical variables are kept in one partition function. A mixed replica–
+BKAR forest makes every root-to-root path pay separated Haar contraction, optical covariance decay,
+or pre-existing support charge. Ordinary-periodic toron backgrounds, seams, reflections, and wrapping
+certificates enter only through the finite template theorem of Appendix D.
+   Finally, a least-label source forest transports the complete invariant-jet system. The degree-four block
+is group-independent because a compact simple Lie algebra has a unique invariant symmetric bilinear
+form; possible cubic color tensors first enter the finite dimension-six block. Ward identities, rotation-defect
+estimates, reflection-positive recombination, and Osterwalder–Schrader reconstruction give covariance,
+the unique vacuum, the gap, and noncollapse.
+1.4     External inputs and exact proof boundary
+Only the theorem-level inputs in Table 1 are imported. The fixed-group geometry, action charge, higher
+Sobolev landing, periodic-toron template theorem, invariant-jet admission, matching constants, and
+noncollapse source are internal.
+
+                      Table 1: External standard inputs and exact proof boundary.
+
+ ID        input                   consumed statement             not supplied by the input
+ SI–1      BKAR forest             Exact finite-replica           Permanent domain, allocation, marked
+           formula [4]             connected logarithm.           estimates, and recertification.
+ SI–2      Kotecký–Preiss          Rooted smallness implies       Activities, group-dependent support
+           theorem [5]             convergence of the             charges, Haar contraction, and uniform
+                                   connected polymer              constants.
+                                   logarithm.
+ SI–5      Osterwalder–            The printed OS axioms          The limiting Schwinger family,
+           Schrader                reconstruct a                  covariance, clustering, gap, and
+           reconstruction [2, 3]   positive-energy theory.        nontriviality.
+ SI–6      Lüscher–Weisz           Background, BRS, shift         Karcher intertwining, fixed-G chart
+           background-field        identities, and the            admission, coefficient transfer, and
+           renormalization [6]     dimension-four                 thermodynamic passage.
+                                   counterterm classification.
+ SI–6B     Finite lattice BPHZ     Zimmermann forests and         Massless admission, marked degree gain,
+           forest prescription     periodic lattice               rooted summation, and coefficient
+           [7, 8]                  subtraction operators.         identification.
+ SI–7      Reisz lattice power     Ultraviolet degrees and        Infrared convergence and quasi-local
+           counting [9]            cutoff limits after the        insertion verification.
+                                   hypotheses are verified.
+ SI–7M     Massless lattice        Complete massless lattice      The projector, graph ledger, vertex
+           convergence and         packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner sta
+
+===== hessian hit 4 at 16182 =====
+packet convergence at          infrared constraints, packet shell
+           BPHZL [10, 11]          nonexceptional momenta.        majorant, and color-factor separation.
+
+
+
+
+                                                      4
+ ID        input                  consumed statement            not supplied by the input
+ SI–8      Universal one-loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ =
+
+===== hessian hit 5 at 16529 =====
+loop     b0 = 11CA (G)/(48π 2 ),       Unit-tangent scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ = 0,  Cf Sf∗ = 0,
+and in particular Sf Cf∗ + Cf Sf∗ = 0. Expanding Af = (7/8)Sf + (1/8)Cf now gives
+
+                                                        49     1
+                                           Af A∗f =        I4 + Cf Cf∗ .
+                                                        2      64
+The right-inverse identity is immediate, an
+
+===== hessian hit 6 at 16579 =====
+t scheme identification and
+           coefficient [12, 13]   hence                         control of the flat complement.
+                                  11CA (G) log 2/(24π 2 ) for
+                                  u = g 2 and one factor-two
+                                  infrared step.
+
+
+1.5     Self-contained relation to the rank-one construction
+The companion SU(2) manuscript [14] is a completely expanded rank-one specialization and a useful
+independent check. It is not a logical input to Theorem 1.1: every common analytic theorem used here is
+stated and proved in this paper, and every new fixed-group admission is printed below. Appendix F gives
+a theorem-level specialization map so that a referee can identify which arguments are color-free, which
+tensor with Ig , and which require new group data.
+1.6     Scope
+The theorem concerns the local gauge-invariant curvature-jet observable sector for each fixed compact
+connected simple G. It does not assert a bound uniform over groups, a simultaneous large-rank limit,
+control of every extended Wilson-line or generalized-symmetry sector, or uniqueness of the continuum
+limit outside the directed construction. Quotient groups are included through their actual compact link
+group. The construction uses only the ordinary periodic finite-volume sector and retains all flat toron
+backgrounds occurring in that sector; no claim about a sum over twisted boundary conditions is made or
+needed.
+
+2     Fixed-group Wilson geometry and Karcher blocking
+Let Λ be a finite periodic four-dimensional lattice and use the reflection-positive Wilson measure of
+Proposition 1.2. For each oriented retained link, use the straight two-link path with weight 7/8 and the
+forty-eight signed-corner staples with weight 1/384 each. On a fixed strongly convex identity tube, define
+the retained link as their weighted Karcher mean in the bi-invariant metric.
+Lemma 2.1 (Fixed-group convex Karcher and holomorphic atlas). There are radii 0 < r0,G < r1,G
+such that the squared-distance functions, product, inverse, exponential, logarithm, and weighted Karcher
+critical point extend holomorphically to the corresponding local complexification tube. The Karcher Hessian
+is bounded below there by a positive constant depending only on G. All derivatives through arbitrary
+prescribed finite order are bounded on the smaller tube.
+Proof. A compact Lie group with a bi-invariant analytic metric has positive injectivity and strong-convexity
+radii. The sectional curvature is bounded because G is compact, and the Hessian comparison theorem
+gives a positive lower Hessian bound on a sufficiently small ball. In a faithful matrix representation
+the local complexification is an open neighborhood in the complexified group; multiplication, inversion,
+exponential, and the principal logarithm are holomorphic there. The analytic implicit-function theorem
+applied to the Karcher critical equation gives the holomorphic mean. Cauchy estimates on nested compact
+tubes give every fixed derivative order; standard compact Lie-group analytic facts are summarized in
+[15].
+Proposition 2.2 (Exact block covariance and local submersion). The retained map is gauge covariant,
+orientation covariant, signed-hypercubic covariant, and aligned-reflection covariant. Its linearization at
+the flat connection has full retained rank. On one fixed weak tube it admits a finite-volume analytic
+normal section whose matrix kernel and first three marked derivatives are exponentially local, uniformly
+in volume.
+Proof. Every path has the same endpoints, and the weighted squared-distance functional is invariant
+under simultaneous left and right multiplication. Uniqueness of the Karcher minimizer gives gauge and
+orientation covariance. The signed-corner path family is invariant under the lattice symmetry group.
+At the flat point, the exact Fourier symbol is the color-free spacetime symbol tensored with Ig and has
+acoustic value 2I ⊗ Ig and a uniformly gapped normal frame. The full-alias section and normal-fiber
+contraction are proved in the later normal-chart chapters.
+Proposition 2.3 (Exact coarea–fiber identity). At finite volume, in the normal fiber chart,
+
+                                    dU = J0 det(I + DN P )−1 dW dζ,
+
+
+                                                     5
+where the determinant is the ordinary finite-dimensional determinant. The fixed linear determinant is
+owned once as a scalar normalization, and the field-dependent logarithm is one connected analytic activity.
+2.1     Full-alias normal right inverse
+Theorem 2.4 (Complete folded symbol and flat normal right inverse). Let
+
+                          Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                             
+
+
+be the complete sixteen-alias folded symbol of the weighted forty-nine-path block with straight weight
+ϑ = 7/8. Let Cf (k) denote the folded signed-corner contribution. The exact alias identities give
+                                                 49      1               49
+                              Af (k)Af (k)∗ =       I4 + Cf (k)Cf (k)∗ ⪰    I4
+                                                  2     64                2
+for every coarse momentum k ∈ [−π/2, π/2]4 .
+   Define the canonically rescaled normal right inverse
+                                                                            −1
+                                      P0 (k) = 2Af (k)∗ Af (k)Af (k)∗             .
+
+Then
+                              1                                                8
+                                Af (k)P0 (k) = I4 ,        sup ∥P0 (k)∥22 ≤      < 1.
+                              2                               k               49
+   The holomorphic continuation
+                                                                            −1
+                                      P0 (z) = 2Af (z)T Af (z)Af (z)T
+
+is analytic on
+                                                   |ℑzj | ≤ 10−3 ,
+and obeys
+                                             sup        ∥P0 (z)∥ < 0.546.
+                                          |ℑzj |≤10−3
+
+Consequently the real-space kernel of P0 is exponentially decaying and is strictly contractive in the
+corresponding exponentially weighted ℓ2 norm.
+Proof. Write qe = k + πe, e ∈ {0, 1}4 , and decompose the one-alias symbol as
+                                                                                      7
+                                   M (q) = ϑS(q) + (1 − ϑ)C(q),             ϑ=          ,
+                                                                                      8
+where
+                                                                     qµ
+                                             Sµν (q) = 2δµν cos         ,
+                                                                      2
+                                                              qµ Y
+                                         Cµµ (q) = 2 cos           cos qλ ,
+                                                               2
+                                                                  λ̸=µ
+
+and, for µ ̸= ν and {α, β} = {0, 1, 2, 3} \ {µ, ν},
+                                   1            qν
+                       Cµν (q) =     sin qµ sin    2 cos qα cos qβ + cos qα + cos qβ + 2 .
+                                                                                        
+                                   3            2
+The folded matrices are the horizontal concatenations of these sixteen blocks.
+  For the straight part, every row has one nonzero entry in each alias block, and
+
+                                       kµ + πeµ
+                                                                         
+                         X                                   kµ        kµ
+                                4 cos2          = 8 · 4 cos2    + sin2      = 32.
+                              4
+                                           2                  2         2
+                        e∈{0,1}
+
+Different rows have disjoint column support. Hence
+
+                                             Sf (k)Sf (k)∗ = 32I4 .
+
+   The straight–corner cross terms vanish by an exact alias pairing. For a diagonal Q entry, choose any
+λ≠ µ and pair e with e ⊕ eλ . The straight factor is unchanged while the product ρ̸=µ cos qe,ρ changes
+sign. For µ =
+            ̸ ν, the summand in (Cf Sf∗ )µν contains sin qe,µ and all other factors are independent of eµ ;
+
+
+                                                          6
+pairing in eµ cancels it. Likewise, the summand in (Sf Cf∗ )µν contains sin qe,ν and cancels under pairing
+in eν . Therefore
+                                         Sf Cf∗ = 0,  Cf Sf∗ = 0,
+and in particular Sf Cf∗ + Cf Sf∗ = 0. Expanding Af = (7/8)Sf + (1/8)Cf now gives
+
+                                                        49     1
+                                           Af A∗f =        I4 + Cf Cf∗ .
+                                                        2      64
+The right-inverse identity is immediate, and σmin (Af )2 ≥ 49/2 gives
+
+                      
+
+===== hessian hit 7 at 31353 =====
+                                       ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+                                                                 
+
+while det J0 is a once-only field-independent normalization.
+Proof. The chart factors as
+                                       (w, ζ) 7→ (T (w, ζ), ζ) 7→ J0 (T, ζ).
+The first derivative is block triangular:
+                                                 A− 1   −A− 1DN |K
+                                                                        
+                                                                             .
+                                                  0        IK
+Its determinant is det A− 1.
+
+
+                                                           8
+2.3     Nonlinear forty-nine-path section
+Lemma 2.8 (Finite-cell analytic atlas and uniform Cauchy bounds). Let P49 be the finite path atlas
+for one retained cell and its finite aligned-reflection template family. There exist fixed radii 0 < η0 < η1 ,
+uniform under the standing convention, such that the product exponential, multiplication, inversion,
+logarithm, and Karcher-mean maps defining every template extend holomorphically from Tη0 to Tη1 .
+   Write the canonically rescaled local block as
+
+                             B(x) = Lx + N (x),       N (0) = 0,             DN (0) = 0.
+
+For every exponential kernel rate 0 < m < mP and r = 2, 3, there is a finite constant
+
+                                             CN,r (m; η0 , η1 ) < ∞
+
+such that
+                                    sup ∥Dr N (x)∥Km ≤ CN,r (m; η0 , η1 ),
+                                   x∈Tη0
+
+uniformly under the standing convention. The same constants, enlarged by a finite maximum, serve the
+aligned-reflection templates.
+Proof. For one retained cell the block depends on finitely many g coordinates. The exponential and
+multiplication maps are entire, while inversion and the principal logarithm are holomorphic on a fixed
+neighborhood of the identity. At the flat field the Karcher critical point has positive Hessian on the
+retained tangent space; the analytic implicit-function theorem therefore supplies a unique holomorphic
+Karcher mean on a fixed complex neighborhood. The path family and the reflected template family are
+finite, so one may choose common nested radii 0 < η0 < η1 for all of them. On the larger finite-dimensional
+complex polydisc, every elementary map and their finite compositions are holomorphic and uniformly
+bounded. Cauchy’s integral estimate on the smaller polydisc gives uniform derivative bounds through
+order three with denominator powers of η1 − η0 .
+   The global block is obtained by translating this fixed finite cell. Each output row meets only a fixed
+number of input cells, and each input column enters only a fixed number of output cells. Multiplying the
+finite-cell Cauchy bounds by these fixed incidence numbers gives the two-sided exponentially weighted
+Schur-kernel bounds. These incidence numbers do not depend on the total volume or preceding weak
+depth. The aligned-reflection family is finite, so one takes a finite maximum.
+Proposition 2.9 (Model-specific nonlinear normal section for the forty-nine-path block). Let
+
+                             pm := ∥P0 ∥Km < 0.546,           C2 := CN,2 (m; η0 , η1 ),
+
+and choose
+                                                               1
+                                                                    
+                                                          η0
+                                           ρm = min          ,           .
+                                                          4 4pm C2
+For every retained coordinate w with ∥w∥Km ≤ ρm , the retained-space equation
+
+                                               y + N (P0 y) = w
+
+has a unique solution y = T (w, 0) in ∥y∥Km ≤ 2ρm . The zero-detail normal section
+
+                                              S(w) := P0 T (w, 0)
+
+satisfies
+                                  B(S(w)) = w,        ∥S(w)∥Km ≤ 2pm ρm .
+It is analytic and exponentially quasi-local, and its first three marked derivatives have volume- and
+depth-independent bounds. The same conclusion holds on the aligned-reflection templates after taking the
+minimum radius over that finite family.
+Proof. For fixed w, define
+                                            Φw (y) := w − N (P0 y).
+If ∥y∥ ≤ 2ρm , then ∥P0 y∥ ≤ η0 /2. Since DN (0) = 0, Lemma 2.8 gives
+                                                                                 pm  1
+                          ∥Dy Φw (y)∥ = ∥DN (P0 y)P0 ∥ ≤ 2p2m C2 ρm ≤               < .
+                                                                                  2  2
+
+                                                          9
+The second-order integral formula gives
+                                         1                            pm
+                          ∥N (P0 y)∥ ≤     C2 ∥P0 y∥2 ≤ 2C2 p2m ρ2m ≤    ρm < ρm .
+                                         2                             2
+Thus Φw maps the 2ρm ball into itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential ch
+
+===== hessian hit 8 at 36964 =====
+itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential charts as
+                                                 b Z : a 7−→ w.
+                                                 B
+
+On the common weak chart,
+                                    b Z (a) = ϑ(I + KZ (a)),            7
+                                   DB                              ϑ=     ,
+                                                                        8
+
+
+                                                      10
+where KZ has fixed propagation range and
+                                                                                  1
+                              sup max{∥KZ (a)∥1→1 , ∥KZ (a)∥∞→∞ } ≤                 .
+                               a                                                  4
+The same row and column estimates hold after the fixed marked derivatives used below.
+Proof. At the flat field, the selected straight input contributes ϑI. The cross-anchor cancellation can be
+read directly from the flat forty-nine-path symbol. Its diagonal detour part is proportional to
+                                                      kµ Y
+                                              cos          cos kλ ,
+                                                       2
+                                                        λ̸=µ
+
+so in position space every detour coefficient has an odd displacement in all three transverse directions
+relative to the selected all-even anchor column. For µ ̸= ν, the factor
+                                        kν
+                           sin kµ sin      (2 cos kα cos kβ + cos kα + cos kβ + 2)
+                                        2
+has an odd µ displacement. Thus no detour term lands on another selected anchor link; the orientation
+signs are the sine signs in this formula. The flat simultaneous derivative is therefore exactly ϑI. Away
+from the flat field, every entry is an analytic function of finitely many path holonomies and differs from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                    4
+Every principal subproblem obtained by fixing the exterior anchors has the same lower Lipschitz bound
+and a volume-independent inverse derivative.
+Proof. For v = a − b, integrate the derivative along the segment from b to a. Schur’s test gives
+∥KZ ∥2→2 ≤ 1/4, proving both bounds. The lower bound gives injectivity; the inverse-function theorem
+gives the smooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.4 (Finite-cell retention and chart charge). There are constants Cret < ∞, cch > 0, and
+tch > 0, depending only on the fixed cell atlas, such that
+
+                                            DQ (U ) ≤ Cret AQ+ (U )
+
+for every fine configuration. Moreover,
+
+                                   TQ (U ) ≥ tch /4     =⇒     AQ+ (U ) ≥ cch .
+
+The constants are independent of total volume, ultraviolet depth, periodic wrapping, and the aligned-
+reflection template.
+Proof. Use a boundary-rooted tree gauge on the fixed finite contractible cell. By Lemma 3.1, the zero set
+of AQ+ is precisely the flat set. On that set all common-endpoint paths agree, hence DQ = TQ = 0. Near
+the flat set, the representation-normalized quadratic comparison and the grounded finite-cell Poincaré
+inequality give
+                                          AQ+ ≍ ∥dX∥2 ≍ ∥X∥2 ,
+while smoothness of the finite path atlas and the fact that every retained plaquette word equals the
+identity on the flat set give DQ + TQ ≤ C∥X∥2 . This proves the retention inequality on one neighborhood
+of the flat set.
+   Remove a smaller such neighborhood. On the resulting compact set, AQ+ has a strictly positive
+minimum and the smoothly extended DQ is bounded, so their quotient is bounded there as well. This
+
+
+                                                         11
+proves the global displayed inequality without extending a quotient through its zero set. Finally choose
+tch inside the chart reserve. The closed set {TQ ≥ tch /4} is disjoint from the flat set; compactness and
+Lemma 3.1 give a positive minimum cch of AQ+ on it. Taking the finite maximum and minimum over the
+bulk and aligned-reflection templates proves the stated uniformity.
+
+  Choose smooth decreasing cutoffs γD , γ0 , γ1 ∈ [0, 1] with γ0 ≤ γ1 and
+
+                               γD = 1 (DQ ≤ χ2 /4), γD = 0 (DQ ≥ χ2 ),
+                               γ0 = 1 (TQ ≤ tch /8), γ0 = 0 (TQ ≥ tch /4),
+                               γ1 = 1 (TQ ≤ tch /2), γ1 = 0 (TQ ≥ tch ).
+
+Define the exact labelled partition
+
+                Q = γD γ0 ,
+               χin                  χcurv
+                                     Q    = (1 − γD )γ0 ,         Q = γ1 − γ0 ,
+                                                                 χcol              Q = 1 − γ1 .
+                        
