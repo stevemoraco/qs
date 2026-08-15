@@ -1,0 +1,95 @@
+name: Kirk v4 multiscale continuum audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-multiscale-continuum-audit-20260815-gpt56sol
+    paths:
+      - .github/workflows/kirk-v4-multiscale-continuum-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  multiscale-continuum-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-multiscale-continuum-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract multiscale and continuum theorem contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          outdir=Path('source_audit/kirk_v4/multiscale_continuum')
+          outdir.mkdir(parents=True,exist_ok=True)
+          targets=[
+            ('lemma_8_2','Lemma 8.2'),('theorem_8_5','Theorem 8.5'),
+            ('lemma_8_6','Lemma 8.6'),('theorem_8_6','Theorem 8.6'),
+            ('lemma_8_7','Lemma 8.7'),('lemma_8_8','Lemma 8.8'),
+            ('theorem_8_9','Theorem 8.9'),('lemma_8_10','Lemma 8.10'),
+            ('theorem_8_11','Theorem 8.11'),('corollary_8_12','Corollary 8.12'),
+            ('lemma_8_13','Lemma 8.13'),('lemma_8_14','Lemma 8.14'),
+            ('theorem_8_15','Theorem 8.15'),('theorem_8_46','Theorem 8.46'),
+            ('theorem_9_1','Theorem 9.1'),('lemma_9_2','Lemma 9.2'),
+            ('theorem_9_3','Theorem 9.3')]
+          summary=[]
+          for slug,target in targets:
+              m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+              if not m:
+                  summary.append(f'{target}: NOT FOUND')
+                  continue
+              start=max(0,m.start()-3000); end=min(len(text),m.start()+18000)
+              (outdir/f'{slug}.txt').write_text(text[start:end],encoding='utf-8')
+              summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          phrases=[
+            'unique coarsest','coarsest scale','supergeometric','common diagonal',
+            'diagonal subsequence','same exponent','same m','physical exponent',
+            'summable majorant','Faà-di-Bruno','Faa-di-Bruno','physical resolution',
+            'countable source','positive-time','reflection positivity','fixed physical time',
+            'uniform in the ultraviolet depth','uniform in ultraviolet depth',
+            'uniform in the microscopic spacing','uniform in volume','boundary condition',
+            'Schwinger','strongly continuous','semigroup','spectral projection'
+          ]
+          ledger=[]; low=text.lower()
+          for phrase in phrases:
+              pos=0
+              for hit in range(24):
+                  i=low.find(phrase.lower(),pos)
+                  if i<0: break
+                  ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-3500):min(len(text),i+11000)]+'\n')
+                  pos=i+len(phrase)
+          (outdir/'continuum_uniformity_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (outdir/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit extracted contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/
+          cp kirk_source_probe_report.json source_audit/kirk_v4/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve 8.x continuum uniformity contexts'
+          git push origin HEAD:verification/ym-kirk-v4-multiscale-continuum-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-multiscale-continuum-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            source_audit/kirk_v4/multiscale_continuum/
