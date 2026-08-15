@@ -1,0 +1,75 @@
+name: YM Kirk v4 A20 tree-reference repair audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-a20-tree-reference-repair-audit-20260814-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-a20-tree-reference-repair-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract Appendix A tree-reference contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/a20_tree_reference'); out.mkdir(parents=True,exist_ok=True)
+          needles=[
+            'Lemma A.17','Lemma A.18','Lemma A.19','Theorem A.20','equation (230)','(230)','(231)','(232)','(233)',
+            'actual-trajectory two-mark compact entrance supplier','original reported support at least',
+            'eℓn(A)','ea1 τ','freshly collected','Theorem 6.10','Lemma 6.17','Lemma 6.30','Theorem 6.39',
+            'Theorem 10.4','A.20','Lemma A.19'
+          ]
+          counts={}
+          for needle in needles:
+            pos=0;n=0;chunks=[]
+            for _ in range(80):
+              i=low.find(needle.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== hit {n} at {i} ===\n'+text[max(0,i-9000):min(len(text),i+32000)])
+              pos=i+len(needle)
+            counts[needle]=n
+            safe=''.join(c if c.isalnum() else '_' for c in needle)[:80]
+            if chunks: (out/(safe+'.txt')).write_text('\n\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['Lemma A.19','Theorem A.20','Lemma 6.17','Theorem 6.10']
+          missing=[x for x in required if counts.get(x,0)==0]
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/a20_tree_reference/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/a20_tree_reference/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/a20_tree_reference
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve A19-A20 tree-reference contexts'
+          git push origin HEAD:verification/ym-kirk-v4-a20-tree-reference-repair-audit-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-a20-tree-reference-repair-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/a20_tree_reference/
