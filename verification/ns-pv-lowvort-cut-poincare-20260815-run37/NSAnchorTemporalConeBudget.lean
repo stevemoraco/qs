@@ -18,9 +18,9 @@ namespace NSAnchorTemporalConeBudget
 
 /-- Same-time direction error plus temporal axis drift bounds fixed-axis error. -/
 theorem local_plus_axis_drift
-    (local drift pair alpha beta : ℝ)
-    (hpair : pair ≤ local + drift)
-    (hlocal : local ≤ alpha)
+    (localErr drift pair alpha beta : ℝ)
+    (hpair : pair ≤ localErr + drift)
+    (hlocal : localErr ≤ alpha)
     (hdrift : drift ≤ beta) :
     pair ≤ alpha + beta := by
   linarith
@@ -34,21 +34,21 @@ theorem strict_cone_margin
 
 /-- Package the fixed-axis direction bound together with its strict margin. -/
 theorem fixed_axis_cone_budget
-    (local drift pair alpha beta : ℝ)
-    (hpair : pair ≤ local + drift)
-    (hlocal : local ≤ alpha)
+    (localErr drift pair alpha beta : ℝ)
+    (hpair : pair ≤ localErr + drift)
+    (hlocal : localErr ≤ alpha)
     (hdrift : drift ≤ beta)
     (hmargin : alpha + beta < 1) :
     pair ≤ alpha + beta ∧ 0 < 1 - (alpha + beta) := by
-  exact ⟨local_plus_axis_drift local drift pair alpha beta hpair hlocal hdrift,
+  exact ⟨local_plus_axis_drift localErr drift pair alpha beta hpair hlocal hdrift,
     strict_cone_margin alpha beta hmargin⟩
 
 /-- If the fixed-axis error escapes `alpha + beta` while the same-time defect is
 at most `alpha`, then the axis itself must have drifted by more than `beta`. -/
 theorem cone_escape_forces_axis_drift
-    (local drift pair alpha beta : ℝ)
-    (hpair : pair ≤ local + drift)
-    (hlocal : local ≤ alpha)
+    (localErr drift pair alpha beta : ℝ)
+    (hpair : pair ≤ localErr + drift)
+    (hlocal : localErr ≤ alpha)
     (hescape : alpha + beta < pair) :
     beta < drift := by
   linarith
