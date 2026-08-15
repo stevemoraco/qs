@@ -28,16 +28,19 @@ theorem cubic_difference_abs_budget
     (h₂ : |x * (b - y) * c| ≤ e₂)
     (h₃ : |x * y * (c - z)| ≤ e₃) :
     |a * b * c - x * y * z| ≤ e₁ + e₂ + e₃ := by
+  have h12 :
+      |(a - x) * b * c + x * (b - y) * c| ≤ e₁ + e₂ := by
+    calc
+      |(a - x) * b * c + x * (b - y) * c| ≤
+          |(a - x) * b * c| + |x * (b - y) * c| := abs_add_le _ _
+      _ ≤ e₁ + e₂ := add_le_add h₁ h₂
+  rw [cubic_difference_identity]
   calc
-    |a * b * c - x * y * z| =
-        |((a - x) * b * c + x * (b - y) * c) + x * y * (c - z)| := by
-          rw [cubic_difference_identity]
-    _ ≤ |(a - x) * b * c + x * (b - y) * c| + |x * y * (c - z)| :=
+    |((a - x) * b * c + x * (b - y) * c) + x * y * (c - z)| ≤
+        |(a - x) * b * c + x * (b - y) * c| + |x * y * (c - z)| :=
       abs_add_le _ _
-    _ ≤ (|(a - x) * b * c| + |x * (b - y) * c|) + |x * y * (c - z)| := by
-      exact add_le_add_right (abs_add_le _ _) _
-    _ ≤ e₁ + e₂ + e₃ := by
-      linarith
+    _ ≤ (e₁ + e₂) + e₃ := add_le_add h12 h₃
+    _ = e₁ + e₂ + e₃ := by ring
 
 /-- A positive work floor survives a limit once the total work error is at most
 half of that floor. -/
@@ -47,7 +50,7 @@ theorem positive_work_survives_half_error
     (hold : ε ≤ oldWork)
     (herr : |oldWork - newWork| ≤ ε / 2) :
     ε / 2 ≤ newWork := by
-  have hlower : -(ε / 2) ≤ oldWork - newWork := (abs_le.mp herr).1
+  have hupper : oldWork - newWork ≤ ε / 2 := (abs_le.mp herr).2
   linarith
 
 /-- With a strictly positive original floor, the retained half-floor is also
