@@ -30,19 +30,22 @@ jobs:
             'Lemma 8.10','Theorem 8.11','Corollary 8.12',
             'finite triangular source-renormalization matrix',
             'finite triangular source renormalization matrix',
+            'triangular finite-jet renormalization','finite-jet renormalization',
+            'finite triangular counterterm matrix','finite triangular source theorem',
+            'source theorem printed in Part V','Part V','PART V',
             'maximal contact subtree','maximal contact subtrees',
             'contact subtree','contact cluster','local root','source tree',
             'Cauchy bounds','analytic source ball','fixed neighbourhood of the origin'
           ]
           for idx,a in enumerate(anchors):
             poss=[]; start=0
-            while len(poss)<8:
+            while len(poss)<12:
               i=low.find(a.lower(),start)
               if i<0: break
               poss.append(i); start=i+len(a)
             chunks=[]
             for n,i in enumerate(poss,1):
-              chunks.append(f'=== {a} hit {n} at {i} ===\n'+text[max(0,i-3500):min(len(text),i+9000)])
+              chunks.append(f'=== {a} hit {n} at {i} ===\n'+text[max(0,i-4500):min(len(text),i+11000)])
             safe=''.join(ch if ch.isalnum() else '_' for ch in a)[:80]
             (out/f'{idx:02d}_{safe}.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
           cp=Path('kirk_latest_record.json')
@@ -55,5 +58,5 @@ jobs:
           git config user.name millennium-braid-source-audit
           git config user.email actions@users.noreply.github.com
           git add source_audit/kirk_v4/contact_renorm_targeted
-          git commit -m 'audit(ym): preserve Kirk v4 contact-renormalization contexts'
+          git commit -m 'audit(ym): extend Kirk v4 contact-renormalization contexts'
           git push origin HEAD:verification/ym-kirk-v4-contact-renorm-targeted-20260816-run3-gpt56sol
