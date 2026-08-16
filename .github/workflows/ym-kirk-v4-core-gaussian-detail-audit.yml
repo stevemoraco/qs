@@ -1,0 +1,56 @@
+name: YM Kirk v4 core Gaussian detail audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-core-gaussian-detail-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol
+      - name: Extract focused contexts
+        run: |
+          set -euo pipefail
+          test -s latest.txt
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/core_gaussian_detail'); out.mkdir(parents=True,exist_ok=True)
+          targets=['Definition 3.23','Lemma 3.24','Lemma 3.26','Lemma 3.27','Theorem 3.28','Corollary 4.10','Lemma 3.30','Theorem 3.31']
+          chunks=[]
+          for name in targets:
+            kind,num=name.rsplit(' ',1)
+            pat=re.compile(r'^\s*'+re.escape(kind)+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            if not hits: raise SystemExit('missing '+name)
+            for i in hits[:2]:
+              lo=max(0,i-20); hi=min(len(lines),i+150)
+              chunks.append(f'===== {name} line {i+1} =====\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          for phrase in ['uniform in the number and sizes of cores','uniform in core size','trace class','Schatten','Hilbert-Schmidt','rank K','rank of K','core support reserve','strict core support reserve']:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            chunks.append(f'===== PHRASE {phrase}: {len(hits)} hits =====')
+            for i in hits[:30]:
+              lo=max(0,i-12); hi=min(len(lines),i+20)
+              chunks.append('\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'CORE_GAUSSIAN_DETAIL.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          PY
+      - name: Preserve contexts
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/core_gaussian_detail
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk core Gaussian detail contexts'
+          git push origin HEAD:verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol

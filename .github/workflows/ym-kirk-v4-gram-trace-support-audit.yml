@@ -1,0 +1,80 @@
+name: YM Kirk v4 Gram trace-support audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-gram-trace-support-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract trace/support/regulator contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/gram_trace_support'); out.mkdir(parents=True,exist_ok=True)
+          phrases=[
+            'Gaussian exponential moment','Tr(CBi','Tr(CB','quadratic-growth allocation',
+            'regulator-allocation','allocation cone','unused exponential support margin',
+            'qP (','qP(','βPout','betaPout','parent-normalized','Gram replica regulator',
+            'weakened rooted support norm','support margin','trace', 'regulator moment'
+          ]
+          chunks=[]; counts={}
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:60],1):
+              lo=max(0,i-55); hi=min(len(lines),i+130)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          # exact theorem blocks near 4.1--4.5 and Proposition 4.26
+          targets=['Lemma 4.1','Corollary 4.2','Theorem 4.4','Lemma 4.5','Proposition 4.26','Lemma 4.27']
+          for name in targets:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:5],1):
+              lo=max(0,i-110); hi=min(len(lines),i+220)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TRACE_SUPPORT_CONTEXTS.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          required=['Lemma 4.1','Corollary 4.2','Theorem 4.4','Lemma 4.5','Proposition 4.26','Lemma 4.27']
+          missing=[k for k in required if counts.get(k,0)==0]
+          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
+          PY
+      - name: Preserve contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/gram_trace_support/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/gram_trace_support/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/gram_trace_support
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk Gram trace-support contexts'
+          git push origin HEAD:verification/ym-kirk-v4-gram-trace-support-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-gram-trace-support-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/gram_trace_support/
