@@ -1,4 +1,4 @@
-name: YM Kirk v4 weak supplier closure audit
+name: YM Kirk v4 foundational weak supplier audit
 
 on:
   push:
@@ -21,37 +21,28 @@ jobs:
           ref: verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
       - name: Ensure pdftotext
         run: |
-          if ! command -v pdftotext >/dev/null; then
-            sudo apt-get update && sudo apt-get install -y poppler-utils
-          fi
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
       - name: Pin immutable Kirk source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract weak supplier closure contexts
+      - name: Extract foundational supplier contexts
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import re
           from pathlib import Path
           lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
-          out=Path('source_audit/kirk_v4/weak_supplier_closure'); out.mkdir(parents=True,exist_ok=True)
-          patterns={
-            'Theorem_2_5': re.compile(r'^\s*Theorem\s+2\.5\b',re.I),
-            'Theorem_3_31': re.compile(r'^\s*Theorem\s+3\.31\b',re.I),
-            'Lemma_3_31': re.compile(r'^\s*Lemma\s+3\.31\b',re.I),
-            'Theorem_4_29': re.compile(r'^\s*Theorem\s+4\.29\b',re.I),
-            'Theorem_4_30': re.compile(r'^\s*Theorem\s+4\.30\b',re.I),
-            'Lemma_5_20': re.compile(r'^\s*Lemma\s+5\.20\b',re.I),
-            'Theorem_5_1': re.compile(r'^\s*Theorem\s+5\.1\b',re.I),
-            'Lemma_8_3': re.compile(r'^\s*Lemma\s+8\.3\b',re.I),
-          }
+          out=Path('source_audit/kirk_v4/foundational_weak_suppliers'); out.mkdir(parents=True,exist_ok=True)
+          names=['Theorem 3.28','Lemma 3.29','Lemma 3.30','Corollary 4.10','Theorem 4.22','Theorem 4.23','Lemma 4.24','Theorem 4.29','Theorem 4.30','Lemma 4.31']
           chunks=[]; counts={}
-          for name,pat in patterns.items():
+          for name in names:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
             hits=[i for i,l in enumerate(lines) if pat.search(l)]
             counts[name]=len(hits)
             for k,i in enumerate(hits[:10],1):
-              lo=max(0,i-25); hi=min(len(lines),i+155)
+              lo=max(0,i-25); hi=min(len(lines),i+165)
               chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
-          phrases=['irregular Fréchet flatness','charged irregular','adapted one-step mean-value contraction','weak supplier','reproduced weak ball','uniform Banach ball','support-summed interaction']
+          phrases=['replica–BKAR','replica-BKAR','summed replica','canonical history','output recertification','long row','short row','Corollary 4.10','bad-core mass']
           for phrase in phrases:
             hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
             counts[phrase]=len(hits)
@@ -61,24 +52,24 @@ jobs:
           (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
-          required=['Theorem_2_5','Theorem_4_29','Theorem_4_30','Lemma_5_20','Theorem_5_1','Lemma_8_3']
-          missing=[k for k in required if counts[k]==0]
-          if missing: raise SystemExit('missing required theorem anchors: '+', '.join(missing))
+          required=['Theorem 3.28','Lemma 3.29','Lemma 3.30','Corollary 4.10','Theorem 4.29','Theorem 4.30']
+          missing=[k for k in required if counts.get(k,0)==0]
+          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
           PY
-      - name: Preserve weak supplier source contexts
+      - name: Preserve foundational source contexts
         run: |
-          cp kirk_latest_record.json source_audit/kirk_v4/weak_supplier_closure/
-          sha256sum kirk_latest.pdf > source_audit/kirk_v4/weak_supplier_closure/PDF_SHA256.txt
+          cp kirk_latest_record.json source_audit/kirk_v4/foundational_weak_suppliers/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/foundational_weak_suppliers/PDF_SHA256.txt
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
-          git add source_audit/kirk_v4/weak_supplier_closure
+          git add source_audit/kirk_v4/foundational_weak_suppliers
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk weak supplier closure contexts'
+          git commit -m 'audit(ym): preserve Kirk foundational weak suppliers'
           git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kirk-v4-weak-supplier-closure-audit
+          name: kirk-v4-foundational-weak-supplier-audit
           if-no-files-found: warn
           retention-days: 30
-          path: source_audit/kirk_v4/weak_supplier_closure/
+          path: source_audit/kirk_v4/foundational_weak_suppliers/
