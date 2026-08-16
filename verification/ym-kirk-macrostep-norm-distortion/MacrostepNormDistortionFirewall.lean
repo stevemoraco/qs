@@ -9,7 +9,6 @@ theorem cubic_decay_destroyed_by_L4_distortion
     (L : ℝ) (hL : L ≠ 0) :
     L ^ 4 / L ^ 3 = L := by
   field_simp
-  ring
 
 /-- More generally, one extra power in an `L`-dependent distortion cancels an
 arbitrary inverse power row and leaves linear growth. -/
