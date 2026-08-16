@@ -45,8 +45,13 @@ theorem strict_ratio_requires_constant_gap
     (htheta : 0 < theta)
     (h : shellRate * theta ≤ q * (signalRate * theta)) :
     shellRate ≤ q * signalRate := by
-  exact (mul_le_mul_right htheta).mp (by
-    simpa [mul_assoc] using h)
+  by_contra hnot
+  have hgap : q * signalRate < shellRate := lt_of_not_ge hnot
+  have hm : (q * signalRate) * theta < shellRate * theta :=
+    mul_lt_mul_of_pos_right hgap htheta
+  have hm' : q * (signalRate * theta) < shellRate * theta := by
+    simpa [mul_assoc] using hm
+  exact (not_lt_of_ge h) hm'
 
 /-- Aggregate signal and shell totals alone do not force one of two slabs to be
 simultaneously signal-rich and shell-poor.  The entire signal and shell cost can
