@@ -1,0 +1,73 @@
+name: YM Kirk v4 BKAR admission audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-bkar-admission-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract BKAR admission contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/bkar_admission'); out.mkdir(parents=True,exist_ok=True)
+          targets=['Lemma 4.1','Lemma 4.2','Lemma 4.3','Lemma 4.4','Lemma 4.5','Lemma 4.6','Lemma 4.7','Lemma 4.8','Lemma 4.9','Lemma 4.27','Theorem 4.29']
+          chunks=[]; counts={}
+          for name in targets:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:10],1):
+              lo=max(0,i-35); hi=min(len(lines),i+260)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          phrases=['parent-normalized','child sum','Prüfer','Prufer','tree-degree','replica-BKAR','replica–BKAR','below one half','1/2','one half']
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:40],1):
+              lo=max(0,i-30); hi=min(len(lines),i+120)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          missing=[k for k in ['Lemma 4.27','Theorem 4.29'] if counts.get(k,0)==0]
+          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
+          PY
+      - name: Preserve BKAR contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/bkar_admission/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/bkar_admission/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/bkar_admission
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk BKAR admission contexts'
+          git push origin HEAD:verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-bkar-admission-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/bkar_admission/
