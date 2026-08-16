@@ -1,0 +1,88 @@
+name: YM Kirk v4 rooted UV entropy audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract compact rooted-norm theorem contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/root_entropy_compact'); out.mkdir(parents=True,exist_ok=True)
+          patterns={
+            'Theorem_7_2': re.compile(r'^\s*Theorem\s+7\.2\b',re.I),
+            'Corollary_7_4': re.compile(r'^\s*Corollary\s+7\.4\b',re.I),
+            'Lemma_8_3': re.compile(r'^\s*Lemma\s+8\.3\b',re.I),
+            'Lemma_8_4': re.compile(r'^\s*Lemma\s+8\.4\b',re.I),
+            'Lemma_8_6': re.compile(r'^\s*Lemma\s+8\.6\b',re.I),
+            'Corollary_8_7': re.compile(r'^\s*Corollary\s+8\.7\b',re.I),
+            'Lemma_8_8': re.compile(r'^\s*Lemma\s+8\.8\b',re.I),
+          }
+          chunks=[]; counts={}
+          for name,pat in patterns.items():
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:12],1):
+              lo=max(0,i-16); hi=min(len(lines),i+105)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          phrases=[
+            'fixed root algebra sums every finer decoration independently of the number of active nonroot supports',
+            'uniformly summable one/two-root norm',
+            'finer decorations attached to this coarsest skeleton',
+            'least-label convention',
+            'lowest common ancestor',
+            'strict rooted margin',
+            'every additional nonreference vertex',
+          ]
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:20],1):
+              lo=max(0,i-14); hi=min(len(lines),i+40)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          missing=[k for k in patterns if counts[k]==0]
+          if missing: raise SystemExit('missing theorem declaration anchors: '+', '.join(missing))
+          PY
+      - name: Preserve compact source contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/root_entropy_compact/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/root_entropy_compact/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/root_entropy_compact
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve compact Kirk root entropy contexts'
+          git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-root-entropy-compact-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/root_entropy_compact/

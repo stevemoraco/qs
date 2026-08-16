@@ -1,0 +1,75 @@
+name: YM Kirk v4 foundational weak supplier audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-root-entropy-compact-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract foundational supplier contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/foundational_weak_suppliers'); out.mkdir(parents=True,exist_ok=True)
+          names=['Theorem 3.28','Lemma 3.29','Lemma 3.30','Corollary 4.10','Theorem 4.22','Theorem 4.23','Lemma 4.24','Theorem 4.29','Theorem 4.30','Lemma 4.31']
+          chunks=[]; counts={}
+          for name in names:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:10],1):
+              lo=max(0,i-25); hi=min(len(lines),i+165)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          phrases=['replica–BKAR','replica-BKAR','summed replica','canonical history','output recertification','long row','short row','Corollary 4.10','bad-core mass']
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:30],1):
+              lo=max(0,i-20); hi=min(len(lines),i+80)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          required=['Theorem 3.28','Lemma 3.29','Lemma 3.30','Corollary 4.10','Theorem 4.29','Theorem 4.30']
+          missing=[k for k in required if counts.get(k,0)==0]
+          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
+          PY
+      - name: Preserve foundational source contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/foundational_weak_suppliers/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/foundational_weak_suppliers/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/foundational_weak_suppliers
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk foundational weak suppliers'
+          git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-foundational-weak-supplier-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/foundational_weak_suppliers/
