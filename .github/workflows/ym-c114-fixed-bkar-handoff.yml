@@ -27,6 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym-c114-fixed-bkar-handoff/CompactBKARFixedHandoff.lean
+          test "$(git hash-object "$SRC")" = "19f34515610e917f8d39b7a7825a9a0b721c7ffe"
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
           SRC="$SRC" python3 - <<'PY'
           import json, os, pathlib, urllib.request
