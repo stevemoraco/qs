@@ -21,13 +21,14 @@ namespace YMIntermediateRootConditioningFirewall
 def upstream (M x : ℝ) : ℝ := M * x
 
 /-- A downstream map that exactly cancels the upstream gain when `M ≠ 0`. -/
-def downstream (M y : ℝ) : ℝ := y / M
+noncomputable def downstream (M y : ℝ) : ℝ := y / M
 
 /-- The fully composed endpoint map is the identity even though the
 intermediate map may be arbitrarily large. -/
 theorem endpoint_composition_identity (M x : ℝ) (hM : M ≠ 0) :
     downstream M (upstream M x) = x := by
-  simp [downstream, upstream, hM]
+  unfold downstream upstream
+  field_simp [hM]
 
 /-- At the unit input, the endpoint response stays exactly one while the
 intermediate response exceeds any prescribed real threshold. -/
@@ -77,7 +78,9 @@ theorem endpoint_plus_positive_observability_controls_intermediate
     (hendpoint : |b * (a * x)| ≤ K * |x|) :
     |a * x| ≤ (K * |x|) / c := by
   apply (le_div_iff₀ hc).2
-  exact hobserve.trans hendpoint
+  calc
+    |a * x| * c = c * |a * x| := mul_comm _ _
+    _ ≤ K * |x| := hobserve.trans hendpoint
 
 #print axioms endpoint_composition_identity
 #print axioms arbitrary_intermediate_amplification
