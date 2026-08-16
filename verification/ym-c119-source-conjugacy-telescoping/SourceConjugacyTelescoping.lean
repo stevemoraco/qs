@@ -26,7 +26,7 @@ theorem two_step_conjugacy_cancels
     normalizedStep c2 t1 c1 (normalizedStep c1 t0 c0 x) =
       c2 * ((t1 * t0) * (x / c0)) := by
   dsimp [normalizedStep]
-  field_simp [hc0, hc1] <;> ring
+  field_simp [hc0, hc1]
 
 theorem two_step_multiplier_identity
     (c0 c1 c2 t0 t1 : ℝ)
