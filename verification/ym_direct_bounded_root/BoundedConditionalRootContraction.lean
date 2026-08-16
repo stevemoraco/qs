@@ -29,7 +29,6 @@ def weightedCovariance {n : ℕ} (w f g : Fin n → ℝ) : ℝ :=
 /-- A positive normalized finite expectation is an `L∞` contraction. -/
 theorem weightedMean_abs_le
     {n : ℕ} (w f : Fin n → ℝ) (B : ℝ)
-    (hB : 0 ≤ B)
     (hw : ∀ i, 0 ≤ w i)
     (hsum : ∑ i, w i = 1)
     (hf : ∀ i, |f i| ≤ B) :
@@ -52,23 +51,19 @@ theorem weightedMean_abs_le
         exact mul_le_mul_of_nonneg_left (abs_le.mp (hf i)).2 (hw i)
       _ = B := by
         rw [← Finset.sum_mul, hsum, one_mul]
-  apply abs_le.mpr
-  constructor
-  · linarith
-  · linarith
+  exact abs_le.mpr ⟨hlow, hupp⟩
 
 /-- Product roots remain bounded under a positive normalized finite
 expectation. -/
 theorem weightedMean_product_abs_le
     {n : ℕ} (w f g : Fin n → ℝ) (Bf Bg : ℝ)
-    (hBf : 0 ≤ Bf) (hBg : 0 ≤ Bg)
+    (hBf : 0 ≤ Bf)
     (hw : ∀ i, 0 ≤ w i)
     (hsum : ∑ i, w i = 1)
     (hf : ∀ i, |f i| ≤ Bf)
     (hg : ∀ i, |g i| ≤ Bg) :
     |weightedMean w (fun i => f i * g i)| ≤ Bf * Bg := by
   apply weightedMean_abs_le w (fun i => f i * g i) (Bf * Bg)
-  · exact mul_nonneg hBf hBg
   · exact hw
   · exact hsum
   · intro i
@@ -86,15 +81,20 @@ theorem weightedCovariance_abs_le
     |weightedCovariance w f g| ≤ 2 * (Bf * Bg) := by
   have hfg :
       |weightedMean w (fun i => f i * g i)| ≤ Bf * Bg :=
-    weightedMean_product_abs_le w f g Bf Bg hBf hBg hw hsum hf hg
+    weightedMean_product_abs_le w f g Bf Bg hBf hw hsum hf hg
   have hfm : |weightedMean w f| ≤ Bf :=
-    weightedMean_abs_le w f Bf hBf hw hsum hf
+    weightedMean_abs_le w f Bf hw hsum hf
   have hgm : |weightedMean w g| ≤ Bg :=
-    weightedMean_abs_le w g Bg hBg hw hsum hg
+    weightedMean_abs_le w g Bg hw hsum hg
   have hprod :
       |weightedMean w f * weightedMean w g| ≤ Bf * Bg := by
     rw [abs_mul]
-    exact mul_le_mul hfm hgm (abs_nonneg (weightedMean w g)) hBf
+    calc
+      |weightedMean w f| * |weightedMean w g| =
+          |weightedMean w g| * |weightedMean w f| := mul_comm _ _
+      _ ≤ Bg * Bf :=
+        mul_le_mul hgm hfm (abs_nonneg (weightedMean w f)) hBg
+      _ = Bf * Bg := mul_comm _ _
   have htri :
       |weightedMean w (fun i => f i * g i) -
           weightedMean w f * weightedMean w g| ≤
