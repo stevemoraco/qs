@@ -70,12 +70,12 @@ theorem bounded_column_kernel_pairing
             rw [Finset.sum_comm]
             apply Finset.sum_congr rfl
             intro j hj
-            simp [Finset.mul_sum, mul_assoc, mul_comm, mul_left_comm]
+            simp [Finset.mul_sum, mul_comm, mul_left_comm]
     _ ≤ ∑ j, b j * (δ * K) := by
       exact Finset.sum_le_sum
         (fun j _ => mul_le_mul_of_nonneg_left (hinner j) (hb j))
     _ = (δ * K) * (∑ j, b j) := by
-      simp [Finset.mul_sum, mul_assoc, mul_comm, mul_left_comm]
+      simp [Finset.mul_sum, mul_comm, mul_left_comm]
     _ ≤ (δ * K) * B :=
       mul_le_mul_of_nonneg_left hB (mul_nonneg hδ hK)
     _ = δ * K * B := by ring
