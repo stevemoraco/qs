@@ -68,6 +68,8 @@ jobs:
           git add source_audit/kirk_v4/common_source_ball
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'audit(ym): extend Kirk v4 common source-ball contexts'
+          git fetch origin verification/ym-kirk-v4-common-source-ball-audit-20260816-run3-gpt56sol
+          git rebase FETCH_HEAD
           git push origin HEAD:verification/ym-kirk-v4-common-source-ball-audit-20260816-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
