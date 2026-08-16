@@ -64,7 +64,10 @@ theorem thicknessExcess_eq_zero_iff_all_one
           intro e he
           exact hall e (by simp [he])
         have ht0 := (ih ht).2 htailall
-        simp [thicknessExcess, ha1, ht0]
+        have ht0' : (t.map fun e => e - 1).sum = 0 := by
+          simpa [thicknessExcess] using ht0
+        change (a - 1) + (t.map fun e => e - 1).sum = 0
+        omega
 
 theorem augOrder_eq_fiberRank_iff_all_one
     (es : List ℕ) (hpos : ∀ e ∈ es, 1 ≤ e) :
