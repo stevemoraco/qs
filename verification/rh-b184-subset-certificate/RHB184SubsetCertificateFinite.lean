@@ -85,9 +85,9 @@ theorem subset_prime_certificate_forces_positive_full
 /-- Omitting positive prime contributions can only decrease a reciprocal-prime
 lower sum.  This scalar form is the proof-object firewall used by B184. -/
 theorem omitted_positive_terms_are_safe
-    {partial omitted : ℝ}
+    {subtotal omitted : ℝ}
     (homitted : 0 ≤ omitted) :
-    partial ≤ partial + omitted := by
+    subtotal ≤ subtotal + omitted := by
   linarith
 
 #print axioms monotone_truncated_lower_bound
