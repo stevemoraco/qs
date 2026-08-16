@@ -1,21 +1,22 @@
 import Mathlib
 
 /-!
-# B218 finite ground-state Haar algebra
+# B218/B218A finite ground-state Haar algebra
 
 Finite algebra only.
 
-This file formalizes the load-bearing scalar identities behind the B218 human
-proof:
+This file formalizes the load-bearing scalar identities behind the B218/B218A
+human proofs:
 
 * the two branchwise first-order factorizations of the positive tent;
 * branchwise nonnegativity;
 * the exact tent-mass ledger;
 * completion of squares for the ground-state transform;
-* the hostile intermediate-exponent ledger.
+* the hostile intermediate-exponent ledger;
+* the exact zeroth/first Haar-square moments and diagonal constants.
 
-It does **not** formalize derivatives, integrals, prime sums, B129/B131/B217,
-zeta, Xi, Deng--Yang--Lu, B46, RH, or not-RH.
+It does **not** formalize derivatives, integrals, prime sums, PNT/Stieltjes
+asymptotics, B129/B131/B217, zeta, Xi, Deng--Yang--Lu, B46, RH, or not-RH.
 -/
 
 namespace RHB218GroundStateHaarFinite
@@ -72,6 +73,31 @@ theorem marked_square_identity (w g : ℝ) :
     (w * g) ^ 2 = w ^ 2 * g ^ 2 := by
   ring
 
+/-- Zeroth Haar-square moment ledger: one interval has weight one and the
+other has weight `c^2`. -/
+theorem haar_square_mass (h c : ℝ) :
+    h + c ^ 2 * h = h * (1 + c ^ 2) := by
+  ring
+
+/-- First signed Haar-square moment ledger. -/
+theorem haar_square_first_moment (h c : ℝ) :
+    -h ^ 2 / 2 + c ^ 2 * h ^ 2 / 2 = h ^ 2 * (c ^ 2 - 1) / 2 := by
+  ring
+
+/-- With `L=4h`, the leading diagonal coefficient simplifies to
+`16 h^3 (1+c^2)`. -/
+theorem diagonal_leading_constant (h c : ℝ) :
+    (4 * h) ^ 2 * h * (1 + c ^ 2) = 16 * h ^ 3 * (1 + c ^ 2) := by
+  ring
+
+/-- With `L=4h`, the constant diagonal term simplifies to
+`h^3 (10+6c^2)`. -/
+theorem diagonal_constant_term (h c : ℝ) :
+    ((4 * h) ^ 2 / 2) * h * (1 + c ^ 2) -
+        ((4 * h) * h ^ 2 / 2) * (c ^ 2 - 1) =
+      h ^ 3 * (10 + 6 * c ^ 2) := by
+  ring
+
 #print axioms left_branch_factor
 #print axioms right_branch_factor
 #print axioms left_tent_nonnegative
@@ -80,5 +106,9 @@ theorem marked_square_identity (w g : ℝ) :
 #print axioms ground_state_square_completion
 #print axioms hostile_mode_exponent
 #print axioms marked_square_identity
+#print axioms haar_square_mass
+#print axioms haar_square_first_moment
+#print axioms diagonal_leading_constant
+#print axioms diagonal_constant_term
 
 end RHB218GroundStateHaarFinite
