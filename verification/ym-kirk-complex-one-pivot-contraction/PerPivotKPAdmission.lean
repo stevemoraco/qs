@@ -70,8 +70,8 @@ theorem incompatible_sum_le_card_mul_pivot_row
     intro γ hγ
     exact Finset.sum_nonneg (fun p hp => by
       by_cases hmem : p ∈ support γ
-      · simp [g, hmem, hw γ hγ]
-      · simp [g, hmem])
+      · simp [hmem, hw γ hγ]
+      · simp [hmem])
   have hsubset : overlapSet ⊆ polymers := by
     intro γ hγ
     exact (Finset.mem_filter.mp hγ).1
