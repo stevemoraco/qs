@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verification/ym-kirk-charged-activity-kp-closure-20260816-gpt56pro
+    paths:
+      - verification/ym_kirk_charged_activity_kp/ChargedActivityTreeKPClosure.lean
+      - .github/workflows/ym-kirk-charged-activity-kp-verifier.yml
   workflow_dispatch:
 
 permissions:
@@ -98,6 +101,7 @@ jobs:
             echo "source_sha256=$(sha256sum verification/ym_kirk_charged_activity_kp/ChargedActivityTreeKPClosure.lean | awk '{print $1}')"
             echo "environment=lean-4.30.0"
           } > evidence/ym_kirk_charged_activity_kp/replay-metadata.txt
+          cat evidence/ym_kirk_charged_activity_kp/replay-metadata.txt
 
       - name: Upload exact evidence
         if: always()
