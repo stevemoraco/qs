@@ -1,0 +1,55 @@
+name: YM Kirk v4 source-norm definition audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+    paths:
+      - .github/workflows/ym-kirk-source-norm-definition.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact source-norm neighborhood
+        run: |
+          set -euo pipefail
+          pdftotext -layout kirk_latest.pdf latest_layout.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest_layout.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/local_source_ball_body'); out.mkdir(parents=True,exist_ok=True)
+          needles=['4.2 Marked hierarchy','Fix an integer N','Theorem 4.6 (Arbitrary fixed passive-source order)','exterior/source product tube','bounded local source parameters enter holomorphically']
+          chunks=[]
+          for needle in needles:
+              pos=0; n=0
+              while True:
+                  i=text.find(needle,pos)
+                  if i<0: break
+                  n+=1
+                  chunks.append(f'=== {needle} hit {n} at {i} ===\n'+text[max(0,i-14000):min(len(text),i+16000)]+'\n')
+                  pos=i+len(needle)
+          (out/'SOURCE_NORM_LAYOUT.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          if 'Theorem 4.6 (Arbitrary fixed passive-source order)' not in text: raise SystemExit('Theorem 4.6 anchor missing')
+          PY
+      - name: Commit source-norm audit
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/local_source_ball_body/SOURCE_NORM_LAYOUT.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve exact source-norm definition'
+          git push origin HEAD:verification/ym-kirk-v4-local-source-ball-body-20260816-run3
