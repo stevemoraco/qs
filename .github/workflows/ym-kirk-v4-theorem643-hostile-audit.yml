@@ -57,7 +57,6 @@ jobs:
                   for v in x: walk(v)
           for r in roots: walk(r)
           urls=list(dict.fromkeys(urls))
-          # Reject metadata/API/self links; retain actual file-content candidates.
           candidates=[u for u in urls if ('/files/' in u and (u.endswith('/content') or '.pdf' in u.lower()))]
           if not candidates:
               print('TOP_LEVEL_RECORD_KEYS=', list(roots[0]) if isinstance(roots[0],dict) else type(roots[0]))
@@ -95,7 +94,7 @@ jobs:
             ('theorem_6_43', r'Theorem 6\.43\b'),
             ('lemma_7_5', r'Lemma 7\.5\b'),
             ('lemma_7_6', r'Lemma 7\.6\b'),
-            ('lemma_7_7', r'Lemma 7\.7\b'),
+            ('theorem_7_7', r'Theorem 7\.7\b'),
             ('corollary_7_8', r'Corollary 7\.8\b'),
           ]
           manifest=[]
@@ -128,9 +127,9 @@ jobs:
             echo '=== Theorem 6.43 exact risk terms ==='
             grep -n -E 'unique tree path|ordinary vertices|exhaustive|triangle inequality|row and column|mark|acoustic|marginal' "$OUT/theorem_6_43.txt" || true
             echo '=== Acoustic exclusion exact risk terms ==='
-            grep -n -E 'massless|factoriz|registered connector|acoustic|zero|connected' "$OUT"/lemma_7_*.txt "$OUT/corollary_7_8.txt" || true
+            grep -n -E 'massless|factoriz|registered connector|acoustic|zero|connected' "$OUT/lemma_7_5.txt" "$OUT/lemma_7_6.txt" "$OUT/theorem_7_7.txt" "$OUT/corollary_7_8.txt" || true
             echo '=== Inventory exact risk terms ==='
-            grep -n -E 'exactly once|owner|disjoint|exhaustive|cross-core|reference' "$OUT"/lemma_6_7.txt "$OUT"/proposition_6_8.txt "$OUT"/corollary_6_40.txt || true
+            grep -n -E 'exactly once|owner|disjoint|exhaustive|cross-core|reference' "$OUT/lemma_6_7.txt" "$OUT/proposition_6_8.txt" "$OUT/corollary_6_40.txt" || true
           } | tee "$OUT/keyword_inventory.txt"
 
       - name: Upload immutable audit evidence
