@@ -44,6 +44,7 @@ theorem finite_query_counterfeit
   refine ⟨D + 1, by omega, ?_⟩
   intro n hn
   apply counterfeit_agrees_below_exponent
+  have hnD : n ≤ D := hQ n hn
   omega
 
 /-- The transcript agreement is genuine rank ambiguity: the modeled free ranks
@@ -57,6 +58,7 @@ theorem finite_query_rank_ambiguity
   refine ⟨D + 1, by omega, by omega, ?_⟩
   intro n hn
   apply counterfeit_agrees_below_exponent
+  have hnD : n ≤ D := hQ n hn
   omega
 
 #print axioms counterfeit_agrees_below_exponent
