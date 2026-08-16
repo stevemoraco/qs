@@ -51,6 +51,24 @@ theorem threeLayerCake
     d1 + d2 + d3 = 2 * c1 + 4 * c2 + 6 * c3 := by
   omega
 
+def finitePairLiftability (maxDepth depth : ℕ) : ℕ :=
+  if depth ≤ maxDepth then 2 else 0
+
+def divisiblePairLiftability (_depth : ℕ) : ℕ := 2
+
+theorem boundedDepthCannotDistinguish
+    (maxDepth depth : ℕ)
+    (hDepth : depth ≤ maxDepth) :
+    finitePairLiftability maxDepth depth =
+      divisiblePairLiftability depth := by
+  simp [finitePairLiftability, divisiblePairLiftability, hDepth]
+
+theorem nextDepthSeparates
+    (maxDepth : ℕ) :
+    finitePairLiftability maxDepth (maxDepth + 1) = 0 ∧
+      divisiblePairLiftability (maxDepth + 1) = 2 := by
+  simp [finitePairLiftability, divisiblePairLiftability]
+
 theorem originAmbiguityAtOneDepth :
     (2 + 0 = 1 + 1) := by
   norm_num
@@ -62,6 +80,8 @@ theorem originAmbiguityAtOneDepth :
 #print axioms adjacentLiftabilityDrop
 #print axioms zeroTailStopsAllDeeperData
 #print axioms threeLayerCake
+#print axioms boundedDepthCannotDistinguish
+#print axioms nextDepthSeparates
 #print axioms originAmbiguityAtOneDepth
 
 end Millennium.BSD.CasselsTateLiftability
