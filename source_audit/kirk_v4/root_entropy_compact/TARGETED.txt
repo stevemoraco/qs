@@ -1,6 +1,4 @@
 ===== Theorem_7_2 DECL 1 line 4767 =====
-4755: 7    Compact boundary-to-center closure
-4756: Proposition 7.1 (Exact full-joint marked response row). For q = 0, 1, 2, the exact matching-scale
 4757: connected source kernels obey
 4758:                       X                                X
 4759:                   sup     emE d(x,y) |Kq (x, y)| + sup   emE d(x,y) |Kq (x, y)| ≤ Aq < ∞.   (106)
@@ -106,10 +104,13 @@
 4859: observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
 4860:                                                         X
 4861:                                        Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+4862:                                                        z∈ℓm Z4
+4863: 
+4864: If a fine source Jm is averaged to scale j < m, define
+4865:                                                      X
+4866:                                         Jj (X) = ℓ−4
 
 ===== Corollary_7_4 DECL 1 line 4790 =====
-4778:                              DJq ⟨F ; B⟩c J=0 ≤ CF,B,q e−mE r ,     q = 0, 1, 2.                      (107)
-4779: 
 4780: The same estimate holds for a finite family of compact-boundary or optical chart perturbations whose
 4781: centered score rows are uniformly bounded in the permanent marked norm. This is the boundary-to-center
 4782: statement consumed by the source forest.
@@ -215,10 +216,13 @@
 4882: follows by the triangle inequality and the partition of the fine cells into coarse cells.
 4883: 
 4884: Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+4885: regimes.
+4886: (R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+4887:      ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+4888:      pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+4889:      scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
 
 ===== Corollary_7_4 DECL 2 line 4978 =====
-4966: each Gaussian contraction the bond
-4967:                                            Ke−mopt d(X,Y )/ℓj
 4968: of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
 4969: distinguished path the triangle inequality gives
 4970:                                  Y
@@ -324,10 +328,13 @@
 5070: physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
 5071: they are contracted into the exact local atom described in the statement.
 5072: Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+5073: resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+5074:  (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+5075:      connected majorant is bounded at every separation by
+5076:                                                                                        ′
+5077:                             Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
 
 ===== Lemma_8_6 DECL 1 line 5008 =====
-4996: before the logarithm is taken, so no all-good denominator occurs. Write
-4997: 
 4998:                                      Wm (J) = log Zm (J) − log Zm (0)
 4999: 
 5000: for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
@@ -433,10 +440,13 @@
 5100: seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
 5101: local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
 5102: physical rate without suppressing or hiding contact terms.
+5103: 
+5104: All-order source trees Let
+5105: 
+5106:                                 κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+5107: 
 
 ===== Corollary_8_7 DECL 1 line 5031 =====
-5019: Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
-5020: joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
 5021: Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
 5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
 5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
@@ -542,10 +552,13 @@
 5123: 
 5124: Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
 5125: positive-scale source types there is Cs < ∞ such that
+5126:                                                               X Y
+5127:                             |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+5128:                                                          T ∈Tn {i,j}∈E(T )
+5129: 
+5130: 
 
 ===== Lemma_8_8 DECL 1 line 5046 =====
-5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
-5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
 5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
 5037: Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
 5038: its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
@@ -651,10 +664,13 @@
 5138: for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
 5139: groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
 5140: Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+5141: one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+5142: n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+5143: bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+5144: unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+5145: renormalized local sources, first contract every contact subtree into its finite local source vertex. The
 
 ===== PHRASE uniformly summable one/two-root norm HIT 1 line 5048 =====
-5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
-5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
 5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
 5037: Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
 5038: its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
@@ -695,8 +711,25 @@
 5073: resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
 5074:  (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
 5075:      connected majorant is bounded at every separation by
+5076:                                                                                        ′
+5077:                             Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+5078: 
+5079:      and                                 X                             X
+5080:                                sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+5081:                                 z                              z′
+5082:                                          z′                            z
 
-===== PHRASE one/two-root norm HIT 1 line 5048 =====
+===== PHRASE least-label convention HIT 1 line 5036 =====
+5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
+5025: summable independently of m, so dominated convergence gives the last assertion.
+5026: 
+5027:     For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+5028: If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+5029: scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+5030: recursively generated tree, not a choice made after absolute values or bounds have been applied.
+5031: Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+5032: the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+5033: Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
 5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
 5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
 5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
@@ -734,15 +767,57 @@
 5068: x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
 5069: and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
 5070: physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+
+===== PHRASE least-label convention HIT 2 line 5065 =====
+5053: 
+5054: 
+5055:                                                      75
+5056: 
+5057: For d ≥ dw ,                   X
+5058:                                       Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+5059:                                j≥jw
+5060: 
+5061: For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+5062: bounded observables and controlled in the local source topology for renormalized fields.
+5063: Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+5064: tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+5065: logarithm formula at which the two source components are joined. The least-label convention removes
+5066: automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+5067: decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+5068: x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+5069: and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+5070: physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
 5071: they are contracted into the exact local atom described in the statement.
 5072: Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
 5073: resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
 5074:  (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
 5075:      connected majorant is bounded at every separation by
+5076:                                                                                        ′
+5077:                             Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+5078: 
+5079:      and                                 X                             X
+5080:                                sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+5081:                                 z                              z′
+5082:                                          z′                            z
+5083: 
+5084:  (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+5085:      then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+5086:      by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+5087:      by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+5088:      claimed.
+5089: The exponent m is common to both classes and to every fixed finite source family.
+5090: Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+5091: dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+5092: rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+5093: take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+5094: degraded by increasing the ultraviolet depth.
+5095:    For bounded observables, the covariance and every short-distance connected local atom are bounded
+5096: by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+5097: the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+5098: not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+5099: counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
 
-===== PHRASE unique lowest common ancestor HIT 1 line 5027 =====
-5013: where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
-5014: analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+===== PHRASE lowest common ancestor HIT 1 line 5027 =====
 5015: taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
 5016: Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
 5017: Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
@@ -783,97 +858,15 @@
 5052: 
 5053: 
 5054: 
+5055:                                                      75
+5056: 
+5057: For d ≥ dw ,                   X
+5058:                                       Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+5059:                                j≥jw
+5060: 
+5061: For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
 
-===== PHRASE unique lowest common ancestor HIT 2 line 6742 =====
-6728: case every Fi fixes zero, has positive derivative, and can be written as Fi (u) = uϕi (u) with ϕi positive and
-6729: uniformly C 2 . Its finite composition therefore factors as ui (g) = g 2 ψi (g 2 ) with ψi > 0. Differentiating
-6730: the exact recurrence twicep and using Fi (ui ) ≤
-6731:                                            ′
-6732:                                                     1 + Cui and |Fi′′ (ui )| ≤ C gives polynomial growth in i.
-6733: Consequently gi (g) = g ψi (g ) is an odd C function and no 1/g singularity occurs at the Gaussian
-6734:                                 2                2
-6735: 
-6736: endpoint. The interaction marks required by the finite conditional forest are simultaneously controlled by
-6737: (203) and (204). All constants are uniform on the compact first-crossing interval and on the enlarged
-6738: no-crossing weak wedge.
-6739: Lemma A.11 (Exact finite-depth twice-marked conditional forest). At finite directed depth M , differen-
-6740: tiate the exact factorization of Definition A.6 with respect to the two curvature roots and at most two
-6741: copies of g. The result is a finite sum of complete scale-labelled packet trees such that:
-6742:     (i) the two source leaves have one unique lowest common ancestor;
-6743:    (ii) each g mark is owned exactly once by a trajectory coordinate, a conditional logarithm, a source
-6744:         return, the terminal weak logarithm, or the compact handoff logarithm;
-6745:   (iii) every covariance edge, hard-core derivative, field factorial, regulator allocation and normalization
-6746:         contact belongs to one complete one-step packet before multiscale composition;
-6747:   (iv) the coefficients are exactly those of the Banach-valued Faà di Bruno formula.
-6748: No infinite-depth passage is asserted in this lemma.
-6749: Proof. Apply the joint-cumulant derivative identity to every exact normalized weak conditional and, on
-6750: a crossing cell, to the exact finite macrobridge and joint compact–optical logarithm. Then apply the
-6751: Banach-valued Faà di Bruno formula to the finite composition. This assertion is coefficientwise and uses
-6752: only finite-volume differentiability; the uniform compact marked bound is supplied later by Theorem A.20.
-6753: The one-step summed replica–BKAR theorem controls each weak packet, Lemma A.4 controls zero,
-6754: one and two g marks, and finite source transport controls the external roots. Uniqueness of the lowest
-6755: common ancestor is the ordinary tree property.
-6756: Lemma A.12 (Top marked ancestor and complete-packet shell). In a packet tree from Lemma A.11,
-6757: contract every maximal descendant subtree carrying no distinguished label into its exact parent-normalized
-6758: decoration, and suppress every maximal unary chain into its exact ordered transfer product. The distin-
-6759: guished labels are the two curvature roots and the zero, one or two active g marks. They have a unique
-6760: lowest common ancestor v⊤ ; let j be its conditional scale. Call v⊤ the top marked ancestor.
-6761:     All vertices strictly above v⊤ are unmarked. The complete coefficient created at v⊤ includes every
-6762: contracted side decoration with its canonical reported support. Decompose these whole coefficients by their
-6763: full reported-support shell k using a scalar translation- and reflection-invariant selector. The selected
-6764: class is therefore a complete BRS/reflection packet with every denominator and normalization contact
-6765: still inside it.
-6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
-6767:                                                                  k−j
-6768:                                             C(1 + 2k−j )q e−c2         .                                   (208)
-6769: 
-
-===== PHRASE unique lowest common ancestor HIT 3 line 6777 =====
-6763: full reported-support shell k using a scalar translation- and reflection-invariant selector. The selected
-6764: class is therefore a complete BRS/reflection packet with every denominator and normalization contact
-6765: still inside it.
-6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
-6767:                                                                  k−j
-6768:                                             C(1 + 2k−j )q e−c2         .                                   (208)
-6769: 
-6770: If j > k + C0 , the full support lies inside a fixed enlargement of one scale-j cell and no spatial connector
-6771: estimate is needed.
-6772: 
-6773: Proof. Contraction of an unlabelled descendant is its exact conditional value, so it retains its canonical
-6774: reported support. Suppression of a unary chain is the exact ordered transfer product. After these
-6775: operations, a tree with at most four distinguished leaves has only a fixed number of essential branching
-6776: edges, while all arbitrarily long unary portions are already contained in the parity transfer product. The
-6777: unique lowest common ancestor of all labels is an ordinary tree invariant. If a g derivative lands on a
-6778: coarser conditional map, its mark is attached at that map and therefore moves v⊤ to that scale. Hence
-6779: no marked vertex can occur above v⊤ .
-6780:    The shell selector is applied only after the full packet at v⊤ has been collected. A remote unmarked
-6781: side decoration is not cut from its parent and is not asked to carry an external Taylor factor. If exact
-6782: localization turns its contribution into a smaller-hull contact, that term is already in the finite contact block
-6783: and is not a shell-k packet. Otherwise its canonical reported support remains part of the whole packet.
-6784: When that support spans 2k−j scale-j blocks, the strict rooted-support norm and the weak connector
-6785: theorem give (208), including covariance, hard-core and mixed alternatives. The exact Loc/collect identity
-6786: of Theorem 5.8 ensures that this dichotomy is made before the stable packet is declared.
-6787: 
-6788: 
-6789:                                                       100
-6790: 
-6791: Theorem A.13 (Complete rooted even-contact contraction). Fix the permanent rooted support exponent
-6792: and one passive-source order large enough for the two curvature roots. Let ∥·∥⋆ be the adapted rooted marked
-6793: norm furnished by the macrostep local/nonlocal theorem and the macrostep-to-one-step construction. At
-6794:                    (2)
-6795: weak scale j, let Ij be the space of complete reflection-even two-root packet kernels satisfying K(0) = 0,
-6796: equivalently                                     X
-6797:                                         K(p) =      pbj,α pbj,β Sαβ (p),
-6798:                                                      α,β
-6799: 
-6800: where the divided packet is measured with two unused support moments. After decreasing the common
-6801: weak threshold once, there is one ρ < 1 such that, uniformly in scale, volume, preceding weak depth and
-6802: 0 ≤ g ≤ gr ,
-6803:                                               (2)      (2)
-6804:                                        Tj (g)Ij     ⊂ Ij+1 ,                                          (209)
-
-===== PHRASE least-label convention HIT 1 line 5036 =====
-5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+===== PHRASE lowest common ancestor HIT 2 line 5035 =====
 5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
 5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
 5025: summable independently of m, so dominated convergence gives the last assertion.
@@ -915,8 +908,14 @@
 5061: For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
 5062: bounded observables and controlled in the local source topology for renormalized fields.
 5063: Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+5064: tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+5065: logarithm formula at which the two source components are joined. The least-label convention removes
+5066: automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+5067: decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+5068: x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+5069: and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
 
-===== PHRASE least-label convention HIT 2 line 5065 =====
+===== PHRASE lowest common ancestor HIT 3 line 5063 =====
 5051:                                                          w .
 5052: 
 5053: 
@@ -959,3 +958,155 @@
 5090: Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
 5091: dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
 5092: rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+5093: take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+5094: degraded by increasing the ultraviolet depth.
+5095:    For bounded observables, the covariance and every short-distance connected local atom are bounded
+5096: by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+5097: the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+
+===== PHRASE lowest common ancestor HIT 4 line 6742 =====
+6730: the exact recurrence twicep and using Fi (ui ) ≤
+6731:                                            ′
+6732:                                                     1 + Cui and |Fi′′ (ui )| ≤ C gives polynomial growth in i.
+6733: Consequently gi (g) = g ψi (g ) is an odd C function and no 1/g singularity occurs at the Gaussian
+6734:                                 2                2
+6735: 
+6736: endpoint. The interaction marks required by the finite conditional forest are simultaneously controlled by
+6737: (203) and (204). All constants are uniform on the compact first-crossing interval and on the enlarged
+6738: no-crossing weak wedge.
+6739: Lemma A.11 (Exact finite-depth twice-marked conditional forest). At finite directed depth M , differen-
+6740: tiate the exact factorization of Definition A.6 with respect to the two curvature roots and at most two
+6741: copies of g. The result is a finite sum of complete scale-labelled packet trees such that:
+6742:     (i) the two source leaves have one unique lowest common ancestor;
+6743:    (ii) each g mark is owned exactly once by a trajectory coordinate, a conditional logarithm, a source
+6744:         return, the terminal weak logarithm, or the compact handoff logarithm;
+6745:   (iii) every covariance edge, hard-core derivative, field factorial, regulator allocation and normalization
+6746:         contact belongs to one complete one-step packet before multiscale composition;
+6747:   (iv) the coefficients are exactly those of the Banach-valued Faà di Bruno formula.
+6748: No infinite-depth passage is asserted in this lemma.
+6749: Proof. Apply the joint-cumulant derivative identity to every exact normalized weak conditional and, on
+6750: a crossing cell, to the exact finite macrobridge and joint compact–optical logarithm. Then apply the
+6751: Banach-valued Faà di Bruno formula to the finite composition. This assertion is coefficientwise and uses
+6752: only finite-volume differentiability; the uniform compact marked bound is supplied later by Theorem A.20.
+6753: The one-step summed replica–BKAR theorem controls each weak packet, Lemma A.4 controls zero,
+6754: one and two g marks, and finite source transport controls the external roots. Uniqueness of the lowest
+6755: common ancestor is the ordinary tree property.
+6756: Lemma A.12 (Top marked ancestor and complete-packet shell). In a packet tree from Lemma A.11,
+6757: contract every maximal descendant subtree carrying no distinguished label into its exact parent-normalized
+6758: decoration, and suppress every maximal unary chain into its exact ordered transfer product. The distin-
+6759: guished labels are the two curvature roots and the zero, one or two active g marks. They have a unique
+6760: lowest common ancestor v⊤ ; let j be its conditional scale. Call v⊤ the top marked ancestor.
+6761:     All vertices strictly above v⊤ are unmarked. The complete coefficient created at v⊤ includes every
+6762: contracted side decoration with its canonical reported support. Decompose these whole coefficients by their
+6763: full reported-support shell k using a scalar translation- and reflection-invariant selector. The selected
+6764: class is therefore a complete BRS/reflection packet with every denominator and normalization contact
+6765: still inside it.
+6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
+6767:                                                                  k−j
+6768:                                             C(1 + 2k−j )q e−c2         .                                   (208)
+6769: 
+6770: If j > k + C0 , the full support lies inside a fixed enlargement of one scale-j cell and no spatial connector
+6771: estimate is needed.
+6772: 
+6773: Proof. Contraction of an unlabelled descendant is its exact conditional value, so it retains its canonical
+6774: reported support. Suppression of a unary chain is the exact ordered transfer product. After these
+6775: operations, a tree with at most four distinguished leaves has only a fixed number of essential branching
+6776: edges, while all arbitrarily long unary portions are already contained in the parity transfer product. The
+
+===== PHRASE lowest common ancestor HIT 5 line 6760 =====
+6748: No infinite-depth passage is asserted in this lemma.
+6749: Proof. Apply the joint-cumulant derivative identity to every exact normalized weak conditional and, on
+6750: a crossing cell, to the exact finite macrobridge and joint compact–optical logarithm. Then apply the
+6751: Banach-valued Faà di Bruno formula to the finite composition. This assertion is coefficientwise and uses
+6752: only finite-volume differentiability; the uniform compact marked bound is supplied later by Theorem A.20.
+6753: The one-step summed replica–BKAR theorem controls each weak packet, Lemma A.4 controls zero,
+6754: one and two g marks, and finite source transport controls the external roots. Uniqueness of the lowest
+6755: common ancestor is the ordinary tree property.
+6756: Lemma A.12 (Top marked ancestor and complete-packet shell). In a packet tree from Lemma A.11,
+6757: contract every maximal descendant subtree carrying no distinguished label into its exact parent-normalized
+6758: decoration, and suppress every maximal unary chain into its exact ordered transfer product. The distin-
+6759: guished labels are the two curvature roots and the zero, one or two active g marks. They have a unique
+6760: lowest common ancestor v⊤ ; let j be its conditional scale. Call v⊤ the top marked ancestor.
+6761:     All vertices strictly above v⊤ are unmarked. The complete coefficient created at v⊤ includes every
+6762: contracted side decoration with its canonical reported support. Decompose these whole coefficients by their
+6763: full reported-support shell k using a scalar translation- and reflection-invariant selector. The selected
+6764: class is therefore a complete BRS/reflection packet with every denominator and normalization contact
+6765: still inside it.
+6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
+6767:                                                                  k−j
+6768:                                             C(1 + 2k−j )q e−c2         .                                   (208)
+6769: 
+6770: If j > k + C0 , the full support lies inside a fixed enlargement of one scale-j cell and no spatial connector
+6771: estimate is needed.
+6772: 
+6773: Proof. Contraction of an unlabelled descendant is its exact conditional value, so it retains its canonical
+6774: reported support. Suppression of a unary chain is the exact ordered transfer product. After these
+6775: operations, a tree with at most four distinguished leaves has only a fixed number of essential branching
+6776: edges, while all arbitrarily long unary portions are already contained in the parity transfer product. The
+6777: unique lowest common ancestor of all labels is an ordinary tree invariant. If a g derivative lands on a
+6778: coarser conditional map, its mark is attached at that map and therefore moves v⊤ to that scale. Hence
+6779: no marked vertex can occur above v⊤ .
+6780:    The shell selector is applied only after the full packet at v⊤ has been collected. A remote unmarked
+6781: side decoration is not cut from its parent and is not asked to carry an external Taylor factor. If exact
+6782: localization turns its contribution into a smaller-hull contact, that term is already in the finite contact block
+6783: and is not a shell-k packet. Otherwise its canonical reported support remains part of the whole packet.
+6784: When that support spans 2k−j scale-j blocks, the strict rooted-support norm and the weak connector
+6785: theorem give (208), including covariance, hard-core and mixed alternatives. The exact Loc/collect identity
+6786: of Theorem 5.8 ensures that this dichotomy is made before the stable packet is declared.
+6787: 
+6788: 
+6789:                                                       100
+6790: 
+6791: Theorem A.13 (Complete rooted even-contact contraction). Fix the permanent rooted support exponent
+6792: and one passive-source order large enough for the two curvature roots. Let ∥·∥⋆ be the adapted rooted marked
+6793: norm furnished by the macrostep local/nonlocal theorem and the macrostep-to-one-step construction. At
+6794:                    (2)
+
+===== PHRASE lowest common ancestor HIT 6 line 6777 =====
+6765: still inside it.
+6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
+6767:                                                                  k−j
+6768:                                             C(1 + 2k−j )q e−c2         .                                   (208)
+6769: 
+6770: If j > k + C0 , the full support lies inside a fixed enlargement of one scale-j cell and no spatial connector
+6771: estimate is needed.
+6772: 
+6773: Proof. Contraction of an unlabelled descendant is its exact conditional value, so it retains its canonical
+6774: reported support. Suppression of a unary chain is the exact ordered transfer product. After these
+6775: operations, a tree with at most four distinguished leaves has only a fixed number of essential branching
+6776: edges, while all arbitrarily long unary portions are already contained in the parity transfer product. The
+6777: unique lowest common ancestor of all labels is an ordinary tree invariant. If a g derivative lands on a
+6778: coarser conditional map, its mark is attached at that map and therefore moves v⊤ to that scale. Hence
+6779: no marked vertex can occur above v⊤ .
+6780:    The shell selector is applied only after the full packet at v⊤ has been collected. A remote unmarked
+6781: side decoration is not cut from its parent and is not asked to carry an external Taylor factor. If exact
+6782: localization turns its contribution into a smaller-hull contact, that term is already in the finite contact block
+6783: and is not a shell-k packet. Otherwise its canonical reported support remains part of the whole packet.
+6784: When that support spans 2k−j scale-j blocks, the strict rooted-support norm and the weak connector
+6785: theorem give (208), including covariance, hard-core and mixed alternatives. The exact Loc/collect identity
+6786: of Theorem 5.8 ensures that this dichotomy is made before the stable packet is declared.
+6787: 
+6788: 
+6789:                                                       100
+6790: 
+6791: Theorem A.13 (Complete rooted even-contact contraction). Fix the permanent rooted support exponent
+6792: and one passive-source order large enough for the two curvature roots. Let ∥·∥⋆ be the adapted rooted marked
+6793: norm furnished by the macrostep local/nonlocal theorem and the macrostep-to-one-step construction. At
+6794:                    (2)
+6795: weak scale j, let Ij be the space of complete reflection-even two-root packet kernels satisfying K(0) = 0,
+6796: equivalently                                     X
+6797:                                         K(p) =      pbj,α pbj,β Sαβ (p),
+6798:                                                      α,β
+6799: 
+6800: where the divided packet is measured with two unused support moments. After decreasing the common
+6801: weak threshold once, there is one ρ < 1 such that, uniformly in scale, volume, preceding weak depth and
+6802: 0 ≤ g ≤ gr ,
+6803:                                               (2)      (2)
+6804:                                        Tj (g)Ij     ⊂ Ij+1 ,                                          (209)
+6805:                                                                                  (2)
+6806:                                      ∥Tj (g)K∥⋆ ≤ ρ∥K∥⋆ ,                   K ∈ Ij .                  (210)
+6807: The same estimate holds for an already formed zero-, one- or two-g-marked packet at the top marked
+6808: ancestor, because every transfer above that ancestor is unmarked. Moreover the exact division gives, in
+6809: the fixed physical source normalization,
+6810:                                                                 (2)
+6811:                                                       X
