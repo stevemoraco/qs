@@ -56,7 +56,7 @@ theorem weighted_endpoint_zero_split_identity
             ring
       _ = (∑ i ∈ s, w i * x * invq i) -
             (∑ i ∈ s, w i * x * invY) := by
-              exact Finset.sum_sub_distrib
+              rw [Finset.sum_sub_distrib]
       _ = x * (∑ i ∈ s, w i * invq i) -
             x * invY * (∑ i ∈ s, w i) := by rw [h1, h2]
   rw [hsum]
