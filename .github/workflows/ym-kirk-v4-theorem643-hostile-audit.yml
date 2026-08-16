@@ -1,0 +1,133 @@
+name: Audit immutable Kirk v4 Theorem 6.43 dependencies
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-theorem643-hostile-audit-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-theorem643-hostile-audit.yml
+      - source_audit/kirk_v4/theorem643_hostile/QUESTION.txt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install extraction tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+
+      - name: Download and pin immutable v4 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=source_audit/kirk_v4/theorem643_hostile
+          mkdir -p "$OUT"
+          curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 -sSL \
+            https://zenodo.org/api/records/21765806 -o "$OUT/record.json"
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('source_audit/kirk_v4/theorem643_hostile')
+          r = json.loads((p/'record.json').read_text())
+          urls=[]
+          def walk(x):
+              if isinstance(x,dict):
+                  for k,v in x.items():
+                      if k in {'content','download'} and isinstance(v,str) and '/files/' in v:
+                          urls.append(v)
+                      walk(v)
+              elif isinstance(x,list):
+                  for v in x: walk(v)
+          walk(r)
+          urls=list(dict.fromkeys(urls))
+          if not urls:
+              raise SystemExit('no downloadable file URL found in pinned record')
+          # The record contains one manuscript PDF. Prefer a PDF-content URL.
+          url=next((u for u in urls if '.pdf' in u.lower() or u.endswith('/content')), urls[0])
+          (p/'download_url.txt').write_text(url+'\n')
+          print('DOWNLOAD_URL='+url)
+          urllib.request.urlretrieve(url, p/'kirk_v4.pdf')
+          PY
+          ACTUAL=$(sha256sum "$OUT/kirk_v4.pdf" | awk '{print $1}')
+          EXPECTED=c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa
+          echo "expected_sha256=$EXPECTED" | tee "$OUT/source_digest.txt"
+          echo "actual_sha256=$ACTUAL" | tee -a "$OUT/source_digest.txt"
+          test "$ACTUAL" = "$EXPECTED"
+          pdftotext -layout "$OUT/kirk_v4.pdf" "$OUT/kirk_v4.txt"
+
+      - name: Extract exact dependency contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root=pathlib.Path('source_audit/kirk_v4/theorem643_hostile')
+          lines=(root/'kirk_v4.txt').read_text(errors='replace').splitlines()
+          targets=[
+            ('theorem_3_28', r'Theorem 3\.28\b'),
+            ('theorem_3_31', r'Theorem 3\.31\b'),
+            ('corollary_4_14', r'Corollary 4\.14\b'),
+            ('lemma_6_7', r'Lemma 6\.7\b'),
+            ('proposition_6_8', r'Proposition 6\.8\b'),
+            ('corollary_6_40', r'Corollary 6\.40\b'),
+            ('lemma_6_41', r'Lemma 6\.41\b'),
+            ('theorem_6_43', r'Theorem 6\.43\b'),
+            ('lemma_7_5', r'Lemma 7\.5\b'),
+            ('lemma_7_6', r'Lemma 7\.6\b'),
+            ('lemma_7_7', r'Lemma 7\.7\b'),
+            ('corollary_7_8', r'Corollary 7\.8\b'),
+          ]
+          manifest=[]
+          combined=[]
+          for slug,pat in targets:
+              hits=[i for i,s in enumerate(lines) if re.search(pat,s)]
+              manifest.append(f'{slug}: {hits}')
+              if not hits:
+                  continue
+              # First exact declaration occurrence, with enough forward context to include proof.
+              i=hits[0]
+              lo=max(0,i-15); hi=min(len(lines),i+115)
+              text='\n'.join(lines[lo:hi])+'\n'
+              (root/f'{slug}.txt').write_text(text)
+              combined += [f'===== {slug} line {i+1} =====', text]
+          (root/'manifest.txt').write_text('\n'.join(manifest)+'\n')
+          (root/'combined_contexts.txt').write_text('\n'.join(combined))
+          print((root/'manifest.txt').read_text())
+          print((root/'combined_contexts.txt').read_text())
+          missing=[slug for slug,_ in targets if not (root/f'{slug}.txt').exists()]
+          if missing:
+              raise SystemExit('missing source declarations: '+', '.join(missing))
+          PY
+
+      - name: Exact hostile keyword inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=source_audit/kirk_v4/theorem643_hostile
+          {
+            echo '=== Theorem 6.43 exact risk terms ==='
+            grep -n -E 'unique tree path|ordinary vertices|exhaustive|triangle inequality|row and column|mark|acoustic|marginal' "$OUT/theorem_6_43.txt" || true
+            echo '=== Acoustic exclusion exact risk terms ==='
+            grep -n -E 'massless|factoriz|registered connector|acoustic|zero|connected' "$OUT"/lemma_7_*.txt "$OUT/corollary_7_8.txt" || true
+            echo '=== Inventory exact risk terms ==='
+            grep -n -E 'exactly once|owner|disjoint|exhaustive|cross-core|reference' "$OUT"/lemma_6_7.txt "$OUT"/proposition_6_8.txt "$OUT"/corollary_6_40.txt || true
+          } | tee "$OUT/keyword_inventory.txt"
+
+      - name: Upload immutable audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-theorem643-hostile-audit
+          path: source_audit/kirk_v4/theorem643_hostile/
+          if-no-files-found: error
