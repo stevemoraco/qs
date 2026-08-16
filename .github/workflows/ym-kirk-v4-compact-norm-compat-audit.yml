@@ -40,14 +40,16 @@ jobs:
             ('lemma_4_24','Lemma 4.24'),
             ('proposition_4_26','Proposition 4.26'),
             ('lemma_4_27','Lemma 4.27'),
-            ('lemma_6_41','Lemma 6.41'),
+            ('lemma_6_22','Lemma 6.22'),
+            ('lemma_6_27','Lemma 6.27'),
             ('theorem_6_39','Theorem 6.39'),
+            ('lemma_6_41','Lemma 6.41'),
             ('theorem_6_43','Theorem 6.43'),
           ]
           for slug,target in targets:
             m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$', text)
             if m:
-              (out/f'{slug}.txt').write_text(text[max(0,m.start()-10000):min(len(text),m.start()+30000)],encoding='utf-8')
+              (out/f'{slug}.txt').write_text(text[max(0,m.start()-10000):min(len(text),m.start()+32000)],encoding='utf-8')
 
           pats={
             'tau_weight': r'eκτ|κτ|τ\s*\(\s*P\s*\)',
@@ -57,10 +59,12 @@ jobs:
             'Ctree': r'Ctree',
             'ordinary_vertices': r'ordinary vertices',
             'support_margin': r'support margin|support-exponent|support exponent',
+            'optical_tube': r'optical.*tube|tube.*optical|hybrid.*tube|Cauchy.*optical',
+            'weakened_rooted': r'weakened rooted support norm',
           }
           summary=[]
           for name,pat in pats.items():
-            ms=list(re.finditer(pat,text,re.I))
+            ms=list(re.finditer(pat,text,re.I|re.S if name=='optical_tube' else re.I))
             summary.append(f'{name}\tcount={len(ms)}\toffsets={[m.start() for m in ms[:40]]}')
             chunks=[]
             for i,m in enumerate(ms[:20]):
@@ -68,10 +72,10 @@ jobs:
             (out/f'{name}.txt').write_text('\n'.join(chunks),encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
 
-          # Exact local classification around the two competing weights.
           notes=[]
-          notes.append('Question: does row (99), weighted by exp(m_H diam Y), directly instantiate the permanent kappa*tau rooted species norm used by Lemma 4.24/4.27?')
-          notes.append('This workflow only extracts source contexts; it does not infer equivalence.')
+          notes.append('Question 1: can the joint BKAR output norm be weakened from permanent kappa*tau support to a common physical diameter weight, using diam <= tau?')
+          notes.append('Question 2: do compact activities carry the arbitrary optical-field derivative/Cauchy row required by Theorem 4.4, beyond the printed finite passive marks in (99)?')
+          notes.append('This workflow extracts source contexts only; it does not infer either closure.')
           (out/'QUESTION.txt').write_text('\n'.join(notes)+'\n',encoding='utf-8')
 
           for p in ['kirk_latest_record.json','kirk_source_probe_report.json']:
@@ -85,7 +89,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/compact_norm_compat
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): extract compact/BKAR norm interfaces'
+          git commit -m 'audit(ym): expand compact/BKAR compatibility extraction'
           git push origin HEAD:verification/ym-kirk-v4-compact-norm-compat-audit-20260816-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         with:
