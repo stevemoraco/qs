@@ -23,7 +23,6 @@ structure Vec3 where
   x : ℝ
   y : ℝ
   z : ℝ
-  deriving Repr, DecidableEq
 
 /-- Quarter-turn about the third coordinate axis. -/
 def quarterTurn (v : Vec3) : Vec3 :=
@@ -48,7 +47,7 @@ theorem axial_implies_quarterTurn_fixed
   rcases h with ⟨hx, hy⟩
   subst x
   subst y
-  rfl
+  simp [quarterTurn]
 
 /-- Exact finite characterization of the fixed subspace. -/
 theorem quarterTurn_fixed_iff_axial (v : Vec3) :
@@ -60,14 +59,16 @@ theorem quarterTurn_fixed_iff_axial (v : Vec3) :
 /-- Symmetry alone does not force the axial coefficient to vanish. -/
 theorem nonzero_axial_fixed_counterexample :
     ∃ v : Vec3, quarterTurn v = v ∧ v.z ≠ 0 := by
-  refine ⟨⟨0, 0, 1⟩, rfl, ?_⟩
-  norm_num
+  refine ⟨⟨0, 0, 1⟩, ?_, by norm_num⟩
+  simp [quarterTurn]
 
 /-- Therefore a fixed vector need not be the zero vector. -/
 theorem fixed_does_not_imply_zero_vector :
     ¬ (∀ v : Vec3, quarterTurn v = v → v = ⟨0, 0, 0⟩) := by
   intro h
-  have hz := h ⟨0, 0, 1⟩ rfl
+  have hfix : quarterTurn (⟨0, 0, 1⟩ : Vec3) = ⟨0, 0, 1⟩ := by
+    simp [quarterTurn]
+  have hz := h ⟨0, 0, 1⟩ hfix
   have : (1 : ℝ) = 0 := congrArg Vec3.z hz
   norm_num at this
 
