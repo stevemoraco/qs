@@ -1,0 +1,110 @@
+name: YM Kirk v4 recombination identity audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-recombination-identity-audit-20260816-turn3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-recombination-identity-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-recombination-identity-audit-20260816-turn3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract recombination identity and optical dependence
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, hashlib
+
+          text = Path('latest_raw.txt').read_text(encoding='utf-8', errors='replace')
+          low = text.lower()
+          out = Path('source_audit/kirk_v4/recombination_identity')
+          out.mkdir(parents=True, exist_ok=True)
+
+          def contexts(label, patterns, before=9000, after=18000, limit=80):
+              hits=[]
+              for pat in patterns:
+                  for m in re.finditer(pat, text, re.I|re.S):
+                      hits.append((m.start(), pat, m.group(0)))
+              hits=sorted(hits)[:limit]
+              chunks=[]
+              for i,(pos,pat,g) in enumerate(hits,1):
+                  chunks.append(f'===== {label} {i}/{len(hits)} @ {pos} pattern={pat} =====\n'+text[max(0,pos-before):min(len(text),pos+after)]+'\n')
+              (out/f'{label}.txt').write_text('\n'.join(chunks), encoding='utf-8')
+              return hits
+
+          labels = contexts('label_partition', [r'χin', r'chi[_ ]?in', r'χcurv', r'χcol', r'χout', r'exact labelled partition'])
+          recomb = contexts('recombination', [r'exact recombination', r'recombined', r'recombination'], before=12000, after=24000)
+          holo = contexts('holomorphy', [r'holomorphic', r'holomorphy', r'Cauchy'], before=7000, after=14000)
+          opt = contexts('optical', [r'optical field', r'optical coordinate', r'\bzeta\b', r'ζ'], before=6000, after=12000)
+
+          # Preserve full theorem windows around the critical irregular/recombination/compact stages.
+          targets=['Theorem 3.20','Theorem 3.31','Lemma 6.22','Lemma 6.23','Lemma 6.26','Lemma 6.30','Lemma 6.41','Theorem 6.43']
+          for target in targets:
+              m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$', text)
+              if m:
+                  slug=re.sub(r'[^a-z0-9]+','_',target.lower()).strip('_')
+                  (out/f'{slug}.txt').write_text(text[max(0,m.start()-12000):min(len(text),m.start()+50000)],encoding='utf-8')
+
+          # Classify exact statements relevant to the holomorphy repair.
+          label_sum = bool(re.search(r'χin.*χcurv.*χcol.*χout.*=\s*1', text, re.I|re.S))
+          used_abs = 'used only inside absolute-value expansions' in low
+          recomb_before = 'exact recombination removes the temporary inner/collar/outer labels' in low
+          regular_formula_analytic = bool(re.search(r'exact reference, coarea, determinant,.*regular recombination formulas are finite compositions.*analytic', text, re.I|re.S))
+          l626_after_recomb = bool(re.search(r'Lemma 6\.26.*?After exact label recombination, assign every reported physical factor', text, re.I|re.S))
+
+          # Search the local 6.22--6.30 window for R_G dependence.
+          m22=re.search(r'(?m)^\s*Lemma 6\.22\b.*$', text)
+          m30=re.search(r'(?m)^\s*Lemma 6\.30\b.*$', text)
+          local=text[m22.start():m30.start()+30000] if m22 and m30 else ''
+          rg_hits=list(re.finditer(r'R_G|Gaussian separation|separation collar', local, re.I))
+          classifier=[
+              f'label_partition_sum_to_one={label_sum}',
+              f'labels_used_only_inside_absolute_value_expansions={used_abs}',
+              f'exact_recombination_removes_temporary_labels_literal={recomb_before}',
+              f'lemma_6_22_regular_recombination_formulas_called_analytic={regular_formula_analytic}',
+              f'lemma_6_26_assigns_factors_after_exact_recombination={l626_after_recomb}',
+              f'lemma_6_22_to_6_30_RG_separation_mentions={len(rg_hits)}',
+              '',
+              'LIVE QUESTION:',
+              'Do the temporary smooth labels appear only as a pointwise partition of unity multiplying exact pre-recombination factors, so their exact sum restores the underlying holomorphic factor before the final multipivot activity is formed?',
+              'Is the common optical tube chosen before and independently of the later R_G separation parameter?',
+              'Source extraction only; no mathematical verification.'
+          ]
+          (out/'CLASSIFIER.txt').write_text('\n'.join(classifier)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join([
+              f'label_hits={len(labels)}',f'recombination_hits={len(recomb)}',f'holomorphy_hits={len(holo)}',f'optical_hits={len(opt)}'
+          ])+'\n',encoding='utf-8')
+          data=Path('kirk_latest.pdf').read_bytes()
+          (out/'PDF_SHA256.txt').write_text(hashlib.sha256(data).hexdigest()+'  kirk_latest.pdf\n',encoding='utf-8')
+          for p in ['kirk_latest_record.json','kirk_source_probe_report.json']:
+              q=Path(p)
+              if q.exists(): (out/p).write_bytes(q.read_bytes())
+          print('\n'.join(classifier))
+          PY
+      - name: Commit audit output
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/recombination_identity
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): extract exact recombination holomorphy typing'
+          git push origin HEAD:verification/ym-kirk-v4-recombination-identity-audit-20260816-turn3-gpt56sol
