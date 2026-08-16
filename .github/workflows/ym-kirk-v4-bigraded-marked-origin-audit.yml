@@ -1,0 +1,128 @@
+name: YM Kirk v4 bi-graded marked theorem origin audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-bigraded-marked-origin-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Trace every possible marked-root supplier
+        shell: bash
+        run: |
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          pdf = Path('kirk_latest.pdf')
+          text_path = Path('latest.txt')
+          text = text_path.read_text(encoding='utf-8', errors='replace')
+          expected = 'c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          actual = hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+
+          lines = text.splitlines()
+          heading_re = re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?')
+          headings=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m:
+                  headings.append((n, m.group(1), m.group(2), m.group(3) or '', line.strip()))
+
+          def nearest_heading(line_no):
+              prev=None
+              for h in headings:
+                  if h[0] > line_no: break
+                  prev=h
+              return prev
+
+          patterns = [
+              r'bi[- ]graded', r'bigraded', r'marked theorem',
+              r'zero[-, ]+one[-, ]+and two[- ]root', r'zero, one, or two passive exterior roots',
+              r'one/two-root', r'two-root connector rows', r'passive exterior roots',
+              r'preceding weak depth', r'permanent.*root', r'rooted.*mark',
+          ]
+          hits=[]
+          for pat in patterns:
+              rx=re.compile(pat, re.I)
+              for n,line in enumerate(lines,1):
+                  if rx.search(line):
+                      h=nearest_heading(n)
+                      lo=max(1,n-18); hi=min(len(lines),n+35)
+                      context='\n'.join(f'{k}: {lines[k-1]}' for k in range(lo,hi+1))
+                      hits.append((pat,n,line,h,context))
+
+          out=[]
+          for i,(pat,n,line,h,context) in enumerate(hits,1):
+              out.append('='*130)
+              out.append(f'HIT {i}')
+              out.append(f'PATTERN: {pat}')
+              out.append(f'LINE: {n}')
+              out.append(f'NEAREST_HEADING: {h}')
+              out.append('='*130)
+              out.append(context)
+          Path('_audit_out/marked_root_hits.txt').write_text('\n'.join(out)+'\n',encoding='utf-8')
+
+          sec45=[h for h in headings if h[1].split('.')[0] in {'4','5'}]
+          Path('_audit_out/section45_headings.tsv').write_text(
+              '\n'.join('\t'.join(map(str,h)) for h in sec45)+'\n', encoding='utf-8')
+
+          exact_bi=[x for x in hits if x[0] in {r'bi[- ]graded',r'bigraded'}]
+          named=[h for h in headings if re.search(r'bi[- ]graded|bigraded|two[- ]root|marked',h[3],re.I)]
+          report=[]
+          report.append(f'PDF_SHA256\t{actual}')
+          report.append(f'TOTAL_HEADINGS\t{len(headings)}')
+          report.append(f'SECTION_4_5_HEADINGS\t{len(sec45)}')
+          report.append(f'BI_GRADED_TEXT_HITS\t{len(exact_bi)}')
+          report.append(f'NAMED_MARKED_OR_ROOT_HEADINGS\t{len(named)}')
+          for h in named:
+              report.append('NAMED\t'+'\t'.join(map(str,h)))
+          for x in exact_bi:
+              report.append(f'BI_HIT\tline={x[1]}\tnearest={x[3]}\ttext={x[2].strip()}')
+          Path('_audit_out/origin_report.tsv').write_text('\n'.join(report)+'\n',encoding='utf-8')
+
+          # Exact local window around the only U5 proof call and all candidate named suppliers.
+          selected=[]
+          selected_lines=set()
+          for x in exact_bi:
+              selected_lines.add(x[1])
+          for h in named:
+              selected_lines.add(h[0])
+          for n in sorted(selected_lines):
+              lo=max(1,n-80); hi=min(len(lines),n+160)
+              selected.append('='*130)
+              selected.append(f'WINDOW AROUND LINE {n}; NEAREST HEADING {nearest_heading(n)}')
+              selected.append('='*130)
+              selected.extend(f'{k}: {lines[k-1]}' for k in range(lo,hi+1))
+          Path('_audit_out/origin_windows.txt').write_text('\n'.join(selected)+'\n',encoding='utf-8')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/origin_report.tsv
+          wc -l -c _audit_out/*
+      - name: Upload origin audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-bigraded-marked-origin-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
