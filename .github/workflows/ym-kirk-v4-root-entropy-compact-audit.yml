@@ -1,4 +1,4 @@
-name: YM Kirk v4 compact weak-row antecedent audit
+name: YM Kirk v4 invariant-graph weak-row audit
 
 on:
   push:
@@ -26,54 +26,57 @@ jobs:
           fi
       - name: Pin immutable Kirk source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract weak-row antecedent contexts
+      - name: Extract invariant-graph and weak-row closure contexts
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import re
           from pathlib import Path
           lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
-          out=Path('source_audit/kirk_v4/weak_row_antecedents'); out.mkdir(parents=True,exist_ok=True)
+          out=Path('source_audit/kirk_v4/invariant_graph_weak_row'); out.mkdir(parents=True,exist_ok=True)
           patterns={
-            'Corollary_4_14': re.compile(r'^\s*Corollary\s+4\.14\b',re.I),
-            'Theorem_4_29': re.compile(r'^\s*Theorem\s+4\.29\b',re.I),
-            'Theorem_4_30': re.compile(r'^\s*Theorem\s+4\.30\b',re.I),
+            'Theorem_5_1': re.compile(r'^\s*Theorem\s+5\.1\b',re.I),
+            'Theorem_5_20': re.compile(r'^\s*Theorem\s+5\.20\b',re.I),
+            'Lemma_5_20': re.compile(r'^\s*Lemma\s+5\.20\b',re.I),
+            'Theorem_5_21': re.compile(r'^\s*Theorem\s+5\.21\b',re.I),
+            'Lemma_5_21': re.compile(r'^\s*Lemma\s+5\.21\b',re.I),
+            'Theorem_5_27': re.compile(r'^\s*Theorem\s+5\.27\b',re.I),
             'Lemma_8_3': re.compile(r'^\s*Lemma\s+8\.3\b',re.I),
           }
           chunks=[]; counts={}
           for name,pat in patterns.items():
             hits=[i for i,l in enumerate(lines) if pat.search(l)]
             counts[name]=len(hits)
-            for k,i in enumerate(hits[:12],1):
-              lo=max(0,i-20); hi=min(len(lines),i+130)
+            for k,i in enumerate(hits[:10],1):
+              lo=max(0,i-25); hi=min(len(lines),i+150)
               chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
-          phrases=['Gate–G1','Gate-G1','invariant graph','regular/irregular split','rooted remainder','volume- and depth-uniform Schur row','strict rooted expansion ball']
+          phrases=['Gate–G1','support-summed interaction bound','centered weak graph','whole common weak tube','stable contraction','invariant graph','weak corridor']
           for phrase in phrases:
             hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
             counts[phrase]=len(hits)
             for k,i in enumerate(hits[:30],1):
-              lo=max(0,i-20); hi=min(len(lines),i+60)
+              lo=max(0,i-20); hi=min(len(lines),i+75)
               chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
           (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
-          missing=[k for k in ['Corollary_4_14','Lemma_8_3'] if counts.get(k,0)==0]
-          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
+          if counts['Theorem_5_1']==0 or counts['Lemma_8_3']==0:
+            raise SystemExit('missing required theorem anchors')
           PY
-      - name: Preserve weak-row antecedent contexts
+      - name: Preserve invariant-graph source contexts
         run: |
-          cp kirk_latest_record.json source_audit/kirk_v4/weak_row_antecedents/
-          sha256sum kirk_latest.pdf > source_audit/kirk_v4/weak_row_antecedents/PDF_SHA256.txt
+          cp kirk_latest_record.json source_audit/kirk_v4/invariant_graph_weak_row/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/invariant_graph_weak_row/PDF_SHA256.txt
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
-          git add source_audit/kirk_v4/weak_row_antecedents
+          git add source_audit/kirk_v4/invariant_graph_weak_row
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk weak-row antecedent contexts'
+          git commit -m 'audit(ym): preserve Kirk invariant-graph weak-row contexts'
           git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kirk-v4-weak-row-antecedent-audit
+          name: kirk-v4-invariant-graph-weak-row-audit
           if-no-files-found: warn
           retention-days: 30
-          path: source_audit/kirk_v4/weak_row_antecedents/
+          path: source_audit/kirk_v4/invariant_graph_weak_row/
