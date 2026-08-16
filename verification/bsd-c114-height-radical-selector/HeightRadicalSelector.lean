@@ -3,11 +3,11 @@ import Mathlib
 namespace Millennium.BSD.HeightRadicalSelector
 
 variable {K V : Type*}
-variable [Field K]
+variable [Field K] [AddCommGroup V] [Module K V]
 
 theorem symmetric_representation_is_hamiltonian
-    (omega b : V → V → K)
-    (N : V → V)
+    (omega b : V →ₗ[K] V →ₗ[K] K)
+    (N : V →ₗ[K] V)
     (hrep : ∀ x y, b x y = omega (N x) y)
     (hsymm : ∀ x y, b x y = b y x)
     (hskew : ∀ x y, omega y x = -omega x y) :
@@ -21,8 +21,8 @@ theorem symmetric_representation_is_hamiltonian
     _ = 0 := by rw [hskew]; simp
 
 theorem represented_kernel_iff_radical
-    (omega b : V → V → K)
-    (N : V → V)
+    (omega b : V →ₗ[K] V →ₗ[K] K)
+    (N : V →ₗ[K] V)
     (hrep : ∀ x y, b x y = omega (N x) y)
     (hNondeg : ∀ z, (∀ y, omega z y = 0) → z = 0)
     (x : V) :
@@ -30,7 +30,7 @@ theorem represented_kernel_iff_radical
   constructor
   · intro hx y
     rw [hrep, hx]
-    rfl
+    simp
   · intro hx
     apply hNondeg (N x)
     intro y
@@ -38,8 +38,8 @@ theorem represented_kernel_iff_radical
     exact hx y
 
 theorem represented_image_orthogonal_to_radical
-    (omega b : V → V → K)
-    (N : V → V)
+    (omega b : V →ₗ[K] V →ₗ[K] K)
+    (N : V →ₗ[K] V)
     (hrep : ∀ x y, b x y = omega (N x) y)
     (hsymm : ∀ x y, b x y = b y x)
     (x r : V)
@@ -49,8 +49,8 @@ theorem represented_image_orthogonal_to_radical
   exact hr x
 
 theorem coisotropic_radical_gives_square_zero
-    (omega b : V → V → K)
-    (N : V → V)
+    (omega b : V →ₗ[K] V →ₗ[K] K)
+    (N : V →ₗ[K] V)
     (hrep : ∀ x y, b x y = omega (N x) y)
     (hsymm : ∀ x y, b x y = b y x)
     (hNondeg : ∀ z, (∀ y, omega z y = 0) → z = 0)
