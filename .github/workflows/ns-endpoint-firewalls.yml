@@ -1,0 +1,90 @@
+name: NS endpoint firewall Lean replay
+
+on:
+  push:
+    branches:
+      - verification/ns-endpoint-firewalls-20260816-gpt56sol
+  pull_request:
+    paths:
+      - 'verification/ns-endpoint-firewalls/**'
+      - '.github/workflows/ns-endpoint-firewalls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-endpoint-firewalls/NSEndpointFirewalls.lean
+          python3 - "$file" <<'PY'
+          import pathlib, re, sys
+          p = pathlib.Path(sys.argv[1])
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|constant|opaque)\b',
+              r'\bunsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in forbidden:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'{p}: forbidden proof device {m.group(0)!r}')
+          PY
+          sha256sum "$file" | tee verification/ns-endpoint-firewalls/source.sha256
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ns-endpoint-firewalls
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+          lean --version | tee lean-version.txt
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/ns-endpoint-firewalls
+        run: |
+          set -euo pipefail
+          lake env lean NSEndpointFirewalls.lean 2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.|\badmit\b' lean-replay.log; then
+            echo 'forbidden placeholder axiom in replay output' >&2
+            exit 1
+          fi
+          grep -F 'NSEndpointFirewalls.saturation_does_not_force_euler_identity' lean-replay.log
+          grep -F 'NSEndpointFirewalls.cubic_over_quadratic_quotient_unbounded' lean-replay.log
+          grep -F 'NSEndpointFirewalls.nontrivial_amplitude_scaling_leaves_quadratic_solution_class' lean-replay.log
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-endpoint-firewall-evidence
+          path: |
+            verification/ns-endpoint-firewalls/NSEndpointFirewalls.lean
+            verification/ns-endpoint-firewalls/source.sha256
+            verification/ns-endpoint-firewalls/lean-version.txt
+            verification/ns-endpoint-firewalls/lean-replay.log
+          if-no-files-found: warn
