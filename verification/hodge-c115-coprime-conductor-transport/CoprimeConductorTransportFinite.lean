@@ -45,7 +45,7 @@ theorem transfer_composition_sixfold
     (hf : f C = 2 • F) (hg : g F = 3 • C) :
     (g.comp f) C = 6 • C := by
   rw [AddMonoidHom.comp_apply, hf, map_nsmul, hg]
-  norm_num [mul_nsmul]
+  abel
 
 #print axioms coprime_conductor_half_third
 #print axioms coprime_conductor_unique
