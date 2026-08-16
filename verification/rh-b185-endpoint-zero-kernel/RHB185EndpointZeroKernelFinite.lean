@@ -21,10 +21,10 @@ BGST, B46, or RH.
 namespace RHB185EndpointZeroKernelFinite
 
 /-- The weight carried by an atom at or below the lower endpoint. -/
-def oldWeight (x Y : ℝ) : ℝ := 1 - x / Y
+noncomputable def oldWeight (x Y : ℝ) : ℝ := 1 - x / Y
 
 /-- The weight carried by an atom strictly above the lower endpoint. -/
-def futureWeight (x Y q : ℝ) : ℝ := x / q - x / Y
+noncomputable def futureWeight (x Y q : ℝ) : ℝ := x / q - x / Y
 
 /-- The old-atom weight is nonnegative when the horizon lies to the right. -/
 theorem oldWeight_nonneg
