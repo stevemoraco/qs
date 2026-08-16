@@ -6,12 +6,12 @@ namespace Millennium.YangMills
 # Kirk v4 permanent-tree to diameter support weakening
 
 A permanent tree/support cost dominates the diameter of a connected reported
-support.  Consequently a species controlled in an `exp(κ * tree)` rooted norm
+support. Consequently a species controlled in an `exp(κ * tree)` rooted norm
 is automatically controlled in any weaker `exp(m * diameter)` norm with
-`0 ≤ m ≤ κ`.
+`m ≤ κ`.
 
 This is the direction needed when the joint compact/weak BKAR logarithm is
-placed in a common weakened physical-diameter support norm.  It is deliberately
+placed in a common weakened physical-diameter support norm. It is deliberately
 the opposite direction from `KirkV4CompactNormEmbeddingFirewall.lean`.
 -/
 
@@ -20,7 +20,6 @@ to a weaker diameter gauge. -/
 theorem tree_weight_controls_diameter_weight
     (κ m tree diam : ℝ)
     (hκ : 0 ≤ κ)
-    (hm : 0 ≤ m)
     (hmκ : m ≤ κ)
     (hdiam : 0 ≤ diam)
     (hgeom : diam ≤ tree) :
@@ -39,7 +38,6 @@ theorem tree_row_controls_diameter_row
     (κ m : ℝ)
     (tree diam coeff : ι → ℝ)
     (hκ : 0 ≤ κ)
-    (hm : 0 ≤ m)
     (hmκ : m ≤ κ)
     (hdiam : ∀ i ∈ s, 0 ≤ diam i)
     (hgeom : ∀ i ∈ s, diam i ≤ tree i)
@@ -48,12 +46,9 @@ theorem tree_row_controls_diameter_row
       ∑ i ∈ s, Real.exp (κ * tree i) * coeff i := by
   apply Finset.sum_le_sum
   intro i hi
-  apply Finset.sum_le_sum
-  intro _ hEq
-  subst hEq
   exact mul_le_mul_of_nonneg_right
     (tree_weight_controls_diameter_weight κ m (tree i) (diam i)
-      hκ hm hmκ (hdiam i hi) (hgeom i hi))
+      hκ hmκ (hdiam i hi) (hgeom i hi))
     (hcoeff i hi)
 
 #print axioms tree_weight_controls_diameter_weight
