@@ -12,8 +12,7 @@ theorem commuting_map_preserves_eigenvalue
     (hv : H v = lam • v) :
     H (T v) = lam • T v := by
   have h := LinearMap.congr_fun hcomm v
-  rw [hv] at h
-  simpa using h
+  simpa [LinearMap.comp_apply, hv] using h
 
 theorem commuting_map_preserves_simple_eigenline
     (H T : V →ₗ[K] V)
