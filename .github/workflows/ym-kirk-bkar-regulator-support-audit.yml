@@ -1,0 +1,65 @@
+name: YM Kirk v4 BKAR regulator support audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-bkar-regulator-support-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract regulator support contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/bkar_regulator_support'); out.mkdir(parents=True,exist_ok=True)
+          targets=['Lemma 4.1','Corollary 4.2','Theorem 4.4','Lemma 4.5','Proposition 4.26','Lemma 4.27','Theorem 4.29']
+          phrases=['Bα','B_alpha','quadratic-growth allocation','quadratic growth allocation','rooted allocation cone','qP','q_P','support P','post-localization output','rank','field dimension','unused exponential support margin','Calloc','Ctree']
+          chunks=[]; counts={}
+          def add(label,i,pre=25,post=100):
+              lo=max(0,i-pre); hi=min(len(lines),i+post)
+              chunks.append(f'===== {label} line {i+1} =====\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          for name in targets:
+              kind,num=name.rsplit(' ',1)
+              pat=re.compile(r'^\s*'+re.escape(kind)+r'\s+'+re.escape(num)+r'\b',re.I)
+              hits=[i for i,l in enumerate(lines) if pat.search(l)]
+              counts[name]=len(hits)
+              for i in hits[:3]: add(name,i,35,180)
+          for phrase in phrases:
+              hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+              counts['PHRASE '+phrase]=len(hits)
+              for i in hits[:20]: add('PHRASE '+phrase,i,15,50)
+          (out/'CONTEXTS.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          missing=[k for k in ['Corollary 4.2','Theorem 4.4','Lemma 4.5','Proposition 4.26','Lemma 4.27'] if counts.get(k,0)==0]
+          if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
+          PY
+      - name: Preserve contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/bkar_regulator_support/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/bkar_regulator_support/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/bkar_regulator_support
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve BKAR regulator support contexts'
+          git push origin HEAD:verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
