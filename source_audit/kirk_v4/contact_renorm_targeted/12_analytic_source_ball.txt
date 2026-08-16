@@ -1,0 +1,173 @@
+=== analytic source ball hit 1 at 333526 ===
+ n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+separated-group exponential.
+Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood of the
+origin, every finite source functional is analytic uniformly in resolution and volume. Thermodynamic
+and zero-spacing limits of all fixed finite source derivatives exist along one common diagonal subsequence.
+If two groups of source supports are separated by physical distance d, their connected full moments are
+bounded by Ce−md with the same m > 0 as in Theorem 8.9. The local source incidence and Lemma 8.3,
+together with the finite compact matching expansion, give a common analytic source ball. Theorem 8.11
+permits termwise differentiation and a countable diagonal extraction. The finite-volume approximants are
+chosen on a cofinal schedule from Corollary 6.2. The extraction is made once for the countable algebra
+and a fixed countable set of dyadic physical source scales, and the resulting subsequence is relabelled as
+the directed sequence appearing in Theorem 1.1; no uniqueness or schedule-independence claim is needed.
+In every connected partition joining two separated groups, at least one tree edge crosses the separation;
+factor its exponential and sum all remaining edges with (118). Full moments follow from the set-partition
+formula.
+Lemma 8.13 (OS linear-growth condition from the common source ball). For every fixed finite source
+multiplet there are a finite Schwartz seminorm pN , a radius ρN > 0, and CN < ∞ such that its limiting
+Schwinger distributions satisfy
+                                                                     n
+                                                                     Y
+                                   |Sn (f1 , . . . , fn )| ≤ n! CN
+                                                                 n
+                                                                           pN (fi ).
+                                                                     i=1
+
+The constants are compatible under the nested finite source multiplets. In particular the projective
+Schwinger family satisfies the OS linear-growth condition consumed in SI–5.
+Proof. Corollary 8.12 supplies one cutoff- and volume-independent analytic ball for the normalized
+source functional   in the Banach norm induced by pN . Apply the one-variable Cauchy estimate to
+z 7→ W (z i Ji ) and polarize the resulting derivative bound. The common radius gives n!ρ−n    N , and the
+           P
+finite incidence constants are absorbed in CN
+                                            n
+                                              . The diagonal limit preserves the inequality, and the nested
+source construction preserves the constants after enlargement.
+
+
+
+                                                        77
+Lemma 8.14 (Reflection positivity inheritance under exact recombination). Every limiting positive-time
+quadratic form used in the common Schwinger system is the limit of a reflection-positive quadratic form
+under the original Wilson measure. Exact normal-chart, coarea, compact-pivot, and source transfor-
+mations are changes of variables or observable identities, not replacement probability measures, and all
+regular/irregular and half-cylinder labels are recombined before the OS form is taken. Therefore reflection
+positivity passes to the common limiting family.
+Proof. At finite cutoff and aligned reflection volume, let Fi be any finite family of constructed positive-time
+observables. Pull each Fi back through the exact block, fiber, and source identities to a gauge-invariant
+function of the original positive-time links. Exact recombination makes this pullback independent of the
+auxiliary labels. Reflection positivity of the Wilson measure gives
+                                           X
+                                               ci cj ⟨ΘFi Fj ⟩a,L ≥ 0.
+                                           i,j
+
+The equality is unchanged by the exact coordinate transformations because all Jacobian and normalization
+factors remain inside the same normalized integral once. Every entry of the finite matrix converges along
+the common subsequence, so the closed positive-semidefinite cone contains the limiting matrix. This
+proves the claim.
+Theorem 8.15 (Common positive-scale Schwinger system). The common subsequence defines tempered,
+permutation-symmetric, reflection-positive, continuously translation-covariant Schwinger distributions for
+the countable algebra generated by the bounded positive-scale observables and every fixed finite normalized
+local source family. The distributions are projectively compatible and satisfy uniform physical exponential
+clustering.
+Proof. The Schwartz estimate gives equicontinuity on each finite tensor power. Diagonal extraction over
+a countable dense test/source family gives the common projective system. Permutation symmetry passes
+as an algebraic identity, while Lemma 8.14 gives the complete reflection-positivity mechanism after exact
+label recombination. Riemann- sum translation errors vanish by the physical Schur bound, Corollary 8.12
+gives clustering, and Lemma 8.13 gives the OS linear-growth row.
+
+8.2    Ward identities and Euclidean covariance
+Theorem 8.16 (Fixed-group invariant-jet admission through dimension six). For a compact simple Lie
+algebra g:
+(I1) the invariant symmetric bilinear forms form a one-dimensional space;
+(I2) there is no reflection-compatible gauge-invariant local vector of engineering dimension at most four;
+(I3) modulo total differences, equations of motion, and the reflection-odd topological density, the reflection-
+     even scalar dimension-four block is generated by the Yang–Mills density;
+(I4) the gauge-invariant jet quotient through dimension six is finite. A primitive cubic symmetric color
+     tensor occurs precisely for Lie type Ar with r ≥ 2 and is retained in the dimension-six block; its
+      presence does not enlarge the dimension-four marginal block.
+The filtered finite-matrix transport and associated-graded contraction used below therefore apply for every
+fixed G after enlarging only the finite jet dimension.
+Proof. Simplicity gives the uniqueness of the invariant bilinear form. Semisimplicity makes every finite-
+dimensional representation traceless on g. Lorentz index counting, gauge covariance, and reflection parity
+then exclude a single free vector index through dimension four and leave only the quadratic curvature
+scalar in the even dimension-four sector. Chevalley’s theorem makes the invariant polynomial algebra
+finitely generated; the degrees are the exponents plus one. Through degree three a primitive symmetric
+tensor exists only for type Ar , and it first multiplies three curvatures, hence has engineering dimension
+six. At every fixed engineering cutoff only finitely many covariant derivatives and invariant contractions
+occur.
+
+8.2.1 Global displacement source
+An explicit gauge-covariant link source Let Uρ (x) denote the link in a signed coordinate direction
+ρ. Thus
+                                   U−µ (x) = Uµ (x − aµ̂)−1 .
+
+
+
+
+                                                      78
+For signed directions ρ, σ, define the oriented plaquette based at x by
+                             Pρσ (x) = Uρ (x)Uσ (x + aρ̂)Uρ (x + aσ̂)−1 Uσ (x)−1 .                        (121)
+Let dρ : g ,→ u(Vρ ) and let Πρ : u(Vρ ) → dρ(g) be the orthogonal projection for the declared invariant
+form. For P ∈ G define
+                                                      1
+                                                                         
+                               Ωsin (P ) = (dρ) Πρ
+                                               −1
+                                                        ρ(P ) − ρ(P ) †
+                                                                                                      (122)
+                                                                        
+                                                                            ∈ g.
+                                                      2
+It is globally smooth, conjugation equivariant, inversion odd, and has identity derivative equal to Ig . Set
+Ωρσ (x) = Ωsin (Pρσ (x)).
+   For a positive ν-link e = (x, ν) and µ ̸= ν, put
+                                                   1
+                                       Cµν (x) =     Ω+µ,ν (x) − Ω−µ,ν (x) .                              (123)
+                                                                          
+                                                   2
+The minus sign aligns the orientation of the negative-µ plaquette with Fµν . Both loops start and end at
+x, so Cµν (x) transforms in the adjoint representation at the source of the ν-link.
+   For a smooth compactly supported profile v, evaluated at link midpoints, define
+                               1 X µ       a 
+                Yx,ν (U ; v) =     v x + ν̂ Cµν (x),           cl
+                                                            Xa,v  Uν (x) = Yx,ν (U ; v)Uν (x).     (124)
+                               a            2
+                                µ̸=ν
+
+Negative links are obtained by orientation reversal, so Xa,v  cl
+                                                                 is a vector field on the independent positive
+links.
+Lemma 8.17 (Exact finite-lattice structure). On the full compact link manifold, Xa,v      cl
+                                                                                             is globally smooth,
+linear in v, finite range, gauge equivariant, signed-hypercubic covariant, and reflection compatible. All
+group deriva
