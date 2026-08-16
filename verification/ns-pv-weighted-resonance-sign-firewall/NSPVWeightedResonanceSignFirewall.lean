@@ -43,7 +43,7 @@ theorem resonance_cauchy_forces_scaled_shear
       N * N = N ^ 2 := by ring
       _ ≤ (2 * alpha) ^ 2 * (N * S) := hsq
       _ = N * (4 * alpha ^ 2 * S) := by ring
-  exact (mul_le_mul_left hN).mp hfactor
+  exact le_of_mul_le_mul_left hfactor hN
 
 theorem scaled_resonance_gap_nonpositive
     {alpha N S C : ℝ}
