@@ -39,8 +39,11 @@ theorem complex_norm_ge_half_of_norm_sub_one_le_half
     have hadd := norm_add_le ((1 : ℂ) - z) z
     simpa using hadd
   have hsymm : ‖(1 : ℂ) - z‖ = ‖z - 1‖ := by
-    rw [show (1 : ℂ) - z = -(z - 1) by ring]
-    simp
+    calc
+      ‖(1 : ℂ) - z‖ = ‖-(z - 1)‖ := by
+        congr 1
+        ring
+      _ = ‖z - 1‖ := norm_neg _
   rw [hsymm] at htri
   norm_num at htri
   linarith
@@ -51,9 +54,11 @@ theorem exp_sub_one_lt_one_of_lt_log_two
     (δ : ℝ)
     (hδ : δ < Real.log 2) :
     Real.exp δ - 1 < 1 := by
+  have htwo : (0 : ℝ) < 2 := by norm_num
   have hExp : Real.exp δ < (2 : ℝ) := by
     have h := Real.exp_lt_exp.mpr hδ
-    simpa using h
+    rw [Real.exp_log htwo] at h
+    exact h
   linarith
 
 /-- Polymer-style zero-free criterion: if a normalized complex denominator is
