@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/hodge-c115-coprime-conductor-transport/CoprimeConductorTransportFinite.lean
-          test "$(git hash-object "$SRC")" = "12182c44271f6f78d4379f4e78cd0ae14790c2e7"
+          test "$(git hash-object "$SRC")" = "ae8619dda017876d2b70dc48519f2473e96a9938"
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
           SRC="$SRC" python3 - <<'PY'
           import json, os, pathlib, urllib.request
