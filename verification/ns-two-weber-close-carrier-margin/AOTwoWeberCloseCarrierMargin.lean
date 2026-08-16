@@ -37,14 +37,13 @@ amplitude-ratio choice `x`. -/
 theorem margin_sum (s x : ℚ) :
     bMargin s x + cMargin s x = s^4 - s^3 := by
   simp [bMargin, cMargin]
-  ring
 
 /-- The midpoint of the admissible interval balances the two wall distances
 exactly, each receiving one half of the available carrier-splitting width. -/
 theorem midpoint_balances (s : ℚ) :
     bMargin s ((s^3 + s^4) / 2) = (s^4 - s^3) / 2 ∧
     cMargin s ((s^3 + s^4) / 2) = (s^4 - s^3) / 2 := by
-  constructor <;> simp [bMargin, cMargin] <;> ring
+  constructor <;> dsimp [bMargin, cMargin] <;> ring
 
 /-- If `μ * totalScale s` is a common lower bound for both wall distances,
 then twice that common margin cannot exceed the total interval width. -/
@@ -68,10 +67,12 @@ theorem normalized_margin_collapse_bound
     2 * μ * (s + 1) ≤ s - 1 := by
   have h := common_margin_width_bound s x μ hB hC
   have hs3 : 0 < s^3 := pow_pos hs 3
-  have hc : s^3 * (2 * μ * (s + 1)) ≤ s^3 * (s - 1) := by
-    dsimp [totalScale] at h
-    nlinarith
-  exact (mul_le_mul_left hs3).mp hc
+  dsimp [totalScale] at h
+  by_contra hnot
+  have hrev : s - 1 < 2 * μ * (s + 1) := lt_of_not_ge hnot
+  have hprod : s^3 * (s - 1) < s^3 * (2 * μ * (s + 1)) :=
+    mul_lt_mul_of_pos_left hrev hs3
+  nlinarith
 
 /-- Equal carriers (`s=1`) force every nonnegative common normalized margin to
 be exactly zero.  This is the finite exact-zero endpoint behind the C59
