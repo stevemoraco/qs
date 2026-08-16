@@ -22,4 +22,12 @@ theorem bounded_rank_controls_second_trace_word
     rank * kappa^2 ≤ rankCap * kappa^2 := by
   exact mul_le_mul_of_nonneg_right hrank (sq_nonneg kappa)
 
+theorem trace_cost_absorbed_by_support_reserve
+    (traceCost support a c : ℝ)
+    (htrace : traceCost ≤ c * support) :
+    Real.exp (traceCost - a * support) ≤
+      Real.exp (-(a - c) * support) := by
+  apply Real.exp_le_exp.mpr
+  linarith
+
 end Millennium.YangMills.KirkV4GaussianCoreSizeFirewall
