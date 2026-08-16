@@ -1,0 +1,84 @@
+name: YM Kirk v4 Gaussian power identity audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-gaussian-power-identity-audit-20260815-run3-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-gaussian-power-identity-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract Gaussian one-step and macrostep contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/gaussian_power_identity'); out.mkdir(parents=True,exist_ok=True)
+          pats={
+            'Theorem_4_17': re.compile(r'^\s*Theorem\s+4\.17\b',re.I),
+            'Theorem_4_30': re.compile(r'^\s*Theorem\s+4\.30\b',re.I),
+          }
+          phrases=[
+            'exact L = 2',
+            'macrostep map after vacuum',
+            'triangular in engineering degree',
+            'associated-graded diagonal',
+            'Gaussian fixed point',
+            'scale-normalized',
+            'same unit-lattice',
+            'canonical rescaling',
+            'one-step stable',
+            'local jet block',
+          ]
+          chunks=[]; counts={}
+          for name,pat in pats.items():
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:8],1):
+              lo=max(0,i-45); hi=min(len(lines),i+220)
+              chunks.append(f'===== {name} DECL {k} source line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:24],1):
+              lo=max(0,i-30); hi=min(len(lines),i+100)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} source line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          missing=[k for k in pats if counts[k]==0]
+          if missing: raise SystemExit('missing theorem anchors: '+', '.join(missing))
+          PY
+      - name: Preserve source contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/gaussian_power_identity/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/gaussian_power_identity/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/gaussian_power_identity
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk Gaussian power identity contexts'
+          git push origin HEAD:verification/ym-kirk-v4-gaussian-power-identity-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-gaussian-power-identity-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/gaussian_power_identity/
