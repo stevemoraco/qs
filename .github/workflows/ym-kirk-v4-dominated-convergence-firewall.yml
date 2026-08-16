@@ -15,7 +15,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 19
     steps:
       - uses: actions/checkout@v4
       - name: Verify flattened Lean theorem source
