@@ -1,0 +1,93 @@
+name: YM Kirk v4 local-source common-ball body audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract local-source/common-ball body contexts
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest_raw.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/local_source_ball_body'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'Lemma 8.1','Lemma 8.2','Lemma 8.3','Lemma 8.4',
+            'Theorem 8.9','Theorem 8.11','Corollary 8.12','Lemma 8.13',
+            'local source incidence','finite compact matching expansion','common analytic source ball',
+            'triangular source-renormalization','local source vertex','contact subtree',
+            'source parameters enter holomorphically','exterior/source product tube',
+            'source perturbation','source perturbations','source logarithm','connected source logarithm',
+            'analytic ball','source ball','holomorphic','product tube','passive source order',
+            'arbitrary fixed passive-source order','matching source','source radius','analytic radius',
+            'strict rooted margin','unused strict KP margin','finite compact matching'
+          ]
+          low=text.lower(); ledger=[]; counts={}
+          for target in targets:
+            pos=0; n=0
+            while True:
+              i=low.find(target.lower(),pos)
+              if i<0: break
+              n+=1
+              ledger.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-5500):min(len(text),i+14000)]+'\n')
+              pos=i+len(target)
+              if n>=40: break
+            counts[target]=n
+          (out/'TARGETED.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+
+          # Preserve whole local section 8.1 from the first Lemma 8.1 through Lemma 8.13 when anchors exist.
+          a=low.find('lemma 8.1')
+          b=low.find('lemma 8.14')
+          if a>=0 and b>a:
+            (out/'SECTION_8_1.txt').write_text(text[max(0,a-5000):b+1000],encoding='utf-8')
+
+          # Preserve the finite-order source machinery around Theorem 4.6 and output recertification.
+          a=low.find('theorem 4.6')
+          b=low.find('theorem 4.7')
+          if a>=0:
+            end=b if b>a else min(len(text),a+50000)
+            (out/'SECTION_4_SOURCE.txt').write_text(text[max(0,a-12000):end+3000],encoding='utf-8')
+
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          required=['Lemma 8.3','Corollary 8.12','local source incidence','finite compact matching expansion']
+          missing=[x for x in required if counts.get(x,0)==0]
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve source audit
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/local_source_ball_body/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/local_source_ball_body/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/local_source_ball_body
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk local-source common-ball body contexts'
+          git push origin HEAD:verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-local-source-ball-body
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/local_source_ball_body/
