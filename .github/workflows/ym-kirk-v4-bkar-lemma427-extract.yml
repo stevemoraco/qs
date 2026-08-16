@@ -1,0 +1,56 @@
+name: YM Kirk v4 Lemma 4.27 exact extract
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-bkar-lemma427-extract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract Lemma 4.27 and local dependencies
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/bkar_admission'); out.mkdir(parents=True,exist_ok=True)
+          starts=[]
+          for name in ['Lemma 4.27','Lemma 4.28','Theorem 4.29']:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            if not hits: raise SystemExit('missing '+name)
+            starts.append((name,hits[0]))
+          chunks=[]
+          for idx,(name,i) in enumerate(starts):
+            hi = starts[idx+1][1] if idx+1 < len(starts) else min(len(lines),i+260)
+            lo=max(0,i-55)
+            chunks.append(f'===== {name} exact local block =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'LEMMA_4_27_EXACT.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          PY
+      - name: Preserve extract
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/bkar_admission/LEMMA_4_27_EXACT.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve exact Kirk Lemma 4.27 block'
+          git push origin HEAD:verification/ym-kirk-v4-bkar-admission-audit-20260815-run3-gpt56sol
