@@ -1,4 +1,4 @@
-name: YM Kirk v4 invariant-graph weak-row audit
+name: YM Kirk v4 weak supplier closure audit
 
 on:
   push:
@@ -26,21 +26,22 @@ jobs:
           fi
       - name: Pin immutable Kirk source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract invariant-graph and weak-row closure contexts
+      - name: Extract weak supplier closure contexts
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import re
           from pathlib import Path
           lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
-          out=Path('source_audit/kirk_v4/invariant_graph_weak_row'); out.mkdir(parents=True,exist_ok=True)
+          out=Path('source_audit/kirk_v4/weak_supplier_closure'); out.mkdir(parents=True,exist_ok=True)
           patterns={
-            'Theorem_5_1': re.compile(r'^\s*Theorem\s+5\.1\b',re.I),
-            'Theorem_5_20': re.compile(r'^\s*Theorem\s+5\.20\b',re.I),
+            'Theorem_2_5': re.compile(r'^\s*Theorem\s+2\.5\b',re.I),
+            'Theorem_3_31': re.compile(r'^\s*Theorem\s+3\.31\b',re.I),
+            'Lemma_3_31': re.compile(r'^\s*Lemma\s+3\.31\b',re.I),
+            'Theorem_4_29': re.compile(r'^\s*Theorem\s+4\.29\b',re.I),
+            'Theorem_4_30': re.compile(r'^\s*Theorem\s+4\.30\b',re.I),
             'Lemma_5_20': re.compile(r'^\s*Lemma\s+5\.20\b',re.I),
-            'Theorem_5_21': re.compile(r'^\s*Theorem\s+5\.21\b',re.I),
-            'Lemma_5_21': re.compile(r'^\s*Lemma\s+5\.21\b',re.I),
-            'Theorem_5_27': re.compile(r'^\s*Theorem\s+5\.27\b',re.I),
+            'Theorem_5_1': re.compile(r'^\s*Theorem\s+5\.1\b',re.I),
             'Lemma_8_3': re.compile(r'^\s*Lemma\s+8\.3\b',re.I),
           }
           chunks=[]; counts={}
@@ -48,35 +49,36 @@ jobs:
             hits=[i for i,l in enumerate(lines) if pat.search(l)]
             counts[name]=len(hits)
             for k,i in enumerate(hits[:10],1):
-              lo=max(0,i-25); hi=min(len(lines),i+150)
+              lo=max(0,i-25); hi=min(len(lines),i+155)
               chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
-          phrases=['Gate–G1','support-summed interaction bound','centered weak graph','whole common weak tube','stable contraction','invariant graph','weak corridor']
+          phrases=['irregular Fréchet flatness','charged irregular','adapted one-step mean-value contraction','weak supplier','reproduced weak ball','uniform Banach ball','support-summed interaction']
           for phrase in phrases:
             hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
             counts[phrase]=len(hits)
             for k,i in enumerate(hits[:30],1):
-              lo=max(0,i-20); hi=min(len(lines),i+75)
+              lo=max(0,i-20); hi=min(len(lines),i+80)
               chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
           (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
-          if counts['Theorem_5_1']==0 or counts['Lemma_8_3']==0:
-            raise SystemExit('missing required theorem anchors')
+          required=['Theorem_2_5','Theorem_4_29','Theorem_4_30','Lemma_5_20','Theorem_5_1','Lemma_8_3']
+          missing=[k for k in required if counts[k]==0]
+          if missing: raise SystemExit('missing required theorem anchors: '+', '.join(missing))
           PY
-      - name: Preserve invariant-graph source contexts
+      - name: Preserve weak supplier source contexts
         run: |
-          cp kirk_latest_record.json source_audit/kirk_v4/invariant_graph_weak_row/
-          sha256sum kirk_latest.pdf > source_audit/kirk_v4/invariant_graph_weak_row/PDF_SHA256.txt
+          cp kirk_latest_record.json source_audit/kirk_v4/weak_supplier_closure/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/weak_supplier_closure/PDF_SHA256.txt
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
-          git add source_audit/kirk_v4/invariant_graph_weak_row
+          git add source_audit/kirk_v4/weak_supplier_closure
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk invariant-graph weak-row contexts'
+          git commit -m 'audit(ym): preserve Kirk weak supplier closure contexts'
           git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kirk-v4-invariant-graph-weak-row-audit
+          name: kirk-v4-weak-supplier-closure-audit
           if-no-files-found: warn
           retention-days: 30
-          path: source_audit/kirk_v4/invariant_graph_weak_row/
+          path: source_audit/kirk_v4/weak_supplier_closure/
