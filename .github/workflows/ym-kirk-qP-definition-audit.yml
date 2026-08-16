@@ -1,0 +1,52 @@
+name: YM Kirk v4 qP regulator definition audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-qP-definition-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract qP and allocation definitions
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/bkar_regulator_support'); out.mkdir(parents=True,exist_ok=True)
+          keys=['qP (','qP(','quadratic regulator','quadratic-growth','allocation cone','local quadratic','qX (','qY (','support P','physical edge','Lie-algebra-valued one-forms']
+          chunks=[]; counts={}
+          for key in keys:
+              hits=[i for i,l in enumerate(lines) if key.lower() in l.lower()]
+              counts[key]=len(hits)
+              for k,i in enumerate(hits[:40],1):
+                  lo=max(0,i-45); hi=min(len(lines),i+90)
+                  chunks.append(f'===== {key} HIT {k} source line {i+1} =====\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'QP_DEFINITION_CONTEXTS.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'QP_DEFINITION_COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          PY
+      - name: Preserve qP contexts
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/bkar_regulator_support/QP_DEFINITION_*.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve qP regulator definition contexts'
+          git push origin HEAD:verification/ym-kirk-bkar-regulator-support-audit-20260815-run3-gpt56sol
