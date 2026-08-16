@@ -1,0 +1,94 @@
+name: Verify NS Pineau-Vicol weighted axial-shear gap firewall
+
+on:
+  push:
+    branches:
+      - agent/ns-pv-weighted-shear-gap-firewall-20260816-run62
+    paths:
+      - 'verification/ns-pv-weighted-shear-gap-firewall/**'
+      - '.github/workflows/ns-pv-weighted-shear-gap-firewall.yml'
+  pull_request:
+    paths:
+      - 'verification/ns-pv-weighted-shear-gap-firewall/**'
+      - '.github/workflows/ns-pv-weighted-shear-gap-firewall.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-pv-weighted-shear-gap-firewall/NSPVWeightedAxialShearGapFirewall.lean
+          test -s "$SRC"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo "forbidden trust carrier found in $SRC" >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 9
+          sha256sum "$SRC" | tee source.sha256
+
+      - name: Execute exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/ns-pv-weighted-shear-gap-firewall/NSPVWeightedAxialShearGapFirewall.lean')
+          payload = json.dumps({
+              'content': p.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check', data=payload,
+              headers={'Content-Type':'application/json'}, method='POST')
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          pathlib.Path('NSPVWeightedAxialShearGapFirewall-axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('NSPVWeightedAxialShearGapFirewall-axle-response.json')
+          if not p.exists(): raise SystemExit('missing AXLE response')
+          r=json.loads(p.read_text())
+          lean=r.get('lean_messages',{}); tool=r.get('tool_messages',{})
+          rendered=json.dumps(r)
+          bad=(not r.get('okay') or lean.get('errors',[]) or lean.get('warnings',[]) or
+               tool.get('errors',[]) or tool.get('warnings',[]) or r.get('failed_declarations',[]) or
+               'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered)
+          print(json.dumps({'okay':r.get('okay'),'cached_response':r.get('cached_response'),
+            'lean_errors':lean.get('errors',[]),'lean_warnings':lean.get('warnings',[]),
+            'tool_errors':tool.get('errors',[]),'tool_warnings':tool.get('warnings',[]),
+            'failed_declarations':r.get('failed_declarations',[])}, sort_keys=True))
+          if bad: raise SystemExit(1)
+          print('VERIFIED CLEAN')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-pv-weighted-shear-gap-firewall-evidence
+          path: |
+            verification/ns-pv-weighted-shear-gap-firewall/NSPVWeightedAxialShearGapFirewall.lean
+            source.sha256
+            NSPVWeightedAxialShearGapFirewall-axle-response.json
