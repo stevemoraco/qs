@@ -25,6 +25,7 @@ jobs:
       - name: Verify flattened Lean theorem source
         shell: bash
         run: |
+          # Repaired replay after failed-first Finset proof.
           set -euo pipefail
           SRC=verification/ym-kirk-tree-to-diameter/KirkV4TreeToDiameterWeakening.lean
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
