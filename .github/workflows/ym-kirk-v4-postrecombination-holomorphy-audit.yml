@@ -1,0 +1,116 @@
+name: YM Kirk v4 post-recombination optical holomorphy audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-postrecombination-holomorphy-audit-20260816-turn3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-postrecombination-holomorphy-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-postrecombination-holomorphy-audit-20260816-turn3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract holomorphy and recombination interfaces
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
+          out = Path('source_audit/kirk_v4/postrecombination_holomorphy')
+          out.mkdir(parents=True, exist_ok=True)
+
+          targets = [
+              ('lemma_3_27', 'Lemma 3.27'),
+              ('theorem_3_31', 'Theorem 3.31'),
+              ('lemma_6_22', 'Lemma 6.22'),
+              ('lemma_6_23', 'Lemma 6.23'),
+              ('lemma_6_26', 'Lemma 6.26'),
+              ('lemma_6_30', 'Lemma 6.30'),
+              ('lemma_6_41', 'Lemma 6.41'),
+              ('theorem_6_43', 'Theorem 6.43'),
+          ]
+          for slug, target in targets:
+              m = re.search(r'(?m)^\s*' + re.escape(target) + r'\b.*$', text)
+              if m:
+                  lo = max(0, m.start() - 8000)
+                  hi = min(len(text), m.start() + 32000)
+                  (out / f'{slug}.txt').write_text(text[lo:hi], encoding='utf-8')
+
+          patterns = {
+              'exact_recombination': r'exact recombination|recombined|recombination',
+              'transition_outer': r'transition and outer|transition.*outer|outer.*transition',
+              'smooth_density': r'smooth densit|smooth cutoff|smooth partition',
+              'holomorphic': r'holomorphic|holomorphy|Cauchy',
+              'optical_tube': r'optical.{0,100}tube|tube.{0,100}optical',
+              'RG_separation': r'R_G|RG\b|Gaussian separation|separation collar',
+              'same_rooted_row': r'same rooted exponential row|rooted exponential row holds uniformly',
+          }
+          summary = []
+          for name, pat in patterns.items():
+              ms = list(re.finditer(pat, text, re.I | re.S))
+              summary.append(f'{name}\tcount={len(ms)}\toffsets={[m.start() for m in ms[:80]]}')
+              chunks = []
+              for i, m in enumerate(ms[:30]):
+                  chunks.append(
+                      f'===== {name} {i+1}/{min(30,len(ms))} @ {m.start()} =====\n'
+                      + text[max(0, m.start()-5000):min(len(text), m.end()+9000)]
+                      + '\n'
+                  )
+              (out / f'{name}.txt').write_text('\n'.join(chunks), encoding='utf-8')
+
+          # Focused classifier: does the 6.22--6.26 window mention R_G / Gaussian separation?
+          m22 = re.search(r'(?m)^\s*Lemma 6\.22\b.*$', text)
+          m26 = re.search(r'(?m)^\s*Lemma 6\.26\b.*$', text)
+          local = ''
+          if m22:
+              hi = min(len(text), (m26.start() + 22000) if m26 else m22.start() + 90000)
+              local = text[max(0,m22.start()-5000):hi]
+          local_rg = list(re.finditer(r'R_G|RG\b|Gaussian separation|separation collar', local, re.I))
+          local_holo = list(re.finditer(r'holomorphic|holomorphy|Cauchy', local, re.I))
+          local_smooth = list(re.finditer(r'transition and outer|smooth densit|smooth cutoff', local, re.I))
+          classifier = [
+              f'lemma_6_22_to_6_26_R_G_mentions={len(local_rg)}',
+              f'lemma_6_22_to_6_26_holomorphy_mentions={len(local_holo)}',
+              f'lemma_6_22_to_6_26_transition_smooth_mentions={len(local_smooth)}',
+              '',
+              'QUESTION:',
+              'Does exact recombination remove every non-holomorphic temporary label before the final multipivot activity is defined?',
+              'Is the common optical tube radius/row independent of the later Gaussian separation parameter R_G?',
+              'Source extraction only; no mathematical verification.',
+          ]
+          (out / 'CLASSIFIER.txt').write_text('\n'.join(classifier) + '\n', encoding='utf-8')
+          (out / 'COUNTS.txt').write_text('\n'.join(summary) + '\n', encoding='utf-8')
+
+          for p in ['kirk_latest_record.json', 'kirk_source_probe_report.json']:
+              q = Path(p)
+              if q.exists():
+                  (out / p).write_bytes(q.read_bytes())
+
+          print('\n'.join(summary))
+          print('\n'.join(classifier[:3]))
+          PY
+      - name: Commit audit
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/postrecombination_holomorphy
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): extract post-recombination holomorphy interfaces'
+          git push origin HEAD:verification/ym-kirk-v4-postrecombination-holomorphy-audit-20260816-turn3-gpt56sol

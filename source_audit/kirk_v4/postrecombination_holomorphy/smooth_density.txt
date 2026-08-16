@@ -1,0 +1,669 @@
+===== smooth_density 1/3 @ 44766 =====
+fers from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                    4
+Every principal subproblem obtained by fixing the exterior anchors has the same lower Lipschitz bound
+and a volume-independent inverse derivative.
+Proof. For v = a − b, integrate the derivative along the segment from b to a. Schur’s test gives
+∥KZ ∥2→2 ≤ 1/4, proving both bounds. The lower bound gives injectivity; the inverse-function theorem
+gives the smooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.4 (Finite-cell retention and chart charge). There are constants Cret < ∞, cch > 0, and
+tch > 0, depending only on the fixed cell atlas, such that
+
+                                            DQ (U ) ≤ Cret AQ+ (U )
+
+for every fine configuration. Moreover,
+
+                                   TQ (U ) ≥ tch /4     =⇒     AQ+ (U ) ≥ cch .
+
+The constants are independent of total volume, ultraviolet depth, periodic wrapping, and the aligned-
+reflection template.
+Proof. Use a boundary-rooted tree gauge on the fixed finite contractible cell. By Lemma 3.1, the zero set
+of AQ+ is precisely the flat set. On that set all common-endpoint paths agree, hence DQ = TQ = 0. Near
+the flat set, the representation-normalized quadratic comparison and the grounded finite-cell Poincaré
+inequality give
+                                          AQ+ ≍ ∥dX∥2 ≍ ∥X∥2 ,
+while smoothness of the finite path atlas and the fact that every retained plaquette word equals the
+identity on the flat set give DQ + TQ ≤ C∥X∥2 . This proves the retention inequality on one neighborhood
+of the flat set.
+   Remove a smaller such neighborhood. On the resulting compact set, AQ+ has a strictly positive
+minimum and the smoothly extended DQ is bounded, so their quotient is bounded there as well. This
+
+
+                                                         11
+proves the global displayed inequality without extending a quotient through its zero set. Finally choose
+tch inside the chart reserve. The closed set {TQ ≥ tch /4} is disjoint from the flat set; compactness and
+Lemma 3.1 give a positive minimum cch of AQ+ on it. Taking the finite maximum and minimum over the
+bulk and aligned-reflection templates proves the stated uniformity.
+
+  Choose smooth decreasing cutoffs γD , γ0 , γ1 ∈ [0, 1] with γ0 ≤ γ1 and
+
+                               γD = 1 (DQ ≤ χ2 /4), γD = 0 (DQ ≥ χ2 ),
+                               γ0 = 1 (TQ ≤ tch /8), γ0 = 0 (TQ ≥ tch /4),
+                               γ1 = 1 (TQ ≤ tch /2), γ1 = 0 (TQ ≥ tch ).
+
+Define the exact labelled partition
+
+                Q = γD γ0 ,
+               χin                  χcurv
+                                     Q    = (1 − γD )γ0 ,         Q = γ1 − γ0 ,
+                                                                 χcol              Q = 1 − γ1 .
+                                                                                  χout
+
+Then
+                                           Q + χQ
+                                          χin        + χcol
+                                                        Q + χQ = 1
+                                                curv         out
+
+
+pointwise. The labels are used only inside absolute-value expansions and are recombined before reflection
+positivity is invoked.
+Lemma 3.5 (Charged support of every irregular label). After fixing 0 < χ ≤ χ0 with χ20 ≤ 4cch , every
+curvature, collar, or outer label is supported on
+
+                                                 AQ+ (U ) ≥ c0 χ2
+
+for one fixed c0 > 0. Every derivative of a splice cutoff through order 2sG is supported on the same
+charged event and has a fixed-template polynomial bound in χ−1 and the fixed chart thresholds.
+
+Proof. On the support of 1 − γD , either DQ ≥ χ2 /4 or a derivative of γD is present. The retention
+inequality gives AQ+ ≥ χ2 /(4Cret ). On the collar and outer supports, or on a derivative of γ0 or γ1 , one
+has TQ ≥ tch /8 after decreasing the fixed thresholds once. The compactness argument in Theorem 3.4
+gives a fixed positive action charge, which dominates c0 χ2 for χ ≤ χ0 . The derivative bounds through
+order 2sG follow from the fixed smooth cutoffs, Lemma 3.1, and the finite cell atlas; differentiation changes
+neither transition support nor action charge.
+
+   Fix R0 larger than the diameter of every local variable support in one normalized step. For each
+labelled bad block Q, choose a finite integration core IQ containing every variable on which its cutoff and
+retention estimate depend, and put
+                                             Hb Q = N2R (IQ ).
+                                                        0
+
+
+Join two bad blocks when their H-sets
+                                b     meet. A bad seed X is a connected component of this graph, with
+                          [                     [
+                  I(X) =       IQ ,   H(X) =       HbQ,     H + (X) = NR0 (H(X)).
+                              Q∈X                     Q∈X
+
+There are fixed constants CH and νov < ∞ such that
+
+                                     |I(X)| + |H(X)| + |H + (X)| ≤ CH |X|,
+
+and the enlarged-cell overlap graph admits a νov -coloring.
+Proposition 3.6 (Component action charge). For every bad seed X and every configuration in its labelled
+support,
+                                                            |X|
+                                        AI(X) (U ) ≥ c∗ χ2      .
+                                                            νov
+The statement is uniform under the standing convention.
+Proof. A color class contains a subfamily S ⊂ X of pairwise disjoint enlarged cells with |S| ≥ |X|/νov .
+By Lemma 3.5, every selected cell carries c0 χ2 of faithful Wilson action. The selected action supports are
+disjoint, so their charges add. Enlarging the fixed cores once ensures all selected plaquettes lie in I(X).
+Rename the finite constant.
+
+
+
+                                                            12
+3.1    Permanent support geometry
+Let τ (S) denote the lattice spanning-tree size of a connected reported support. Assume covariance
+connectors obey
+                                 |C(x, y)| ≤ KC e−µd(x,y) ,   µ > 0.
+Lemma 3.7 (Geometric reporting). Let S1 , . . . , Sn be species supports joined by a labelled tree T . Report
+each covariance edge by a shortest connector path and each hard-core edge by its fixed bounded collar. If
+P is the union of all supports, paths, and finite atlas collars, then
+                                           n
+                                           X                  X
+                                τ (P ) ≤         τ (Si ) +            de + Cgeo (n − 1)
+                                           i=1               e∈Tcov
+
+for a finite template constant Cgeo .
+Proof. Choose a spanning tree in each Si . Add the reported connector for every edge of T , and add a
+uniformly bounded number of collar edges for each new attachment. The resulting connected graph spans
+P and has the stated number of edges.
+
+Consequence (Permanent locality exponent).                        For every 0 < κ < µ,
+                        Y          Y
+               eκτ (P )   KC e−µde    KH
+                           e∈Tcov            e∈Thc
+                                                   n−1 Y κτ (Si ) Y −(µ−κ)de
+                        ≤ eκCgeo max{KC , KH eκRH }
+                         
+                                                         e           e        .
+                                                                        i         e∈Tcov
+
+Thus connector and hull reporting preserve the same support exponent.
+Lemma 3.8 (Allocation loss is per vertex). Assume
+                                             X
+                                         sup    eκτ (S) βS ≤ b
+                                                 x
+                                                      S∋x
+
+and |S| ≤ cd (1 + τ (S)). Then every species obeys
+                               βS |S| ≤ Cd,κ b,             Cd,κ = cd sup(1 + t)e−κt .
+                                                                            t≥0
+
+                                                                                                   Creg bn
+                                                                      P
+Consequently a Gaussian regulator factor controlled by                  i βSi |Si | costs at most e        on an n-vertex
+family.
+Proof. Choose any root x ∈ S. The cone gives βS ≤ be−κτ (S) . Multiply by the cardinality bound and
+take the scalar supremum.
+Theorem 3.9 (Corrected support closure). Assume:
+1. the summed replica-BKAR theorem;
+2. the geometric reporting lemma;
+3. the complete-species allocation cone;
+4. the exact dimension-ledger reblocking factor 24−∆ ;
+5. a logarithmic-support localization estimate
+                           qloc (D, L) ≤ C L−3 + (log L)pD LΓ−δD ,
+                                                               
+                                                                                      δD → ∞.
+Choose κ = µ/2. If the rooted regular atom mass and allocation radius are small enough that
+                                                     χeff (u, r, b) < 1,
+then one may choose finite D and finite L = 2s so that the stable regular derivative satisfies
+                                                 ∥DΦreg |stable ∥ < 1
+in the same permanent κ-weighted support norm.
+Proof. The first two lemmas leave a residual connector decay µ − κ > 0 and convert every fixed geometric
+and regulator cost into a per-vertex constant. The summed BKAR tree recursion is therefore geometric
+in the effective rooted link mass χeff . Reblocking is paid by the engineering factor and does not weaken κ.
+Choose D with δD > Γ + 3, then choose finite L so qloc lies inside the strict associated-graded jet gap.
+Finally shrink u, r, b to absorb the nonlinear and irregular source terms.
+
+
+                                                             13
+3.2      Aligned-reflection section
+Let L : Hf → Hc be the canonically rescaled full-lattice flat block and let P : Hc → Hf satisfy
+
+                                                                    1
+                                     LP = I,       ∥P ∥exp,2 ≤ p < √ .
+                                                                     2
+Assume L and P intertwine aligned reflection.
+   Let E+ be reflection extension from the positive closed-half-space coarse space and R+ fine-field
+restriction. Assume                           √
+                                     ∥E+ ∥ ≤ 2,      ∥R+ ∥ ≤ 1,
+and that every retained row in the positive schedule is supported in the positive closed half-space and
+fixed reflection boundary.
+Theorem 3.10 (Reflected linear section). Define
+
+                                               P+ = R+ P E+ .
+
+Then
+                                                 L+ P+ = I
+and                                                       √
+                                         ∥P+ ∥exp,2 ≤         2 p < 1.
+For the forty-nine-path block,
+                                                            16
+                                                ∥P+ ∥22 ≤      .
+                                                            49
+Proof. Closed-half-space support gives L+ R+ = R+ L on reflected fields. Therefore
+
+                                     L+ P+ = R+ LP E+ = R+ E+ = I.
+
+The norm estimate is immediate. On the real Brillouin zone the bulk normal section satisfies ∥P ∥2 ≤ 8/49,
+yielding the displayed sharper bound.
+
+Theorem 3.11 (Reflected nonlinear section). Let S be an exact reflection-equivariant nonlinear bulk
+section,
+                                                            p
+                              B(S(w)) = w,       ∥DS∥ ≤        .
+                                                          1−η
+Define
+                                          S+ (w) = R+ S(E+ w).
+Then
+                                               B+ (S+ (w)) = w
+and                                                         √
+                                                           2p
+                                               ∥DS+ ∥ ≤       .
+                                                          1−η
+In particular, using p < 0.546 and η ≤ 1/10,
+
+                                          ∥DS+ ∥ < 0.859 < 1.
+
+For m = 2, 3,
+                                        ∥Dm S+ ∥ ≤ 2m/2 ∥Dm S∥.
+Proof. The exact path-extent schedule gives
+
+                                               B+ R+ = R+ B
+
+on reflected configurations. Hence
+
+                                     B+ S+ = R+ BSE+ = R+ E+ = I.
+
+The derivative estimates follow from the chain rule and the extension and restriction norms.
+
+
+
+                                                     14
+3.3    Exterior complex tube
+Fix the exact symmetric forty-nine-path fixed-G block. Let X be a connected curvature-bad component,
+I(X) its fixed integration core, and RX its exterior ring. Use the selected-anchor component chart on
+I(X), with every chart Jacobian included in the density.
+Lemma 3.12 (Finite word transport). There are fixed radii δout , δin > 0 and a constant Ctr < ∞,
+uniform under the standin
+
+===== smooth_density 2/3 @ 158438 =====
+ Reisz power counting to the optical conditional covariance is
+consumed.
+   In the canonical squared-coupling normalization,
+
+                                                       11 CA (G) log 2
+                                               bAF =                   .
+                                                           24π 2
+The factor log 2 is the physical scale-two interval. The complete coordinate-intertwining theorem is
+printed after the centered invariant graph, where exact measure equality and parabolic conjugacy identify
+the one-step coefficient.
+5.1     Centered invariant graph
+Let
+                                         R(u, R) = f (u, R), Φ(u, R)
+                                                                    
+
+be C 3 on a uniform Banach ball. Assume
+
+                            DR f (0, 0) = 0,      DR Φ(0, 0) = L,          ∥L∥ ≤ q < 1.
+
+Write
+                             f (u, R) = u + b0 u2 + u m(R) + q(R, R) + O3 (u, R)
+and
+                          Φ(u, R) = LR + uS1 + u2 S2 + uAR + B(R, R) + O3 (u, R).
+Theorem 5.1 (Centered graph with the slaved coefficient). Define
+
+                                                H1 = (I − L)−1 S1 ,
+
+                                        b⋆ = b0 + m(H1 ) + q(H1 , H1 ),
+and
+                              H2 = (I − L)−1 [S2 + AH1 + B(H1 , H1 ) − b⋆ H1 ] .
+Then, after decreasing the common ball, there is a unique invariant graph
+
+                                       R⋆ (u) = uH1 + u2 H2 + OG (u3 ).
+
+In a tangent-to-identity marginal coordinate v and the centered irrelevant coordinate
+                                                 e = R − R⋆ (u),
+                                                 R
+
+the exact map satisfies
+                                           v+ = v + b⋆ v 2 + OG (v 3 )
+on the graph and
+                                       ∥R
+                                        e+ ∥ ≤ ρ⋆ ∥R∥,
+                                                   e            q < ρ⋆ < 1.
+                                                       3
+All constants are uniform whenever the input C and contraction rows are uniform.
+Proof. Comparing powers of u in
+
+                                        R⋆ (f (u, R⋆ (u))) = Φ(u, R⋆ (u))
+
+gives the displayed equations for H1 , H2 and b⋆ .
+
+
+                                                           39
+  After the shift
+                                           R = uH1 + u2 H2 + ρ,
+the marginal row is
+                                u+ = u + b⋆ u2 + u c(ρ) + q(ρ, ρ) + O3 (u, ρ),
+where
+                                             c = m + 2q(H1 , ·).
+The cohomological equations
+                                     α − αL = c,       d − d(L·, L·) = q
+have convergent Neumann-series solutions because ∥L∥ < 1. The coordinate
+                                          v = u + uα(ρ) + d(ρ, ρ)
+removes the uρ and ρ2 marginal feeding through second order.
+  The centered irrelevant row has the form
+                                     ρ+ = Lρ + O(v∥ρ∥ + ∥ρ∥2 + v 3 ).
+The exponentially flat irregular term is absorbed in the same cubic row after shrinking the weak interval.
+The graph transform on weighted C 2 graphs has Lipschitz constant q + C v̄ < 1. Its unique fixed point
+gives the graph, and the mean-value theorem gives centered contraction.
+
+5.2     Standard-scheme conjugacy and coefficient
+The coefficient is extracted from a local background renormalization condition on the full weak measure.
+The background is not inserted as a freely translatable factor in an unrestricted Haar integral, and no
+global gauge section or equality of globally gauge-fixed partition functions is asserted.
+5.2.1 The exact marginal map on the invariant graph
+Let
+                                       R(u, R) = f (u, R), Φ(u, R)
+                                                                   
+
+be the infinite-volume canonically rescaled exact Karcher step on the common analytic weak tube. On
+the centered invariant graph put
+                                          FK (u) = f u, R⋆ (u) .
+                                                              
+
+Lemma 5.2 (Invariant-graph marginal coefficient). The reduced map is analytic and
+                                        FK (u) = u + b⋆ u2 + OG (u3 ).
+                                                                  e = u + O(u2 ).
+The number b⋆ is invariant under every analytic reparametrization u
+Proof. Substitute R⋆ (u) = uH1 + O(u2 ) into the complete quadratic Taylor expansion of f . If h(u) =
+u + cu2 + OG (u3 ), direct substitution in h ◦ FK ◦ h−1 leaves the quadratic coefficient unchanged.
+5.2.2 A nonexceptional background coordinate on weak measures
+For a finite lattice spacing a, let µa;u,R denote the full weak Wilson measure with interaction R, before
+any Karcher conditioning. Fix a retained acoustic background B in the common weak tube and write, on
+a based local background slice,
+                               U = Va (B)eA ,      d∗B,a A = 0,     A(v0 ) = 0.
+Let χ(A) be one fixed smooth cutoff equal to one on the smaller weak tube and supported in the larger
+tube. Define                           Z
+                                                             A
+                    Wa (B; µ) := − log     χ(A) e−Sµ (Va (B)e ) JB,a (A) ∆B,a (A) dA.             (7)
+                                          SB,a
+
+Here Sµ is the logarithmic density of the full weak measure, JB,a is the local exponential/coarea density,
+and ∆B,a is the local based Faddeev–Popov determinant. The integral is a based-slice renormalization
+functional; it is not used as a global representation of µ.
+    Fix m⋆ ≥ 16 and q⋆ = (2π/m⋆ , 0, 0, 0) at the retained scale. On periodic sides divisible by m⋆ , let
+P⋆ be the signed-hypercubic-orbit average of the transverse background Hessian at q⋆ , divided by |b      q⋆ |2
+and averaged over color polarizations. The directed sides are rounded upward to such multiples, a
+bounded refinement that preserves every wrapping estimate. Fix a compact orbit neighborhood Q⋆ with
+inf q∈Q⋆ |b
+          q | =: ρ⋆ > 0. Define ga (µ) as the inverse of P⋆ DB
+                                                             2
+                                                               Wa (0; µ) after the same canonical rescaling of
+lattice and profile at both ends of a step. The pure quadratic Wilson Hessian gives ga = u. Thus this is
+one scale-normalized nonexceptional momentum-subtraction coordinate; no derivative at q = 0 is used.
+
+
+                                                      40
+Lemma 5.3 (Nonexceptional slice coordinate with finite-order flat complement). On the common weak
+domain, the nonexceptional background coordinate evaluated on the full normalized weak measure, including
+exact irregular-label recombination, extends as a C 3 function of (u, R) to u = 0 and satisfies
+
+                                    ga (µa;u,R ) = u + O(u2 + u∥R∥ + ∥R∥2 ).                               (8)
+
+Changing the based local slice, cutoff, or finite local gauge fermion changes ga by one scale-normalized
+C 3 unit-tangent reparametrization. If ϵirr denotes the contribution of the charged complement, then for
+0 ≤ k ≤ 3 and the two background marks used by ga ,
+
+                                    |∂uk ϵirr (u, R)| ≤ Ck u−pk e−c/u ,         u > 0,
+
+so its extension at u = 0 is C 3 and has vanishing derivatives through order three. No real-analytic
+extension of this flat term is asserted.
+   More explicitly, let t 7→ χt be a C 3 interpolation of admissible cutoffs, each equal to one on the smaller
+weak tube and supported in the same larger tube, and put
+                                                                            A
+                                                     χ̇t (A)e−Sµa;u,R (Va (B)e ) JB,a (A)∆B,a (A) dA
+                                          R
+                                              SB,a
+                   ϵχ,t (B; u, R) := − R                                    A                          .
+                                              SB,a
+                                                     χt (A)e−Sµa;u,R (Va (B)e ) JB,a (A)∆B,a (A) dA
+
+For 0 ≤ k ≤ 3 and every background multi-index |α| ≤ 2 consumed by the coupling coordinate,
+
+                      sup     sup       ∂uk DB
+                                             α
+                                               ϵχ,t (B; u, R) ≤ Ck,α u−pk,α e−c/u ,         u > 0,
+                     t∈[0,1] B∈Tsmall
+
+with constants uniform in volume, cutoff, and preceding weak depth. Thus the cutoff interpolation
+contributes only a C 3 -flat unit-tangent scheme term.
+Proof. The based background-slice map is a finite-dimensional analytic diffeomorphism on the        √ common
+tube by the inverse-function theorem and the uniform grounded Hessian bound. Rescale A = u a before
+taking the two background-amplitude marks at the fixed orbit of q⋆ . On the inner tube, dominated
+differentiation of the Wilson, chart, coarea, Jacobian,
+                                                  √          gauge-coordinate, and interaction factors gives
+three derivatives in u uniformly; odd powers of u vanish after the signed-hypercubic orbit average. This
+proves the C 3 expansion and the unit tangent. Every interaction term in R has vanishing extracted scalar
+and complete retained two-jet, so it cannot alter the linear term in (8).
+   Two local slice choices are joined by a finite interpolation of background-covariant gauge fermions.
+The variation is BRS exact. The SI–6 counterterm classification and the supportwise SI–7M estimate of
+Lemma 5.14 show that the change is a finite CR3 scheme term with unit tangent.
+   For a cutoff interpolation, differentiate − log χt e−Sµ J∆ before taking the two background-amplitude
+marks and the fixed projector P⋆ . This gives exactly ϵχ,t . The factor χ̇t is supported in the annulus between
+the smaller and larger weak tubes. After exact label recombination, every numerator term is therefore
+a charged U4 activity; a background or coupling derivative may hit the action, the coarea/Jacobian
+factor, or the determinant; the fixed factor χ̇t keeps every term on the same charged annular support.
+The differentiated U4 total-variation row, through the three coupling and two background derivatives
+displayed in the statement, bounds the numerator by the positive denominator times Ck,α u−pk,α e−c/u .
+The good-cutoff plateau and its trial-ball lower bound make this ratio uniform in t, volume, cutoff, and
+preceding weak depth. Integrating in t proves that changing χ adds only the printed C 3 -flat scheme term.
+The same U4 row gives the charged complement bound. Such terms are C 3 -flat, not analytic, and this
+finite-order regularity is all that is consumed below.
+Lemma 5.4 (Massless nonexceptional sum–integral comparison). Let M be divisible by m⋆ and let
+ΓM = (2π/M )Z4M be the loop-momentum grid. For every pure-Wilson or stable-marked complete one-loop
+BPHZL packet contributing to the quadratic background coefficient, and through the two background marks
+consumed by ga , there is a finite soft set S(q) ⊂ T4 such that, away from that set,
+                                                                         
+                                                     X
+                     k RX (q, 1; k) ≤ Cα PX
+                   ∇α   LZ                    1 +       dT4 (k, ξ)−2−|α|  ,   |α| ≤ 2.            (9)
+                                                             ξ∈S(q)
+
+Here PX = 1 for a pure-Wilson packet and otherwise PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 . At a grounded
+soft momentum the finite-volume summand is omitted. Uniformly for every grid-compatible q ∈ Q⋆ ∩ ΓM
+
+
+                                                              41
+(in particular for the fixed signed-hypercubic orbit of q⋆ ),
+                      ′
+                1 X LZ                                        d4 k
+                                          Z
+                              (q, 1;            LZ
+                                                   (q, 1;           ≤ CPX M −2 1 + log(2 + M ) .           (10)
+                                                                                              
+                          R          k) −     R           k)
+               M4           X
+                                           T4
+                                                X
+                                                             (2π) 4
+                   k∈ΓM
+
+The same estimate holds after the two background marks. After the rooted support sum it therefore
+compares the finite-volume and thermodynamic quadratic Taylor coefficients of the local background
+coordinate and of the standard one-step map.
+Proof. The complete-forest admission in Lemma 5.12 gives the degree-two soft majorant (23). Differenti-
+ating a complete sector packet in loop momentum once or twice lowers its verified infrared degree by
+the number of derivatives and gives (9). The finite SI–7M sector family, the nonexceptional compact set
+Q⋆ , and the two background marks change only the constant and the support polynomial. No separated
+Lowenstein Taylor piece is used.
+   Put h = 2π/M and partition the momentum torus into the periodic Voronoi cubes Qℓ centered at the
+grid points. The finitely many cubes meeting S(q) contribute O(PX h2 ) to the integral by the d(k, ξ)−2
+row; their singular grounded samples are absent from the primed sum. On every remaining cube use the
+symmetric second-order Taylor formula about its center. Bounded overlap of twice-enlarged cubes gives
+                                                                                            
+                X ′           Z                              X Z
+             h4      RX (k) − RX (k) d4 k ≤ CPX h2 1 +                       d(k, ξ)−4 d4 k  .
+               k∈ΓM                                                 ξ∈S(q)   h≤d(k,ξ)≤1
+
+
+The radial integral is O(1 + log M ), proving (10) after the fixed normalization of the Bri
+
+===== smooth_density 3/3 @ 256327 =====
+compact path detail, and no source is assumed fiber-constant under BL . The block is used once to
+place many same-law Haar pivots inside each coarse compact edge.
+Definition 6.21 (Matching-stage tri-graded norm). For a compact-stage activity family F = (FX ) and
+fixed positive mark weights σpiv , σζ , σJ , set
+                                                                  |α|
+                                               X                 σpiv σζr σJq
+                       ∥F ∥a;2sG |3|2 := sup         ea|X| max                 α
+                                                                              Dpiv Dζr DJq FX .         (56)
+                                         p               |α|≤2sG |α|! r! q!
+                                               X∋p       0≤r≤3
+                                                         0≤q≤2
+
+Here Dpiv differentiates only the declared live original-link pivot variables. The derivative Dζ is a Fréchet
+derivative in the unintegrated optical coordinate at the compact-collect call site, and DJ differentiates
+the physical source. The three indices are independent; no optical derivative is counted as a structural
+pivot derivative or as a source leaf. The pivot order 2sG is the fixed-group Sobolev order required by the
+product Peter–Weyl landing; the optical order three and the physical-source order two are unchanged
+from the permanent marked hierarchy.
+Lemma 6.22 (Joint regular pivot–optical–source tube). There are positive radii ρpiv , ρζ , ρJ , independent
+of cutoff, volume, exterior configuration, and weak depth, such that every reference, regular, coarea,
+determinant, and Gaussian-normalization factor QX has a jointly holomorphic extension to the product
+
+
+
+                                                           60
+of (i) the complexified live-pivot chart polydisc of radius ρpiv and (ii) the common optical/source species
+tube of radii ρζ , ρJ . On that product tube the same rooted exponential row holds uniformly. Consequently,
+                                                            |α|
+                                  X                        ρpiv ρrζ ρqJ
+                            sup         e   a|X|
+                                                     max                 α
+                                                                        Dpiv Dζr DJq QX ≤ Creg .            (57)
+                             p                     |α|≤2sG |α|! r! q!
+                                  X∋p              0≤r≤3
+                                                   0≤q≤2
+
+Thus Definition 6.21 applies to this sector with any fixed σpiv ≤ ρpiv , σζ ≤ ρζ , and σJ ≤ ρJ .
+Proof. The finite regular chart atlas gives a common complex live-pivot polydisc, and Lemma 3.27(iii)
+gives the common optical/source species tube. On each chart the exact reference, coarea, determinant,
+Gaussian-normalization, and regular recombination formulas are finite compositions of local coefficient
+maps analytic in all three displayed variables, together with multiplication, determinant, and inversion.
+The real denominators already have a uniform positive lower bound, so one fixed shrinking of the three
+radii keeps every complexified denominator away from zero. The same formulas therefore extend jointly
+to the Cartesian product of the two printed domains. The atlas is finite, so the radii and the supremum
+constant are uniform. Multivariable Cauchy on the product tube then gives (57). The rooted exponential
+weight is unchanged because Cauchy acts only in the three local coefficient variables.
+Lemma 6.23 (Tri-graded optical/source upgrade). In the exact factorization of Theorem 6.10, the
+normalized one-pivot logarithmic scores, VA,J , zA,J = e−VA,J − 1, the exact positive denominators, and
+the recombined regular/irregular/coarea/determinant factors obey one cutoff-, volume-, exterior-, and
+weak-depth-uniform ∥ · ∥a;2sG |3|2 row. Every marked physical occurrence is owned exactly once. A mark
+on a one-pivot reference removes at most one unmarked Haar payment; a mark on a multipivot factor is
+paid by the corresponding tri-graded charged row.
+Proof. Differentiate the exact compact factorization before integrating the optical field. At this call site ζ
+is an exterior coefficient variable: the compact pivot integration, the Peter–Weyl cut, and the BKAR
+interpolation parameters are held fixed. Consequently Dζ differentiates only the local coefficient atoms
+and the finite one-core normalizations already present in the exact factorization; it does not create an
+additional BKAR covariance derivative.
+    For the reference, regular, coarea, determinant, and Gaussian-normalization factors, apply Lemma 6.22
+to the entire regular sector. For an inner-chart irregular component, the absolute component row already
+holds on the joint exterior/optical/source product tube; multivariable Cauchy gives the mixed derivatives
+with |α| ≤ 2sG , r ≤ 3, and q ≤ 2. Transition and outer labels are finite-dimensional smooth densities on
+the same charged event and are differentiated directly. Their fixed Bell-polynomial loss is polynomial in
+the component size and is absorbed by the bad-action exponential.
+   The maps V 7→ e−V − 1, multiplication, inversion of the strictly positive scalar denominator, and
+the normalized logarithmic-score map are analytic maps of this finite-order tri-graded Banach algebra.
+Leibniz, Faà di Bruno, and the quotient rule are paid by the three factorial weights in (56). Since G
+is fixed, the derivative orders 2sG , three, and two are fixed finite integers, so the resulting constant is
+uniform in all declared limits. This proves the stated tri-graded row without identifying an optical field
+derivative with a passive source derivative.
+Lemma 6.24 (Exact charged nonvacuum ratio). Fix N selected pivots and their exact product reference
+   NN
+ν = p=1 νp . Let Φ lie in the nonvacuum Haar summand at every pivot, and let
+                                       X
+                                 V≥2 =    VA ,   zA = e−VA − 1,
+                                                        A
+
+where every A meets n(A) ≥ 2 selected pivots. If
+                   X                             X
+               sup    eℓn(A) ∥zA ∥ ≤ ζz ,   sup    eℓn(A) ∥VA ∥ ≤ ζV ,                     ℓ ≥ − log θ⋆ ,
+                  p                                         p
+                      A∋p                                         A∋p
+
+then
+                                            Eν [Φe−V≥2 ]       h                  iN
+                                                         ≤ ∥Φ∥  θ ⋆ e (ζz +ζV )/2
+                                                                                     .                      (58)
+                                             Eν [e ≥2 ]
+                                                  −V
+
+With r ≤ 3 passive optical marks and q ≤ 2 source marks, the same estimate holds after losing at most
+one unmarked pivot payment per mark and multiplying by a fixed polynomial in N determined by the
+marked rooted rows.
+
+
+                                                                   61
+Proof. Expand e−V≥2 = A (1 + zA ). For a selected family F, let U (F) be the union of its pivot
+                        Q
+incidences. Every pivot outside U (F) remains in the nonvacuum summand and contributes θ⋆ by
+Lemma 6.20. Therefore           "        #
+                                                   N −|U (F )|
+                                   Y                           Y
+                             Eν Φ      zA ≤ ∥Φ∥θ⋆                ∥zA ∥.
+                                         A∈F                              A∈F
+
+Since |U (F)| ≤    A∈F n(A), summing all families absolutely gives
+                  P
+
+                                                                                     !
+                                                                 X
+                              ∥Eν [Φe   −V≥2
+                                               ]∥ ≤ ∥Φ∥θ⋆N exp       e   ℓn(A)
+                                                                                 ∥zA ∥ .
+                                                                 A
+
+Every activity is counted at least twice in the rooted sum, so
+                              X                      N ζz        X                N ζV
+                                   eℓn(A) ∥zA ∥ ≤         ,          ∥VA ∥ ≤           .
+                                                      2                            2
+                               A                                 A
+                                 P
+Positivity yields Eν e−V≥2 ≥ e− A ∥VA ∥ , proving (58). Differentiating the exact numerator and denomi-
+nator with r ≤ 3 passive optical marks and q ≤ 2 source marks assigns each mark either to one one-pivot
+score or to one marked multipivot activity by Lemma 6.23. The quotient rule and the same positive lower
+bound give the stated fixed polynomial and lose no more than r + q payments globally.
+Lemma 6.25 (Complete compact-flux classification and canonical exploration). Fix ζ and take the
+Peter–Weyl decomposition of the complete compact incidence network generated by the exact pushforward
+under BL . Integrate all compact variables coefficientwise. A connected history is compact-vacuum only
+when every compact cut separating distinct mixed optical/source vertices carries the trivial representation.
+After removal of already reported physical cross-core connectors, such a history factorizes into one-core
+expectations or empty-support scalars and is assigned by the exact owner map to the normalized one-core
+references or the pre-existing regular/Gaussian inventory.
+   Every remaining history, including a multi-leg singlet with trivial visible coarse label but nontrivial
+internal flux, has a deterministic visited-set exploration. Order incident half-edges before marking an
+unoriented edge inspected. Discovery edges form a rooted spanning tree; each merger, reconnection, shared
+tail, cycle, seam, reflection, or wrapping edge is a uniquely owned closure edge. The record reconstructs
+the occupied geometric network without duplicating shared continuations.
+
+Proof. Vacuum factorization follows by deleting the reported physical connectors and applying Fubini
+across every trivial compact cut. Otherwise the least mixed cut, least nontrivial representation label, and
+least oriented half-edge choose the root and first edge. Deterministic depth-first exploration then classifies
+every occupied unoriented edge exactly once as a discovery or closure edge. A composite singlet is retained
+whenever any internal separating cut is nontrivial, independently of the visible output label.
+6.5.4 Complete compact collect with the optical field left live
+The local tags (HT1)–(HT5) used in this matching block refer to the reporting and normalization identities
+in Lemma 6.7, Proposition 6.8, Lemma 6.9, and Theorem 6.10; they are proved identities, not additional
+hypotheses.
+Lemma 6.26 (Species-exhaustive one-pivot factorization with full source dependence). During the
+evaluation of one coefficient, condition temporarily on ζ and on nonpivot compact links, but never on
+an active coarse carrier. After exact label recombination, assign every reported physical factor FJ by its
+original fine-link pivot incidence IP (F ) ⊂ P. For each pivot p, let Yp be the canonically owned fresh
+variables appearing only in factors with incidence {p}, and define the complete partial weight
+                                                              
+                             Z            X                   
+            wp,J (Up ; ζ) :=     exp −           FJ (Up , y; ζ) dλp (y),   hp,J := − log wp,J .
+                              Yp    
+                                         IP (F )={p}
+                                                               
+
+With the distinguished active carrier excluded from the reference, the post-integration exponent has the
+disjoint identity                                X
+                         VJ (U, ζ) = H0 (ζ; J) +    hp,J (Up ; ζ) + V≥2,J (UP , ζ),
+                                                       p∈P
+
+
+
+
+                                                         62
+where                                           X                               X
+                                   H0 =               FJ ,         V≥2,J =                 FJ .
+                                          IP (F )=∅                          |IP (F )|≥2
+
+Define                   Z
+            Zp,J (ζ) =        e−hp,J (U ;ζ) dmG (U ),        νp,ζ,J (dU ) = Zp,J (ζ)−1 e−hp,J (U ;ζ) dmG (U ).
+                         G
+Then, with no edgewise quotient and with the full J-dependence retained,
+                         Y                        Y                          O
+              e−VJ (U,ζ)   dmG (Up ) = e−H0 (ζ;J)    Zp,J (ζ)e−V≥2,J (UP ,ζ)   νp,ζ,J (dUp ).                    (59)
+                             p∈P                             p∈P                                  p∈P
+
+A J-derivative marks its assigned factor but does not change its original fine-link incidence, so the same
+trichotomy is exhaustive through every fixed source order used below.
+Proof. The reporting theorem lists every Wilson, reference, chart, coarea, determinant, regular, irregular,
+inherited, cutoff, and source factor before normalization. Exact recombination removes the temporary
+inner/collar/outer labels, and the canonical owner assigns each resulting factor and fresh variable once.
+The three possible incidences are mutually exclusive and exhaustive. The separated pivot buffers make
+the sets Yp disjoint, so Fubini first produces the complete partial weights wp,J and then gives Zp,J and
+νp,ζ,J . The zero-pivot row remains H0 , while every factor meeting at least two pivots remains in V≥2,J .
+Differentiation in J marks factors inside the same owned partial integral and does not change their
+geometric support, proving the final claim.
+   Ev
