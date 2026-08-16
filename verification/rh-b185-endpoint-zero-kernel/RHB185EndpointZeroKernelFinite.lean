@@ -5,14 +5,15 @@ import Mathlib
 
 Finite real/Finset algebra only.
 
-This file formalizes the load-bearing new algebra behind RH B185:
+This file formalizes the load-bearing new algebra behind RH B185/B185A:
 
 * the old-prime coefficient `1 - x/Y` is nonnegative for `x <= Y`;
 * the future-prime coefficient `x/q - x/Y` is nonnegative for `0 <= x`,
   `0 < q <= Y`;
 * the future coefficient vanishes exactly at the terminal endpoint `q = Y`;
 * a count plus a reciprocal-weighted future sum, after subtracting the terminal
-  count coefficient, is exactly one endpoint-zero weighted sum.
+  count coefficient, is exactly one endpoint-zero weighted sum;
+* the artificial `li(2)` terms in the smooth threshold cancel exactly.
 
 It does **not** formalize primes, `li`, integration, Zhao, Johnston--Yang, zeta,
 BGST, B46, or RH.
@@ -72,6 +73,16 @@ theorem endpoint_zero_split_identity
   rw [hsum]
   ring
 
+/-- B185A cancellation: after adding the boundary correction, the two `li(2)`
+terms disappear and only the lower `li`, log-ratio, and negatively weighted
+terminal `li` remain. -/
+theorem smooth_threshold_cancellation
+    (liX li2 liY xLog xOverY : ℝ) :
+    (liX - li2 + xLog - xOverY * liY + xOverY * li2) +
+        (1 - xOverY) * li2 =
+      liX + xLog - xOverY * liY := by
+  ring
+
 /-- Scalar monotonicity firewall: omitted nonnegative endpoint-zero prime mass
 can only increase the exact full weighted prime sum. -/
 theorem omitted_nonnegative_weight_is_safe
@@ -83,6 +94,7 @@ theorem omitted_nonnegative_weight_is_safe
 #print axioms futureWeight_nonneg
 #print axioms futureWeight_terminal
 #print axioms endpoint_zero_split_identity
+#print axioms smooth_threshold_cancellation
 #print axioms omitted_nonnegative_weight_is_safe
 
 end RHB185EndpointZeroKernelFinite
