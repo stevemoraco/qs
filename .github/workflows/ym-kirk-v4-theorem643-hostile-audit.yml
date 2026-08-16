@@ -36,25 +36,35 @@ jobs:
           mkdir -p "$OUT"
           curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 -sSL \
             https://zenodo.org/api/records/21765806 -o "$OUT/record.json"
+          curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 -sSL \
+            https://zenodo.org/api/records/21765806/files -o "$OUT/files.json"
           python3 - <<'PY'
           import json, pathlib, urllib.request
           p = pathlib.Path('source_audit/kirk_v4/theorem643_hostile')
-          r = json.loads((p/'record.json').read_text())
+          roots=[]
+          for name in ('record.json','files.json'):
+              roots.append(json.loads((p/name).read_text()))
           urls=[]
           def walk(x):
               if isinstance(x,dict):
                   for k,v in x.items():
-                      if k in {'content','download'} and isinstance(v,str) and '/files/' in v:
-                          urls.append(v)
+                      if isinstance(v,str) and v.startswith('http'):
+                          kl=k.lower()
+                          if kl in {'content','download','self'} or '.pdf' in v.lower() or v.endswith('/content'):
+                              urls.append(v)
                       walk(v)
               elif isinstance(x,list):
                   for v in x: walk(v)
-          walk(r)
+          for r in roots: walk(r)
           urls=list(dict.fromkeys(urls))
-          if not urls:
-              raise SystemExit('no downloadable file URL found in pinned record')
-          # The record contains one manuscript PDF. Prefer a PDF-content URL.
-          url=next((u for u in urls if '.pdf' in u.lower() or u.endswith('/content')), urls[0])
+          # Reject metadata/API/self links; retain actual file-content candidates.
+          candidates=[u for u in urls if ('/files/' in u and (u.endswith('/content') or '.pdf' in u.lower()))]
+          if not candidates:
+              print('TOP_LEVEL_RECORD_KEYS=', list(roots[0]) if isinstance(roots[0],dict) else type(roots[0]))
+              print('TOP_LEVEL_FILES_TYPE=', type(roots[1]).__name__)
+              print('DISCOVERED_URLS=', urls)
+              raise SystemExit('no downloadable PDF-content URL found in pinned record/files APIs')
+          url=candidates[0]
           (p/'download_url.txt').write_text(url+'\n')
           print('DOWNLOAD_URL='+url)
           urllib.request.urlretrieve(url, p/'kirk_v4.pdf')
@@ -95,7 +105,6 @@ jobs:
               manifest.append(f'{slug}: {hits}')
               if not hits:
                   continue
-              # First exact declaration occurrence, with enough forward context to include proof.
               i=hits[0]
               lo=max(0,i-15); hi=min(len(lines),i+115)
               text='\n'.join(lines[lo:hi])+'\n'
