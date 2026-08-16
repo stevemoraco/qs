@@ -1,0 +1,132 @@
+name: YM Kirk v4 weak retained-root theorem audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-retained-root-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract the scale-local retained-root dependency chain
+        shell: bash
+        run: |
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          root = Path('source_audit/kirk_v4')
+          patterns = [
+              'Theorem 4.4',
+              'Theorem 4.6',
+              'Corollary 4.14',
+              'Theorem 5.27',
+              'Theorem 6.44',
+              'Theorem 7.2',
+              'Corollary 7.4',
+              'Lemma 8.1',
+              'Lemma 8.2',
+              'Lemma 8.3',
+              'Lemma 8.4',
+              'Lemma 8.5',
+              'Lemma 8.6',
+              'Corollary 8.7',
+              'Lemma 8.8',
+              'Theorem 8.9',
+              'Lemma 8.10',
+              'Theorem 8.11',
+              'one/two-root',
+              'preceding weak depth',
+              'permanent marked norm',
+          ]
+          files = []
+          for p in root.rglob('*.txt'):
+              try:
+                  raw = p.read_bytes()
+                  text = raw.decode('utf-8', errors='ignore')
+              except Exception:
+                  continue
+              files.append((p, raw, text))
+
+          out = []
+          manifest = []
+          for pat in patterns:
+              candidates = []
+              for p, raw, text in files:
+                  start = 0
+                  while True:
+                      i = text.find(pat, start)
+                      if i < 0:
+                          break
+                      lo = max(0, i - 12000)
+                      hi = min(len(text), i + 42000)
+                      context = text[lo:hi]
+                      after = text[i:i+6000]
+                      score = 0
+                      if re.match(re.escape(pat) + r'\s*\(', text[i:i+300]):
+                          score += 1000
+                      if 'Proof.' in after:
+                          score += 200
+                      if '\f' in context:
+                          score += 10
+                      if p.name in {'continuum_uniformity_ledger.txt','kirk_v4_connector_proof_contexts.txt','phrase_ledger.txt','LEDGER.txt','PHRASE_LEDGER.txt'}:
+                          score += 20
+                      score -= len(p.as_posix()) / 1000
+                      key = hashlib.sha256(re.sub(r'\s+', ' ', text[max(0,i-250):i+5000]).encode()).hexdigest()
+                      candidates.append((score, key, p, raw, text, i, lo, hi, context))
+                      start = i + 1
+              if not candidates:
+                  manifest.append(f'MISSING\t{pat}')
+                  continue
+              candidates.sort(key=lambda x: (-x[0], x[2].as_posix(), x[5]))
+              chosen = []
+              seen = set()
+              for c in candidates:
+                  if c[1] in seen:
+                      continue
+                  seen.add(c[1])
+                  chosen.append(c)
+                  if len(chosen) == 3:
+                      break
+              manifest.append(f'PATTERN\t{pat}\tCANDIDATES={len(candidates)}\tUNIQUE_SELECTED={len(chosen)}')
+              for rank, c in enumerate(chosen, 1):
+                  score, key, p, raw, text, i, lo, hi, context = c
+                  file_sha = hashlib.sha256(raw).hexdigest()
+                  out.append('\n' + '=' * 140)
+                  out.append(f'PATTERN: {pat}')
+                  out.append(f'SELECTION_RANK: {rank}')
+                  out.append(f'SCORE: {score}')
+                  out.append(f'SOURCE: {p.as_posix()}')
+                  out.append(f'SOURCE_SHA256: {file_sha}')
+                  out.append(f'CHAR_OFFSET: {i}')
+                  out.append(f'WINDOW: [{lo},{hi})')
+                  out.append('=' * 140)
+                  out.append(context)
+
+          Path('_audit_out/retained_root_contexts.txt').write_text('\n'.join(out), encoding='utf-8')
+          Path('_audit_out/retained_root_manifest.tsv').write_text('\n'.join(manifest)+'\n', encoding='utf-8')
+          if any(line.startswith('MISSING') for line in manifest):
+              print('\n'.join(manifest))
+              raise SystemExit('One or more target markers are missing')
+          PY
+          grep -n -E 'Theorem 4\.4|Theorem 4\.6|Corollary 4\.14|Theorem 5\.27|Theorem 6\.44|Theorem 7\.2|Corollary 7\.4|Lemma 8\.[1-8]|Corollary 8\.7|Theorem 8\.(9|11)|one/two-root|preceding weak depth|permanent marked norm' _audit_out/retained_root_contexts.txt > _audit_out/retained_root_key_lines.txt || true
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/retained_root_manifest.tsv
+          wc -c -l _audit_out/*
+      - name: Upload retained-root audit contexts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-retained-root-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
