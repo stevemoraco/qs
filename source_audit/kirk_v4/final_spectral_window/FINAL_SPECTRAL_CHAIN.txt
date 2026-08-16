@@ -1,0 +1,851 @@
+5900: 
+5901:                                                  1
+5902:                                                          
+5903:                             T (e0 (vR ); O) + Θ ∂ · vR ; O −→ 0       (R → ∞).
+5904:                                                  4
+5905: 
+5906: Proof. The stress and scalar source roots are centered by their vacuum rows. Their supports lie in the
+5907: cutoff annulus, at distance at least R − CO from the fixed insertions. The all-order physical source-tree
+5908: theorem gives a common bound
+5909:                                          CO (1 + R)M e−m(R−CO )
+5910: for some finite M ; the polynomial comes from the scaled cutoff profile and is dominated by the physical
+5911: exponential. Hence the annulus terms vanish.
+5912: Theorem 8.43 (Infinitesimal rotation Ward identity). For every ω ∈ so(4) and finite family of local
+5913: gauge-invariant fields,
+5914:                                Xn
+5915:                                    Sn (O1 , . . . , δω Oi , . . . , On ) = 0,                (165)
+5916:                                      i=1
+5917: 
+5918: where δω is the combined orbital and tensor-spin rotation derivation.
+5919: Proof. Apply (164) to vR . For large R, the contacts on the right are exactly the infinitesimal rotations
+5920: δω Oi . Lemma 8.42 sends the left side to zero.
+5921: 
+5922: Finite source multiplets and integration For every D < ∞, let J≤D be the finite-dimensional
+5923: renormalized curvature-jet source multiplet. The contact hierarchy preserves the engineering filtration.
+5924: On J≤D , δω is a finite matrix, allowing same-dimension composite-operator mixing.
+5925: Lemma 8.44 (Rotation algebra on finite source multiplets). The contact derivations obey
+5926: 
+5927:                                                [δω , δη ] = δ[ω,η]
+5928: 
+5929: on every J≤D and are compatible under D 7→ D + 2.
+5930: Proof. At finite cutoff the contact derivations are obtained by differentiating the geometric pullback of test
+5931: profiles, tensor indices and local source words. Geometric Lie derivatives obey the displayed commutator
+5932: identity exactly. Finite triangular source renormalization conjugates this finite-dimensional action and
+5933: therefore preserves the commutator. Dimension-raised regulator contacts vanish by Lemma 8.41; the
+5934: projective limit and the inclusions of source multiplets preserve the identity.
+5935:    Every finite-dimensional real representation of so(4) integrates to the simply connected group Spin(4).
+5936: The source multiplets consist of bosonic tensors built from curvature and covariant derivatives, so a 2π
+5937: rotation acts trivially; equivalently, their geometric tensor action factors through SO(4).
+5938: Theorem 8.45 (SO(4) covariance of the Schwinger family). Let ρD be the integrated finite-dimensional
+5939: action on J≤D . Then for every R ∈ SO(4),
+5940: 
+5941:                                   Sn (ρD (R)v1 , Rf1 ), . . . , (ρD (R)vn , Rfn )
+5942:                                                                                  
+5943: 
+5944:                                         = Sn (v1 , f1 ), . . . , (vn , fn ) .
+5945:                                                                            
+5946: 
+5947: 
+5948: Exact lattice reflection extends the covariance to O(4).
+5949: Proof. Along a smooth path R(s) in SO(4), differentiate the transformed Schwinger function. The
+5950: derivative is the left side of (165) with ω = R′ (s)R(s)−1 and therefore vanishes. Lemma 8.44 gives path
+5951: independence and the group law. Reflection is exact for the Wilson action, block map, clover source and
+5952: finite source normalization.
+5953: 
+5954: 
+5955: 
+5956:                                                        88
+5957: 
+5958: Osterwalder–Schrader continuation Let Dloc be the local field-polynomial test algebra. The O(4)
+5959: covariance proved above is an identity of the Euclidean Schwinger system. Rotations preserving the
+5960: chosen time-zero hyperplane act directly on the positive-time quotient; rotations mixing Euclidean time
+5961: with space need not preserve that quotient and are not asserted to act unitarily there.
+5962: Theorem 8.46 (Euclidean covariance and Poincaré reconstruction). The Schwinger family satisfies the
+5963: full O(4) covariance axiom. Together with reflection positivity, permutation symmetry, temperedness
+5964: and continuous translations, this gives by the Osterwalder–Schrader reconstruction theorem a strongly
+5965: continuous unitary representation of the proper orthochronous Poincaré group on the reconstructed Hilbert
+5966: space, with translation spectrum in the closed forward cone. Spatial rotations and translations are obtained
+5967: directly on the OS quotient; Lorentz boosts arise from analytic continuation of the Euclidean rotation
+5968: covariance.
+5969: Proof. Theorem 8.45 is precisely the Euclidean covariance identity required for every finite tensor/source
+5970: multiplet, and the nested source construction extends it to the complete chosen local field family. The
+5971: direct OS theorem, Lemma 8.14, and Lemma 8.13 supply the remaining reconstruction hypotheses,
+5972: including the linear-growth condition. The standard Osterwalder–Schrader covariance reconstruction
+5973: then produces the positive- energy Poincaré representation. No unitary action of a Euclidean rotation
+5974: that changes the reflection hyperplane is assumed on the intermediate OS quotient.
+5975: 
+5976: 9     Continuum reconstruction and spectral gap
+5977: 9.1    Osterwalder–Schrader reconstruction and clustering gap
+5978: The common Schwinger functional Let D be the countable algebra generated by positive-time
+5979: translates of the bounded positive-scale cylinders and the normalized finite local source fields constructed
+5980: by the marked hierarchy. The multiscale source-tree theorem supplies a projective Schwinger functional
+5981: S on D with the following properties:
+5982: (S1) temperedness and continuity in every Schwartz test tensor;
+5983: (S2) stationarity, gauge invariance, permutation symmetry, and reflection positivity;
+5984: (S3) continuous Euclidean translations;
+5985: (S4) for every two field polynomials F, G with separated supports,
+5986: 
+5987:                               |S(F G) − S(F )S(G)| ≤ CF,G e−m dist1 (supp F,supp G)                   (166)
+5988: 
+5989:      with one m > 0 independent of the chosen polynomials;
+5990: (S5) the OS linear-growth estimate of Lemma 8.13 on every finite source multiplet.
+5991: The constants CF,G may depend on the fixed fields and test functions; the exponent m does not.
+5992: Theorem 9.1 (Continuous OS reconstruction). Let Θ be time reflection and D+ the positive-time
+5993: subalgebra. The form
+5994:                                         ⟨F, G⟩OS = S(ΘF G)
+5995: is positive semidefinite. Its quotient and completion give a separable Hilbert space H, vacuum Ω = [1],
+5996: and a strongly continuous self-adjoint contraction semigroup
+5997: 
+5998:                                          T (t) = e−tH ,    H ≥ 0.
+5999: 
+6000: Proof. Reflection positivity gives the positive form and the null ideal N = {F : ∥F ∥OS = 0}. Positive-time
+6001: translations preserve D+ for sufficiently small translations on each compactly supported word and define
+6002: contractions on the quotient; the usual time-zero limiting argument extends them to all t ≥ 0. For a core
+6003: vector [F ],
+6004:                                         2
+6005:                       ∥T (t)[F ] − [F ]∥ = S(ΘF τ2t F ) − 2ℜS(ΘF τt F ) + S(ΘF F ),
+6006: which tends to zero by translation continuity. Contractivity and density give strong continuity on H.
+6007: Reflection symmetry makes the semigroup self-adjoint, and the spectral theorem gives T (t) = e−tH with
+6008: H ≥ 0.
+6009: 
+6010: Spectral consequence of one common clustering rate Let D+,0 be the centered positive-time
+6011: core,
+6012:                               D+,0 = {F ∈ D+ : S(F ) = 0}.
+6013: For F ∈ D+,0 let µF be the positive spectral measure of H in the vector [F ].
+6014: 
+6015: 
+6016:                                                      89
+6017: 
+6018: Lemma 9.2 (Core spectral support). For every F ∈ D+,0 ,
+6019: 
+6020:                                               supp µF ⊂ [m, ∞).                                       (167)
+6021: 
+6022: Proof. Let the time support of F lie in a fixed compact interval. For all sufficiently large t, the supports
+6023: of ΘF and τt F are separated by at least t − cF . Since S(F ) = 0, (166) and OS reconstruction give
+6024:                                Z ∞
+6025:                           0≤        e−tλ dµF (λ) = ⟨[F ], T (t)[F ]⟩ ≤ CF e−mt .                       (168)
+6026:                                   0
+6027: 
+6028: Fix ε > 0. Then
+6029:                                       e−(m−ε)t µF ([0, m − ε]) ≤ CF e−mt .
+6030: Multiplication by e(m−ε)t and t → ∞ gives µF ([0, m − ε]) = 0. Letting ε ↓ 0 proves (167).
+6031: 
+6032: Theorem 9.3 (Unique vacuum and complete local mass gap). The OS Hamiltonian satisfies
+6033: 
+6034:                                                H Ω⊥ ≥ m > 0.                                          (169)
+6035: 
+6036: The vacuum is unique.
+6037: Proof. The centered classes [F ] − S(F )Ω, F ∈ D+ , are dense in Ω⊥ . Lemma 9.2 says that the spectral
+6038: projection EH ([0, m − ε]) annihilates this dense set for every ε > 0; hence it vanishes on Ω⊥ . This proves
+6039: the absence of spectrum in (0, m).
+6040:    For a centered core vector, (168) tends to zero, so its spectral measure has no atom at zero. Density
+6041: then shows that EH ({0})H = CΩ. Thus the vacuum is unique and (169) holds.
+6042: 
+6043: 10     Nontriviality and finite spectral window
+6044: 10.1     Endpoint interpolation and reflected noncollapse
+6045: Let Yr (f ) be the tangent-normalized, Wick-centered scalar curvature source at physical scale r, with the
+6046: source root parallel transported in the normalized finite-jet frame. The test profile f is chosen once at
+6047: unit scale and dilated with the source so that its dimensionless support remains fixed and lies strictly in
+6048: positive Euclidean time.
+6049: Lemma 10.1 (Positive Gaussian OS norm). There is such a profile f for which
+6050: 
+6051:                                     V0 (f ) := S0 ΘYr (f ) Yr (f ) > 0.
+6052:                                                                   
+6053: 
+6054: 
+6055: The value is independent of r in the normalized frame.
+6056: Proof. At the Gaussian fixed point the centered scalar curvature composite creates a two-curvature Fock
+6057: vector. In Fourier variables its squared norm is an integral of the squared symmetrized two-particle
+6058: amplitude against the positive transverse curvature spectral density. That density is nonzero on an open
+6059: set, so choosing a positive-time profile whose Fourier transform is nonzero there gives a strictly positive
+6060: integral. Reflection positivity identifies the integral with the displayed OS form. Scale covariance of the
+6061: tangent-normalized source makes the value independent of r.
+6062: 
+6063: 10.2     Uniform endpoint interpolation
+6064: Theorem 10.2 (Uniform endpoint interpolation master theorem). Fix the positive-time profile f and a
+6065:                                                    √
+6066: physical weak scale r, put ur = u(r) and gr = ur , and use g rather than u = g 2 as the interpolation
+6067: parameter. For the complete finite-volume normalized reflected two-root functional, and also with one
+6068: fixed finite defect root, the following hold on the full segment 0 ≤ g ≤ gr :
+6069:     (i) the graph-segment identities are C 2 and exact before every limit;
+6070:    (ii) the stable/wrapping orbit rows, the pre-owner two-mark compact entrance row, and the terminal
+6071:         packet-shell row have constants independent of cutoff, volume, preceding weak depth, crossing cell,
+6072:         and terminal depth M ;
+6073:   (iii) differentiation is performed inside each fixed crossing cell before ownership, never on the crossing
+6074:         index, and the resulting total derivatives extend across cell boundaries;
+6075:   (iv) the no-crossing terminal remainder tends to zero through two g-derivatives uniformly as M → ∞.
+6076: 
+6077: 
+6078: 
+6079: 
+6080:                                                       90
+6081: 
+6082: Consequently there is one finite Cf , depending only on the fixed profile and finite source order, such that
+6083: 
+6084:                                   sup |Q
+6085:                                        b ′′r (g)| ≤ Cf ,          sup |Q
+6086:                                                                        b ′r (g)| ≤ Cf g,                 (170)
+6087:                               0≤g≤gr                             0≤g≤gr
+6088: 
+6089: uniformly in all cutoff and volume parameters. The same bound holds after one finite defect root. The
+6090: fixed dyadic r may then be inserted into the countable source algebra before the single common diagonal
+6091: extraction.
+6092: Proof. The exact graph segment and derivative identity are established immediately below. The weak-orbit,
+6093: crossing-cell, pre-owner compact-entrance, and terminal-shell estimates are collected in Theorem 10.4;
+6094: its single summable majorant controls the functional and its first two derivatives and includes the cell-
+6095: boundary and no-crossing limits. This proves the first estimate in (170). Exact evenness gives Q
+6096:                                                                                                b ′ (0) = 0,
+6097:                                                                                                  r
+6098: and integration gives the second. The common-diagonal statement follows from the compatibility argument
+6099: at the end of this subsection.
+6100: Lemma 10.3 (Existence of the graph-segment interpolation). After choosing r in the common weak
+6101: corridor, the segment 0 ≤ g ≤ gr lies in the same real marked domain. At finite cutoff and volume,
+6102: evaluate the exact interaction at (g 2 , R⋆ (g 2 )) and express its quadratic part relative to the fixed g = 0
+6103: grounded Gaussian. This gives a real C 2 family Vg,r with positive finite normalization. In fixed Gaussian
+6104: coordinates its complete local expansion has the exact grading
+6105:                            X
+6106:                    Vg,r =      g ν Vn,ν;r ,     ν ≥ max{n − 2, 0},       ν ≡ n (mod 2).                   (171)
+6107:                             n,ν
+6108: 
+6109: Here n is field degree. The Wilson row attains the lower exponent ν = n − 2; Haar, chart, coarea,
+6110: determinant, and graph-return rows carry additional nonnegative powers. The grading is read only after
+6111: each complete BRS/reflection packet is collected. The graph is C 3 in u, so g 7→ (g 2 , R⋆ (g 2 )) is C 2 at
+6112: g = 0. The Wilson word, Haar density, normal return, coarea, determinant, and finite Schur endpoint are
+6113: analytic in the physical field A = ga. After the Gaussian quadratic form is removed, a Wilson term of field
+6114: degree n carries g n−2 ; species without the g −2 Wilson prefactor carry higher powers. Analyticity under
+6115: A = ga and the even dependence of the graph coefficients on g give the congruence in (171). Gauge/ghost
+6116: partners and coordinate Jacobians are collected before the grading is read, so BRS and reflection relations
+6117: are retained. No C 1 statement in the squared coupling u is used. Finite-volume Gaussian equivalence and
+6118: the common analytic tube give positivity, integrability, and uniform C 2 control in g.
+6119:    The exact weak block therefore gives the normalized family
+6120: 
+6121:                                           F (A)e−Vg,r (A) dγr (A)
+6122:                                         R
+6123:                               ⟨F ⟩g,r =                           , 0 ≤ g ≤ gr ,                      (172)
+6124:                                              e−Vg,r (A) dγr (A)
+6125:                                            R
+6126: 
+6127: with V0,r = 0.
+6128:    Let qf ∈ P4 and O b + (f ) = ȷ4 qf be the fixed normalized curvature target. Using the complete filtered
+6129:                       r
+6130: source matrix at (g , R⋆ (g 2 )), define
+6131:                    2
+6132: 
+6133: 
+6134:                                                                  [D]
+6135:                                                +
+6136:                                               Oa;g,r (f ) := ιa,r;g2 (qf ).                              (173)
+6137: 
+6138: Exact transport gives
+6139:                                    +
+6140:                                   Og,r =O
+6141:                                         b + + E +,≤D + H +,>D = O
+6142:                                           r    g,r      g,r
+6143:                                                                 br+ + Dg,r
+6144:                                                                        +
+6145:                                                                            ,                             (174)
+6146: where
+6147:                                        +,≤D
+6148:                                   P≤D Eg,r  = Eg,r
+6149:                                                +,≤D
+6150:                                                     ,                       +,>D
+6151:                                                                        P≤D Hg,r  = 0.                    (175)
+6152:      −
+6153: Put Og,r = ΘOg,r
+6154:              +
+6155:                  and
+6156:                                              ±
+6157:                                             Yg,r := Og,r
+6158:                                                      ±       ±
+6159:                                                          − ⟨Og,r ⟩g,r 1.                                 (176)
+6160: Define
+6161:                             Qr (g) := ⟨Og,r
+6162:                                         −
+6163:                                             ; Og,r
+6164:                                                + c
+6165:                                                    ⟩g,r ,         b r (g) := ⟨O
+6166:                                                                   Q           b− ; O
+6167:                                                                                r
+6168:                                                                                    b + ⟩c .
+6169:                                                                                      r g,r               (177)
+6170: The exact change of variables A 7→ −A gives
+6171:                                                  b r (−g) = Q
+6172:                                                  Q          b r (g).                                     (178)
+6173: 
+6174: The principal curvature sources are fixed and reflection even; the measure depends on the physical
+6175: combination gA and on g 2 graph coefficients, while the Gaussian reference is even.
+6176: 
+6177: 
+6178:                                                             91
+6179: 
+6180: Exact g-derivative identity. At finite cutoff and volume,
+6181:                                 d
+6182:                                    Qr (g) = ⟨∂g Dg,r
+6183:                                                  −
+6184:                                                      ; Og,r
+6185:                                                         + c
+6186:                                                             ⟩ + ⟨Og,r−
+6187:                                                                           ; ∂g Dg,r
+6188:                                                                                 + c
+6189:                                                                                     ⟩
+6190:                                 dg
+6191:                                                  −
+6192:                                             − ⟨Og,r ; Og,r
+6193:                                                         +
+6194:                                                            ; ∂g Vg,r ⟩c .                               (179)
+6195: 
+6196: Use the normalized generating functional
+6197:                                                                        −        +
+6198:                                                           e−Vg,r +η− Og,r +η+ Og,r dγr
+6199:                                                       R
+6200:                               Wg,r (η− , η+ ) = log             R                      .                (180)
+6201:                                                                   e−Vg,r dγr
+6202: 
+6203: Differentiate first in g and then in the two source variables. The principal target is fixed; all source
+6204: motion is exactly ∂g D ± . The logarithm supplies the connected subtractions.
+6205: Theorem 10.4 (Endpoint packet-shell supplier). For the graph-segment family constructed above, the
+6206: complete twice-marked endpoint expansion has the following properties.
+6207:     (i) The grounded periodic covariance has volume-independent AA, AF , and F F rows of orders two,
+6208:         three, and four. After the exact global contact is subtracted, every complete reflection/BRS packet
+6209:         has two lattice-difference factors and therefore gains (r/ℓi )2 at weak scale i.
+6210:    (ii) The exact weak recurrence admits a finite crossing-cell decomposition. On each fixed cell, both g
+6211:         derivatives are taken before the labelled large-field partition and before bad-core ownership. The
+6212:         differentiated partition is then recollected with the same charged events and with no same-owner
+6213:         cancellation assumption.
+6214:  (iii) Before crossing, the full rooted stable map, including wrapping and charged-flat coordinates, is C 2
+6215:         in g with a strictly contracting same-order marked row. At first crossing, the fresh marked family
+6216:         lies in a uniform hybrid pivot–jet polydisc and satisfies the original-link Fourier–Wiener incidence
+6217:         row required by the joint Haar–optical collect.
+6218:   (iv) The crossing contribution and the no-crossing terminal contribution are controlled by one geometri-
+6219:         cally summable conditional-packet shell majorant. The same majorant controls the functional and
+6220:         its first two g derivatives, extends to the closed crossing cells, and sends the terminal remainder to
+6221:         zero uniformly as the terminal depth tends to infinity.
+6222: Consequently the complete normalized two-root functional, with or without one fixed dimension-six defect
+6223: root, has a cutoff-, volume-, crossing-cell-, and terminal-depth-independent C 2 bound on 0 ≤ g ≤ gr .
+6224: Proof. Appendix A gives the full proof inside this manuscript. Its five subsections establish the grounded-
+6225: torus covariance and globally subtracted packet division; the weak crossing recurrence and wrapping rows;
+6226: the twice-marked conditional-packet contraction; the pre-owner hybrid-polydisc Wiener and compact-
+6227: entrance estimates; and the terminal-shell summation. No additional mathematical input is imported
+6228: beyond the results proved in Sections 3–7.
+6229: 
+6230: Scale-uniform pullback defect row.            Uniformly for 0 ≤ g ≤ gr ,
+6231:                                             ±
+6232:                                           ∥Dg,r ∥r,[1] ≤ Cf r2 L(r)pf .                                 (181)
+6233: 
+6234: The same row holds after reflection and with every finite passive source mark used in the two-root stability
+6235: estimate.
+6236:                                       sup ∥Dg,r±
+6237:                                                  ∥r,[1] ≤ Cf r2 L(r)pf .                              (182)
+6238:                                       0≤g≤gr
+6239: 
+6240: The marked first-exit theorem and complementary high-jet source transport both begin two engineering
+6241: degrees above the fixed principal target. Their scale-normalized rows are therefore bounded by Cf r2 L(r)pf
+6242: uniformly on the common graph segment. This estimate uses no coupling derivative and so requires only
+6243: the already proved finite marked source bridge.
+6244: 10.3     Dimension-six source comparison and noncollapse
+6245: The exact source decomposition is
+6246:                                                 ±
+6247:                                                Og,r =O
+6248:                                                      br± + Dg,r
+6249:                                                             ±
+6250:                                                                 ,                                       (183)
+6251: with
+6252:                                              ±
+6253:                                            ∥Dg,r ∥[1] ≤ Cf r2 L(r)pf .                                  (184)
+6254: 
+6255: 
+6256: 
+6257:                                                           92
+6258: 
+6259: Two-root stability under the dimension-six defect. Let Q
+6260:                                                        b r (g) be the reflected connected form
+6261: formed with the fixed principal sources. Then
+6262: 
+6263:                                       |Qr (g) − Q
+6264:                                                 b r (g)| ≤ Cf r2 L(r)pf .                              (185)
+6265: 
+6266: Expand the connected two-root form using O± = O b ± + D ± . Every difference term contains a defect root
+6267: and is bounded by the two-root version of Theorem 10.2; the two-defect term is smaller.
+6268: 
+6269: Compatibility of the physical scale with the common diagonal. Let f be the profile of
+6270: Lemma 10.1, and let the constants Cf , pf be those in the uniform endpoint and source-defect rows
+6271: above. Choose the fixed countable source-scale set used in Corollary 8.12 to contain a cofinal dyadic
+6272: sequence rn ↓ 0. There is an index n such that, for r = rn ,
+6273:                                                          1
+6274:                                      Cf u(r) + r2 L(r)pf ≤ V0 (f ).
+6275:                                        
+6276:                                                           2
+6277: Before taking the common diagonal subsequence, enlarge the countable source algebra by the fixed fields
+6278: Yr (f ), ΘYr (f ), and their reflected product. The same single diagonal extraction then gives all Schwinger
+6279: limits entering their OS form and preserves every cutoff- and volume-uniform lower bound. The scale r is
+6280: not changed after extraction. The cofinal dyadic choice is countable, while u(r) → 0 and r2 L(r)pf → 0
+6281: along it. Hence one r satisfies the displayed inequality. Adding finitely many fields at that scale preserves
+6282: countability of the source algebra. The source-tree theorem and Corollary 8.12 therefore permit the
+6283: same diagonal argument, and convergence of the finitely many Schwinger functions passes a uniform
+6284: finite-cutoff lower bound to the limit.
+6285: Theorem 10.5 (Interacting-to-Gaussian reflected two-root comparison). For the profile of Lemma 10.1,
+6286: uniformly in cutoff, volume, and preceding ultraviolet depth,
+6287: 
+6288:                              |Sur (ΘYr (f )Yr (f )) − V0 (f )| ≤ Cf u(r) + r2 L(r)pf .                  (186)
+6289:                                                                                    
+6290: 
+6291: Consequently, for sufficiently small fixed dyadic r,
+6292:                                                             1
+6293:                                         ∥[Yr (f )]∥2OS ≥      V0 (f ) > 0.                             (187)
+6294:                                                             2
+6295: Proof. The master endpoint theorem, equivalently Theorem 10.2, and evenness give
+6296:                                                     Z gr
+6297:                               |Qr (gr ) − Qr (0)| ≤
+6298:                                b          b              Cf g dg ≤ Cf ur .
+6299:                                                            0
+6300: 
+6301: At g = 0 the law is the grounded tangent Gaussian and the principal source is the Gaussian Wick source,
+6302: so Q
+6303:    b r (0) = V0 (f ). Add the dimension-six source-defect estimate below; its source error is Cf r2 L(r)pf .
+6304: Choose r and the common subsequence by the compatibility argument above; the total error is then at
+6305: most V0 (f )/2. Reflection-positive recombination identifies the finite-cutoff form with the squared OS
+6306: norm, and the same lemma passes the lower bound to the common limit.
+6307: 
+6308: 10.4     Limiting curvature vector and finite spectral window
+6309: Lemma 10.6 (Survival of the reflected curvature vector in the common limit). Let Yr (f ) be a fixed
+6310: positive-time reflected local curvature functional. Suppose along the common diagonal subsequence:
+6311:    (i) every Schwinger function entering Sa,L (ΘYr (f )Yr (f )) converges;
+6312:   (ii) reflection-positive recombination has already been performed;
+6313:  (iii) uniformly in cutoff and volume,
+6314:                                                                     1
+6315:                                        Sa,L (ΘYr (f )Yr (f )) ≥       V0 (f ) > 0.
+6316:                                                                     2
+6317:    Then the limiting Osterwalder–Schrader vector
+6318: 
+6319:                                                 ψY = [Yr (f )]
+6320: 
+6321: is nonzero and satisfies
+6322:                                                                          1
+6323:                             ∥ψY ∥2OS = lim Sa,L (ΘYr (f )Yr (f )) ≥        V0 (f ) > 0.
+6324:                                                                          2
+6325: 
+6326:                                                        93
+6327: 
+6328: Proof. The OS norm of this fixed local polynomial is a finite linear combination of the convergent limiting
+6329: Schwinger functions. Therefore its finite-cutoff values converge to the limiting quadratic form. The
+6330: uniform positive lower bound passes to the limit.
+6331: Corollary 10.7 (Finite positive local spectral window without Wilson pushforward). Let ψY be the
+6332: nonzero limiting curvature vector from Lemma 10.6. If common physical clustering and the OS spectral
+6333: argument give
+6334:                                     supp µY ⊂ [m⋆ , ∞),  m⋆ > 0,
+6335: then there exists a finite MY ≥ m⋆ such that
+6336: 
+6337:                                            µY ([m⋆ , MY ]) > 0.
+6338: 
+6339: No exact Wilson pushforward, Wilson moment identity, or reducing retained Hilbert subspace is used.
+6340: 
+6341: Proof. The finite spectral measure has total mass
+6342: 
+6343:                                     0 < µY ([m⋆ , ∞)) = ∥ψY ∥2OS < ∞.
+6344: 
+6345: Since [m⋆ , n] ↑ [m⋆ , ∞), continuity from below implies that some finite n has positive mass. Set
+6346: MY = n.
+6347: 
+6348: 11     Completion for arbitrary fixed compact simple gauge groups
+6349: Theorem 11.1 (Completion of the fixed-group construction). For every fixed compact connected simple
+6350: G and faithful unitary representation ρ, the group register CG is finite and all hypotheses consumed by
+6351: Sections 2–10 are satisfied. Consequently Theorem 1.1 holds.
+6352: Proof. Compactness and the analytic bi-invariant geometry give the Karcher, logarithm, coarea, and
+6353: faithful-action constants of Section 2. The complete folded block symbol is spacetime-only and tensors
+6354: with Ig , so the strict right-inverse and optical coercivity constants are unchanged. The chart complement
+6355: is charged by the faithful Wilson action and the irregular activity is exponentially small. The permanent
+6356: weak map, centered graph, and BPHZL packet use the same finite-dimensional Lie-algebra tensor calculus,
+6357: with the universal color factor CA (G).
+6358:    The Peter–Weyl spectral sum converges at the fixed order sG , and the higher hybrid-polydisc argument
+6359: supplies the one-pivot nuclear and multipivot Fourier–Wiener rows. The ordinary-periodic toron, seam,
+6360: reflection, and wrapping templates are admitted by Theorem D.3; no twisted sector or finite-volume bundle
+6361: sum is used. The invariant-jet theorem supplies the complete low-dimensional mixing and dimension-six
+6362: regulator spaces. The joint Haar–optical forest, source transport, Ward hierarchy, OS reconstruction,
+6363: and noncollapse theorem then apply with constants depending on G but uniform in cutoff, volume, and
+6364: directed depth. Appendix F, specifically Table 3, records every independent entry of CG , the first proof
+6365: call at which its G-dependence enters, and the subsequent consumers. Thus no additional estimate
+6366: uniform in G is hidden in this completion step: after those finite calls, each remaining mechanism is
+6367: color-free, tensors with Ig , or takes a finite maximum in a registered finite-dimensional space.
+6368: Corollary 11.2 (The SU(N ) family). For every fixed integer N ≥ 2, the theorem holds for G = SU(N )
+6369: in the defining representation, and the scale-two map is
+6370:                                                11N log 2
+6371:                              u(2L) = u(L) +              u(L)2 + ON (u(L)3 ).
+6372:                                                  24π 2
+6373: No estimate uniform as N → ∞ is asserted.
+6374: Remark 11.3 (Logical scope). The construction is a fixed-group theorem. The directed subsequence,
+6375: curvature-jet observable scope, and absence of a large-rank uniformity claim are part of the statement,
+6376: not omitted conclusions.
+6377: 
+6378: A     Endpoint packet-shell verification
+6379: This appendix supplies the detailed proof of Theorem 10.4. It is part of the same manuscript and
+6380: uses the standing uniformity convention of Section 1. The main text isolates the logical endpoint
+6381: theorem; the statements below retain the full finite-volume, crossing-cell, pre-owner, compact-entrance,
+6382: and terminal-shell verification needed for that theorem.
+6383: 
+6384: 
+6385:                                                     94
+6386: 
+6387: A.1     Grounded covariance, contact subtraction, and weak admission
+6388:                                                                   (L)
+6389: Lemma A.1 (Grounded-torus curvature covariance). Let Cr be the zero-mode-removed transverse
+6390: covariance remaining after the weak flow is stopped at scale r on a periodic torus of side L ≥ 4r. For
+6391: j = 0, 1, 2,
+6392:                            |∇j Cr(L) (x, y)| ≤ Cj r−2−j (1 + dL (x, y)/r)−(2+j) ,
+6393: with constants independent of L. The corresponding AA, AF , and F F rows have decay orders two, three,
+6394: and four.
+6395:                 (L)  R∞
+6396: Proof. Write Cr = r2 (e−t∆L − Π0 )ΠT dt. For t ≤ L2 , periodization gives
+6397:                                 (L)                                2
+6398:                              |Kt (x, y) − L−4 | ≤ Ct−2 e−cdL (x,y) /t + CL−4 ,
+6399: and derivative rows without the constant term. For t ≥ L2 , use the nonzero spectral gap. The
+6400: transverse projector commutes with the heat semigroup and has the standard scalar-plus-two-derivative
+6401: representation. Integration gives the stated rows; the scalar L−4 contribution is O(L−2 ) and is absorbed
+6402: because dL ≤ 2L.
+6403: Definition A.2 (Globally subtracted even packet kernels). Let Tµν        ab
+6404:                                                                             (p) be the complete two-open-leg
+6405: coefficient of the normalized generating functional after all longitudinal, ghost, determinant, normalization,
+6406: and source contacts have been included. The background Ward identity identifies its exact local contact
+6407: T (0). Define T ren (p) = T (p) − T (0) before any absolute value is taken.
+6408:    A packet selector is a scalar, color-blind, translation-covariant and reflection-invariant function of the
+6409: exact conditional scale labels and reported support geometry. Apply such a selector     Ponly after the whole
+6410: BRS/reflection packet and its normalization contacts have been collected. If T = λ Tλ is the resulting
+6411: disjoint packet decomposition, absolute convergence gives the exact allocation
+6412:                                                     X
+6413:                                         T ren (p) =    Tλ (p) − Tλ (0) .
+6414:                                                                       
+6415: 
+6416:                                                    λ
+6417: 
+6418: No cut through an individual packet and no shellwise Ward identity is used.
+6419: Lemma A.3 (Exact even-contact division of complete packets). For every complete packet class λ,
+6420: the one-open-leg coefficient vanishes by global color invariance. The renormalized two-open-leg packet is
+6421: reflection even, vanishes at p = 0, and admits the exact second-order division
+6422:                                                       X
+6423:                                     Tλ (p) − Tλ (0) =    pbα pbβ Sλ,αβ (p).                        (188)
+6424:                                                        α,β
+6425: 
+6426: For every 0 < a′ < a0 , the rooted norm of Sλ is bounded by the second support moment of the same
+6427: complete packet at exponent a0 .
+6428:    If the complete packet is represented at weak scale i, the two displayed difference factors carry the
+6429: canonical relative factor
+6430:                                              (r/ℓi )2 = 2−2i                                       (189)
+6431: with respect to the fixed physical source scale r. This factor belongs to the whole packet. It is not assigned
+6432: to a chosen branch or attachment cut.
+6433: Proof. The selector is inserted only after the exact normalized packet is formed and is scalar under color,
+6434: translation and aligned reflection. Hence every selected sum is again a complete packet. Its one-open-leg
+6435: coefficient is an invariant adjoint vector and therefore vanishes. Global contact subtraction is allocated
+6436: after the disjoint packet decomposition, so each selected renormalized coefficient vanishes at p = 0.
+6437: Reflection gives Tλ (−p) = Tλ (p) and therefore removes the linear Taylor term. The integral Taylor
+6438: formula, or equivalently finite Laurent telescoping in the variables eipα , gives (188). Two momentum
+6439: derivatives insert two support displacements, absorbed by the unused exponent a0 − a′ .
+6440:    The divided packet has no reflection-even scalar or rank-two local component of engineering dimension
+6441: four or five. Lemmas 5.22 and 5.23 therefore place its local projection in the stable degree-six block; this
+6442: observation will be used only for stable membership, not to estimate the nonlocal packet.
+6443:    The scale factor in (189) is instead purely geometric. In the tangent-normalized profile coordinates, one
+6444: lattice difference at representation scale ℓi = 2i r is (r/ℓi ) times the corresponding unit-scale difference.
+6445: The two explicit factors in (188) therefore contribute exactly (r/ℓi )2 = 2−2i . The two support moments
+6446: of Sλ are absorbed by the unused rooted exponent. This argument applies to the whole packet, local and
+6447: nonlocal together. Since the division identity holds for the entire C 2 family, zero, one or two g derivatives
+6448: do not remove the two explicit differences.
+6449: 
+6450: 
+6451:                                                        95
+6452: 
+6453: Lemma A.4 (g-marked one-scale admission). There is g0 > 0 such that, for real 0 ≤ g ≤ g0 , the complete
+6454: normalized interaction and all declared source/defect marks are twice continuously differentiable in the
+6455: permanent regulator space. An undistinguished non-Gaussian child has parent-normalized row
+6456: 
+6457:                                                  η0 (g) ≤ Cg,
+6458: 
+6459: while a child carrying one or two distinguished g derivatives has row
+6460: 
+6461:                                               η1 (g) + η2 (g) ≤ C.
+6462: 
+6463: The exactly recombined large-field/irregular row and its first two g derivatives extend continuously by zero
+6464:                                              2
+6465: at g = 0 and are bounded by Cm g −pm e−c/g for m ≤ 2. No claim that an attached odd child is O(g 2 ) is
+6466: made.
+6467: Proof. In the scale-normalized Gaussian coordinate, the cubic Yang–Mills species starts at order g, the
+6468: quartic and other non-Gaussian even species start at order g 2 , and the common species tube controls
+6469: all field and source marks. Thus an unmarked species row is Cg, while one or two explicit g derivatives
+6470: remove at most the corresponding powers and give a finite row. The regulator allocations are additive
+6471: under multiplication, and the Gram and Pruefer estimates in the summed replica–BKAR theorem are
+6472: insensitive to the parity of an attached tensor. The ordinary parent-normalized child recursion therefore
+6473: closes for Cg0 below its printed threshold, with two fixed derivative marks handled by Leibniz. The
+6474: C 3 -flat irregular estimate in u = g 2 gives the displayed first and second g-derivative rows after the chain
+6475: rule. In particular the model child gA3 differentiated once by a covariance edge is correctly admitted as
+6476: an O(g) child, and one g derivative of that child is O(1).
+6477: Lemma A.5 (Cellwise complete shell decomposition). Fix the finite directed depth M and one crossing
+6478: cell, including the no-crossing cell. After the selected exact factorization has been completed, apply the
+6479: canonical reported-support selector only to whole normalized packets. The separated part of the two-root
+6480: functional has an exact disjoint decomposition
+6481:                                                        X
+6482:                                           Qb sep (g) =    FM,k (g)                                   (190)
+6483:                                              r,M
+6484:                                                        k≥0
+6485: 
+6486: whose coefficients are C 2 on the relative interior of that cell. Every normalization, denominator, localiza-
+6487: tion, irregular and source-motion contact belongs to exactly one selected packet. No assertion that the
+6488: individual coefficients FM,k agree for two different stopping factorizations is needed or made.
+6489: Proof. At fixed finite volume and depth, the reporting-telescope and owner-map identities form a disjoint
+6490: finite or absolutely convergent inventory of complete normalized packets. Their canonical physical reported
+6491: supports therefore admit disjoint scalar dyadic selectors after packet completion. Inside one crossing
+6492: cell the stopping depth and exact factorization are fixed, so the graph-segment C 2 identity and the
+6493: finite marked forest permit termwise differentiation. Summing the selectors gives the unselected exact
+6494: functional, proving (190).
+6495: Definition A.6 (Finite directed continuation and crossing cells). Fix the physical weak scale r, its
+6496:                √
+6497: endpoint gr = ur , and an arbitrary finite further directed depth M . Choose one terminal coarse side
+6498: Mout and set Mi = 2M −i Mout . The side is first chosen admissible for Lemma 6.1 and is enlarged once,
+6499: independently of M , to satisfy the fixed-torus smallness threshold of Theorem A.9. For every 0 ≤ g ≤ gr ,
+6500: use the exact weak recurrence
+6501: 
+6502:                u0 (g) = g 2 ,    ui+1 (g) = Fi (ui (g)),   gi (g) = ui (g),   0 ≤ i < M.
+6503:                                                                    p
+6504: 
+6505: Let
+6506:                                   NM (g) := min{0 ≤ i ≤ M : ui (g) ≥ ū},
+6507: with NM (g) = ∞ if the set is empty. Uniform outgoing transversality implies that, when NM (g) < ∞,
+6508: 
+6509:                                ui (g) < ū   (i < NM (g)),      uNM (g) (g) ∈ I⋆ .
+6510: 
+6511: The relative interiors of the sets on which NM (g) = N are called the crossing cells. On such a cell the
+6512: exact factorization consists of N weak conditionals followed by the printed finite macrobridge and joint
+6513: compact–optical logarithm. On the no-crossing cell it consists of all M weak conditionals followed by the
+6514: terminal weak logarithm on the fixed coarse torus.
+6515: 
+6516: 
+6517:                                                       96
+6518: 
+6519:    This is a choice of exact factorization, not a modification of the measure. The integer NM (g) is never
+6520: differentiated. Derivatives are taken inside one crossing cell, where the depth is fixed, and are extended
+6521: to cell boundaries using the original finite-volume C 2 normalized functional. At g = 0 one always uses
+6522: the no-crossing factorization and later sends M → ∞.
+6523: Definition A.7 (Canonical finite-volume off-graph coordinates). For the directed schedule in Defini-
+6524: tion A.6, put
+6525:                            εi := e−σMi ,     δi := δG (Mi ),    Mi = 2M −i Mout .
+6526: The first quantity records genuine wrapping histories in the interaction; the second records the scalar
+6527: massless finite-size comparison. After each complete connected output has been formed and assigned its
+6528: canonical reported hull, let Piwr select precisely the history certificates containing at least one periodic
+6529: wrapping occurrence at some scale not later than i. If Ri is the exact finite-volume centered interaction
+6530: and R⋆ (ui ) is the rooted-thermodynamic invariant graph, set
+6531: 
+6532:                       Ωi := Ri − R⋆ (ui ),       Wi := Piwr Ωi ,     Bi := (I − Piwr )Ωi .               (191)
+6533: 
+6534: Thus Ωi = Wi + Bi coefficientwise. Both Ri and R⋆ (ui ) are written in the same exact schedule-fixed
+6535: vacuum and tangent-normalized coupling coordinates. The coordinate intertwining and supportwise
+6536:                                     [2]
+6537: extraction identity therefore give EX Ωi,X = 0 for every reported support X; all three off-graph coordinates
+6538: lie in the actual centered stable fiber. The first coordinate is the canonical sum of histories carrying a
+6539: wrapping certificate. After the tangent-normalized scalar coordinate is extracted, the massless acoustic
+6540: sum–integral correction belongs to the nonautonomous scalar map Fi and is not an off-graph activity.
+6541: By the exact regular interaction comparison and label recombination, the only nonwrapping off-graph
+6542: difference is the slaved U4 charged/atlas complement; this is Bi and is exponentially flat in ui . No flat
+6543: charged coefficient is identified with a wrapping history.
+6544: A.2     Weak recurrence, wrapping control, and crossing cells
+6545: Lemma A.8 (Full rooted finite-torus stable-map comparison). Let Φi (u, R) be the exact scheduled
+6546: one-step map on the centered stable interaction after the vacuum, complete two-jet and tangent-normalized
+6547: coupling coordinates have been extracted, and let Φ∞ (u, R) be the rooted-thermodynamic map in the same
+6548: coordinates. After decreasing the σ in Definition A.7 once, there are c0 > 0 and finite constants such that
+6549: 
+6550:                         ∥Φi (u, R⋆ (u)) − Φ∞ (u, R⋆ (u))∥⋆ ≤ Cεi u + Cu−P e−c0 /u ,                      (192)
+6551:                      ∥{DR Φi (u, R) − DR Φ∞ (u, R)}H∥⋆ ≤ C{εi + u−P e−c0 /u }∥H∥⋆ .                      (193)
+6552: 
+6553: Moreover, after projecting the output to histories with a periodic certificate,
+6554:                       wr
+6555:                     ∥Pi+1 [Φi (u, R⋆ (u)) − Φ∞ (u, R⋆ (u))]∥⋆ ≤ Cεi+1 {u + u−P e−c0 /u },                (194)
+6556:                                        wr
+6557:                                    ∥Pi+1  DR Φi (u, R)Hnw ∥⋆ ≤ Cεi+1 ∥Hnw ∥⋆                             (195)
+6558: 
+6559: whenever Hnw has no prior wrapping certificate. The same two rows hold after zero, one or two physical
+6560: g marks along any no-crossing trajectory. In the marked operator row, the coefficient of the same-order
+6561: marked input is still C{εi + u−P
+6562:                               i e
+6563:                                   −c0 /ui
+6564:                                           }; every term in which a mark hits the map, the scalar trajectory,
+6565: a projector or a newly created periodic atom is a lower-order forcing term bounded by
+6566:                                        1−m/2
+6567:                       Cm (i + 2)pm εi ui       + Cm (i + 2)pm u−P
+6568:                                                                i
+6569:                                                                   m −c0 /ui
+6570:                                                                    e        ,     m ≤ 2.                 (196)
+6571: 
+6572: All constants are uniform in cutoff, original volume and finite directed depth.
+6573: Proof. Use the complete labelled connected-history representation before forgetting owners. In the
+6574: scheduled torus and in the rooted thermodynamic step, pair a history whenever its canonically reported
+6575: hull has an injective periodic lift and contains no charged atlas label. The local Karcher, Gaussian, coarea,
+6576: determinant, localization, extraction and collect templates are then literally the same, so paired histories
+6577: and their derivatives cancel coefficientwise. An unpaired regular history has a nontrivial periodic cycle;
+6578: its reported hull has length at least cMi . Weakening the permanent rooted support exponent once gives
+6579: Ce−σ0 Mi . An unpaired charged history belongs to the exactly recombined U4 row and is Cu−P e−c0 /u .
+6580:    For (193), insert H as one distinguished input atom before the connected logarithm. The permanent
+6581: one-step derivative envelope is a rooted absolute sum with that atom retained once. The same periodic-lift
+6582: pairing applies, and the long hull still pays e−σ0 Mi ; no derivative can shorten the already assigned reported
+6583: hull. Vacuum, two-jet and coupling extraction are finite-range linear maps and are paired in the same way.
+6584: 
+6585: 
+6586:                                                        97
+6587: 
+6588: Passing to the adapted norm is harmless: that norm is a fixed finite sum of rooted norms of powers of the
+6589: rooted-thermodynamic linear map, and each power preserves the preceding paired/unpaired classification.
+6590:    At R = R⋆ (u), the free term cancels because both maps are written in the same schedule-fixed vacuum
+6591: coordinates. The stable tangent uH1 is exponentially local but need not have finite support, so an
+6592: unpaired periodic image may already be of order εi u. This sharp row gives (192); no quadratic stable
+6593: cancellation is asserted. If the output is projected to the wrapping ideal, a charged history without a
+6594: prior periodic certificate must also acquire a new nontrivial periodic cycle. It therefore pays both the
+6595: charged flat row and εi+1 . The same observation applied to a nonwrapping distinguished input proves
+6596: (194) and (195). These are statements about the full centered interaction map, not inferences from the
+6597: scalar comparison.
+6598:    Finally differentiate the labelled identities before summing histories. A g mark either stays on the
+6599: distinguished input or hits one of finitely many local atoms, the scalar orbit, the extraction projector,
+6600: or a new periodic connector. In the first case the same pairing proves the same-order coefficient in the
+6601: statement. In every other case the marked child row and the trajectory ledger give the polynomial factor,
+6602: while the periodic hull or charged event remains present. This proves (196) through two marks.
+6603: 
+6604: Theorem A.9 (Fixed-torus no-crossing recurrence and off-graph supplier). There are unc > 0, εnc > 0,
+6605: δnc > 0, 0 < ρwr < 1, and finite constants Kwr , Cm , pm with the following property. Choose
+6606: 
+6607:                             ū ≤ unc ,      e−σMout ≤ εnc ,      δG (Mout ) ≤ δnc .
+6608: 
+6609: For every finite depth M and every no-crossing cell, the exact scheduled scalar maps satisfy, for q = 0, 1, 2
+6610: and 0 ≤ u ≤ ū,                                                                  
+6611:                         ∂uq {Fi (u) − u − b⋆ u2 } ≤ Cq u3−q + δi u2−q + u−pq e−c/u ,                  (197)
+6612: 
+6613: with the flat term extended by zero at u = 0. After decreasing unc and δnc and εnc once, there are constants
+6614: b− , b+ , c− > 0, independent of M and i, such that
+6615: 
+6616:                                  b− u2 ≤ Fi (u) − u ≤ b+ u2 ,                                          (198)
+6617:                               1 + b− u ≤ Fi′ (u) ≤ 1 + 3b⋆ u,       |Fi′′ (u)| ≤ C,                    (199)
+6618:                                           1       1
+6619:                                    c− ≤       −      ≤ b+        (ui > 0).                             (200)
+6620:                                          ui     ui+1
+6621: 
+6622: Consequently, if uM < ū, then
+6623:                                                  1
+6624:                                   ui ≤                     ,     0 ≤ i ≤ M.                            (201)
+6625:                                          ū−1 + c− (M − i)
+6626: 
+6627: No condition of the form εi ≤ ui is used for the wrapping wedge; scalar transversality uses only the fixed
+6628: smallness of δG (Mout ).
+6629:   The canonical wrapping coordinate remains in the enlarged weak wedge
+6630: 
+6631:                                            ∥Wi ∥⋆;a;3,N ≤ Kwr εi ui ,                                  (202)
+6632: 
+6633: and, through two g marks,
+6634:                                                                1−m/2
+6635:                          ∥∂gm Wi ∥⋆;a;3,N ≤ Cm (i + 2)pm εi ui         ,   m = 0, 1, 2.                (203)
+6636: 
+6637: The complementary charged/atlas coordinate obeys, for some cflat > 0 and finite Pm ,
+6638: 
+6639:                       ∥∂gm Bi ∥⋆;a;3,N ≤ Cm (i + 2)pm u−P
+6640:                                                        i
+6641:                                                           m −cflat /ui
+6642:                                                            e           ,      m = 0, 1, 2,             (204)
+6643: 
+6644: with every right side extended by zero at ui = 0. The wrapping coordinate and its first g derivative vanish
+6645: at the Gaussian endpoint; its second g derivative is uniformly O(εi ). The charged/atlas coordinate remains
+6646: flat through two marks. The full finite-volume entrance R⋆ (ui ) + Wi + Bi therefore stays in one common
+6647: enlarged weak ball, with its zero-, one-, and two-mark rows, uniformly in M , cutoff, and original volume.
+6648: 
+6649: Proof. Lemma 5.5 gives the finite-volume comparison
+6650:                                                                     
+6651:                  |∂uq (Fi − F∞ )(u)| ≤ Cq δi u2−q + u3−q + u−pq e−c/u ,               q ≤ 2.
+6652: 
+6653: 
+6654: 
+6655:                                                       98
+6656: 
+6657: The rooted-thermodynamic map satisfies F∞ (u) = u + b⋆ u2 + OG (u3 ) through two derivatives. The
+6658: irregular row is C 3 -flat, so, on a smaller interval, its qth derivative is bounded by an arbitrarily small
+6659: multiple of u3−q . Choose first unc and then Mout so that the cubic, flat, and δi ≤ δG (Mout ) coefficients
+6660: use at most one quarter of the positive b⋆ margin. This proves (197)– (199). Writing Fi (u) = u + βi (u)u2
+6661: with b− ≤ βi ≤ b+ gives
+6662:                                            1      1          βi (u)
+6663:                                              −         =              ,
+6664:                                            u Fi (u)       1 + βi (u)u
+6665: which proves (200); summation backward from uM < ū gives (201). Thus the reciprocal row is proved on
+6666: the actual fixed-depth schedule and no longer by adjoining a different orbit.
+6667:    It remains to control the interaction rather than only its scalar coordinate. By Lemma 3.29, a history
+6668: certificate which already contains a periodic occurrence remains periodic after every exact collect, so the
+6669: old wrapping histories form an output ideal. Let q⋆ < 1 be the full nonlinear rooted-thermodynamic
+6670: stable Lipschitz constant on the chosen weak ball supplied by Theorem 4.30 and the adapted one-step
+6671: mean-value contraction following (29). The operator row (193) gives on the finite torus
+6672: 
+6673:                              ∥DR Φi (u, R)H∥⋆ ≤ {q⋆ + C(εi + u−P e−c/u )}∥H∥⋆ .
+6674: 
+6675: Choose first the weak interval and then Mout so that the bracket is one fixed ρwr < 1 for every scheduled
+6676: step. The projected creation row (194), the corresponding projected scalar graph displacement, and (195)
+6677: applied to Bi give
+6678: 
+6679:                        ∥Wi+1 ∥⋆ ≤ ρwr ∥Wi ∥⋆ + Cεi+1 ui+1 + Cεi+1 ∥Bi ∥⋆ ,              ρwr < 1.               (205)
+6680: 
+6681: The initial finite/rooted comparison has the same forcing row. On the chosen weak interval the flat
+6682: bound for Bi is smaller than ui ; no comparison between the flat row and εi is used. Since εi ≤ εi+1 and
+6683: ui ≤ ui+1 , geometric convolution proves (202).
+6684:    Differentiate the exact labelled recurrence before forgetting its history certificate. Lemma A.8 gives
+6685: the same coefficient ρwr on the same-order marked old wrapping packet. Every other mark placement is
+6686:                                                                                (m)
+6687: lower triangular in mark order and has the forcing row (196). Thus, with Wi         = ∥∂gm Wi ∥⋆ ,
+6688: 
+6689:             (m)            (m)             (0)         (m−1)                          1−m/2
+6690:          Wi+1 ≤ ρwr Wi           + P m Wi , . . . , W i          + Cm (i + 2)pm εi+1 ui+1      ,   m = 1, 2,
+6691: 
+6692: where Pm has no constant or same-order term. The scalar derivative rows and the factorization ui (g) =
+6693: g 2 ψi (g 2 ) bound every lower-order term by the same polynomially weighted forcing. Induction in m and
+6694: geometric convolution prove (203).
+6695:     The remaining nonwrapping difference is not put into the wrapping ideal. The scalar massless finite-size
+6696: term is already retained in Fi and does not enter the off-graph coordinate. The exact regular interaction
+6697: comparison, together with Theorem 3.31 and the twice-g-marked flat row of Lemma A.4, identifies it with
+6698: the recombined U4 charged/atlas coordinate and gives the required rows through order two. Composing
+6699: with ui (g) = g 2 ψi (g 2 ) and absorbing the finite powers created by the chain rule into u−P
+6700:                                                                                             i
+6701:                                                                                                m
+6702:                                                                                                  proves (204);
+6703: flatness makes the extension at ui = 0 C . Finally choose unc and εnc so that R⋆ (u) + W + B lies
+6704:                                                  2
+6705: 
+6706: strictly inside the reproduced weak ball. Marked rows are distinguished forcing rows; only the unmarked
+6707: interaction is used for admission.
+6708: 
+6709: A.3     Twice-marked conditional packets and even-contact contraction
+6710: Lemma A.10 (Cellwise half-power and two-mark ledger). There are constants Cm and finite exponents
+6711: pm such that, uniformly in M , in the crossing cell, and in every index before the selected terminal factor,
+6712:                       i                                                         i
+6713:                       X                                                         X                 √
+6714:                           uh (g) ≤ C log(i + 2),                                      |gh (g)| ≤ C i + 1,      (206)
+6715:                        h=0                                                      h=0
+6716:         |∂gm ui (g)| + |∂gm gi (g)| ≤ Cm (i + 2)pm ,      m = 0, 1, 2.                                         (207)
+6717: 
+6718: The same estimates hold on the no-crossing cell through i = M .
+6719: Proof. On a cell with crossing depth N , the reciprocal comparison from Theorem 6.4 gives ui (g) ≤
+6720: C(N − i + A)−1 before the crossing. On the no-crossing cell the direct fixed-schedule estimate (201) gives
+6721: the same row with N replaced by M ; no extension of the nonautonomous schedule is made. Summation
+6722: gives (206).
+6723: 
+6724: 
+6725:                                                            99
+6726: 
+6727:    For crossing cells use the printed marked C 3 orbit row. For the no-crossing cell use (199). In either
+6728: case every Fi fixes zero, has positive derivative, and can be written as Fi (u) = uϕi (u) with ϕi positive and
+6729: uniformly C 2 . Its finite composition therefore factors as ui (g) = g 2 ψi (g 2 ) with ψi > 0. Differentiating
+6730: the exact recurrence twicep and using Fi (ui ) ≤
+6731:                                            ′
+6732:                                                     1 + Cui and |Fi′′ (ui )| ≤ C gives polynomial growth in i.
+6733: Consequently gi (g) = g ψi (g ) is an odd C function and no 1/g singularity occurs at the Gaussian
+6734:                                 2                2
+6735: 
+6736: endpoint. The interaction marks required by the finite conditional forest are simultaneously controlled by
+6737: (203) and (204). All constants are uniform on the compact first-crossing interval and on the enlarged
+6738: no-crossing weak wedge.
+6739: Lemma A.11 (Exact finite-depth twice-marked conditional forest). At finite directed depth M , differen-
+6740: tiate the exact factorization of Definition A.6 with respect to the two curvature roots and at most two
+6741: copies of g. The result is a finite sum of complete scale-labelled packet trees such that:
+6742:     (i) the two source leaves have one unique lowest common ancestor;
+6743:    (ii) each g mark is owned exactly once by a trajectory coordinate, a conditional logarithm, a source
+6744:         return, the terminal weak logarithm, or the compact handoff logarithm;
+6745:   (iii) every covariance edge, hard-core derivative, field factorial, regulator allocation and normalization
+6746:         contact belongs to one complete one-step packet before multiscale composition;
+6747:   (iv) the coefficients are exactly those of the Banach-valued Faà di Bruno formula.
+6748: No infinite-depth passage is asserted in this lemma.
+6749: Proof. Apply the joint-cumulant derivative identity to every exact normalized weak conditional and, on
+6750: a crossing cell, to the exact finite macrobridge and joint compact–optical logarithm. Then apply the
