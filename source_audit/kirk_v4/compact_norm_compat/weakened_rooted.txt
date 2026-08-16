@@ -1,0 +1,211 @@
+===== weakened_rooted 1/1 @ 96222 =====
+                                         !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                                                                                 Pi
+                                       X
+                           EΣ exp               ⟨ζi , Bi ζi ⟩       ≤ exp                                              .
+                                            i
+                                                                                   1 − 2∥C∥∥             i Bi ∥
+
+
+
+
+                                                                     23
+Let X = B 1/2 ΣB 1/2 . The Gaussian determinant formula gives
+
+                                            Ee⟨ζ,Bζ⟩ = det(I − 2X)−1/2 .
+
+Since X ⪰ 0,
+                                        1                    Tr X
+                                       − log det(I − 2X) ≤          .
+                                        2                  1 − 2∥X∥
+Apply the lemma.
+Lemma 4.3 (Pruefer factorial identity). For n ≥ 2,
+                                    n
+                               1 X Y                 1     3n − 3
+                                                                 
+                                       dT (i)! =                    ≤ 8n .
+                               n!                n(n − 1)   n − 2
+                                    T ∈Tn
+                                   i=1
+
+Proof. For a degree sequence di ≥ 1,         i di = 2n − 2, the number of labelled trees with that sequence is
+                                            P
+
+                                                       (n − 2)!
+                                                                   .
+                                                       i (di − 1)!
+                                                      Q
+
+Hence
+                             1 XY               1                      X   Y
+                                  dT (i)! =                                    di
+                             n!             n(n − 1)
+                                iT                               P di ≥1   i
+                                                                  di =2n−2
+                                                                                 n
+                                                       1
+                                                                      
+                                                                           x
+                                                  =          [x2n−2 ]
+                                                    n(n − 1)            (1 − x)2
+                                                       1       3n − 3
+                                                                     
+                                                  =                     .
+                                                    n(n − 1) n − 2
+The last quantity is at most 8n .
+Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+BKAR identity and species rows
+                                     ≤N
+                                ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+
+Assume also that the complete species allocation gives
+
+                                                         X
+                                                4∥C∥           Bα < 1
+                                                         α∈I
+
+for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+exponential losses and the factor σ −2 , is strictly below one.
+   Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+replica number, forest parameters, and previous RG depth.
+Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+   The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+exponential constant depending on N .
+
+
+
+
+                                                           24
+4.1     Output recertification
+Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+tube and real-valued on the real slice. Put
+
+                                                   gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combinin
