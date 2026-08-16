@@ -1,0 +1,104 @@
+name: YM Kirk v4 joint admission origin audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-joint-admission-origin-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract constant origins and parameter order
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
+          out = Path('source_audit/kirk_v4/joint_admission_origin')
+          out.mkdir(parents=True, exist_ok=True)
+
+          patterns = {
+            'CE_exact': r'(?<![A-Za-z0-9])CE(?![A-Za-z0-9])',
+            'C0_exact': r'(?<![A-Za-z0-9])C0(?![A-Za-z0-9])',
+            'deltaB': r'δB',
+            'etaH': r'ηH',
+            'kappaG': r'κG',
+            'mbase': r'mbase',
+            'RG': r'RG',
+          }
+          counts=[]
+          for name, pat in patterns.items():
+            ms=list(re.finditer(pat,text))
+            counts.append(f'{name}\tcount={len(ms)}\toffsets={[m.start() for m in ms]}')
+            chunks=[]
+            for i,m in enumerate(ms):
+              chunks.append(
+                f'===== {name} {i+1}/{len(ms)} @ {m.start()} =====\n' +
+                text[max(0,m.start()-7000):min(len(text),m.end()+9000)] + '\n'
+              )
+            (out/f'{name}.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(counts)+'\n',encoding='utf-8')
+
+          # Extract the nearest theorem/lemma heading preceding each exact CE occurrence.
+          ce=list(re.finditer(patterns['CE_exact'],text))
+          origins=[]
+          heading_re=re.compile(r'(?m)^(Theorem|Lemma|Corollary|Proposition)\s+\d+(?:\.\d+)*\b.*$')
+          headings=list(heading_re.finditer(text))
+          for i,m in enumerate(ce):
+            prev=[h for h in headings if h.start() < m.start()]
+            h=prev[-1] if prev else None
+            origins.append(f'CE {i+1} @ {m.start()} nearest_heading={h.group(0) if h else "NONE"}')
+          (out/'CE_ORIGINS.txt').write_text('\n'.join(origins)+'\n',encoding='utf-8')
+
+          # Focused dependency slices around the joint-admission call site and prior constants.
+          for slug,target in [
+            ('lemma_6_41','Lemma 6.41'),
+            ('theorem_6_39','Theorem 6.39'),
+            ('lemma_6_35','Lemma 6.35'),
+            ('lemma_6_36','Lemma 6.36'),
+            ('lemma_6_38','Lemma 6.38'),
+            ('theorem_3_31','Theorem 3.31'),
+            ('lemma_4_27','Lemma 4.27'),
+          ]:
+            m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+            if m:
+              (out/f'{slug}.txt').write_text(text[max(0,m.start()-7000):min(len(text),m.start()+22000)],encoding='utf-8')
+
+          for p in ['kirk_latest_record.json','kirk_source_probe_report.json']:
+            q=Path(p)
+            if q.exists(): (out/p).write_bytes(q.read_bytes())
+          print('\n'.join(counts))
+          print('\n'.join(origins))
+          PY
+      - name: Commit audit
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/joint_admission_origin
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): expose joint-admission constant origins'
+          git push origin HEAD:verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-joint-admission-origin-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/joint_admission_origin/
