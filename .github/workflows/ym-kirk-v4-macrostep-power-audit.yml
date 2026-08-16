@@ -1,0 +1,78 @@
+name: YM Kirk v4 macrostep power identity audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-macrostep-power-audit-20260815-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-macrostep-power-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-macrostep-power-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract macrostep/local-jet contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/macrostep_power'); out.mkdir(parents=True,exist_ok=True)
+          anchors=['Theorem 4.22','Lemma 4.24','Theorem 4.29','Theorem 4.30']
+          phrases=[
+            'J_L','J L','local jet','stable jet','Gaussian fixed point','Gaussian fixed',
+            'associated-graded','associated graded','engineering degree','4 - Delta','4 − ∆','4−∆',
+            'L^{4','2^{4','macrostep','one-step map','one step map','canonical rescaling',
+            's-fold','s fold','2^s','2s','spectral radius','triangular','equivalent norm'
+          ]
+          chunks=[]; counts={}
+          for name in anchors:
+            kind,num=name.split()
+            pat=re.compile(r'^\s*'+kind+r'\s+'+re.escape(num)+r'\b',re.I)
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:10],1):
+              lo=max(0,i-80); hi=min(len(lines),i+520)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:80],1):
+              lo=max(0,i-45); hi=min(len(lines),i+180)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+'\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          if counts.get('Theorem 4.30',0)==0:
+            raise SystemExit('missing required Theorem 4.30 anchor')
+          PY
+      - name: Preserve macrostep contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/macrostep_power/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/macrostep_power/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/macrostep_power
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk macrostep power contexts'
+          git push origin HEAD:verification/ym-kirk-v4-macrostep-power-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-macrostep-power-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/macrostep_power/
