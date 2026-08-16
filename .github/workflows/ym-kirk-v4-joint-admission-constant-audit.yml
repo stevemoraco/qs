@@ -48,25 +48,30 @@ jobs:
             start=max(0,m.start()-4500); end=min(len(text),m.start()+15000)
             (out/f'{slug}.txt').write_text(text[start:end],encoding='utf-8')
             summary.append(f'{target}: offset {m.start()}, chars {end-start}')
-          # Search every literal/normalized occurrence potentially typing the constants in Lemma 6.41.
           pats=[
             r'\bC\s*E\b', r'\bCE\b', r'\bC0\b', r'\bCtree\b', r'\bCalloc\b',
             r'δB', r'δBKAR', r'admission threshold', r'strict admission',
             r'ηH', r'etaH', r'mbase', r'branch mass', r'standing convention',
             r'uniform in volume', r'preceding weak depth', r'RG\s*→\s*∞',
           ]
-          hits=[]
+          hits=[]; counts=[]
           for pat in pats:
-            for k,m in enumerate(re.finditer(pat,text,re.I)):
-              if k>=24: break
+            ms=list(re.finditer(pat,text,re.I))
+            counts.append(f'{pat}\tcount={len(ms)}\toffsets={[m.start() for m in ms[:64]]}')
+            for k,m in enumerate(ms[:24]):
               hits.append(f'===== {pat} HIT {k+1} @ {m.start()} =====\n'+text[max(0,m.start()-1800):min(len(text),m.end()+4200)]+'\n')
+          ce=list(re.finditer(r'\bCE\b',text))
+          exact=[]
+          for k,m in enumerate(ce):
+            exact.append(f'===== EXACT CE {k+1}/{len(ce)} @ {m.start()} =====\n'+text[max(0,m.start()-3000):min(len(text),m.end()+6000)]+'\n')
           (out/'TARGETED.txt').write_text('\n'.join(hits),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(counts)+'\n',encoding='utf-8')
+          (out/'EXACT_CE.txt').write_text('\n'.join(exact),encoding='utf-8')
           (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
-          # Preserve source checksum/probe metadata.
           for p in ['kirk_latest_record.json','kirk_source_probe_report.json']:
             q=Path(p)
             if q.exists(): (out/p).write_bytes(q.read_bytes())
-          print('\n'.join(summary))
+          print('\n'.join(summary)); print('\n'.join(counts))
           PY
       - name: Commit audit
         run: |
@@ -74,7 +79,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/joint_admission_constants
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): expose Kirk joint-admission constant typing'
+          git commit -m 'audit(ym): expose exact joint-admission constant occurrences'
           git push origin HEAD:verification/ym-kirk-v4-joint-admission-constant-audit-20260816-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         with:
