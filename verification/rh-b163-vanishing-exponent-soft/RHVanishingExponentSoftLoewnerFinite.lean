@@ -86,7 +86,6 @@ theorem rayleigh_below_floor_of_half_budgets
     {R floor normSq kinetic potential total : ℝ}
     (hR : 0 < R)
     (hNorm : 0 ≤ normSq)
-    (hFloor : 0 ≤ floor)
     (hKinetic : kinetic * R ^ 2 ≤ 128 * normSq)
     (hKineticFloor : 128 / R ^ 2 ≤ floor / 2)
     (hPotential : potential ≤ (floor / 2) * normSq)
@@ -106,9 +105,8 @@ theorem rayleigh_below_floor_of_half_budgets
     _ ≤ (floor / 2) * normSq + (floor / 2) * normSq := add_le_add hKF hPotential
     _ = floor * normSq := by ring
 
-/-- If each of two nonnegative localized costs is at most half the target floor,
-then their sum is below the floor.  This tiny theorem is used by external
-verifiers that already normalized by the witness norm. -/
+/-- If each of two localized costs is at most half the target floor, then their
+sum is below the floor. -/
 theorem two_half_costs_below_floor
     {kinetic potential floor : ℝ}
     (hk : kinetic ≤ floor / 2)
