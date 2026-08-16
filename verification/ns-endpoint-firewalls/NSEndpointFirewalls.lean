@@ -37,13 +37,13 @@ theorem quadratic_equation_amplitude_residual
     (L B u a : ℝ)
     (hsol : L * u + B * u ^ 2 = 0) :
     L * (a * u) + B * (a * u) ^ 2 =
-      a * (a - 1) * B * u ^ 2 := by
+      (a * (a - 1)) * (B * u ^ 2) := by
   have hLu : L * u = -(B * u ^ 2) := by linarith
   calc
     L * (a * u) + B * (a * u) ^ 2
         = a * (L * u) + a ^ 2 * (B * u ^ 2) := by ring
     _ = a * (-(B * u ^ 2)) + a ^ 2 * (B * u ^ 2) := by rw [hLu]
-    _ = a * (a - 1) * B * u ^ 2 := by ring
+    _ = (a * (a - 1)) * (B * u ^ 2) := by ring
 
 /-- A nontrivial pure amplitude scaling therefore generally leaves the same quadratic solution class. -/
 theorem nontrivial_amplitude_scaling_leaves_quadratic_solution_class
@@ -53,7 +53,9 @@ theorem nontrivial_amplitude_scaling_leaves_quadratic_solution_class
     (hquad : B * u ^ 2 ≠ 0) :
     L * (a * u) + B * (a * u) ^ 2 ≠ 0 := by
   rw [quadratic_equation_amplitude_residual L B u a hsol]
-  exact mul_ne_zero (mul_ne_zero ha0 (sub_ne_zero.mpr ha1)) hquad
+  have haa : a * (a - 1) ≠ 0 :=
+    mul_ne_zero ha0 (sub_ne_zero.mpr ha1)
+  exact mul_ne_zero haa hquad
 
 #print axioms saturation_does_not_force_euler_identity
 #print axioms cubic_over_quadratic_amplitude_quotient
