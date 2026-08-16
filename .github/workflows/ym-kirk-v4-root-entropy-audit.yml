@@ -1,0 +1,73 @@
+name: YM Kirk v4 rooted UV entropy audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract rooted-norm and coarsest-scale entropy contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/root_entropy'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'Theorem 7.2','Corollary 7.4','Lemma 8.6','Corollary 8.7','Lemma 8.8',
+            'root norm','rooted norm','one/two-root','fixed root algebra','finer decoration',
+            'active nonroot','least-label','lowest common ancestor','coarsest scale',
+            'conditional logarithm','summable','uniformly summable'
+          ]
+          counts={}; ledger=[]; low=text.lower()
+          for target in targets:
+            pos=0; n=0
+            for _ in range(40):
+              i=low.find(target.lower(),pos)
+              if i<0: break
+              n+=1
+              ledger.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-4500):min(len(text),i+15000)]+'\n')
+              pos=i+len(target)
+            counts[target]=n
+          required=['Theorem 7.2','Corollary 7.4','Lemma 8.6','Corollary 8.7','Lemma 8.8']
+          missing=[x for x in required if counts[x]==0]
+          (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          PY
+      - name: Preserve immutable audit contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/root_entropy/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/root_entropy/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/root_entropy
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 root entropy contexts'
+          git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-root-entropy-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/root_entropy/
