@@ -20,43 +20,54 @@ jobs:
       - name: Extract Theorem 7.2 and Corollary 7.4 contexts
         shell: bash
         run: |
-          python3 - <<'PY'
+          mkdir -p _audit_out
+          python3 - <<'PY' > _audit_out/section7_contexts.txt
           from pathlib import Path
+          import hashlib
 
-          roots = [Path('source_audit/kirk_v4')]
-          patterns = [
-              'Theorem 7.2',
-              'Corollary 7.4',
-              'Theorem 7.2 (',
-              'Corollary 7.4 (',
-          ]
+          root = Path('source_audit/kirk_v4')
+          patterns = ['Theorem 7.2', 'Corollary 7.4']
           hits = []
-          for root in roots:
-              for p in root.rglob('*.txt'):
-                  try:
-                      text = p.read_text(encoding='utf-8', errors='ignore')
-                  except Exception:
-                      continue
-                  seen = set()
-                  for pat in patterns:
-                      start = 0
-                      while True:
-                          i = text.find(pat, start)
-                          if i < 0:
-                              break
-                          key = (p.as_posix(), i)
-                          if key not in seen:
-                              seen.add(key)
-                              lo = max(0, i - 3500)
-                              hi = min(len(text), i + 16000)
-                              hits.append((p.as_posix(), i, text[lo:hi]))
-                          start = i + 1
+          for p in root.rglob('*.txt'):
+              try:
+                  raw = p.read_bytes()
+                  text = raw.decode('utf-8', errors='ignore')
+              except Exception:
+                  continue
+              seen = set()
+              for pat in patterns:
+                  start = 0
+                  while True:
+                      i = text.find(pat, start)
+                      if i < 0:
+                          break
+                      key = (p.as_posix(), i)
+                      if key not in seen:
+                          seen.add(key)
+                          lo = max(0, i - 8000)
+                          hi = min(len(text), i + 30000)
+                          hits.append((p.as_posix(), hashlib.sha256(raw).hexdigest(), i, lo, hi, text[lo:hi]))
+                      start = i + 1
           if not hits:
               raise SystemExit('No exact Section 7 theorem markers found in pinned source audit')
           print(f'FOUND {len(hits)} UNIQUE CONTEXTS')
-          for n, (path, offset, context) in enumerate(hits, 1):
-              print('\n' + '=' * 100)
-              print(f'CONTEXT {n}: {path} @ char {offset}')
-              print('=' * 100)
+          for n, (path, sha256, offset, lo, hi, context) in enumerate(hits, 1):
+              print('\n' + '=' * 120)
+              print(f'CONTEXT {n}: {path}')
+              print(f'FILE_SHA256: {sha256}')
+              print(f'CHAR_OFFSET: {offset}')
+              print(f'WINDOW: [{lo},{hi})')
+              print('=' * 120)
               print(context)
           PY
+          test -s _audit_out/section7_contexts.txt
+          grep -n -E 'Theorem 7\.2|Corollary 7\.4|preceding weak depth|root|uniform|scale' _audit_out/section7_contexts.txt > _audit_out/section7_key_lines.txt || true
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          wc -c -l _audit_out/*
+      - name: Upload exact contexts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-section7-contexts
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
