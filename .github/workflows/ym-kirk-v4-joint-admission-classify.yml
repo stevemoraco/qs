@@ -1,0 +1,71 @@
+name: YM Kirk v4 joint admission classify
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-joint-admission-classify.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Classify exact occurrences by nearest heading
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/joint_admission_origin')
+          out.mkdir(parents=True,exist_ok=True)
+          headings=list(re.finditer(r'(?m)^\s*(Theorem|Lemma|Corollary|Proposition|Definition)\s+\d+(?:\.\d+)*\b.*$',text))
+          def nearest(pos):
+            hs=[h for h in headings if h.start()<pos]
+            return hs[-1].group(0).strip() if hs else 'NONE'
+          pats={
+            'CE':r'(?<![A-Za-z0-9])CE(?![A-Za-z0-9])',
+            'C0':r'(?<![A-Za-z0-9])C0(?![A-Za-z0-9])',
+            'deltaB':r'δB',
+            'etaH':r'ηH',
+            'kappaG':r'κG',
+          }
+          lines=[]
+          for name,pat in pats.items():
+            ms=list(re.finditer(pat,text))
+            lines.append(f'## {name} count={len(ms)}')
+            for i,m in enumerate(ms):
+              ctx=' '.join(text[max(0,m.start()-180):min(len(text),m.end()+220)].split())
+              lines.append(f'{i+1}. offset={m.start()} heading={nearest(m.start())}')
+              lines.append(f'   context={ctx}')
+          # mechanical diagnostic: whether CE occurs anywhere before Lemma 6.41.
+          m641=re.search(r'(?m)^\s*Lemma 6\.41\b.*$',text)
+          ce=list(re.finditer(pats['CE'],text))
+          if m641:
+            prior=[m.start() for m in ce if m.start()<m641.start()]
+            lines.append('## CE-before-6.41')
+            lines.append(f'lemma_6_41_offset={m641.start()} prior_exact_CE_offsets={prior}')
+          (out/'CLASSIFICATION.txt').write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          print('\n'.join(lines[:100]))
+          PY
+      - name: Commit audit
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/joint_admission_origin/CLASSIFICATION.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): classify joint-admission constant headings'
+          git push origin HEAD:verification/ym-kirk-v4-joint-admission-origin-audit-20260816-run3-gpt56sol
