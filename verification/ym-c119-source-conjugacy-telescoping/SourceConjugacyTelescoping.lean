@@ -25,9 +25,8 @@ theorem two_step_conjugacy_cancels
     (hc0 : c0 ≠ 0) (hc1 : c1 ≠ 0) :
     normalizedStep c2 t1 c1 (normalizedStep c1 t0 c0 x) =
       c2 * ((t1 * t0) * (x / c0)) := by
-  simp [normalizedStep, hc0, hc1]
-  field_simp [hc0, hc1]
-  ring
+  dsimp [normalizedStep]
+  field_simp [hc0, hc1] <;> ring
 
 theorem two_step_multiplier_identity
     (c0 c1 c2 t0 t1 : ℝ)
@@ -35,7 +34,6 @@ theorem two_step_multiplier_identity
     (c2 * t1 / c1) * (c1 * t0 / c0) =
       c2 * (t1 * t0) / c0 := by
   field_simp [hc0, hc1]
-  ring
 
 theorem endpoint_cost_bounds_two_step_product
     (c0 c1 c2 t0 t1 B C0 C2 : ℝ)
@@ -55,7 +53,7 @@ theorem endpoint_cost_bounds_two_step_product
   rw [abs_div, abs_mul]
   rw [abs_of_nonneg hc2nonneg, abs_of_pos hc0]
   have h1 : c2 * |t1 * t0| ≤ C2 * B := by
-    exact mul_le_mul hleft hprod hc2nonneg hB
+    exact mul_le_mul hleft hprod (abs_nonneg _) hC2
   have h2 : c2 * |t1 * t0| * (1 / c0) ≤ C2 * B * C0 :=
     mul_le_mul h1 hright hc0nonneg (mul_nonneg hC2 hB)
   simpa [div_eq_mul_inv, mul_assoc] using h2
