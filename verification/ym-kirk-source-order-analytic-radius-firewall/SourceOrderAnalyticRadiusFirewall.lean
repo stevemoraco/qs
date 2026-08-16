@@ -31,9 +31,10 @@ theorem diagonalSourceFamily_fixed_order_bound
     (B : ℕ → ℝ) (hB : ∀ n, 0 ≤ B n) (reg order : ℕ) :
     |diagonalSourceFamily B reg order| ≤ B order := by
   unfold diagonalSourceFamily
-  split
-  · simp [hB order]
-  · simp [hB order]
+  by_cases h : reg = order
+  · rw [if_pos h, abs_of_nonneg (hB order)]
+  · rw [if_neg h, abs_zero]
+    exact hB order
 
 /-- The order-dependent bound is attained exactly at the matching regulator
 index. Hence the sequence of fixed-order constants may have arbitrary
@@ -50,23 +51,25 @@ theorem fixed_order_uniformity_allows_arbitrary_order_growth
     (B : ℕ → ℝ) (hB : ∀ n, 0 ≤ B n) :
     (∀ order reg : ℕ, |diagonalSourceFamily B reg order| ≤ B order) ∧
       (∀ order : ℕ, diagonalSourceFamily B order order = B order) := by
-  exact ⟨diagonalSourceFamily_fixed_order_bound B hB,
-    diagonalSourceFamily_hits_bound B⟩
+  constructor
+  · intro order reg
+    exact diagonalSourceFamily_fixed_order_bound B hB reg order
+  · exact diagonalSourceFamily_hits_bound B
 
 /-- A finite collection of already-controlled source orders places no ceiling
 on the next source order. -/
 def nextOrderEscape (N : ℕ) (M : ℝ) (order : ℕ) : ℝ :=
   if order ≤ N then 0 else M + 1
 
- theorem nextOrderEscape_controlled (N : ℕ) (M : ℝ) (order : ℕ)
+theorem nextOrderEscape_controlled (N : ℕ) (M : ℝ) (order : ℕ)
     (h : order ≤ N) : nextOrderEscape N M order = 0 := by
   simp [nextOrderEscape, h]
 
- theorem nextOrderEscape_next (N : ℕ) (M : ℝ) :
+theorem nextOrderEscape_next (N : ℕ) (M : ℝ) :
     nextOrderEscape N M (N + 1) = M + 1 := by
   simp [nextOrderEscape]
 
- theorem nextOrderEscape_exceeds (N : ℕ) (M : ℝ) :
+theorem nextOrderEscape_exceeds (N : ℕ) (M : ℝ) :
     M < nextOrderEscape N M (N + 1) := by
   rw [nextOrderEscape_next]
   linarith
