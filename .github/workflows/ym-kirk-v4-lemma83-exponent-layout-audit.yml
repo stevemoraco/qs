@@ -1,0 +1,128 @@
+name: YM Kirk v4 Lemma 8.3 exponent layout audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-lemma83-exponent-layout-audit-20260816
+    paths:
+      - .github/workflows/ym-kirk-v4-lemma83-exponent-layout-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-lemma83-exponent-layout-audit-20260816
+      - name: Ensure PDF tools
+        run: |
+          if ! command -v pdftotext >/dev/null || ! command -v pdftoppm >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact Lemma 8.3 page layout and bounding boxes
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/lemma83_exponent_layout
+          rm -rf "$out"
+          mkdir -p "$out"
+          pdf=kirk_latest.pdf
+          pages=$(pdfinfo "$pdf" | awk '/^Pages:/ {print $2}')
+          page=''
+          for p in $(seq 1 "$pages"); do
+            pdftotext -f "$p" -l "$p" -layout "$pdf" /tmp/page.txt
+            if grep -q 'Lemma 8\.3' /tmp/page.txt; then
+              page="$p"
+              break
+            fi
+          done
+          if [ -z "$page" ]; then
+            echo 'Lemma 8.3 page not found' >&2
+            exit 1
+          fi
+          echo "$page" > "$out/PAGE.txt"
+          pdftotext -f "$page" -l "$page" -layout "$pdf" "$out/lemma_8_3_layout.txt"
+          pdftotext -f "$page" -l "$page" -bbox-layout "$pdf" "$out/lemma_8_3_bbox.xhtml"
+          pdftoppm -f "$page" -l "$page" -png -r 300 -singlefile "$pdf" "$out/lemma_8_3_page"
+          python3 - "$out/lemma_8_3_bbox.xhtml" "$out" <<'PY'
+          import sys, re, html
+          from pathlib import Path
+
+          bbox = Path(sys.argv[1])
+          out = Path(sys.argv[2])
+          raw = bbox.read_text(encoding='utf-8', errors='replace')
+          pat = re.compile(
+              r'<word\s+xMin="(?P<xMin>[^"]+)"\s+yMin="(?P<yMin>[^"]+)"\s+'
+              r'xMax="(?P<xMax>[^"]+)"\s+yMax="(?P<yMax>[^"]+)">(?P<text>.*?)</word>',
+              re.S)
+          words = []
+          for m in pat.finditer(raw):
+              text = html.unescape(re.sub(r'<[^>]+>', '', m.group('text'))).strip()
+              if not text:
+                  continue
+              attrs = {k: float(m.group(k)) for k in ('xMin','yMin','xMax','yMax')}
+              words.append((text, attrs))
+
+          if not words:
+              raise SystemExit('no bbox words parsed')
+          gate_hits = [i for i,(t,a) in enumerate(words) if 'Gate' in t or 'G1' in t]
+          if not gate_hits:
+              raise SystemExit('Gate-G1 token not found in bbox output')
+
+          lines = []
+          for i in gate_hits:
+              target_y = words[i][1]['yMin']
+              nearby = [(t,a) for t,a in words if abs(a['yMin']-target_y) < 35 or abs(a['yMax']-target_y) < 35]
+              nearby.sort(key=lambda z:(round(z[1]['yMin'],1), z[1]['xMin']))
+              lines.append(f'===== GATE HIT {i}: {words[i][0]} y={target_y:.3f} =====')
+              for t,a in nearby:
+                  lines.append(f"{t!r}\tx=({a['xMin']:.3f},{a['xMax']:.3f})\ty=({a['yMin']:.3f},{a['yMax']:.3f})")
+
+          special = []
+          for i,(t,a) in enumerate(words):
+              norm = t.replace('−','-').replace('–','-')
+              if any(k in norm for k in ('α','alpha','u','-')):
+                  special.append((i,t,a))
+          lines.append('\n===== SPECIAL TOKENS ON PAGE =====')
+          for i,t,a in special:
+              lines.append(f"{i}\t{t!r}\tx=({a['xMin']:.3f},{a['xMax']:.3f})\ty=({a['yMin']:.3f},{a['yMax']:.3f})")
+          (out/'lemma_8_3_bbox_tokens.txt').write_text('\n'.join(lines)+'\n', encoding='utf-8')
+
+          ys = sorted({round(a['yMin'], 1) for _,a in words})
+          clustered = []
+          for y in ys:
+              row = [(t,a) for t,a in words if abs(a['yMin']-y)<0.15]
+              row.sort(key=lambda z:z[1]['xMin'])
+              text = ' '.join(t for t,_ in row)
+              if any(k in text for k in ('Gate', 'Vj', 'V', 'α', 'uj', 'u j', 'sigma', 'σ')):
+                  clustered.append(f'y={y:.1f}\t{text}')
+          (out/'lemma_8_3_reconstructed_rows.txt').write_text('\n'.join(clustered)+'\n', encoding='utf-8')
+          PY
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum "$pdf" > "$out/PDF_SHA256.txt"
+          cat "$out/PAGE.txt"
+          cat "$out/lemma_8_3_reconstructed_rows.txt"
+      - name: Preserve audit
+        run: |
+          set -euo pipefail
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/lemma83_exponent_layout
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Lemma 8.3 exponent layout'
+          git push origin HEAD:verification/ym-kirk-v4-lemma83-exponent-layout-audit-20260816
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-lemma83-exponent-layout
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/lemma83_exponent_layout/
