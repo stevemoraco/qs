@@ -79,7 +79,7 @@ theorem shifted_exp_weighted_row_le
       w * (∑ i, A * Real.exp (-m * dist i)) ≤ B) :
     w * (∑ i, A * Real.exp (-m * max (dist i - 2 * R) 0)) ≤
       Real.exp (2 * m * R) * B := by
-  have hsum := shifted_exp_finite_row_le dist hm hA
+  have hsum := shifted_exp_finite_row_le dist (R := R) hm hA
   have hw_sum :
       w * (∑ i, A * Real.exp (-m * max (dist i - 2 * R) 0)) ≤
         w * (Real.exp (2 * m * R) *
