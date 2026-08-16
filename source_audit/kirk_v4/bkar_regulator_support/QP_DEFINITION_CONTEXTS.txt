@@ -1,0 +1,2876 @@
+===== qP ( HIT 1 source line 1634 =====
+1589: The last quantity is at most 8n .
+1590: Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+1591: BKAR identity and species rows
+1592:                                      ≤N
+1593:                                 ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+1594: 
+1595: Assume also that the complete species allocation gives
+1596: 
+1597:                                                          X
+1598:                                                 4∥C∥           Bα < 1
+1599:                                                          α∈I
+1600: 
+1601: for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+1602: exponential losses and the factor σ −2 , is strictly below one.
+1603:    Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+1604: weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+1605: replica number, forest parameters, and previous RG depth.
+1606: Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+1607: and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+1608: each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+1609:    The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+
+===== qP ( HIT 2 source line 1650 =====
+1605: replica number, forest parameters, and previous RG depth.
+1606: Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+1607: and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+1608: each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+1609:    The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+1724:                                         V ≥1
+1725: 
+1726: Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+1727: proves the displayed irregular bound.
+1728: 
+1729: 4.3    Gaussian reference and optical covariance
+1730: This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+1731: and source connectors. Two objects must not be conflated:
+1732: 1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+1733: 2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+1734: The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+1735: gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+1736: inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+1737: activities after the normal-fiber change of variables.
+1738: 4.3.1 Grounded Feynman field and retained torons
+1739: Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+
+===== qP ( HIT 3 source line 1655 =====
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+1724:                                         V ≥1
+1725: 
+1726: Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+1727: proves the displayed irregular bound.
+1728: 
+1729: 4.3    Gaussian reference and optical covariance
+1730: This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+1731: and source connectors. Two objects must not be conflated:
+1732: 1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+1733: 2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+1734: The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+1735: gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+1736: inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+1737: activities after the normal-fiber change of variables.
+1738: 4.3.1 Grounded Feynman field and retained torons
+1739: Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+1740: with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+1741: one-forms and from one-forms to plaquette two-forms. Put
+1742:                                                n                   o
+1743:                                         A0Λ = A ∈ AΛ : A(0)
+1744:                                                           b     =0 .
+
+===== quadratic regulator HIT 1 source line 1308 =====
+1263:                              ∥K∥aG ,[q] := sup             eaG d(X,Y ) max ∥Dj KXY ∥.
+1264:                                                X                    0≤j≤q
+1265:                                                    Y ̸=X
+1266: 
+1267: Assume ∥K∥aG ,[3] ≤ κ < 1/8, the exterior means and their first three marks are uniformly bounded in the
+1268:   1/2
+1269: QXX metric, and each normalized one-core non-Gaussian factor has uniformly bounded logarithmic scores
+1270: through order three. Then the exact density ratio between the joint Gaussian with precision Qdiag + Qcross
+1271: and the product of the one-core Gaussians, including the shifted means and scalar normalization, has a
+1272: connected core-polymer logarithm
+1273:                                            dγX           X
+1274:                                      log N          =             GA
+1275:                                             X dγX             A⊂X mconn
+1276: 
+1277: with                                       X                               κ
+1278:                                   sup          eaG |A| ∥GA ∥[3] ≤ CG             .                        (2)
+1279:                                    X                                   (1 − 4κ)4
+1280:                                         A∋X
+1281: The same row holds after replacing each dγX by its normalized one-core reference. The constant is uniform
+1282: under the standing convention and in the number and sizes of cores.
+1283:                                                              1/2
+1284: Proof. Center and normalize each block by yX = QXX (zX − mX ). The determinant part is
+1285:                                  1                 1 X (−1)n+1
+1286:                                    Tr log(I + K) =             Tr K n .
+1287:                                  2                 2      n
+1288:                                                              n≥1
+1289: 
+1290: Every trace word is a cyclic connected word in the core-incidence graph. Rooting it at one visited core
+1291: and using the weighted block row gives, after q ≤ 3 marks,
+1292:                                    X                         κ
+1293:                                        nq (4κ)n /n ≤ Cq             .
+1294:                                                         (1 − 4κ)q+1
+1295:                                        n≥1
+1296: 
+1297: Here the factor four pays orientation, the choice of the marked edge, and the conversion from cyclic to
+1298: rooted words.
+1299:                                                                                                1/2
+1300:    For the quadratic and exterior-shift part interpolate the off-diagonal precision as Q(t) = Qdiag (I +
+1301:         1/2
+1302: tK)Qdiag , 0 ≤ t ≤ 1, and apply the finite-dimensional BKAR formula to the block parameters. A
+1303: differentiated edge inserts either ⟨yX , KXY yY ⟩ or one of its marked mean/precision variants. No positivity
+1304: of KXY is used: the absolute-value allocation
+1305:                                                     1
+1306:                                |⟨yX , KXY yY ⟩| ≤     ∥KXY ∥(∥yX ∥2 + ∥yY ∥2 )
+1307:                                                     2
+1308: assigns a nonnegative quadratic regulator to the two incident vertices. The weighted block row makes
+1309: the sum of those regulator matrices at every replica vertex at most Cκ. After enlarging RG so 4Cκ < 1,
+1310: Corollary 4.2 bounds all Gaussian exponential moments uniformly in the replica matrix and in the number
+1311: of cores. The geometric reporting lemma assigns each differentiated tree to its connected core hull. The
+1312: exact 1/n! and Lemma 4.3 absorb the vertex factorials. The resulting rooted tree series has link mass at
+1313: most 4κ and gives the same denominator as the determinant words.
+1314:    A structural or source derivative either differentiates one block of K, one exterior mean, or one one-core
+1315: score. Leibniz distributes at most three marks, producing the fourth power in (2). Finally, replacing dγX
+1316: by a normalized one-core reference changes only the single-core vertices and normalization scores. Their
+1317: assumed upper/lower and score bounds are paid per vertex and do not alter the cross-link mass. The
+1318: connected logarithm removes every empty-support scalar once. This proves the stated uniform row in
+1319: exactly the marked norm consumed downstream.
+1320: 
+1321: 
+1322:                                                             20
+1323: 
+1324: Lemma 3.27 (Model-specific admission to the marked Gaussian block-polymer theorem). For the actual
+1325: constrained Karcher precision and every admitted exterior history, the three hypotheses of Lemma 3.26
+1326: hold with κ = CκG (RG ):
+1327:          −1/2         −1/2
+1328:   (i) ∥Qdiag Qcross Qdiag ∥aG ,[3] ≤ CκG (RG );
+1329:                                                                                                  1/2
+1330:   (ii) the centered exterior means and their first three marks are uniformly bounded in the QXX metric;
+1331:        and
+1332:  (iii) every normalized one-core reference has logarithmic score rows through order three in the exact [3]
+1333:        norm consumed by Sections 20, 29, and 31.
+1334: The constants are uniform under the standing convention and in core size.
+1335: Proof. For Q ⪰ 2I, holomorphic functional calculus gives
+1336:                                            1 ∞ −1/2
+1337:                                              Z
+1338:                                  Q−1/2 =         t     (Q + t)−1 dt.
+1339:                                            π 0
+1340: Differentiating under the integral through order three expresses every mark as a finite sum of resolvent
+1341: words. The lower bound gives ∥(Q + t)−1 ∥ ≤ (2 + t)−1 ; convolution of the printed exponential precision
+1342:                                                                        −1/2       −1/2
+1343: rows therefore yields the same rooted row for Q−1/2 and for K = Qdiag Qcross Qdiag . This proves (i).
+1344:   The exterior linear term ℓX (η) is a fixed-incidence contraction of the exponentially local precision with
+1345: the common exterior datum. The one-core mean is mX = −Q−1         XX ℓX . The same resolvent formula and
+1346:                                    1/2
+1347: the exterior regulator row give ∥QXX mX ∥[3] ≤ C, proving (ii).
+1348:   Write a normalized one-core density as pX = G−1   X ρX . Then
+1349: 
+1350:                                   D log pX = D log ρX − EpX [D log ρX ],
+1351: 
+1352: and higher derivatives are finite cumulant polynomials of the corresponding unnormalized scores. The
+1353: exterior-tube bounds, the displayed collar/outer TV rows, and the plateau lower bound for GX bound
+1354: these cumulants through order three without a volume factor. This proves (iii) in the declared rooted
+1355: marked norm.
+1356: Theorem 3.28 (Constrained-core product reference with explicit Gaussian cross activity). Let X be
+1357:        S and condition on the common exterior datum η. Write the actual constrained precision on
+1358: compatible
+1359: I(X ) = X I(X) as
+1360:                                                           M
+1361:                           QX = Qdiag + Qcross ,   Qdiag =      QXX .                          (3)
+1362:                                                                    X∈X
+1363: 
+1364: Let dγX ( · | η) be the normalized one-core Gaussian with precision QXX and the exact exterior linear
+1365: term. Then                                                        O
+1366:                             dγX (z | η) = ZG (η)−1 e−Gcross (z;η)   dγX (zX | η),                  (4)
+1367:                                                                X∈X
+1368: 
+1369: where Gcross contains every off-diagonal quadratic block and the connected normalization generated by it.
+1370: Its connected activities obey          X
+1371:                                    sup     eaG |A| ∥GA ∥[3] ≤ CκG (RG ).                             (5)
+1372:                                      X
+1373:                                          A∋X
+1374: 
+1375:    Place every non-Gaussian factor owned solely by X in the normalized one-core reference ρref    X dγX . All
+1376: Gaussian and non-Gaussian factors meeting at least two cores remain explicit cross-owned activities. The
+1377: exact simultaneous-core integral is therefore the product of the one-core references followed by a convergent
+1378: connected cross-core polymer expansion. A one-core operator depends on another core only through one
+1379: of these displayed cross activities, and every scalar normalization is removed once.
+1380: Proof. The optical lower bound gives QXX ⪰ 2I. Lemma 3.27 verifies the complete marked hypotheses
+1381: of Lemma 3.26; enlarge RG once so its link mass is below 1/8. The normalized Gaussian ratio is exactly
+1382:                                  1
+1383:                                                                                       
+1384:              det(I + K)1/2 exp − ⟨z, Qcross z⟩ + the corresponding exterior-shift terms .
+1385:                                  2
+1386: Apply Lemma 3.26. Its row gives (5) with CκG (RG ) after weakening the constant. Lemma 3.25 assigns
+1387: every remaining factor once. Fubini gives the normalized product one-core reference followed by the
+1388: exact connected cross-core expansion, with all three marks and scalar normalizations in the consumed
+1389: norm.
+1390: 
+1391: 
+1392:                                                      21
+1393: 
+1394: Lemma 3.29 (History compatibility after exact output formation). At every RG step, form the complete
+1395: connected output first, assign its canonical reported hull, and only then compute its regulator allocation
+1396: and history certificate. Under this rule:
+1397:    (i) every input history has one output owner;
+
+===== quadratic-growth HIT 1 source line 1641 =====
+1596: 
+1597:                                                          X
+1598:                                                 4∥C∥           Bα < 1
+1599:                                                          α∈I
+1600: 
+1601: for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+1602: exponential losses and the factor σ −2 , is strictly below one.
+1603:    Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+1604: weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+1605: replica number, forest parameters, and previous RG depth.
+1606: Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+1607: and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+1608: each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+1609:    The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+1724:                                         V ≥1
+1725: 
+1726: Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+1727: proves the displayed irregular bound.
+1728: 
+1729: 4.3    Gaussian reference and optical covariance
+1730: This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+
+===== allocation cone HIT 1 source line 805 =====
+760: connectors obey
+761:                                  |C(x, y)| ≤ KC e−µd(x,y) ,   µ > 0.
+762: Lemma 3.7 (Geometric reporting). Let S1 , . . . , Sn be species supports joined by a labelled tree T . Report
+763: each covariance edge by a shortest connector path and each hard-core edge by its fixed bounded collar. If
+764: P is the union of all supports, paths, and finite atlas collars, then
+765:                                            n
+766:                                            X                  X
+767:                                 τ (P ) ≤         τ (Si ) +            de + Cgeo (n − 1)
+768:                                            i=1               e∈Tcov
+769: 
+770: for a finite template constant Cgeo .
+771: Proof. Choose a spanning tree in each Si . Add the reported connector for every edge of T , and add a
+772: uniformly bounded number of collar edges for each new attachment. The resulting connected graph spans
+773: P and has the stated number of edges.
+774: 
+775: Consequence (Permanent locality exponent).                        For every 0 < κ < µ,
+776:                         Y          Y
+777:                eκτ (P )   KC e−µde    KH
+778:                            e∈Tcov            e∈Thc
+779:                                                    n−1 Y κτ (Si ) Y −(µ−κ)de
+780:                         ≤ eκCgeo max{KC , KH eκRH }
+781:                          
+782:                                                          e           e        .
+783:                                                                         i         e∈Tcov
+784: 
+785: Thus connector and hull reporting preserve the same support exponent.
+786: Lemma 3.8 (Allocation loss is per vertex). Assume
+787:                                              X
+788:                                          sup    eκτ (S) βS ≤ b
+789:                                                  x
+790:                                                       S∋x
+791: 
+792: and |S| ≤ cd (1 + τ (S)). Then every species obeys
+793:                                βS |S| ≤ Cd,κ b,             Cd,κ = cd sup(1 + t)e−κt .
+794:                                                                             t≥0
+795: 
+796:                                                                                                    Creg bn
+797:                                                                       P
+798: Consequently a Gaussian regulator factor controlled by                  i βSi |Si | costs at most e        on an n-vertex
+799: family.
+800: Proof. Choose any root x ∈ S. The cone gives βS ≤ be−κτ (S) . Multiply by the cardinality bound and
+801: take the scalar supremum.
+802: Theorem 3.9 (Corrected support closure). Assume:
+803: 1. the summed replica-BKAR theorem;
+804: 2. the geometric reporting lemma;
+805: 3. the complete-species allocation cone;
+806: 4. the exact dimension-ledger reblocking factor 24−∆ ;
+807: 5. a logarithmic-support localization estimate
+808:                            qloc (D, L) ≤ C L−3 + (log L)pD LΓ−δD ,
+809:                                                                
+810:                                                                                       δD → ∞.
+811: Choose κ = µ/2. If the rooted regular atom mass and allocation radius are small enough that
+812:                                                      χeff (u, r, b) < 1,
+813: then one may choose finite D and finite L = 2s so that the stable regular derivative satisfies
+814:                                                  ∥DΦreg |stable ∥ < 1
+815: in the same permanent κ-weighted support norm.
+816: Proof. The first two lemmas leave a residual connector decay µ − κ > 0 and convert every fixed geometric
+817: and regulator cost into a per-vertex constant. The summed BKAR tree recursion is therefore geometric
+818: in the effective rooted link mass χeff . Reblocking is paid by the engineering factor and does not weaken κ.
+819: Choose D with δD > Γ + 3, then choose finite L so qloc lies inside the strict associated-graded jet gap.
+820: Finally shrink u, r, b to absorb the nonlinear and irregular source terms.
+821: 
+822: 
+823:                                                              13
+824: 
+825: 3.2      Aligned-reflection section
+826: Let L : Hf → Hc be the canonically rescaled full-lattice flat block and let P : Hc → Hf satisfy
+827: 
+828:                                                                     1
+829:                                      LP = I,       ∥P ∥exp,2 ≤ p < √ .
+830:                                                                      2
+831: Assume L and P intertwine aligned reflection.
+832:    Let E+ be reflection extension from the positive closed-half-space coarse space and R+ fine-field
+833: restriction. Assume                           √
+834:                                      ∥E+ ∥ ≤ 2,      ∥R+ ∥ ≤ 1,
+835: and that every retained row in the positive schedule is supported in the positive closed half-space and
+836: fixed reflection boundary.
+837: Theorem 3.10 (Reflected linear section). Define
+838: 
+839:                                                P+ = R+ P E+ .
+840: 
+841: Then
+842:                                                  L+ P+ = I
+843: and                                                       √
+844:                                          ∥P+ ∥exp,2 ≤         2 p < 1.
+845: For the forty-nine-path block,
+846:                                                             16
+847:                                                 ∥P+ ∥22 ≤      .
+848:                                                             49
+849: Proof. Closed-half-space support gives L+ R+ = R+ L on reflected fields. Therefore
+850: 
+851:                                      L+ P+ = R+ LP E+ = R+ E+ = I.
+852: 
+853: The norm estimate is immediate. On the real Brillouin zone the bulk normal section satisfies ∥P ∥2 ≤ 8/49,
+854: yielding the displayed sharper bound.
+855: 
+856: Theorem 3.11 (Reflected nonlinear section). Let S be an exact reflection-equivariant nonlinear bulk
+857: section,
+858:                                                             p
+859:                               B(S(w)) = w,       ∥DS∥ ≤        .
+860:                                                           1−η
+861: Define
+862:                                           S+ (w) = R+ S(E+ w).
+863: Then
+864:                                                B+ (S+ (w)) = w
+865: and                                                         √
+866:                                                            2p
+867:                                                ∥DS+ ∥ ≤       .
+868:                                                           1−η
+869: In particular, using p < 0.546 and η ≤ 1/10,
+870: 
+871:                                           ∥DS+ ∥ < 0.859 < 1.
+872: 
+873: For m = 2, 3,
+874:                                         ∥Dm S+ ∥ ≤ 2m/2 ∥Dm S∥.
+875: Proof. The exact path-extent schedule gives
+876: 
+877:                                                B+ R+ = R+ B
+878: 
+879: on reflected configurations. Hence
+880: 
+881:                                      B+ S+ = R+ BSE+ = R+ E+ = I.
+882: 
+883: The derivative estimates follow from the chain rule and the extension and restriction norms.
+884: 
+885: 
+886: 
+887:                                                      14
+888: 
+889: 3.3    Exterior complex tube
+890: Fix the exact symmetric forty-nine-path fixed-G block. Let X be a connected curvature-bad component,
+891: I(X) its fixed integration core, and RX its exterior ring. Use the selected-anchor component chart on
+892: I(X), with every chart Jacobian included in the density.
+893: Lemma 3.12 (Finite word transport). There are fixed radii δout , δin > 0 and a constant Ctr < ∞,
+894: uniform under the standing convention, such that the component anchor solve is holomorphic for
+
+===== allocation cone HIT 2 source line 1665 =====
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+1724:                                         V ≥1
+1725: 
+1726: Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+1727: proves the displayed irregular bound.
+1728: 
+1729: 4.3    Gaussian reference and optical covariance
+1730: This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+1731: and source connectors. Two objects must not be conflated:
+1732: 1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+1733: 2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+1734: The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+1735: gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+1736: inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+1737: activities after the normal-fiber change of variables.
+1738: 4.3.1 Grounded Feynman field and retained torons
+1739: Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+1740: with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+1741: one-forms and from one-forms to plaquette two-forms. Put
+1742:                                                n                   o
+1743:                                         A0Λ = A ∈ AΛ : A(0)
+1744:                                                           b     =0 .
+1745: 
+1746: Constant connection modes are retained compact toron/background variables; they are never inverted or
+1747: integrated by the Gaussian reference.
+1748: Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+1749: 
+1750:                                      QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+1751: 
+1752: At momentum p ̸= 0 its symbol is
+1753:                                                                         4
+1754:                                  b F (p) = ω(p)I4d ,
+
+===== allocation cone HIT 3 source line 2286 =====
+2241: Taylor-remainder gain. Since
+2242:                                               τL (Y ) ≤ R(L),
+2243: the discrete covariant localization lemma gives
+2244: 
+2245:                                               CD,m (1 + R(L))pD L3−D
+2246: 
+2247: per collected activity. Summing the rooted envelope contributes LΓ , proving the short bound.
+2248:    The canonical root and history certificate are selected once, so neither hull reassignment nor collect
+2249: produces a volume factor. Uniformity follows from the rooted envelope and the finite local template
+2250: atlas.
+2251: 
+2252: Boundaries and aligned reflection. Use the corrected reflection schedule:
+2253: • block the two closed half-spaces separately;
+2254: • retain the reflection-plane link layer as fixed boundary data;
+2255: • use only path templates with longitudinal extent [0, 2] and transverse extent [−1, 1]3 relative to their
+2256:   anchor.
+2257: Theorem 4.23 (Boundary-template Loc dichotomy). For fixed D, L, the bulk and aligned-reflection
+2258: localization atlas has finitely many rooted template classes. The preceding projector, commutator, long-row,
+2259: and short-row estimates hold on each class with one maximum constant independent of volume.
+2260:    The exact weak/irregular partition assigns every moving-cutoff derivative to the charged irregular row
+2261: before reflection positivity is invoked.
+2262: Proof. The corrected half-space schedule prevents a retained path from coupling the two open half-spaces
+2263: except through the fixed plane layer. The stated path extents and the finite radius R(L) give only finitely
+2264: many rooted boundary intersections up to translation and the aligned-reflection stabilizer. Construct
+2265: LocD templatewise and average over that stabilizer. Taking the maximum of finitely many constants
+2266: proves the uniform estimate.
+2267:    The labelled weak/collar/outer densities recombine pointwise before the Osterwalder–Schrader form is
+2268: formed, so localization does not assert reflection positivity of an individual slice or label.
+2269: 
+2270: 4.6    One-step rooted envelope
+2271: Fix an arbitrary finite passive-source order N . For a connected rooted support X, let τ (X) be its reported
+2272: spanning-tree size. Define
+2273:                                                                                |I|
+2274:                                                     X                    σs
+2275:                               ∥F ∥κ;3,N = sup           eκτ (X) max            α
+2276:                                                                               Dstr DJI FX .
+2277:                                               e                    |α|≤3 |I|!
+2278:                                                   X∋e              |I|≤N
+2279: 
+2280: The active structural order is three; the passive source order N is arbitrary but fixed.
+2281:   Let                                                 X
+2282:                                         Aκ (F ) = sup     eκτ (X) βX
+2283:                                                           e
+2284:                                                               X∋e
+2285: 
+2286: be the complete-species regulator-allocation cone.
+2287: 
+2288: The six one-step maps.          The exact regular step is organized in the following order.
+2289: (E1) Normal chart return. Substitute the finite-volume analytic normal section into the local Wilson,
+2290:      Haar, inherited, and source factors.
+2291: 
+2292: 
+2293:                                                               34
+2294: 
+2295: (E2) Coarea logarithm. Append the field-dependent logarithm
+2296: 
+2297:                                                   − log det(I + DN P ),
+2298: 
+2299:      with the fixed linear determinant owned once outside the activity map.
+2300: (E3) Summed connected logarithm. Apply the simultaneous hard-core/Gaussian replica-BKAR
+2301:      identity and sum the exact 1/n! series.
+2302: (E4) Local projection. Extract the complete gauge-covariant Wick-local jet and retain the short Taylor
+2303:      remainder.
+2304: (E5) Canonical hull and collect. Report covariance paths and finite collars, assign each history to
+2305:      one canonical hull, and collect exactly once.
+2306: (E6) Output recertification. Derive the next regulator allocation from the actual post-localization
+2307:      output gradient and complex Hessian.
+2308:    For 0 ≤ m ≤ 3, denote the corresponding derivative constants by
+2309:                              chart       coa       BKAR        loc      hull      rec
+2310:                             Km     ,    Km   ,    Km    ,     Km   ,   Km    ,   Km   .
+2311: 
+2312: Permanent support exponent.
+2313: Lemma 4.24 (One common support exponent). Suppose the covariance connector has decay exponent
+2314: µ > 0, and the normal chart, inverse trees, coarea logarithm, and fixed local atlas have positive exponential
+2315: locality exponents
+2316:                                       mchart , minv , mcoa , matlas > 0.
+2317: Choose
+2318:                                 0 < κ < min{µ, mchart , minv , mcoa , matlas }.
+2319: Then all six maps act in the same κ-weighted rooted support space. No per-step weakening of κ is required.
+2320: 
+2321: Proof. For a BKAR tree, report every covariance edge by a shortest path and every hard-core edge by its
+2322: fixed collar. The geometric reporting inequality gives
+2323:                                         X           X
+2324:                                τ (P ) ≤   τ (Si ) +    de + Cgeo (n − 1).
+2325:                                            i            e∈Tcov
+2326: 
+2327: 
+2328: Multiplication by eκτ (P ) leaves the residual connector decay e−(µ−κ)de . Every fixed chart, inverse, coarea,
+2329: and atlas branch is summable at exponent κ. Localization costs a polynomial in the rooted radius but
+2330: does not alter the exponent. Canonical collect is a partition of histories, so it does not duplicate a support
+2331: weight.
+2332: 
+2333: Concrete connected-logarithm admission. Fix 0 < ϵ < 1/6 and use the physical weak-field radius
+2334: 
+2335:                                                  ∥A∥phys ≤ u1/2−ϵ .
+2336: 
+2337: A structural derivative is always taken in the scale-normalized metric: for an r-linear derivative, each
+2338: direction Hi is required to satisfy
+2339: 
+2340:                                        ∥Hi ∥phys ≤ u1/2−ϵ ,       1 ≤ i ≤ r.                            (SN)
+2341: 
+2342: Thus Dstr r
+2343:             F means the operator norm after the substitution Hi = u1/2−ϵ H       b i with ∥H
+2344:                                                                                            b i ∥phys ≤ 1. No
+2345: marked row below is a derivative in an unscaled physical unit direction.
+2346: Lemma 4.25 (One common analytic species tube). There is a radius ηcom > 0, independent of volume
+2347: and preceding weak depth, on which the Wilson word, exponential-coordinate Haar density, Karcher
+2348: normal return, coarea logarithm, and finite Schur endpoint are simultaneously holomorphic. On the closed
+2349: half-radius tube, their derivatives through structural order three and every fixed passive-source order have
+2350: finite fixed-template suprema.
+2351: 
+2352: Proof. Each species is a finite composition of multiplication, inversion, exponential, logarithm, the
+2353: finite-cell Karcher mean, and an inverse of one of the matrices
+2354: 
+2355:                                          I + DN P,          Hopt + B(A).
+2356: 
+2357: 
+2358:                                                         35
+2359: 
+2360: The path-atlas theorem supplies a positive holomorphy radius for the first five maps. The uniform
+2361: inequalities ∥DN P ∥ < 1 and Hopt ≥ 2I persist on a smaller positive tube, so the two inverses are
+2362: holomorphic there by a Neumann series. There are only finitely many bulk and aligned-reflection
+2363: templates. Taking the minimum of their radii gives ηcom > 0; Cauchy’s estimate on the closed half-radius
+2364: tube gives the uniform derivative constants.
+2365:    For each fixed local template define the finite constants CW , CHaar , Ccoa , Cchart , CSch as the suprema
+2366: on that closed common tube of the third derivatives of respectively the Wilson word, Haar logarithm,
+2367: coarea logarithm, normal return, and finite Schur endpoint after their scalar and complete two-jet parts
+2368: have been removed. Let Cinc be the largest rooted incidence number of those templates and let Cconn be
+2369: the row sum of the exponential covariance connector of Corollary 4.14. All these constants are finite and
+2370: uniform under the standing convention.
+2371: Proposition 4.26 (Atom-by-atom weak species ledger). Put
+2372:                          1                                              3
+2373:                   ωW =     − 3ϵ > 0,      ωcoa = ωchart = ωSch =          − 3ϵ,      ω0 = ωW .
+2374:                          2                                              2
+2375: The complete rooted mass of regular input species obeys
+
+===== allocation cone HIT 4 source line 2466 =====
+2421:                                        α∈I
+2422: 
+2423: 
+2424:                                                       36
+2425: 
+2426: The summed replica–BKAR logarithm therefore converges absolutely, and
+2427:                                          BKAR
+2428:                                         Km    < ∞,               0 ≤ m ≤ 3,
+2429: uniformly in volume, replica number, forest parameters, and preceding weak depth.
+2430: Proof. Proposition 4.26 bounds the complete species mass by δBKAR . The definition of Calloc gives the
+2431: first inequality. The Gram replica estimate removes replica-number growth, and the exact Pruefer identity
+2432: pays the labelled-tree degree factorials. After the fixed support and Cauchy costs, every parent-normalized
+2433: child sum is bounded by Ctree ηatom ≤ 1/2. The connected tree series and its first three marked derivatives
+2434: are therefore bounded by the first three derivatives of (1 − χeff )−1 at χeff ≤ 1/2.
+2435: 
+2436: Chart, coarea, localization, hull, and recertification.
+2437: Lemma 4.28 (Finite uniform module constants). On the common weak tube,
+2438:                              chart
+2439:                             Km        coa
+2440:                                    , Km      loc
+2441:                                           , Km      hull
+2442:                                                  , Km       rec
+2443:                                                          , Km   < ∞,      0 ≤ m ≤ 3,
+2444: with constants uniform under the standing convention.
+2445: Proof. The finite-volume normal fiber equation has a uniform contraction parameter η < 1; its derivatives
+2446: are finite products of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
+2447: coarea logarithm is the finite-volume analytic matrix logarithm of I + DN P , whose inverse is bounded
+2448: by (1 − η)−1 .
+2449:    The localization projector has a finite template norm polynomial in the support radius. The reported
+2450: shortest connector paths and finite collars preserve exponent κ. Canonical hull ownership assigns each
+2451: history once.
+2452:    For a post-localization output RP , put
+2453:                              gP = ∥DRP (0)∥,           hP = sup ∥D2 RP (η + itθ)∥.
+2454:                                                                 η,θ,t
+2455: 
+2456: Then
+2457:                                                            1
+2458:                                                  βPout =     (gP + hP )
+2459:                                                            2
+2460: is a valid nonnegative output allocation and
+2461:                                        X                   1
+2462:                                    sup     eκτ (P ) βPout ≤ [Rout ]∂,C;κ .
+2463:                                      e                     2
+2464:                                           P ∋e
+2465: 
+2466: Thus the allocation cone is reproduced from the actual output.
+2467: 
+2468: Six-factor composition.
+2469: Theorem 4.29 (Permanent one-step envelope). For every prescribed finite source order N , there are
+2470: finite constants
+2471:                                  Km < ∞,       0 ≤ m ≤ 3,
+2472: independent of volume, microscopic cutoff, and preceding weak depth, such that the exact regular one-step
+2473: map satisfies
+2474:                                          ∥Dm Φreg ∥κ;3,N ≤ Km
+2475: on one reproduced weak ball.
+2476:    More explicitly,
+2477:                                  chart    coa    BKAR    loc    hull    rec
+2478:                                                                             
+2479:                         Km ≤ Bm K≤m    , K≤m  , K≤m   , K≤m  , K≤m   , K≤m    ,
+2480: where Bm is the finite multivariable Bell polynomial supplied by the chain rule through order m.
+2481: Proof. Compose the six bounded maps. Through order three, the chain rule contains only finitely
+2482: many partitions. Every term is bounded in the same permanent κ-weighted norm and carries the same
+2483: active/source inventory.
+2484:    The input allocation cone is an assumption of the weak activity ball; the output cone is derived after
+2485: the exact connected output by recertification. Choose the ball so
+2486:                                                   C(uω + r) ≤ b∗
+2487: and the derived output allocation is at most b∗ . This is an invariant ball inequality, not circular use of
+2488: the output theorem as an input.
+2489: 
+2490: 
+2491:                                                            37
+2492: 
+2493: 4.7    Macrostep contraction
+2494: Let ΦL be the exact L = 2s macrostep map after vacuum, Yang–Mills, and declared local-jet extraction.
+2495: Split its stable derivative as
+2496:                                       DΦL |stable = JL + NL ,
+2497: where JL is the finite local jet block and NL contains all reported nonlocal rows.
+2498: Theorem 4.30 (Local/nonlocal separation). Assume:
+2499: 1. the one-step rooted marked supplier bounds are finite:
+2500:                                           Km < ∞,             0 ≤ m ≤ 3,
+2501:    uniformly under the standing convention;
+2502: 2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+2503:    associated-graded diagonal is
+2504:                                                      L4−∆ ;
+2505: 3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+2506:    unmarked scalar degree is six;
+2507: 4. for
+2508:                                      Γ = log2 max{Km , 1} + ε,
+2509:                                                        m
+2510:    the nonlocal rows obey
+2511:                                 ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+2512:    where
+2513:                                                    Γ+3
+2514:                                                                        
+2515:                                             R(L) =     log L
+2516:                                                     κ
+2517:    and δD → ∞.
+2518:    Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+2519:                                            ∥DΦL (0)|stable ∥ < 1.
+2520: No upper bound of the form maxm Km < 4 is required.
+2521: Proof. Fix the finite number Γ. Choose D so that
+2522:                                                   δD > Γ + 2.
+2523: On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+2524: scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+2525: equivalent finite-dimensional norm with
+2526:                                       ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+2527: Choose ϵL = L−1 . Thus
+2528:                                                  ∥JL ∥ ≤ 2L−1 .
+2529:   The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+2530: depending only on the fixed D, L, never on volume or weak depth. Since
+2531:                                                   δD − Γ > 2,
+2532: the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+2533: one finite L such that
+2534:                              2L−1 + Clong
+2535:                                      ′
+2536:                                           L−3 + CD′
+2537:                                                     (1 + R(L))pD LΓ−δD < 1.
+2538: This gives the strict macrostep contraction.
+2539: Lemma 4.31 (Finite one-step supplier bound). Let
+2540:                              SRBK      chart       coarea       loc          hull      rec
+2541:                             Km    ,   Km     ,    Km      ,    Km   ,       Km    ,   Km
+2542: be the rooted one-step constants supplied respectively by the summed replica-BKAR logarithm, normal
+2543: fiber return, coarea logarithm, localization, canonical hull assignment, and output recertification. If each
+2544: is finite and uniform in volume and weak depth, then one may take
+2545:                                    SRBK chart coarea loc hull rec
+2546:                              Km ≤ Km   Km Km        Km Km Km < ∞.
+2547: 
+2548: 
+2549:                                                        38
+2550: 
+2551: Proof. Compose the six bounded maps in the declared rooted marked norm and apply the chain rule
+2552: through order m. Replacing the product by the finite Bell-polynomial sum only changes the right side by
+2553: a finite m-dependent combinatorial factor.
+2554: 
+2555: 5       Invariant graph and universal coefficient
+
+===== allocation cone HIT 5 source line 2484 =====
+2439:                             Km        coa
+2440:                                    , Km      loc
+2441:                                           , Km      hull
+2442:                                                  , Km       rec
+2443:                                                          , Km   < ∞,      0 ≤ m ≤ 3,
+2444: with constants uniform under the standing convention.
+2445: Proof. The finite-volume normal fiber equation has a uniform contraction parameter η < 1; its derivatives
+2446: are finite products of the stable resolvent, P , D2 N , and D3 N in the exponential matrix algebra. The
+2447: coarea logarithm is the finite-volume analytic matrix logarithm of I + DN P , whose inverse is bounded
+2448: by (1 − η)−1 .
+2449:    The localization projector has a finite template norm polynomial in the support radius. The reported
+2450: shortest connector paths and finite collars preserve exponent κ. Canonical hull ownership assigns each
+2451: history once.
+2452:    For a post-localization output RP , put
+2453:                              gP = ∥DRP (0)∥,           hP = sup ∥D2 RP (η + itθ)∥.
+2454:                                                                 η,θ,t
+2455: 
+2456: Then
+2457:                                                            1
+2458:                                                  βPout =     (gP + hP )
+2459:                                                            2
+2460: is a valid nonnegative output allocation and
+2461:                                        X                   1
+2462:                                    sup     eκτ (P ) βPout ≤ [Rout ]∂,C;κ .
+2463:                                      e                     2
+2464:                                           P ∋e
+2465: 
+2466: Thus the allocation cone is reproduced from the actual output.
+2467: 
+2468: Six-factor composition.
+2469: Theorem 4.29 (Permanent one-step envelope). For every prescribed finite source order N , there are
+2470: finite constants
+2471:                                  Km < ∞,       0 ≤ m ≤ 3,
+2472: independent of volume, microscopic cutoff, and preceding weak depth, such that the exact regular one-step
+2473: map satisfies
+2474:                                          ∥Dm Φreg ∥κ;3,N ≤ Km
+2475: on one reproduced weak ball.
+2476:    More explicitly,
+2477:                                  chart    coa    BKAR    loc    hull    rec
+2478:                                                                             
+2479:                         Km ≤ Bm K≤m    , K≤m  , K≤m   , K≤m  , K≤m   , K≤m    ,
+2480: where Bm is the finite multivariable Bell polynomial supplied by the chain rule through order m.
+2481: Proof. Compose the six bounded maps. Through order three, the chain rule contains only finitely
+2482: many partitions. Every term is bounded in the same permanent κ-weighted norm and carries the same
+2483: active/source inventory.
+2484:    The input allocation cone is an assumption of the weak activity ball; the output cone is derived after
+2485: the exact connected output by recertification. Choose the ball so
+2486:                                                   C(uω + r) ≤ b∗
+2487: and the derived output allocation is at most b∗ . This is an invariant ball inequality, not circular use of
+2488: the output theorem as an input.
+2489: 
+2490: 
+2491:                                                            37
+2492: 
+2493: 4.7    Macrostep contraction
+2494: Let ΦL be the exact L = 2s macrostep map after vacuum, Yang–Mills, and declared local-jet extraction.
+2495: Split its stable derivative as
+2496:                                       DΦL |stable = JL + NL ,
+2497: where JL is the finite local jet block and NL contains all reported nonlocal rows.
+2498: Theorem 4.30 (Local/nonlocal separation). Assume:
+2499: 1. the one-step rooted marked supplier bounds are finite:
+2500:                                           Km < ∞,             0 ≤ m ≤ 3,
+2501:    uniformly under the standing convention;
+2502: 2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+2503:    associated-graded diagonal is
+2504:                                                      L4−∆ ;
+2505: 3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+2506:    unmarked scalar degree is six;
+2507: 4. for
+2508:                                      Γ = log2 max{Km , 1} + ε,
+2509:                                                        m
+2510:    the nonlocal rows obey
+2511:                                 ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+2512:    where
+2513:                                                    Γ+3
+2514:                                                                        
+2515:                                             R(L) =     log L
+2516:                                                     κ
+2517:    and δD → ∞.
+2518:    Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+2519:                                            ∥DΦL (0)|stable ∥ < 1.
+2520: No upper bound of the form maxm Km < 4 is required.
+2521: Proof. Fix the finite number Γ. Choose D so that
+2522:                                                   δD > Γ + 2.
+2523: On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+2524: scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+2525: equivalent finite-dimensional norm with
+2526:                                       ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+2527: Choose ϵL = L−1 . Thus
+2528:                                                  ∥JL ∥ ≤ 2L−1 .
+2529:   The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+2530: depending only on the fixed D, L, never on volume or weak depth. Since
+2531:                                                   δD − Γ > 2,
+2532: the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+2533: one finite L such that
+2534:                              2L−1 + Clong
+2535:                                      ′
+2536:                                           L−3 + CD′
+2537:                                                     (1 + R(L))pD LΓ−δD < 1.
+2538: This gives the strict macrostep contraction.
+2539: Lemma 4.31 (Finite one-step supplier bound). Let
+2540:                              SRBK      chart       coarea       loc          hull      rec
+2541:                             Km    ,   Km     ,    Km      ,    Km   ,       Km    ,   Km
+2542: be the rooted one-step constants supplied respectively by the summed replica-BKAR logarithm, normal
+2543: fiber return, coarea logarithm, localization, canonical hull assignment, and output recertification. If each
+2544: is finite and uniform in volume and weak depth, then one may take
+2545:                                    SRBK chart coarea loc hull rec
+2546:                              Km ≤ Km   Km Km        Km Km Km < ∞.
+2547: 
+2548: 
+2549:                                                        38
+2550: 
+2551: Proof. Compose the six bounded maps in the declared rooted marked norm and apply the chain rule
+2552: through order m. Replacing the product by the finite Bell-polynomial sum only changes the right side by
+2553: a finite m-dependent combinatorial factor.
+2554: 
+2555: 5       Invariant graph and universal coefficient
+2556: The marginal coordinate is u = g 2 . Inputs SI–6, SI–6B, SI–7, and SI–7M are used only to compute
+2557: the local perturbative Taylor coefficient of the complete fine Wilson vector-minus-ghost quotient. The
+2558: coefficient of the exact Karcher map is identified internally by evaluating one local standard background
+2559: coordinate on the two equal measures related by the exact Karcher pushforward, followed by unit-tangent
+2560: conjugacy on the centered invariant family. No unrestricted Haar-translated background functional, global
+2561: background-gauge section, or application of Reisz power counting to the optical conditional covariance is
+2562: consumed.
+2563:    In the canonical squared-coupling normalization,
+2564: 
+2565:                                                        11 CA (G) log 2
+2566:                                                bAF =                   .
+2567:                                                            24π 2
+2568: The factor log 2 is the physical scale-two interval. The complete coordinate-intertwining theorem is
+2569: printed after the centered invariant graph, where exact measure equality and parabolic conjugacy identify
+2570: the one-step coefficient.
+2571: 5.1     Centered invariant graph
+2572: Let
+2573:                                          R(u, R) = f (u, R), Φ(u, R)
+
+===== qY ( HIT 1 source line 985 =====
+940: 
+941:                          Re Lfixed
+942:                              X     (z; η + h) ≤ C|X| + Cuωfix (qRX (η) + qRX (h))
+943: 
+944: on a smaller fixed tube, for some ωfix > 0.
+945: Proof. Each fixed local factor has vanishing Taylor coefficients through order two after allocation. Its
+946: third-order integral remainder is bounded by
+947: 
+948:                                C∥z∥3phys ,      ∥z∥phys ≤ u1/2−ϵ ,       ϵ < 1/6.
+949: 
+950: The corresponding complex Hessian is O(u1/2−ϵ ). More explicitly, after their true scalar and quadratic
+951: splits,
+952:                                               (≥3)          (≥3)
+953:                               (≥3)
+954:                             ∥Rcoa  ∥[3] + ∥Rchart ∥[3] + ∥Rdet ∥[3] ≤ Cu3/2−3ϵ ,
+955: 
+956: 
+957:                                                       15
+958: 
+959:                                                                (≥3)
+960:                                            X
+961:                                      sup         em diam A ∥RSch,A ∥[3] ≤ Cu3/2−3ϵ .
+962:                                       e
+963:                                            A∋e
+964: 
+965: The Schur row follows by expanding the finite matrix logarithm around the fixed optical precision and
+966: using the uniform optical inverse; convolution of its exponential kernels preserves a positive exponent m.
+967: Rooted local incidence gives the result with
+968:                                                           1
+969:                                                  ωfix =     − ϵ > 0,
+970:                                                           2
+971: the smaller exponent being the complex-Hessian cost used by the exterior regulator rather than the
+972: zero-row cubic remainder.
+973: Lemma 3.15 (Inherited sectorial lifting). Let the incoming regular interaction be holomorphic on the
+974: permanent tube, real on the real slice, and satisfy
+975: 
+976:                                                   [R]∂,C;a;3 ≤ r.
+977: 
+978: Then the inherited terms owned by X obey
+979: 
+980:                            Re Rinh
+981:                                X (η + h) ≤ Cr|X| + CrqRX (η) + CrqRX (h).
+982: 
+983: Proof. Taylor expansion first on the real segment and then on the imaginary segment gives
+984:                                                                             
+985:        Re RY (η + ih) ≤ RY (0) + C∥DRY (0)∥2 + C 1 + sup ∥D2 RY (η + ith)∥ qY (η) + qY (h) .
+986:                                                                                           
+987:                                                                   t
+988: 
+989: The linear imaginary term has zero real part because RY is real on the real slice. Rooted support
+990: summation over the activities owned by X gives the result without a raw volume incidence factor.
+991: Theorem 3.16 (Exterior tube and analytic residual). Assume the incoming regular interaction lies in
+992: the reproduced regular complex domain and
+993: 
+994:                                              C (uωfix + r) < b1 .
+995: 
+996: Then the curvature-bad density is holomorphic on one fixed exterior/source tube and its complete post-
+997: two-jet residual satisfies
+998: 
+999:                             Re Lan
+1000:                                 X (z; η + h) ≤ C|X| + b1 qRX (η) + Cδ qRX (h).
+1001: 
+1002: Together with the Wilson-sector reserve,
+1003: 
+1004:                                                       χ2 |X|
+1005:       Z                                                                                     
+1006:          |ρX (z; η + h)| dµX (z) ≤ [Cu ]
+1007:            curv                        −p C|X|
+1008:                                                exp −c        + b1 qRX (η) + Cδ qRX (h) + C|X| .
+1009:                                                       u νov
+1010: Proof. Holomorphy follows from the fixed-domain component chart, the finite word transport lemma, and
+1011: the reproduced regular complex tube. Add the fixed-atlas and inherited residual bounds. The smallness
+1012: condition absorbs their quadratic coefficient into b1 . Combining with the Wilson-sector reserve and taking
+1013: absolute values before integration gives the final estimate.
+1014: 
+1015: 3.4    Component plateau and denominator
+1016: Let X be a bad seed with integration core I(X), reported hull H(X), and exterior ring RX = H(X)\I(X).
+1017: Let W be its retained field and η the regular ring datum. All X-owned Haar, coordinate, coarea,
+1018: determinant, and inherited factors are included in the reference density ρref
+1019:                                                                           X (z; η), and
+1020:                                                Z
+1021:                                       GX (η) = ρrefX (z; η) dµX (z).
+1022: 
+1023: 
+1024: Lemma 3.17 (Exact component section). There are ctr , Ctr > 0, independent of X, scale, volume, weak
+1025: depth, wrapping, and reflected template, such that the exact fiber over (W, η) contains an analytic section
+1026: sX (W, η) satisfying
+1027:                            ∥sX (W, η)∥∞ ≤ Ctr Rg ,      AI(X) (sX ) ≤ Ctr uRg2 |X|.
+1028:                                                             √
+1029: A product ball in the fresh detail coordinates of radius ctr u about sX remains in the same exact fiber.
+1030: 
+1031: 
+1032:                                                           16
+1033: 
+1034: Proof. Use the model-specific normal coordinates of Proposition 2.9 on every fixed component cell. Start
+1035: from the canonical weak prolongation of W : split each coarse logarithm equally between the two straight
+1036: fine links, set transverse details to zero, and interpolate across the fixed-width boundary templates to the
+1037: actual weak ring datum η. This gives a globally consistent configuration with the displayed pointwise
+1038: and action bounds.
+1039:    The component-owned anchor problem is a principal subproblem of the simultaneous selected-anchor
+1040: map. Theorem 3.3 supplies a uniform lower Lipschitz bound and inverse derivative with the ring anchors
+1041: fixed. It therefore gives a unique component anchor correction with constants independent of shape and
+1042: topology. Fresh details√are the remaining fiber coordinates. The finite incidence and inverse bounds show
+1043: that a ball of radius c u remains inside the common coordinate tube and on the same exact fiber.
+1044: Lemma 3.18 (Good-cutoff plateau). If
+1045: 
+1046:                                         χ2
+1047:                                            ≥ K Rg2 + 1 + log u−1
+1048:                                                                  
+1049:                                         u
+1050: with K sufficiently large, then, after shrinking the common weak threshold, every owned good cutoff is
+1051: identically one throughout the ball of Lemma 3.17.
+1052: Proof. Finite-word Taylor bounds on the section and the detail ball give, on each owned cell,
+1053: 
+1054:                                          DQ + TQ ≤ CuRg2 + Cu.
+1055: 
+1056: The displayed dominance condition makes this less than both χ2 /8 and tch /8 after one common threshold
+1057: reduction. By the cutoff definitions in Section 3, χin
+1058:                                                     Q = 1 on the complete ball.
+1059: 
+1060: Lemma 3.19 (Reference trial plateau). There are fixed d0 < ∞, c, C > 0 such that
+1061:                                                    h             2
+1062:                                                                          i|X|
+1063:                                eb0 qRX (η) GX (η) ≥ cud0 /2 e−C(Rg +1+r)      .
+1064: 
+1065: All constants are uniform under the standing convention and in X.
+1066: Proof. Integrate only over the plateau ball. Its number of real coordinates is at most d0 |X|, hence its
+1067: product volume is bounded below by (cud0 /2 )|X| . On that ball the Wilson action divided by u costs at
+1068: most CRg2 |X|. Every fixed Haar, coordinate, coarea, determinant, and anchor-return factor is bounded
+1069: above and below on the common finite atlas. The reproduced regular interaction and the cutoff-free
+1070: boundary reserve of the exterior-tube theorem cost at most
+1071: 
+1072:                                          C(1 + r)|X| + b0 qRX (η).
+1073: 
+1074: All good cutoffs equal one by Lemma 3.18. Multiplying the bounds and moving the exterior regulator to
+
+===== support P HIT 1 source line 1622 =====
+1577:                                 iT                               P di ≥1   i
+1578:                                                                   di =2n−2
+1579:                                                                                  n
+1580:                                                        1
+1581:                                                                       
+1582:                                                                            x
+1583:                                                   =          [x2n−2 ]
+1584:                                                     n(n − 1)            (1 − x)2
+1585:                                                        1       3n − 3
+1586:                                                                      
+1587:                                                   =                     .
+1588:                                                     n(n − 1) n − 2
+1589: The last quantity is at most 8n .
+1590: Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+1591: BKAR identity and species rows
+1592:                                      ≤N
+1593:                                 ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+1594: 
+1595: Assume also that the complete species allocation gives
+1596: 
+1597:                                                          X
+1598:                                                 4∥C∥           Bα < 1
+1599:                                                          α∈I
+1600: 
+1601: for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+1602: exponential losses and the factor σ −2 , is strictly below one.
+1603:    Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+1604: weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+1605: replica number, forest parameters, and previous RG depth.
+1606: Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+1607: and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+1608: each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+1609:    The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+1632: Lemma 4.5 (Output recertification). For real η, θ,
+1633:                                                  1    1                  1
+1634:                      Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+1635:                                                  2    2                  2
+1636: Consequently
+1637:                                                    1
+1638:                                                    βPout :=
+1639:                                                      (gP + hP )
+1640:                                                    2
+1641: is a valid nonnegative quadratic-growth allocation for RP .
+1642: 
+1643: Proof. Taylor expansion on the real segment gives
+1644:                                                                        Z 1
+1645:                          RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+1646:                                                                         0
+1647: 
+1648: Hence
+1649:                                                                    1
+1650:                                    RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+1651:                                                                    2
+1652:         √
+1653: Using       x ≤ (1 + x)/2 yields
+1654:                                                     1    1
+1655:                                    RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+1656:                                                     2    2
+1657: Taylor expansion on the imaginary segment gives
+1658:                                                                        Z 1
+1659:                     RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+1660:                                                                          0
+1661: 
+1662: Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+1663: displayed estimate follows.
+1664: 
+1665: Consequence (Rooted allocation cone). If
+1666:                                                                 X        ′
+1667:                                       [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+1668:                                                             e
+1669:                                                                 P ∋e
+1670: 
+1671: then                                           X        ′                    1
+1672:                                          sup          ea |P | βPout ≤          [R]∂,C;a′ .
+1673:                                           e                                  2
+1674:                                                P ∋e
+1675: 
+1676: Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+1677: cone.
+1678: 4.2     Marked hierarchy
+1679: Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+1680: bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+1681:                                                                                 |I|
+1682:                                                     X                       σs
+1683:                                ∥F ∥a;3,N = sup              ea|X| max              α
+1684:                                                                                  ∥Dstr DJI FX ∥.
+1685:                                                e                      |α|≤3 |I|!
+1686:                                                     X∋e            |I|≤N
+1687: 
+1688: 
+1689: 
+1690: 
+1691:                                                                  25
+1692: 
+1693: Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+
+===== support P HIT 2 source line 2105 =====
+2060:                                           Ljet = Πirr S2 Γ(J) Πirr ,
+2061: where Γ(J) is Gaussian second quantization of the harmonic extension and S2 is canonical scale-two
+2062: rescaling.
+2063:    In the displayed degree ordering,
+2064:                                         2 I5    0             0
+2065:                                         −1                        
+2066:                                                       B57
+2067:                                         0   2−2 I6    0     B68 
+2068:                                 Ljet = 
+2069:                                         0
+2070:                                                                    ,
+2071:                                                 0    2 I7
+2072:                                                       −3
+2073:                                                               0 
+2074:                                           0     0      0    2−4 I8
+2075: after combining all allowed degree-+2r entries into the finite blocks B∆,∆+2r . More generally the matrix
+2076: is block upper triangular and
+2077:                                            gr∆ Ljet = 24−∆ I.
+2078:    All entries are finite and uniform under the standing convention: they are derivatives at the flat point
+2079: of one fixed finite forty-nine-path cell and its fixed finite Wick conversion.
+2080:    Therefore
+2081:                                                              1
+2082:                                                   r(Ljet ) ≤ ,
+2083:                                                              2
+2084: and on the unmarked scalar subfiber,
+2085:                                                              1
+2086:                                                   r(Ljet ) ≤ .
+2087:                                                              4
+2088: Proof. The Wick martingale eliminates every covariance-contraction lowering term. Lemma 4.16 gives
+2089: identity on the same-degree field jet and only degree-+2r corrections. Canonical cell rescaling multiplies
+2090: a homogeneous degree-∆ jet by 24−∆ .
+2091:    The extraction projector removes every declared jet below the stable threshold. Hence the stable matrix
+2092: is block upper triangular with the displayed diagonal. Its entries come from finitely many derivatives of
+2093: finite local analytic maps, so they are finite uniform constants. The spectrum of a finite block triangular
+2094: matrix is the union of the spectra of its diagonal blocks.
+2095: 
+2096: 
+2097:                                                       31
+2098: 
+2099: 4.5    Localization and exact collect
+2100: Fix one finite dyadic macrostep L = 2s . All fields are expressed in the scale-dependent Wick coordinates
+2101: of the stable-jet theorem. Engineering degree includes discrete derivatives and every declared active
+2102: structural mark.
+2103: 
+2104: Rooted histories and collect. Let HL be the absolutely summable family of connected regular
+2105: macrostep histories. A history h has a reported connected support P (h), a distinguished root, and a
+2106: canonical hull
+2107:                                              Y = H(h).
+2108: The hull contains the reported supports, shortest covariance connector paths, and the fixed finite atlas
+2109: collar.
+2110: Definition 4.18 (Exact collect). For a coarse connected support Y , define
+2111:                                                      X
+2112:                                         (CL F )Y =         Fh .
+2113:                                                        h∈HL
+2114:                                                       H(h)=Y
+2115: 
+2116: The history certificate is retained as a passive label until this sum is formed.
+2117: Lemma 4.19 (Collect is a rooted partition). The sets
+2118: 
+2119:                                               {h : H(h) = Y }
+2120: 
+2121: partition HL . Hence collect is exact, and for every bounded linear localization operator AY ,
+2122:                                                        X
+2123:                                        AY (CL F )Y =        AY Fh .
+2124:                                                       H(h)=Y
+2125: 
+2126: No history is omitted or counted twice.
+2127: Proof. The canonical hull and history certificate are deterministic functions of the reported history.
+2128: Absolute convergence in the rooted activity norm permits bounded linear operations to pass through the
+2129: history sum.
+2130: 
+2131: Gauge-covariant local jet projector. For a rooted support Y , choose the canonical root cell r(Y ).
+2132: Parallel-transport every local tensor to r(Y ) along the canonical hull tree and write the resulting local
+2133: field in the finite normal-coordinate atlas.
+2134:     Let JD (Y ) be the finite-dimensional space of gauge-complete, signed-hypercubic covariant, Wick-local
+2135: jets of declared engineering degree at most D, including the extraction sector and the stable jet sector.
+2136: Lemma 4.20 (Discrete covariant localization). There is a projector
+2137: 
+2138:                                           LocD,Y : FY 7−→ JD (Y )
+2139: 
+2140: with the following properties.
+2141: 1. Loc2D,Y = LocD,Y , and it is exact on JD (Y ).
+2142: 2. It commutes with gauge transformations, signed-hypercubic symmetries, and aligned reflection.
+2143: 3. For 0 ≤ m ≤ 3,
+2144:                                 ∥ LocD,Y FY ∥[m] ≤ CD (1 + τ (Y ))pD ∥FY ∥[m] .
+2145: 4. If LocD,Y FY = 0, then after canonical scale-L rescaling,
+2146: 
+2147:                                  ∥TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+2148: 
+2149:   The estimate includes both the nonlocal output and its newly generated local projection:
+2150: 
+2151:                 ∥ LocD TL FY ∥[m] + ∥(1 − LocD )TL FY ∥[m] ≤ CD (1 + τ (Y ))pD L3−D ∥FY ∥[m] .
+2152: 
+2153: Proof. On each finite local template, take the gauge-complete Taylor expansion in normal coordinates
+2154: and scale-dependent Wick monomials, transport all coefficients to the canonical root, and average over
+2155: the finite stabilizer. The dual coefficient functionals use finitely many derivatives and finite-difference
+2156: 
+2157: 
+2158:                                                      32
+2159: 
+2160: moments. Transport along a tree of radius τ (Y ) costs at most a polynomial in 1 + τ (Y ), proving the
+2161: third row.
+2162:    If LocD,Y FY = 0, every declared Taylor coefficient through degree D vanishes. The integral form of
+2163: the covariant Taylor remainder begins at degree D + 1. Canonical rescaling gives one root-preimage factor
+2164: L4 and L−(D+1) from the smallest omitted engineering degree. Thus the gain is
+2165: 
+2166:                                               L4−(D+1) = L3−D .
+2167: 
+2168: The regular linearized block kernel is analytic on the fixed tube and bounded through the three active
+2169: marked rows, so integration and the local coefficient functionals preserve this remainder estimate. Applying
+2170: the projector after integration proves the displayed localization-commutator bound; in particular, a
+2171: remainder cannot feed the finite local block without paying the same L3−D factor.
+2172: 
+2173: Exact local block and localization commutator. Let ΠD denote the full local jet projector on the
+2174:                                   [s]
+2175: macrostep activity space and let Ljet be the exact finite stable Wick-jet matrix of Theorem 4.17.
+2176: Lemma 4.21 (Exact block decomposition). At the Gaussian point,
+2177: 
+2178:                                            DΦL (0)|stable = JL + NL ,
+2179: 
+2180: where
+2181:                                                                        [s]
+2182:                                           JL = ΠD DΦL (0)ΠD = Ljet ,
+2183: and every other block,
+2184: 
+2185:             ΠD DΦL (0)(1 − ΠD ),          (1 − ΠD )DΦL (0)ΠD ,           (1 − ΠD )DΦL (0)(1 − ΠD ),
+2186: 
+2187: is assigned to NL and obeys the long/short estimates below.
+2188:    In particular, the macrostep envelope LΓ does not multiply the finite local diagonal.
+2189: Proof. On the finite local Wick-jet quotient, Gaussian integration is exact second quantization and
+2190:                                          [s]
+2191: canonical rescaling gives the matrix Ljet proved in Theorem 4.17. This is the local-to-local block.
+2192:    For every coordinate containing a localization remainder, the preceding lemma gives the L3−D gain on
+2193: short supports. Local jets that produce degree above D also lie in the same remainder because the exact
+2194: forty-nine-path symbol raises degree only by even positive amounts. Thus all off-diagonal local/remainder
+
+===== support P HIT 3 source line 2772 =====
+2727: the smaller and larger weak tubes. After exact label recombination, every numerator term is therefore
+2728: a charged U4 activity; a background or coupling derivative may hit the action, the coarea/Jacobian
+2729: factor, or the determinant; the fixed factor χ̇t keeps every term on the same charged annular support.
+2730: The differentiated U4 total-variation row, through the three coupling and two background derivatives
+2731: displayed in the statement, bounds the numerator by the positive denominator times Ck,α u−pk,α e−c/u .
+2732: The good-cutoff plateau and its trial-ball lower bound make this ratio uniform in t, volume, cutoff, and
+2733: preceding weak depth. Integrating in t proves that changing χ adds only the printed C 3 -flat scheme term.
+2734: The same U4 row gives the charged complement bound. Such terms are C 3 -flat, not analytic, and this
+2735: finite-order regularity is all that is consumed below.
+2736: Lemma 5.4 (Massless nonexceptional sum–integral comparison). Let M be divisible by m⋆ and let
+2737: ΓM = (2π/M )Z4M be the loop-momentum grid. For every pure-Wilson or stable-marked complete one-loop
+2738: BPHZL packet contributing to the quadratic background coefficient, and through the two background marks
+2739: consumed by ga , there is a finite soft set S(q) ⊂ T4 such that, away from that set,
+2740:                                                                          
+2741:                                                      X
+2742:                      k RX (q, 1; k) ≤ Cα PX
+2743:                    ∇α   LZ                    1 +       dT4 (k, ξ)−2−|α|  ,   |α| ≤ 2.            (9)
+2744:                                                              ξ∈S(q)
+2745: 
+2746: Here PX = 1 for a pure-Wilson packet and otherwise PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 . At a grounded
+2747: soft momentum the finite-volume summand is omitted. Uniformly for every grid-compatible q ∈ Q⋆ ∩ ΓM
+2748: 
+2749: 
+2750:                                                               41
+2751: 
+2752: (in particular for the fixed signed-hypercubic orbit of q⋆ ),
+2753:                       ′
+2754:                 1 X LZ                                        d4 k
+2755:                                           Z
+2756:                               (q, 1;            LZ
+2757:                                                    (q, 1;           ≤ CPX M −2 1 + log(2 + M ) .           (10)
+2758:                                                                                               
+2759:                           R          k) −     R           k)
+2760:                M4           X
+2761:                                            T4
+2762:                                                 X
+2763:                                                              (2π) 4
+2764:                    k∈ΓM
+2765: 
+2766: The same estimate holds after the two background marks. After the rooted support sum it therefore
+2767: compares the finite-volume and thermodynamic quadratic Taylor coefficients of the local background
+2768: coordinate and of the standard one-step map.
+2769: Proof. The complete-forest admission in Lemma 5.12 gives the degree-two soft majorant (23). Differenti-
+2770: ating a complete sector packet in loop momentum once or twice lowers its verified infrared degree by
+2771: the number of derivatives and gives (9). The finite SI–7M sector family, the nonexceptional compact set
+2772: Q⋆ , and the two background marks change only the constant and the support polynomial. No separated
+2773: Lowenstein Taylor piece is used.
+2774:    Put h = 2π/M and partition the momentum torus into the periodic Voronoi cubes Qℓ centered at the
+2775: grid points. The finitely many cubes meeting S(q) contribute O(PX h2 ) to the integral by the d(k, ξ)−2
+2776: row; their singular grounded samples are absent from the primed sum. On every remaining cube use the
+2777: symmetric second-order Taylor formula about its center. Bounded overlap of twice-enlarged cubes gives
+2778:                                                                                             
+2779:                 X ′           Z                              X Z
+2780:              h4      RX (k) − RX (k) d4 k ≤ CPX h2 1 +                       d(k, ξ)−4 d4 k  .
+2781:                k∈ΓM                                                 ξ∈S(q)   h≤d(k,ξ)≤1
+2782: 
+2783: 
+2784: The radial integral is O(1 + log M ), proving (10) after the fixed normalization of the Brillouin torus. The
+2785: strict rooted support reserve absorbs PX before the support sum. The pure-Wilson and stable-marked
+2786: packets exhaust the quadratic coefficient by Lemmas 5.10 and 5.14.
+2787:    Fix the localized wrapping exponent σ > 0 supplied by permanent support closure. Define the
+2788: fixed-group finite-size modulus
+2789:                             δG (M ) := CG e−σM + M −2 1 + log(2 + M ) ,                   (11)
+2790:                                                                     
+2791: 
+2792: where the exponential term retains the permanently localized wrapping row and the polynomial term is
+2793: the massless acoustic sum–integral row.
+2794:    Fix once and for all a tail-compatible admissible directed schedule s of the form (32). Write aj = 2j a0 ,
+2795: let Mj be the scheduled periodic side at scale aj , and let µ   bsj,u be the full normalized physical weak
+2796: measure at that scale, including the centered regular coordinate and the exactly recombined U4 irregular
+2797: and wrapping sectors. The exact reduced one-step map on that tail is denoted by Fj . Define
+2798:                                                hj (u) := gaj (b
+2799:                                                               µsj,u ).                                     (12)
+2800: Let F∞ , h∞ , and Σ∞ denote the corresponding rooted-thermodynamic maps obtained from the same
+2801: canonically rescaled local functional. The finite-volume symbols are nonautonomous; no fixed-volume
+2802: Taylor coefficient is identified with the thermodynamic coefficient merely from an estimate along one
+2803: orbit.
+2804: Lemma 5.5 (Finite-volume two-jet comparison and orbitwise finite-size row). There are c > 0 and finite
+2805: Ck , pk such that, for 0 ≤ k ≤ 2,
+2806:                           ∂uk (hj − h∞ )(u) + ∂uk (Σj − Σ∞ )(u) + ∂uk (Fj − F∞ )(u)
+2807:                                      h                                 i
+2808:                                 ≤ Ck δG (Mj )u2−k + u3−k + u−pk e−c/u .                                    (13)
+2809: 
+2810: For Σj , the derivative is in its scalar argument. This is a comparison through the quadratic jet; no
+2811: exponential or polynomial all-orders convergence rate for the full massless functional is asserted. If
+2812: (uj , Mj ) is a directed orbit and
+2813:                                               δG (Mj ) ≤ uj ,                                     (14)
+2814: then
+2815:                   Fj (uj ) = F∞ (uj ) + OG (u3j ),                       ∂u (Fj − F∞ )(uj ) = OG (u2j ),   (15)
+2816:              Σj (hj (uj )) = Σ∞ (h∞ (uj )) + OG (u3j ).                                                    (16)
+2817: The same rows hold through the two background marks used by ga . All constants are independent of j,
+2818: preceding weak depth, cutoff, volume, and the scheduled orbit with terminal coupling in the fixed interval
+2819: I⋆ ; they may depend on G and I⋆ .
+2820: 
+2821: 
+2822:                                                           42
+2823: 
+2824: Proof. On the inner weak chart the uniform marked C 3 theorem gives, for each of hj , Σj , and Fj , a
+2825: Taylor expansion with a remainder whose kth scalar derivative is bounded by Ck u3−k , 0 ≤ k ≤ 2. The
+2826: exactly recombined charged complement contributes the displayed C 3 -flat row. Tree level and the unit
+2827: tangent are volume independent. Lemma 5.4 compares the remaining quadratic coefficients of hj and
+2828: Σj with their thermodynamic coefficients by CδG (Mj ); permanently localized histories contribute the
+2829: exponential part already included in (11).
+2830:    For the reduced map, expand the exact finite-volume intertwining identity
+2831: 
+2832:                                              hj+1 ◦ Fj = Σj ◦ hj
+2833: 
+2834: through second order. If the quadratic coefficients of hj , hj+1 , and Σj are aj , aj+1 , and bj , respectively,
+2835: then the quadratic coefficient of Fj is bj + aj − aj+1 . Since Mj+1 = Mj /2 and δG (Mj /2) ≤ CG δG (Mj ) on
+2836: the admitted range, the same finite-size row holds for Fj . Taylor’s theorem and the flat charged row now
+2837: give (13). Under (14), the finite-size term and its first derivative are cubic and quadratic, respectively,
+2838: while the flat term is smaller than every power. Composition with the unit-tangent hj proves (16).
+2839: 5.2.3 Measure-level intertwining
+2840: For each scheduled step let Bj∗ be the exact Karcher pushforward from scale aj to aj+1 , including
+2841: canonical rescaling and exact regular/irregular label recombination. Define the corresponding finite-
+2842: volume standard-scheme map by
+2843:                                      Σj gaj (µ) := gaj+1 (Bj∗ µ).                               (17)
+2844:                                                
+2845: 
+2846: This evaluates the local renormalization condition after the exact physical pushforward and does not
+2847: push a gauge condition through the block. Let Σ∞ = Σstd denote the autonomous rooted-thermodynamic
+2848: comparison obtained from the same local functional. The scheduled comparison through the quadratic
+2849: jet is O(δG (Mj )u2 + u3 ) + O(u−p e−c/u ) through the two background marks, and becomes OG (u3j ) after
+2850: evaluation on an admissible directed orbit.
+2851: Theorem 5.6 (Nonautonomous full-measure coordinate intertwining). For the fixed tail-compatible
+2852: schedule s and all sufficiently small u,
+2853: 
+2854:                              hj+1 ◦ Fj = Σj ◦ hj         for every scheduled step j.                       (18)
+2855: 
+2856: The autonomous identity is only the common C 3 endpoint comparison. For another schedule or the
+2857: regular-only inner-chart measure, the quadratic-jet comparison is the row of Lemma 5.5. On an admissible
+2858: directed orbit it is OG (u3j ) in value and OG (u2j ) after one scalar derivative. No vanishing finite-volume
+2859: two-jet and no exponential acoustic wrapping row is asserted.
+2860: Proof. The definition of the exact scheduled RG step gives the literal finite-volume measure identity
+2861: 
+
+===== support P HIT 4 source line 2946 =====
+2901:                                                                    [3,2]
+2902:                                                     R⋆ (u) ∈ Airr .
+2903: For its tangent H = R⋆′ (0) =
+2904:                                  P
+2905:                                    X HX one has, support by support,
+2906: 
+2907:                                              [2]
+2908:                                             EX HX = 0             for every X.                            (19)
+2909: 
+2910: The same identity holds after every finite passive-source mark consumed by the local background coordinate.
+2911: Proof. Step (E4) localizes each exact connected history, transfers the extracted jet to the finite coordinate
+2912: block, and retains the complementary activity. The exact Loc/collect dichotomy proves that localizing
+2913: before canonical hull collect is identical to collecting first and applying the projector on the final
+2914:                                                                                    [2]
+2915: rooted hull. Hence, with X denoting that final hull, the retained output is Pirr,X Φreg,X and satisfies
+2916:  [2]                                          [2]      [2]
+2917: EX Φirr,X = 0 by the projector identity EX (I − EX ) = 0. The projector and the finite marked localization
+2918: are independent of u and of the passive source parameters, so differentiation commutes with this identity.
+2919: Conditional Gaussian expectation preserves the Wick splitting by the marked Gaussian martingale, and
+2920: every localization commutator is re-extracted before the stable output is declared. Hence the graph
+2921:                                                        [3,2]
+2922: transform is a self-map of the closed Banach space Airr . Its unique fixed graph and all marked derivatives
+2923: remain in that space. This proves the supportwise identity, not merely a cancellation after summing
+2924: supports.
+2925: Lemma 5.9 (Marked two-quantum-leg reduction in the actual stable fiber). Let H = X HX be the
+2926:                                                                                            P
+2927: tangent from Theorem 5.8. Choose 0 < a0 < κ and η = (κ − a0 )/2. Then
+2928:                                          X
+2929:                                      sup    e(a0 +η)τ (X) ∥HX ∥a;3,2 < ∞.
+2930:                                         e
+2931:                                             X∋e
+2932: 
+2933: After the two background marks are taken, every finite-support background/quantum/ghost kernel of
+2934: HX has zero complete local jet below engineering degree five. In the reflection-even physical background
+2935: two-point sector, degree five is absent by signed-hypercubic reflection, so the first nonzero associated-graded
+2936: component has degree at least six. The two-quantum-leg kernel is a sum of at most C|X|2 rooted edge-pair
+2937: terms, with coefficients bounded by C(1 + diam X)q ∥HX ∥a;3,2 .
+2938: 
+2939: Proof. The exponential row is the differentiated invariant-graph bound with an unused support reserve.
+2940: Equation (19) removes, after the active marks, every local jet carried by Πext ; in particular it removes
+2941: the marked B 2 A2 row that invalidates an unmarked centering argument. At first order in the tangent
+2942: insertion, the one-loop identity L = I − V + 1 = 1 shows that every additional quantum vertex is
+2943: a tree attachment to the unique loop; after those tree attachments are collected, the insertion enters
+2944: the background two-point amplitude through one effective two-quantum-leg kernel. Two fluctuation
+2945: derivatives choose an ordered pair of edges in X, producing at most C|X|2 terms. Rooted parallel
+2946: transport and finite localization cost only a support polynomial. Reflection excludes an odd engineering
+2947: degree in the physical scalar two-point sector.
+2948: Lemma 5.10 (Mixed one-loop topology and subtraction ledger). Fix one rooted support X and expand
+2949: the nonexceptional background two-point coefficient to first order in the invariant-graph tangent and to
+2950: the finite Wilson order required at one loop. A forest renormalization part means a proper connected
+2951: 1PI subgraph with an internal line and the SI–6 subtraction degree; the effective two-quantum-leg HX
+2952: kernel is one indivisible vertex. After tree attachments are collected, the reduced graph is unicyclic and
+2953: every marked vertex lies on its unique cycle. Every complete BPHZL packet is exactly one of: (W) a
+2954: pure-Wilson packet; (H1) one marked insertion, with only pure-Wilson contractions or one mixed cycle
+2955: contraction; (H≥ 2) several marked insertions with the same alternatives; or (Hfar) a diam X > 1. A
+2956: 
+2957: 
+2958:                                                              44
+2959: 
+2960: mixed contraction is loop-free. A loop-bearing mixed quotient retains a marked kernel whose complete jet
+2961: through degree four vanishes and whose physical even component begins in degree six. Hence only (W)
+2962: can carry an unsuppressed P⋆ log a term; every row has polynomial support multiplicity, and (Hfar) is
+2963: O(aN ) for every fixed N after the rooted sum.
+2964: 
+2965: Proof. A connected one-loop graph has one simple cycle; every other internal edge is a bridge. A connected
+2966: 1PI subgraph cannot contain an internal bridge, so a nontrivial mixed renormalization part must contain
+2967: the full unique cycle. Contracting it removes the sole loop. This also settles nested and overlapping
+2968: forests: after one mixed contraction every outer quotient is loop-free, disjoint mixed parts are impossible,
+2969: and a forest with no mixed member leaves one marked loop. Lemma 5.9 supplies its degree-six kernel;
+2970: the unused support exponent absorbs the finite edge-pair and localization polynomials.
+2971: 
+2972: Definition 5.11 (Lowenstein infrared dimension at the coefficient interface). Give a vector, background-
+2973: vector, ghost, or antighost leg infrared dimension one, and give a lattice difference and the Lowenstein
+2974: variable 1 − s infrared dimension one. For a periodic vertex symbol V let νIR (V ) be its lower Taylor order
+2975: when all incident soft momenta and 1 − s are scaled together, and put
+2976: 
+2977:                                ρ(V ) := νIR (V ) + nA (V ) + nc (V ) + nc̄ (V ),
+2978: 
+2979: where background-vector legs are counted in nA . The SI–7M vertex condition used here is
+2980: 
+2981:                                                    ρ(V ) ≥ 4                                           (20)
+2982: 
+2983: for every elementary or reduced local vertex entering a Lowenstein forest. For a connected soft graph γ
+2984: whose massless vector and ghost lines have order −2, incidence and Lγ = Iγ − |Vγ | + 1 give
+2985:                                           X                        X
+2986:                      ω(γ) = 4Lγ − 2Iγ +       νIR (Vv ) = 4 − Eγ +     ρ(Vv ) − 4 .                 (21)
+2987:                                                                                  
+2988: 
+2989:                                            v∈Vγ                         v∈Vγ
+2990: 
+2991: 
+2992: Lemma 5.12 (Complete infrared vertex and forest admission). Fix X with a diam X ≤ 1, a graph in
+2993: Lemma 5.10, q ∈ Q⋆ , and at most two background-amplitude marks. With Lowenstein parameter s, write
+2994:                                                 X
+2995:                                   RGLZ
+2996:                                        (q, s) =     TFLZ IG (q, s),                            (22)
+2997:                                                    F ∈F(G)
+2998: 
+2999: 
+3000: where TFLZ is the ordered SI–6B/SI–7M forest operator. At s = 1 only this complete packet is evaluated.
+3001:   Every elementary vertex and every reduced vertex admitted by the forest satisfies (20). More explicitly,
+3002: 
+3003:                        vertex family                 νIR       number of dimension-one legs    ρ
+3004:              vector or ghost quadratic symbol         2                     2                  4
+3005:            three-vector or ghost–vector vertex       ≥1                     3                 ≥4
+3006:          four-vector, seagull, or tadpole vertex     ≥0                     4                 ≥4
+3007:              pure-Wilson reduced local vertex       4−n                     n                  4
+3008:            loop-bearing marked reduced vertex       ≥6−n                    n                 ≥ 6.
+3009: 
+3010: The two background marks create external legs and do not differentiate external momentum, so they do
+3011: not lower these orders. A mixed forest contraction is loop-free. A pure-Wilson contraction produces only
+3012: a standard dimension-four background-field vertex, while every quotient that retains the stable insertion
+3013: retains its degree-six marked vertex.
+3014:    Consequently every subtraction-generated exceptional configuration is covered by the SI–7M forest
+3015: theorem, not estimated as a separated Taylor piece. In particular, for the one-loop two-point classes the
+3016: complete list of soft degrees is
+3017: 
+3018:                                    ω vector bubble = 4 − 2 · 2 + 1 + 1 = 2,
+3019:                                    ω ghost bubble = 4 − 2 · 2 + 1 + 1 = 2,
+3020:                                   ω seagull/tadpole = 4 − 2 = 2.
+3021: 
+3022: These values also cover the exceptional zero-momentum configurations created inside the Lowenstein
+3023: operators. A loop-bearing marked quotient has at least two additional infrared degrees. Thus every complete
+3024: packet has strictly positive lower infrared degree in every soft subspace.
+3025: 
+3026: 
+3027:                                                       45
+3028: 
+3029:    The pure-Wilson ultraviolet degrees are the SI–6 degrees. By the one-cycle ledger, a mixed contraction
+3030: consumes the loop; otherwise the quotient retains a degree-six marked kernel and has ultraviolet excess at
+3031: least two. Hence all overall and proper-quotient ultraviolet degrees required by SI–7 are admissible. After
+3032: the finite SI–7M sector decomposition, uniformly in the periodic side M and through the two marks, the
+3033: grouped packet obeys
+3034:                                                        
+3035:                                        X
+
+===== support P HIT 5 source line 3106 =====
+3061: every fixed N .
+3062: Proof. Fix one support and q ∈ Q⋆ , keeping background, quantum, and ghost momenta separate. Apply
+3063: the complete SI–6B/SI–7M packet and the graph classification of Lemma 5.10. Lemma 5.12 verifies, for
+3064: every complete packet and through the two consumed background marks, lattice periodicity, denominator
+3065: scaling, numerator smoothness, all overall and proper-subgraph degrees, the pure-Wilson/loop-free-
+3066: local/loop-bearing marked trichotomy, support-polynomial control, and uniform rooted domination.
+3067: SI–7M is therefore applicable to every complete loop-bearing post-contraction packet. Pure-Wilson
+3068: proper divergent subgraphs are removed in the SI–6 scheme, while every quotient that still contains
+3069: the distinguished stable insertion has irrelevant excess at least two. Lemma 5.9 gives a finite sum of
+3070: two-quantum-leg symbols whose complete marked local Taylor jet starts at engineering degree d ≥ 6. The
+3071: complete marked Taylor polynomial of the insertion through degree four is zero by (19). Subtractions
+3072: may produce local power rows but cannot restore a marginal input exponent; the remaining symbol
+3073: carries ad−4 .
+3074:    On each fixed unit loop-momentum annulus, the verified SI–7/SI–7M hypotheses give the uniform
+3075: marked bound used below. Write the ultraviolet annuli as |k| ≍ 2j with 0 ≤ j ≤ J(a) = O(| log a|). A
+3076: marked component of engineering degree d contributes to P⋆ with an explicit ad−4 and an annulus row
+3077: bounded by C2(d−4)j . If d > 4, the annulus sum is geometric:
+3078:                                                    J(a)
+3079:                                                    X
+3080:                                          a   d−4
+3081:                                                           2(d−4)j = O(1),
+3082:                                                    j=0
+3083: 
+3084: so it produces a finite local scheme row and no logarithm. A logarithm occurs only at the marginal
+3085: exponent d − 4 = 0. Higher external-momentum Taylor coefficients can lower the annulus exponent to
+3086: zero, but then they retain the explicit ad−4 ; for d ≥ 6 their logarithmic row is O(a2 | log a|). Hence an
+3087: unsuppressed P⋆ log a term would require a nonzero marked degree-four input jet, which is absent. No
+3088: assertion that a redundant dimension-four insertion is annihilated support by support is used: such rows
+3089: have already been extracted and are not present in HX .
+3090:    Finite-support multiplicity is polynomial in diam X; for a diam X > 1, the strict support reserve
+3091: dominates every prescribed power of a.
+3092: 
+3093: 
+3094:                                                            46
+3095: 
+3096: Lemma 5.14 (Uniform quasi-local marked universality). For the actual stable graph tangent H, the
+3097: one-loop nonexceptional background packet is an absolutely and uniformly convergent rooted sum of (24).
+3098: For some finite q,
+3099:                            (2)
+3100:                          |IX (a)| ≤ C(1 + diam X)q e−(a0 +η)τ (X) (1 + a2 | log a|).
+3101: The unsuppressed physical logarithm vanishes support by support:
+3102:                                                    (2)
+3103:                                      [log a] P⋆ IX = 0        for every X.                                (25)
+3104: Thus the full centered invariant family differs from the canonically normalized Wilson family by one finite,
+3105: scale-independent C 2 scheme map through the two consumed background marks.
+3106: Proof. The support polynomial in Lemma 5.13 is absorbed by the strict exponent reserve. The finite-
+3107: support amplitudes and their two background derivatives may therefore be summed before removing the
+3108: cutoff. At the quadratic order in the marginal coordinate needed for the one-step coefficient, apply the
+3109: complete SI–6B/SI–7M lattice BPHZL packet, the exhaustive ledger of Lemma 5.10, and the complete
+3110: post-contraction admission check of Lemma 5.12 to every mixed Wilson/stable term. A marginal proper
+3111: subgraph containing only Wilson vertices is exactly a standard background-field subgraph and is subtracted
+3112: in the SI–6 scheme. After all such subgraphs are contracted, every remaining quotient graph contains at
+3113: least one stable marked insertion and hence has positive irrelevant excess, at least two in the reflection-even
+3114: physical sector. Its overall annulus sum is therefore a power row or an explicitly a2 | log a|-suppressed
+3115: row, not an unsuppressed logarithm. Multiple stable insertions only increase that excess. The marked
+3116: stable-fiber identity removes every degree-four input row before this forest analysis. Uniform convergence
+3117: leaves one finite C 2 local scheme term and no new unsuppressed logarithmic coefficient.
+3118: Lemma 5.15 (Scale-independent finite scheme map). Let gW be the local standard coupling on the
+3119: canonically rescaled pure Wilson family and let g⋆ be the same local functional on the full centered
+3120: invariant family. On the common weak interval there is one C 2 map
+3121:                                   s(g) = g + cs g 2 + O(g 3 ),      s′ (0) = 1,
+3122: independent of the dyadic lattice spacing, such that
+3123:                                                     g⋆ = s(gW )
+3124: at both ends of every factor-two step. Consequently
+3125:                                             Σstd = s ◦ ΣW ◦ s−1 .
+3126: The C 3 -flat irregular complement is included in s; no analyticity at g = 0 is claimed or needed.
+3127: Proof. Evaluate the same canonically rescaled nonexceptional projector P⋆ on the two full weak families.
+3128: Their tree Hessians coincide. Their first difference is the invariant-graph tangent uH1 , whose vacuum
+3129: scalar and complete dimension-four retained projection vanish. Lemma 5.14 proves, rather than assumes,
+3130: that the entire exponentially quasi-local insertion family contributes a finite scale-independent transverse
+3131: scheme row and no new unsuppressed log a coefficient. SI–6 excludes an independent background
+3132: dimension-four counterterm. The inner-chart difference is therefore a finite C 2 unit-tangent redefinition.
+3133: U4 adds a C 3 -flat term through the two consumed background marks, which changes neither s′ (0) nor its
+3134: quadratic coefficient. Canonical rescaling identifies the profile, gauge fermion, subtraction projector, and
+3135: cutoff with the same unit-lattice template at every dyadic scale, so the same map s occurs before and
+3136: after the step. The displayed conjugacy follows from the definitions.
+3137: Theorem 5.16 (Thermodynamic standard-scheme coefficient and scheduled orbit row). The rooted-
+3138: thermodynamic standard map satisfies
+3139:                                                    11 CA (G) log 2 2
+3140:                                  Σ∞ (v) = v +                     v + OG (v 3 ).                          (26)
+3141:                                                        24π 2
+3142: If vj = hj (uj ) lies on an admissible directed orbit, then
+3143:                                                    11 CA (G) log 2 2
+3144:                                  Σj (vj ) = vj +                  vj + OG (vj3 ),                         (27)
+3145:                                                        24π 2
+3146: uniformly along the orbit. No assertion is made that a fixed finite-volume map Σj (v) has exactly this
+3147: second derivative at v = 0.
+3148: 
+3149: 
+3150:                                                          47
+3151: 
+3152: Proof. SI–8 gives b0 (G) = 11CA (G)/(48π 2 ) in the pure-G flow µ dg/dµ = −b0 (G)g 3 + OG (g 5 ). Hence
+3153: µ du/dµ = −11CA (G)u2 /(24π 2 ) + OG (u3 ) for u = g 2 ; reversing to increasing physical length and
+3154: integrating over one factor-two interval gives 11CA (G) log 2/(24π 2 ). SI–6, SI–6B, SI–7, and SI–7M
+3155: identify this coefficient in the Wilson nonexceptional background scheme. Lemma 5.14 shows that the
+3156: complete centered tangent family adds no unsuppressed logarithmic coefficient, while Lemma 5.15 gives a
+3157: C 2 unit-tangent finite scheme change. This proves (26). The orbitwise comparison of Lemma 5.5 changes
+3158: the finite-volume value by O(δG (Mj )vj2 + vj3 ) + O(vj−p e−c/vj ) = OG (vj3 ) and gives (27).
+3159: Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+3160: rooted-thermodynamic reduced map satisfies
+3161: 
+3162:                                                11 CA (G) log 2 2
+3163:                                 F∞ (u) = u +                  u + OG (u3 ).
+3164:                                                    24π 2
+3165: For every admissible directed orbit,
+3166:                                                   11 CA (G) log 2 2
+3167:                                 Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+3168:                                                       24π 2
+3169: uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+3170: the shooting and first-crossing theorems.
+3171: Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+3172: C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+3173: Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+3174: at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+3175: differentiated at fixed Mj .
+3176: 
+3177: 5.3    Domain compactness and chart invariance
+3178: Let Ba,N be the rooted activity space with norm
+3179:                                                X
+3180:                                  ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+3181:                                                   e
+3182:                                                       X∋e
+3183: 
+3184: where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+3185: connected support shapes of size at most m occur.
+3186: Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and a′ < a, every bounded subset of Ba,N ,
+3187: N ≥ 1, is relatively compact in Ba′ ,N −1 .
+3188: Proof. Let F be bounded by M in Ba,N . For a cutoff L,
+3189:                                  X      ′                        ′
+3190:                             sup       ea |X| ∥FX ∥C N −1 ≤ e−(a−a )L M,
+3191:                                   e
+3192:                                         X∋e
+3193:                                        |X|>L
+3194: 
+3195: uniformly in F ∈ F.
+
+===== support P HIT 6 source line 3604 =====
+3559: 
+3560:                                              I⋆ = [ū, ū + Ccr ū2 ] ⋐ (0, u⋆ )
+3561: 
+3562: and 0 < a0 < a. The weak output radius is
+3563: 
+3564:                        Mwk := sup u∥PYM ∥a;3,N + ∥R⋆ (u)∥⋆;a;3,N + Ku3 .
+3565:                                                                      
+3566:                                       u∈I⋆
+3567: 
+3568: This is a bound on the interaction relative to the scale-normalized Gaussian reference. It is not a
+3569: Haar-relative oscillation bound.
+3570:   Let F⋆ be the exact first-crossing family
+3571: 
+3572:                       Φ(u, ϱ) = uPYM + R⋆ (u) + ϱ,                     u ∈ I⋆ ,            ∥ϱ∥⋆;a;3,N ≤ Ku3 ,
+3573: 
+3574: and let
+3575:                                                                      Ba0 ,2,N
+3576:                                                     C⋆ = F⋆                     .
+3577: Theorem 6.6 (Compact weak first-crossing class). The class C⋆ is compact in Ba0 ,2,N and every member
+3578: satisfies the weak-reference row bounded by Mwk , uniformly in finite volume, cutoff, exterior configuration,
+3579: and preceding weak depth. No Haar-relative smallness is asserted by this theorem.
+3580: Proof. The family is bounded in the stronger Ba,3,N topology. The support reserve e−(a−a0 )|X| and
+3581: Arzelà–Ascoli on the finitely many bounded rooted shapes give compactness from C 3 to C 2 .
+3582: Lemma 6.7 (Reporting completeness and depth telescoping). Let µj be the exact retained measure after
+3583: j weak steps, before the next logarithm is taken. For every finite depth n there is an exact representation
+3584:                                                    reg
+3585:                              dµj = Zj−1 exp{−Qref
+3586:                                               j − Rj } dHj + Ij ,                                  0 ≤ j ≤ n,   (HT1)
+3587: 
+3588: where dHj is product Haar on the retained links, Qref  j is the complete allocated scalar/two-jet reference,
+3589: Rjreg is the collected regular residual, and Ij is the recombined irregular operator. Every pre-logarithmic
+3590: factor of the exact step occurs in exactly one of these three rows, and the scalar normalizations satisfy
+3591:                                                                                     n−1
+3592:                                                                                     Y
+3593:                                         Zj+1 = Zj zj ,                Zn = Z0              zj ,                 (HT2)
+3594:                                                                                     j=0
+3595: 
+3596: with no zj reappearing as a nonempty-support activity. The representation and its zero/one/two marked
+3597: versions are uniform in depth.
+3598: Proof. The assertion is proved by induction on j. At j = 0, the Wilson–Haar measure and the exact
+3599: inner/collar/outer partition give (HT1): the complete quadratic reference is Qref
+3600:                                                                               0 , the post-two-jet inner
+3601: density is the regular row, and the recombined collar/outer/curvature labels are I0 .
+3602:    Assume (HT1) at step j. Apply the exact joint Gaussian/Karcher disintegration before taking a
+3603: connected logarithm. DAS3 retains the scalar normalization of that one joint law once at the exterior
+3604: endpoint; call it zj . The empty-support part therefore multiplies Zj and gives (HT2). All nonempty
+3605: factors are first reported on their actual local support or on the canonical hull of their exponential
+3606: 
+3607: 
+3608:                                                                 54
+3609: 
+3610: connector. The factor inventory is exhaustive: Wilson words, product-Haar coordinate factors, coarea
+3611: and normal returns, gauge-coordinate endpoints, Gaussian/Schur endpoints, inherited activities, cutoffs,
+3612: and source leaves are exactly the ownership inventory in row (U1) of Theorem 5.27, implemented by
+3613: the one-step maps (E1)–(E6), together with the labelled inner/collar/outer partition. The labels sum
+3614: pointwise to one before logarithms, so an atlas-boundary factor cannot be lost between branches.
+3615:    Definition 3.22 assigns every reported nonempty factor to precisely one of the regular, one-core, or
+3616: cross rows; Lemma 3.25 does the same for every connected determinant word. Exact collect then replaces
+3617: each history by one canonical hull. The history-compatibility theorem computes the next allocation only
+3618: from this collected output, so neither a factor nor its scalar normalization is copied at a later depth. This
+3619: gives (HT1) at j + 1. The normalized structural/source marks commute with the finite induction and are
+3620: bounded by the same permanent rows, proving depth uniformity.
+3621: Proposition 6.8 (Reconstruction of the compact Haar reference). At every endpoint in C⋆ , the exact
+3622: Wilson–Haar identity, the ownership theorem, and the connected-logarithm admission give three families
+3623: of scale-normalized factors:
+3624:    (i) reference factors qA  ref
+3625:                                  (u) containing the Gaussian precision, its compact Haar completion, and the
+3626:        complete allocated two-jet;
+3627:   (ii) regular residual activities rA (u);
+3628:  (iii) irregular core operators bX (u) after exact label recombination.
+3629: There are mref , areg , airr > 0 and fixed constants such that, with zero, one, or two exterior/source marks,
+3630:                                      X
+3631:                                  sup     emref diam A ∥qA
+3632:                                                         ref
+3633:                                                             (u)∥C 2sG ≤ Cref (u−1 + 1),                  (42)
+3634:                              e
+3635:                                  A∋e
+3636:                                        X
+3637:                                  sup         eareg |A| ∥rA (u)∥C 2sG ≤ Creg (uω0 + u3 ),                (43)
+3638:                                   e
+3639:                                        A∋e
+3640:                                        X
+3641:                                  sup         eairr |X| ∥bX (u)∥[2sG ] ≤ Cirr u−p e−c/u .                (44)
+3642:                                   e
+3643:                                        X∋e
+3644: 
+3645: All constants are uniform in the microscopic depth.
+3646: 
+3647: Proof. Apply Lemma 6.7 at the directed crossing depth. Equation (HT2) places the product of all empty-
+3648: support Gaussian, coarea, and chart normalizations in the single scalar Zn ; it is therefore absent from
+3649: every rooted row. The nonempty complete two-jets collected into Qref n have the explicit depth-uniform
+3650: form
+3651:                                  n =u
+3652:                                Qref     −1
+3653:                                             Qtempl + Qtail
+3654:                                                        n,opt + Qn,fin ,
+3655:                                                                  tail
+3656:                                                                                                   (HT4)
+3657:                                                             
+3658:                                               opt
+3659: 
+3660: where the fixed optical template and both tail families have uniformly summable exponential rows with
+3661: their first two marks. The prefactor u−1 occurs once, not once per weak depth: (HT2) has already
+3662: removed all empty-support normalizations, and DAS2 uses the same scale-normalized optical template at
+3663: every step. Restoring product Haar measure converts the physical link logarithm only at the final scale.
+3664: The optical precision and its first two marked derivatives lie in the exponential matrix algebra. Summing
+3665: the finite-template incidences gives (42).
+3666:    The regular factors in (HT1) are exactly the species of Proposition 4.26. The invariant-graph cone and
+3667: output recertification therefore give (43). The recombined irregular row is bounded by Theorem 3.31,
+3668: giving (44). For the fixed group G, the Karcher, Haar, coarea, splice, and coordinate templates are
+3669: holomorphic or C ∞ through every order used here. Repeating the differentiated finite-dimensional score
+3670: and total-variation estimates for 0 ≤ h ≤ 2sG changes only the fixed constants. The permanent support
+3671: reporting is unchanged because these are internal pivot derivatives, not additional physical-source marks.
+3672: Reporting completeness in Lemma 6.7 proves that every atlas, partition, Jacobian, gauge-coordinate, and
+3673: inherited factor occurs in at least one row; canonical ownership proves it occurs in at most one. Thus the
+3674: three rows are exhaustive and disjoint, and all constants are independent of the number of weak steps.
+3675: 
+3676: Lemma 6.9 (Complete one-pivot score and oscillation). Fix one live pivot p, its path product, all nonpivot
+3677: details, and exterior data η. Recombine the exact regular and irregular labels before normalization and
+3678: integrate every owned fresh variable whose factor meets no other live pivot. The resulting partial weight
+3679: wp,η (U ) is strictly positive and C 2sG on G. Uniformly for u ∈ I⋆ ,
+3680: 
+3681:                sup ∥∇U log wp,η (U )∥ ≤ Csc (u−1 + 1),            oscU log wp,η (U ) ≤ CΩ (u−1 + 1).
+3682:                U ∈G
+3683: 
+3684: 
+3685: 
+3686: 
+3687:                                                           55
+3688: 
+3689: For every 2 ≤ h ≤ 2sG one also has
+3690: 
+3691:                                   sup ∥∇hU log wp,η (U )∥ ≤ CG,h (1 + u−h ),
+3692:                                   U ∈G
+3693: 
+
+===== support P HIT 7 source line 3927 =====
+3882:                                 k=1                            k=2
+3883: 
+3884: Consequently the simultaneous path-product map has unit Haar Jacobian, is gauge covariant at path
+3885: endpoints, and intertwines aligned reflection.
+3886: Proof. For fixed details, Ue1 7→ Wγ is right multiplication by a fixed group element. Haar invariance
+3887: proves the identity. Edge-disjointness tensorizes it, gauge transformations telescope, and reflection reverses
+3888: and inverts the product.
+3889: Definition 6.15 (Carrier-adapted hybrid chart). Let A be the finite set of retained macro-links carrying
+3890: nontrivial Peter–Weyl labels, bounded probes, or retained-source derivatives in the coefficient under study.
+3891: On every path γ ∈ A retain the original link coordinates
+3892:                                          Xγ,k = Uek ,        1 ≤ k ≤ L,
+3893: and regard Wγ = Pγ (X) only as the output map. On paths γ ∈        / A use the standard (Wγ , Zγ,2:L )
+3894: coordinates. Choose live pivots only among the X variables on active paths.
+3895: 
+3896: 
+3897:                                                         58
+3898: 
+3899: Lemma 6.16 (Exact hybrid Haar disintegration). For every active set A, the mixed coordinate map has
+3900: unit Haar Jacobian:
+3901:                                                       "             L
+3902:                                                                                  #
+3903:                 YY              YY                 Y               Y
+3904:                     dmG (Ue ) =        dmG (Xγ,e )      dmG (Wγ )     dmG (Zγ,k ) .            (50)
+3905:                   γ e∈γ              γ∈A e∈γ                γ ∈A
+3906:                                                               /            k=2
+3907: 
+3908: Conditioning on all variables except separated live pivots on the active paths leaves the exact product Haar
+3909: law on those pivots. No active retained product is conditioned.
+3910: Proof. Use the identity of Lemma 6.14 only on inactive paths and the identity map on active paths.
+3911: Same-color paths are edge-disjoint, so the factors tensorize. The final conditional statement is then
+3912: immediate from (50).
+3913: 
+3914: Lemma 6.17 (Carrier incidence and original-support locality). Let p be a live pivot on an active path γ.
+3915: With all other active path links fixed,
+3916:                                         Wγ = Bp Xp±1 Cp ,                                           (51)
+3917: where Bp , Cp are independent of Xp . If a connected physical activity with original reported support Y
+3918: meets k separated live pivots, then
+3919:                                           τ (Y ) ≥ cp R(k − 1).                                     (52)
+3920: Anchor reconstruction on an inactive path cannot alter the activity’s live pivot incidence.
+3921: Proof. Equation (51) is the ordered product split before and after p. The second statement follows by
+3922: joining the k pivot buffers inside the connected reported support. Every inactive-path coordinate is a
+3923: function only of links on that inactive path; because no live pivot lies there, its substitution cannot create
+3924: dependence on a live pivot.
+3925: Lemma 6.18 (Exact carrier-adapted pivot product reference). Fix an active coefficient set A and
+3926: condition on all nonpivot variables in the hybrid chart, denoting them by η. Split the physical interaction
+3927: by original-support pivot incidence,
+3928:                                               X
+3929:                                 H = H0 (η) +      hi (Xpi ; η) + V≥2 (XP ; η).
+3930:                                                    i
+3931: 
+3932: Then the live pivots have exact product Haar base and the normalized product reference
+3933:                                            O       e−hi (X;η)
+3934:                                  νη(0) =                              dmG (X)
+3935:                                                  e−hi (Y ;η) dmG (Y )
+3936:                                                R
+3937:                                            i   G
+3938: 
+3939: is exact. Every active retained carrier remains a function of the original active-path links and varies
+3940: through each uncovered pivot as in (51). In particular, the product reference and the Haar-through-carrier
+3941: cancellation belong to one and the same conditional integral.
+3942: Proof. Apply Lemma 6.16, then split and normalize the physical factors by exact ownership. The active
+3943: retained coordinates were never conditioned and no anchor was reconstructed on their paths. Lemma 6.17
+3944: gives the final statement.
+3945: Corollary 6.19 (Definition, exactness, and coefficientwise use of BL ). The matching macroblock BL is
+3946: a well-defined finite exact pushforward on the compact first-crossing class. For every Fourier, source-
+3947: marked, or normalized-probe coefficient of its retained density, the active paths may be analyzed in the
+3948: carrier-adapted hybrid chart without changing that coefficient. The charged pivot expansion uses precisely
+3949: the reference of Lemma 6.18; gauge covariance, reflection, and dyadic composition remain properties of
+3950: the underlying exact pushforward.
+3951: 6.5.1 Compact collect with optical field live
+3952: The matching theorem is now proved on one exact joint law, before the normal/optical variables are
+3953: marginalized. This is the decisive ordering. The compact retained variables are reduced conditionally by
+3954: Haar–pivot integration; the resulting activities remain functions of the complete optical field; and only
+3955: then is the connected logarithm taken by the marked Gaussian forest theorem. Thus no retained density,
+3956: latent mixture, or residual-only gas is inserted between the physical law and the connected source kernel.
+3957: 
+3958: 
+3959: 
+3960:                                                        59
+3961: 
+3962: 6.5.2 One exact joint matching law
+3963: Let W denote the compact retained variables in the exact Karcher chart and let ζ denote its complete
+3964: optical normal field. At finite volume and with physical source J, Theorem 4.13, Theorem 3.28, and the
+3965: exact owner map give
+3966:                               dµJ (W, ζ) = Z(J)−1 dγopt (ζ) dH(W ) e−VJ (W,ζ) .                   (53)
+3967: Here dH(W ) is product normalized Haar on the compact retained links. Indeed, ρ0,j in Theorem 4.13 owns
+3968: only the field-independent linear Jacobian and empty-support normalization; Proposition 6.8 absorbs that
+3969: scalar into Z(J) and restores product Haar. Every nonempty retained reference factor remains explicit in
+3970: VJ . Every nonempty Haar, coarea, chart, determinant, Schur, regular, irregular, seam, wrapping, and
+3971: source occurrence belongs to exactly one factor of VJ . Every scalar depending on an unintegrated variable
+3972: remains inside (53). Define only the complete normalized source logarithm
+3973: 
+3974:                                           W(J) = log Z(J) − log Z(0).                                   (54)
+3975: 
+3976: No marginal density is logarithmized.
+3977: Lemma 6.20 (Exact Haar projection contraction). Let Pp denote Haar averaging in one live pivot
+3978: variable and Qp = I − Pp . For every complete one-pivot reference of Theorem 6.10, Corollary 6.11 gives
+3979: the exact decomposition
+3980: 
+3981:                          νp,η = ϵ⋆ mG + θ⋆ νep,η ,       0 < ϵ⋆ < 1,      θ⋆ = 1 − ϵ⋆ < 1.
+3982: 
+3983: Consequently its convolution/conditional-expectation operator satisfies
+3984: 
+3985:                         max ∥Tp,η Qp ∥L∞ →L∞ , ∥Tp,η Qp ∥L2 (mG )→L2 (mG ) ≤ θ⋆ .                       (55)
+3986:                              
+3987: 
+3988: 
+3989: This is the complete nonvacuum projection estimate, not a coefficientwise claim. It is group-generic.
+3990: Source marks are inserted later as marked vertices and may remove at most one unmarked payment per
+3991: mark.
+3992: 
+3993: Proof. For Pp f = 0,
+3994:                                      Tp,η f = ϵ⋆ Pp f + θ⋆ Te
+3995:                                                             νp,η
+3996:                                                                  f = θ⋆ Te
+3997:                                                                          νp,η
+3998:                                                                               f.
+3999: Translation by the fixed left and right carrier factors is an isometry in both norms. The marked statement
+4000: is exactly the one/two-mark ownership row of Theorem 6.10.
+4001: 
+4002: 6.5.3 Final compact Haar-pivot collect
+4003: In (53), write U for the compact matching links and keep the complete optical field ζ and the actual
+4004: local source roots unchanged. Apply the exact compact-only path-product block BL to U as a finite
+4005: matching operation. Corollary 6.19 permits coefficientwise use of its hybrid chart, while every compact
+4006: path detail is integrated in the same complete joint partition function. No optical variable is identified
+4007: with a compact path detail, and no source is assumed fiber-constant under BL . The block is used once to
+4008: place many same-law Haar pivots inside each coarse compact edge.
+4009: Definition 6.21 (Matching-stage tri-graded norm). For a compact-stage activity family F = (FX ) and
+4010: fixed positive mark weights σpiv , σζ , σJ , set
+4011:                                                                   |α|
+4012:                                                X                 σpiv σζr σJq
+4013:                        ∥F ∥a;2sG |3|2 := sup         ea|X| max                 α
+4014:                                                                               Dpiv Dζr DJq FX .         (56)
+4015:                                          p               |α|≤2sG |α|! r! q!
+4016:                                                X∋p       0≤r≤3
+
+===== support P HIT 8 source line 4230 =====
+4185:                          Y                        Y                          O
+4186:               e−VJ (U,ζ)   dmG (Up ) = e−H0 (ζ;J)    Zp,J (ζ)e−V≥2,J (UP ,ζ)   νp,ζ,J (dUp ).                    (59)
+4187:                              p∈P                             p∈P                                  p∈P
+4188: 
+4189: A J-derivative marks its assigned factor but does not change its original fine-link incidence, so the same
+4190: trichotomy is exhaustive through every fixed source order used below.
+4191: Proof. The reporting theorem lists every Wilson, reference, chart, coarea, determinant, regular, irregular,
+4192: inherited, cutoff, and source factor before normalization. Exact recombination removes the temporary
+4193: inner/collar/outer labels, and the canonical owner assigns each resulting factor and fresh variable once.
+4194: The three possible incidences are mutually exclusive and exhaustive. The separated pivot buffers make
+4195: the sets Yp disjoint, so Fubini first produces the complete partial weights wp,J and then gives Zp,J and
+4196: νp,ζ,J . The zero-pivot row remains H0 , while every factor meeting at least two pivots remains in V≥2,J .
+4197: Differentiation in J marks factors inside the same owned partial integral and does not change their
+4198: geometric support, proving the final claim.
+4199:    Every Zp,J (ζ) remains in the complete optical integral, and every nonpivot compact variable is
+4200: integrated coefficientwise before the optical connected logarithm.
+4201:    For zA,J = e−VA,J − 1 and pivot incidence n(A), define
+4202: 
+4203:                                               eℓn(A) ems diam A ∥DJ≤2 zA,J |J=0 ∥[3] ,
+4204:                                           X
+4205:                             ζz (R) := sup                                                     (60)
+4206:                                             p
+4207:                                                 A∋p
+4208: 
+4209:                                                       eℓn(A) ems diam A ∥DJ≤2 VA,J |J=0 ∥[3] ,
+4210:                                                 X
+4211:                                ζV (R) := sup                                                                     (61)
+4212:                                             p
+4213:                                                 A∋p
+4214: 
+4215: where ℓ > − log θ⋆ and ms > 0 lies below the unused reference/regular/irregular support exponents. The
+4216: multipivot theorem and ∥e−VA − 1∥ ≤ e∥VA ∥ ∥VA ∥ imply ζz (R) + ζV (R) → 0 uniformly on I⋆ .
+4217: 
+4218: Incidence-split product-group nuclear row and cycle-safe compact collect. Fix once and for
+4219: all a finite physical-source order Q < ∞; the boundary-to-center theorem consumes only Q = 2.
+4220: Lemma 6.27 (Fixed-order source upgrade at matching). For every fixed Q < ∞, the matching-stage
+4221: product-tube, one-pivot-score, multipivot-activity, positive-denominator, and regular/irregular recombina-
+4222: tion rows printed above with q ≤ 2 remain valid with q ≤ Q. The constants may depend on Q but are
+4223: independent of cutoff, volume, exterior datum, and preceding weak depth. Original-support exponents and
+4224: pivot-incidence charges are unchanged. With the exponential generating normalization in q, the constants
+4225: are bounded on one common disc |tJ | < ρJ .
+4226: Proof. The physical source enters the exact pre-marginal law through the common analytic species
+4227: tube used in Lemma 6.22; no source-dependent scalar is removed before compact integration. On that
+4228: fixed tube, multivariable Cauchy gives every prescribed finite J derivative of the one-pivot scores, VA ,
+4229: zA = e−VA − 1, and the exact positive denominators. Differentiation does not enlarge original fine-link
+4230: support or selected-pivot incidence. Repeating the ownership and reserved-support proof of (HT5)
+4231: changes only the fixed Cauchy constant. The arbitrary passive-source row of Theorem 5.27 supplies the
+4232: corresponding finite local source coefficient norm at the incoming interface. This proves the fixed-Q
+4233: upgrade.
+4234:    For a finite pivot set I, write GI = p∈I Gp . For a scalar or finite-dimensional coefficient-valued
+4235:                                           Q
+4236: 
+4237: function f on GI , define the product Fourier–Wiener norm
+4238:                                          X                         Y
+4239:                               ∥f ∥AI :=      dλ ∥fb(λ)∥S1 ,  dλ :=     dλp .                        (62)
+4240:                                           bI
+4241:                                         λ∈G                        p∈I
+4242: 
+4243: 
+4244: The coefficient norm is the fixed projective norm of the finite marked coefficient space.
+4245: 
+4246: 
+4247:                                                               63
+4248: 
+4249: Lemma 6.28 (Product Fourier–Wiener calculus). For scalar f ∈ AI , convolution by f on L2 (GI ) is
+4250: trace class and
+4251:                                 ∥Kf ∥S1 (L2 (GI )) = ∥f ∥AI .                               (63)
+4252: If I ⊂ I ′ , lifting f by independence of the coordinates in I ′ \ I preserves the norm. Pointwise multiplication
+4253: satisfies
+4254:                                               ∥f g∥AI ≤ ∥f ∥AI ∥g∥AI .                                       (64)
+4255: The same inequalities hold coefficientwise in the declared finite projective marked norm. Left/right
+4256: translations, inversion, and coordinate permutations are isometries.
+4257: Proof. Peter–Weyl decomposes L2 (GI ) into the blocks Vλ ⊗ Vλ∗ . Convolution has block fb(λ) ⊗ I, whose
+4258: trace norm is dλ ∥fb(λ)∥S1 ; summing gives (63). A lifted function has only the trivial Fourier block in
+4259: every added coordinate, proving isometry. The standard coefficient-product formula, complete contraction
+4260: in the unitary Clebsch–Gordan maps, and the projective trace norm give (64). The remaining symmetries
+4261: are unitary changes of Peter–Weyl blocks.
+4262: Lemma 6.29 (One-original-pivot nuclear supplier). Let p be one live original-link pivot and let ρp,η,J =
+4263: dνp,η,J /dmG . Write Kp,η,J for convolution by ρp,η,J on L2 (G) and Qp = I − Pp . There are constants
+4264: Ctr,r,q < ∞, 0 ≤ r ≤ 3, 0 ≤ q ≤ Q, independent of cutoff, volume, exterior data, and weak depth, such
+4265: that
+4266: 
+4267:                                                      ∥Kp,η,0 Qp ∥op ≤ θ⋆ ,                                  (65)
+4268:                                     ∥Dζr DJq Kp,η,J |J=0 ∥S1 (L2 (G)) ≤ Ctr,r,q .                           (66)
+4269: 
+4270: Put
+4271:                              (0)
+4272:                            Ctr := max{1, Ctr,0,0 },            mark
+4273:                                                               Ctr,Q := max Ctr,r,q .
+4274:                                                                         r≤3,q≤Q
+4275: 
+4276:                                                                                     (0)
+4277: The trace estimate includes the one-dimensional Haar block. Only Ctr is charged per covered pivot;
+4278: marked constants occur at at most 3 + Q locations and are absorbed into the fixed marked prefactor.
+4279: Proof. The centered operator contraction is Lemma 6.20. The joint pivot–optical–source tube and the
+4280: fixed-Q form of Lemma 6.23 give uniform pivot derivatives through order 2sG of every displayed marked
+4281: logarithmic density. Together with (48),
+4282: 
+4283:                             ∇ρ = ρ∇ log ρ,        ∇2 ρ = ρ{∇2 log ρ + (∇ log ρ)⊗2 }
+4284: 
+4285: and the higher Bell-polynomial identities through order 2sG give a uniform C 2sG (G) bound. Peter–Weyl
+4286: Plancherel, the spectral Weyl law on the compact manifold G, and 2sG > dG /2 give
+4287:                                                                           X           d2λ
+4288:               ∥f ∥A{p} ≤ CG,sG ∥(1 − ∆G )sG f ∥L2 (G) ,         2
+4289:                                                                CG,s   =                         < ∞,        (67)
+4290:                                                                     G
+4291:                                                                                 (1 + C2 (λ))2sG
+4292:                                                                           λ∈G
+4293:                                                                             b
+4294: so convolution by every scalar marked coefficient is trace class. Lemma 6.28 identifies its trace norm
+4295: with the corresponding Fourier–Wiener norm; the finite marked tensor is estimated in the declared
+4296: projective coefficient norm. The Fourier sum is a cutoff-independent majorant, proving trace-norm cutoff
+4297: removal.
+4298: Lemma 6.30 (Tensorized pivot–Wiener activity row). Let IP (A) be the selected pivot incidence of a
+4299: multipivot activity and put n(A) = |IP (A)| ≥ 2. For every λ > 0 there is a separation threshold R0 (λ),
+4300: independent of Q, such that for every fixed Q < ∞ and R ≥ R0 (λ) there are ms > 0 and Cλ,Q < ∞ such
+4301: that
+4302:                    X                           σζr σJq
+4303:                sup     eλn(A) ems diam A max           ∥Dζr DJq zA,J |J=0 ∥AIP (A) ≤ Cλ,Q ∆R (u).  (68)
+4304:                 p                        0≤r≤3 r!  q!
+4305:                     A∋p                   0≤q≤Q
+4306: 
+4307: The same statement holds with zA replaced by VA . In particular the left side tends to zero uniformly on
+4308: I⋆ as R → ∞.
+4309: 
+4310: 
+4311: 
+4312: 
+4313:                                                          64
+4314: 
+4315: Proof. For I of cardinality n, tensorizing (67) gives
+4316: 
+4317:                                                           Y
+4318:                                           n
+4319:                                 ∥f ∥AI ≤ CG,s G
+
+===== support P HIT 9 source line 4833 =====
+4788: exact regular/irregular owner decomposition. Integrating the finite interpolation gives the same estimate.
+4789: No claim for arbitrary uncontrolled boundary measures is needed downstream.
+4790: Corollary 7.4 (Uniform two-buffer connector rows). Let I1 , I2 be bounded source, displacement, stress,
+4791: or retained-link buffers. Every exact connected response meeting both buffers has exponentially weighted
+4792: row and column sums bounded by Aq through source order two, uniformly in volume, cutoff, exterior
+4793: configuration, and preceding weak depth. Use the two buffers as the declared roots in Theorem 6.43; the
+4794: vertex inventory is exact by Lemma 6.7 and Proposition 6.8, while Corollary 7.8 excludes an additional
+4795: unreported acoustic class.
+4796: 
+4797: 
+4798: 
+4799: 
+4800:                                                       71
+4801: 
+4802: 7.1    Acoustic exclusion at the exact matching call site
+4803: Lemma 7.5 (No massless retained reference at matching). In the exact post-compact joint partition of
+4804: Corollary 6.40, the retained compact field has product normalized Haar reference and has already been
+4805: integrated coefficientwise before the optical connected logarithm is taken. The massless tangent Feynman
+4806: Gaussian used in the weak normal-chart construction is not a live matching reference. The only Gaussian
+4807: reference left live is the normalized optical one-core product, and every cross-core optical term is contained
+4808: in the explicit inventory AJG .
+4809: Proof. The exact compact collect of Theorem 6.39 and the post-compact identity of Corollary 6.40 restore
+4810: product Haar on the retained compact variables and place every nonempty retained dependence into the
+4811: compact, Gaussian, regular, or irregular activity inventories. The weak tangent Gaussian contributes
+4812: no undeclared covariance edge to this matching logarithm. By contrast, the optical one-core references
+4813: remain live, while their off-diagonal quadratic blocks and other cross-core terms occur explicitly in AJG
+4814: and retain the spatial payment used in Theorem 6.43.
+4815: Lemma 7.6 (Vacuum factorization after the complete owner map). Fix the optical variables and expand
+4816: one compact coefficient in Peter–Weyl sectors. Suppose every compact cut separating two declared root
+4817: buffers carries the trivial representation. Remove only the cross-core objects already registered in the
+4818: four disjoint inventories of Corollary 6.40. If no registered connector remains between the roots, the
+4819: residual coefficient factorizes into one-core expectations and empty-support scalars. Its contribution to the
+4820: normalized connected two-root logarithm is zero.
+4821: Proof. Triviality on every separating compact cut permits repeated Haar–Fubini separation. The exact
+4822: incidence-split collect retains every internally nontrivial singlet in AJH , while the owner map assigns every
+4823: other cross-core occurrence to exactly one of AJG , AJreg , AJirr , or AJH . After those registered objects are
+4824: removed, the residual history has no object joining distinct one-core components. It therefore factorizes.
+4825: Empty-support scalars are removed by the normalization, and products of separate one-root expectations
+4826: are removed by the connected logarithm.
+4827: Theorem 7.7 (Exact acoustic exclusion-or-capture). Consider any connected zero-, one-, or two-source
+4828: coefficient joining two bounded matching-scale root buffers in the exact joint logarithm. At least one object
+4829: on the unique root-to-root forest path belongs to one of the following classes:
+4830:    (i) a nonvacuum compact activity controlled by Theorem 6.39 and the spatial row (99);
+4831:   (ii) an optical covariance bond or an optical Gaussian cross-core activity in AJG ;
+4832:  (iii) a registered reference, regular, irregular, seam, reflection, wrapping, normalization, determinant, or
+4833:        source connector with its original support payment.
+4834: There is no fourth class consisting of a massless retained acoustic reference edge.
+4835: Proof. Assume that a connected coefficient contains no object of types (i)–(iii). Absence of (i) makes
+4836: every separating compact cut vacuum. Absence of (iii) leaves no registered physical connector after the
+4837: complete owner map. Lemma 7.6 then reduces the compact contribution to disconnected one-core factors
+4838: and scalars. Absence of (ii) also prevents the still-live optical field from joining the roots. The coefficient
+4839: is therefore disconnected, a contradiction. The only possible remaining concern would be an undeclared
+4840: massless retained covariance, which is excluded by Lemma 7.5.
+4841: 
+4842: Corollary 7.8 (No additional acoustic path class). The exact vertex inventory used in Theorem 6.43 ad-
+4843: mits no fourth root-to-root path class consisting of a massless retained acoustic reference edge. Consequently
+4844: the boundary-to-center estimates (104) and (107) require no additional terminal Witten, acoustic-channel,
+4845: or retained-Gaussian gap hypothesis.
+4846: Proof. The vertex inventory is already exhaustive by Lemma 6.7, Proposition 6.8, and Corollary 6.40.
+4847: Apply Theorem 7.7 to exclude the only remaining acoustic fourth-class concern.
+4848: 
+4849: 8     General invariant jets and Ward identities
+4850: 8.1    Multiscale invariant-source trees
+4851: Riemann-scaled sources and block incidence Let ℓ0 > 0 be the fixed matching scale and ℓj = 2−j ℓ0
+4852: the directed ultraviolet resolutions. At resolution m, let Om,z be a centered bounded gauge-invariant
+4853: 
+4854: 
+4855: 
+4856: 
+4857:                                                       72
+4858: 
+4859: observable supported in a fixed physical ball BR (z) and satisfying ∥Om,z ∥∞ ≤ B. Put
+4860:                                                         X
+4861:                                        Φm (f ) = ℓ4m             f (z)Om,z .                            (108)
+4862:                                                        z∈ℓm Z4
+4863: 
+4864: If a fine source Jm is averaged to scale j < m, define
+4865:                                                      X
+4866:                                         Jj (X) = ℓ−4
+4867:                                                   j    ℓ4m Jm (z),                                      (109)
+4868:                                                         z∈X
+4869: 
+4870: where X is one scale-j cell.
+4871: Lemma 8.1 (Source-incidence contraction). The block source map satisfies
+4872:                                                X                X
+4873:                         ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+4874:                                                         X                      z
+4875: 
+4876: The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+4877: a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+4878: renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+4879: normalization their products are bounded on every fixed finite jet family and do not alter the connector
+4880: exponent.
+4881: Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+4882: follows by the triangle inequality and the partition of the fine cells into coarse cells.
+4883: 
+4884: Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+4885: regimes.
+4886: (R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+4887:      ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+4888:      pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+4889:      scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+4890:      weak/irregular recombination has a summable rooted remainder.
+4891: (R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+4892:      macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+4893:      are not counted as independent long-distance connectors.
+4894: (R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+4895:      Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+4896:      common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+4897:      acoustic reference channel beyond the exact owner-map inventory.
+4898: (R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+4899:      column bounds uniform in all exterior variables.
+4900:    Define the quantitative rates
+4901: 
+4902:                     mw := ℓ−1
+4903:                            jw min{c0 | log σ|, mopt },
+4904:                                                                      1                                  (111)
+4905:                  mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+4906:                                                                      2
+4907: where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+4908: matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+4909: finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+4910: Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+4911: directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+4912: with the fixed matching bridge has exponential rate at least
+4913: 
+4914:                                1                min{c0 | log σ|, mopt }
+4915:                                                                            
+4916:                      m(M ) := min          inf                          , mE ≥ m∗ > 0.
+4917:                                2        jw ≤j≤M           ℓj
+4918: 
+4919: The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+4920: M → ∞ cannot decrease the exponent.
+4921: 
+4922: 
+
+===== Lie-algebra-valued one-forms HIT 1 source line 1739 =====
+1694: ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+1695: cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+1696: order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+1697: ∥ · ∥a;3,N rows.
+1698:     In particular, for the irregular map,
+1699: 
+1700:                            max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+1701:                                                                 
+1702:                          |I|≤N
+1703: 
+1704: Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+1705: inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+1706: vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+1707: transform still uses only the structural C 3 rows.
+1708:    For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+1709: Multivariable Cauchy gives
+1710: 
+1711:                              e−bq(η) GX (η)−1 ∥Dstr
+1712:                                                 α
+1713:                                                          X ∥TV ≤ Cα,N bu (X).
+1714:                                                     DJI λcurv
+1715: 
+1716: For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+1717: derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+1718: is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+1719:    After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+1720: of N labelled source leaves. For 0 < m < 1,
+1721:                                         X                        N!
+1722:                                                V N mV −1 ≤               .
+1723:                                                              (1 − m)N +1
+1724:                                         V ≥1
+1725: 
+1726: Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+1727: proves the displayed irregular bound.
+1728: 
+1729: 4.3    Gaussian reference and optical covariance
+1730: This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+1731: and source connectors. Two objects must not be conflated:
+1732: 1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+1733: 2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+1734: The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+1735: gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+1736: inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+1737: activities after the normal-fiber change of variables.
+1738: 4.3.1 Grounded Feynman field and retained torons
+1739: Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+1740: with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+1741: one-forms and from one-forms to plaquette two-forms. Put
+1742:                                                n                   o
+1743:                                         A0Λ = A ∈ AΛ : A(0)
+1744:                                                           b     =0 .
+1745: 
+1746: Constant connection modes are retained compact toron/background variables; they are never inverted or
+1747: integrated by the Gaussian reference.
+1748: Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+1749: 
+1750:                                      QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+1751: 
+1752: At momentum p ̸= 0 its symbol is
+1753:                                                                         4
+1754:                                  b F (p) = ω(p)I4d ,
+1755:                                                                         X            pµ
+1756:                                  Q                           ω(p) = 4         sin2      .
+1757:                                                   G
+1758:                                                                         µ=1
+1759:                                                                                       2
+1760: 
+1761: If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+1762:                                                                                                    F and
+1763: the transverse covariance have the same matrix elements between J and J ′ .
+1764: 
+1765: 
+1766:                                                        26
+1767: 
+1768: Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+1769:                                    d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+1770: which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+1771: between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+1772: currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+1773: sector.
+1774: 4.3.2 Forty-nine-path optical coercivity
+1775: For a coarse momentum k ∈ [−π/2, π/2]4 , let
+1776:                             Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+1777:                                               
+1778: 
+1779: be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+1780: remaining fifteen aliases:
+1781:                              Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+1782:                                                    
+1783: 
+1784: Let
+1785:                                    Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+1786:                                                                            
+1787: 
+1788: be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+1789: Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+1790:                                                1                               √
+1791:                               σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+1792:                                                 2
+1793: Moreover,
+1794:                                                81
+1795:                                            r
+1796:                              ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+1797:                                                 2
+1798: Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+1799: diagonal entry of M0 obeys                                      √
+1800:                                                       −1/2 7   7 2
+1801:                                      |(M0 )µµ | ≥ 2 2        =     .
+1802:                                                            8    8
+1803: For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+1804:                                                                   √
+1805:                                                  1        1         2
+1806:                                    |(M0 )µν | ≤     ·1·  √   ·6=      .
+1807:                                                 24         2       8
+1808: Writing M0 = D + E, each row and column of E has at most three entries, so
+1809:                                                           √
+1810:                                         p               3 2
+1811:                                  ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+1812:                                                           8
+1813: Therefore                                         √   √
+1814:                                                  7 2 3 2   1
+1815:                                     σmin (M0 ) ≥    −    =√ .
+1816:                                                   8   8     2
+1817: The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+1818:                                                                     p
+1819: 
+1820: columns cannot increase the norm. The final estimate follows by multiplication.
+1821: Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+1822: ker Af (k),
+1823:                                                         1
+1824:                                         ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+1825:                                                        41
+1826: Equivalently, with
+1827:                               T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+1828:                                                            
