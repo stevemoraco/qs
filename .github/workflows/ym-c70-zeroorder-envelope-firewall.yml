@@ -60,6 +60,16 @@ jobs:
           print(json.dumps(result, indent=2))
           PY
 
+      - name: Publish compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          if test -f YMC70ZeroOrderEnvelopeFirewall-axle-response.json; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat YMC70ZeroOrderEnvelopeFirewall-axle-response.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Enforce clean compiler verdict
         if: always()
         shell: bash
