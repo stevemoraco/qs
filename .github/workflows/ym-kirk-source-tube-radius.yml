@@ -1,0 +1,64 @@
+name: YM Kirk v4 source-tube radius audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+    paths:
+      - .github/workflows/ym-kirk-source-tube-radius.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-local-source-ball-body-20260816-run3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract source-tube/radius contexts
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest_raw.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/local_source_ball_body'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'σs','sigma_s','source tube','source polydisc','source domain','source ball','source radius',
+            'source amplitude','source norm','source seminorm','bounded local source parameters',
+            'exterior/source product tube','passive source','source multi-index','source neighborhood',
+            'complex source','source parameter','source parameters','source leaves','source incidence'
+          ]
+          chunks=[]; counts={}
+          for target in targets:
+              pos=0; n=0
+              while True:
+                  i=low.find(target.lower(),pos)
+                  if i<0: break
+                  n+=1
+                  chunks.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-7000):min(len(text),i+10000)]+'\n')
+                  pos=i+len(target)
+                  if n>=80: break
+              counts[target]=n
+          (out/'SOURCE_TUBE_TARGETED.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          (out/'SOURCE_TUBE_COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          PY
+      - name: Commit source-tube audit
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/local_source_ball_body/SOURCE_TUBE_*.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve source-tube radius contexts'
+          git push origin HEAD:verification/ym-kirk-v4-local-source-ball-body-20260816-run3

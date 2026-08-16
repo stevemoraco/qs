@@ -1,0 +1,2021 @@
+=== Fix an integer N hit 1 at 100362 ===
+       n
+fixed cell is at most Can , then, for sufficiently small u,
+                                                            ′     ′    2
+                                            θu ≤ Cu−p e−c χ /u .
+
+Proof. Sum the geometric series
+                                     X                           1/νov n
+                                             ac       −p −cb χ2 /u
+                                θu ≤   Can e      Cb u e                     .
+                                     n≥1
+
+The bracket is below one half on the declared weak interval.
+  Let P (X , Y) be the canonical reported hull and suppose
+                                                           !
+                                        X          X
+                       |P (X , Y)| ≤ cP     |X| +      |Y | ,                     cP ab < ac < a.
+                                           X∈X             Y ∈Y
+
+Theorem 3.31 (Irregular C 1 flatness with discharged composition). There is δ > 0 such that, whenever
+
+                                  m∗ := C(η0 (u, R) + θu + κG (RG )) < δ,
+
+the exact connected irregular map satisfies
+                                                                          θu
+                                     ∥Eirr (u, R)∥ab ,[3] ≤ C                    ,
+                                                                      (1 − m∗ )4
+
+and
+                                                                                  θu
+                              ∥DR Eirr (u, R)∥L([3],[3]) ≤ Cη1 (u, R)                    .
+                                                                              (1 − m∗ )5
+
+                                                           22
+Consequently
+                                                                                                 ′       ′   2
+                               ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                                                                                 Pi
+                                       X
+                           EΣ exp               ⟨ζi , Bi ζi ⟩       ≤ exp                                              .
+                                            i
+                                                                                   1 − 2∥C∥∥             i Bi ∥
+
+
+
+
+                                                                     23
+Let X = B 1/2 ΣB 1/2 . The Gaussian determinant formula gives
+
+                                            Ee⟨ζ,Bζ⟩ = det(I − 2X)−1/2 .
+
+Since X ⪰ 0,
+                                        1                    Tr X
+                                       − log det(I − 2X) ≤          .
+                                        2                  1 − 2∥X∥
+Apply the lemma.
+Lemma 4.3 (Pruefer factorial identity). For n ≥ 2,
+                                    n
+                               1 X Y                 1     3n − 3
+                                                                 
+                                       dT (i)! =                    ≤ 8n .
+                               n!                n(n − 1)   n − 2
+                                    T ∈Tn
+                                   i=1
+
+Proof. For a degree sequence di ≥ 1,         i di = 2n − 2, the number of labelled trees with that sequence is
+                                            P
+
+                                                       (n − 2)!
+                                                                   .
+                                                       i (di − 1)!
+                                                      Q
+
+Hence
+                             1 XY               1                      X   Y
+                                  dT (i)! =                                    di
+                             n!             n(n − 1)
+                                iT                               P di ≥1   i
+                                                                  di =2n−2
+                                                                                 n
+                                                       1
+                                                                      
+                                                                           x
+                                                  =          [x2n−2 ]
+                                                    n(n − 1)            (1 − x)2
+                                                       1       3n − 3
+                                                                     
+                                                  =                     .
+                                                    n(n − 1) n − 2
+The last quantity is at most 8n .
+Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+BKAR identity and species rows
+                                     ≤N
+                                ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+
+Assume also that the complete species allocation gives
+
+                                                         X
+                                                4∥C∥           Bα < 1
+                                                         α∈I
+
+for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+exponential losses and the factor σ −2 , is strictly below one.
+   Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+replica number, forest parameters, and previous RG depth.
+Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+   The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+exponential constant depending on N .
+
+
+
+
+                                                           24
+4.1     Output recertification
+Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+tube and real-valued on the real slice. Put
+
+                                                   gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the stri
+
+=== Theorem 4.6 (Arbitrary fixed passive-source order) hit 1 at 101118 ===
+      |P (X , Y)| ≤ cP     |X| +      |Y | ,                     cP ab < ac < a.
+                                           X∈X             Y ∈Y
+
+Theorem 3.31 (Irregular C 1 flatness with discharged composition). There is δ > 0 such that, whenever
+
+                                  m∗ := C(η0 (u, R) + θu + κG (RG )) < δ,
+
+the exact connected irregular map satisfies
+                                                                          θu
+                                     ∥Eirr (u, R)∥ab ,[3] ≤ C                    ,
+                                                                      (1 − m∗ )4
+
+and
+                                                                                  θu
+                              ∥DR Eirr (u, R)∥L([3],[3]) ≤ Cη1 (u, R)                    .
+                                                                              (1 − m∗ )5
+
+                                                           22
+Consequently
+                                                                                                 ′       ′   2
+                               ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                                                                                 Pi
+                                       X
+                           EΣ exp               ⟨ζi , Bi ζi ⟩       ≤ exp                                              .
+                                            i
+                                                                                   1 − 2∥C∥∥             i Bi ∥
+
+
+
+
+                                                                     23
+Let X = B 1/2 ΣB 1/2 . The Gaussian determinant formula gives
+
+                                            Ee⟨ζ,Bζ⟩ = det(I − 2X)−1/2 .
+
+Since X ⪰ 0,
+                                        1                    Tr X
+                                       − log det(I − 2X) ≤          .
+                                        2                  1 − 2∥X∥
+Apply the lemma.
+Lemma 4.3 (Pruefer factorial identity). For n ≥ 2,
+                                    n
+                               1 X Y                 1     3n − 3
+                                                                 
+                                       dT (i)! =                    ≤ 8n .
+                               n!                n(n − 1)   n − 2
+                                    T ∈Tn
+                                   i=1
+
+Proof. For a degree sequence di ≥ 1,         i di = 2n − 2, the number of labelled trees with that sequence is
+                                            P
+
+                                                       (n − 2)!
+                                                                   .
+                                                       i (di − 1)!
+                                                      Q
+
+Hence
+                             1 XY               1                      X   Y
+                                  dT (i)! =                                    di
+                             n!             n(n − 1)
+                                iT                               P di ≥1   i
+                                                                  di =2n−2
+                                                                                 n
+                                                       1
+                                                                      
+                                                                           x
+                                                  =          [x2n−2 ]
+                                                    n(n − 1)            (1 − x)2
+                                                       1       3n − 3
+                                                                     
+                                                  =                     .
+                                                    n(n − 1) n − 2
+The last quantity is at most 8n .
+Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+BKAR identity and species rows
+                                     ≤N
+                                ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+
+Assume also that the complete species allocation gives
+
+                                                         X
+                                                4∥C∥           Bα < 1
+                                                         α∈I
+
+for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+exponential losses and the factor σ −2 , is strictly below one.
+   Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+replica number, forest parameters, and previous RG depth.
+Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+   The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+exponential constant depending on N .
+
+
+
+
+                                                           24
+4.1     Output recertification
+Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+tube and real-valued on the real slice. Put
+
+                                                   gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+     
+
+=== exterior/source product tube hit 1 at 102209 ===
+       ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                                                                                 Pi
+                                       X
+                           EΣ exp               ⟨ζi , Bi ζi ⟩       ≤ exp                                              .
+                                            i
+                                                                                   1 − 2∥C∥∥             i Bi ∥
+
+
+
+
+                                                                     23
+Let X = B 1/2 ΣB 1/2 . The Gaussian determinant formula gives
+
+                                            Ee⟨ζ,Bζ⟩ = det(I − 2X)−1/2 .
+
+Since X ⪰ 0,
+                                        1                    Tr X
+                                       − log det(I − 2X) ≤          .
+                                        2                  1 − 2∥X∥
+Apply the lemma.
+Lemma 4.3 (Pruefer factorial identity). For n ≥ 2,
+                                    n
+                               1 X Y                 1     3n − 3
+                                                                 
+                                       dT (i)! =                    ≤ 8n .
+                               n!                n(n − 1)   n − 2
+                                    T ∈Tn
+                                   i=1
+
+Proof. For a degree sequence di ≥ 1,         i di = 2n − 2, the number of labelled trees with that sequence is
+                                            P
+
+                                                       (n − 2)!
+                                                                   .
+                                                       i (di − 1)!
+                                                      Q
+
+Hence
+                             1 XY               1                      X   Y
+                                  dT (i)! =                                    di
+                             n!             n(n − 1)
+                                iT                               P di ≥1   i
+                                                                  di =2n−2
+                                                                                 n
+                                                       1
+                                                                      
+                                                                           x
+                                                  =          [x2n−2 ]
+                                                    n(n − 1)            (1 − x)2
+                                                       1       3n − 3
+                                                                     
+                                                  =                     .
+                                                    n(n − 1) n − 2
+The last quantity is at most 8n .
+Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+BKAR identity and species rows
+                                     ≤N
+                                ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+
+Assume also that the complete species allocation gives
+
+                                                         X
+                                                4∥C∥           Bα < 1
+                                                         α∈I
+
+for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+exponential losses and the factor σ −2 , is strictly below one.
+   Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+replica number, forest parameters, and previous RG depth.
+Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+   The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+exponential constant depending on N .
+
+
+
+
+                                                           24
+4.1     Output recertification
+Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+tube and real-valued on the real slice. Put
+
+                                                   gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the reported support. The first statement is Corollary 4.10
+with finite support sums. On the unique tree path between the two roots, the triangle inequality makes the
+sum of edge distances at least the root separation. The remaining branches are summed by the unused
+rooted smallness margin. Fixed marks promote finitely many vertices and change only the constant.
+4.4      Wick-stable jet block
+Coordinate choice
+
+=== bounded local source parameters enter holomorphically hit 1 at 101806 ===
+        θu
+                              ∥DR Eirr (u, R)∥L([3],[3]) ≤ Cη1 (u, R)                    .
+                                                                              (1 − m∗ )5
+
+                                                           22
+Consequently
+                                                                                                 ′       ′   2
+                               ∥Eirr ∥ab ,[3] + ∥DR Eirr ∥L([3],[3]) ≤ Cu−p e−c χ /u .
+
+All ownership, normalization, constrained-Gaussian, spectator, and history hypotheses are supplied by
+Theorem 3.28 and Lemma 3.29; none is assumed here.
+Proof. The product one-core reference gives
+                                                                    |X |
+                                                                             Y
+                                      ∥TXprod F ∥[3] ≤ C0                          bu (X)∥F ∥[3] .
+                                                                             X∈X
+
+Every Gaussian cross word is an additional edge of rooted mass at most CκG (RG ) by (5). The strict
+                                |X |
+core support reserve absorbs C0 . For a bad parent X, the total inherited-child mass is at most C|X|η0 ;
+for an inherited parent Y , the total bad-child mass is at most C|Y |θu . The size factors are absorbed by
+cP ab < ac < a.
+   Dominate each connected bipartite incidence graph by a rooted spanning tree rooted at a bad core.
+The zero-order marked product estimate has a cubic vertex polynomial and gives (1 − m∗ )−4 . A Frechet
+derivative marks one inherited vertex; together with three structural marks this gives the first four
+derivatives of the geometric recursion and hence (1 − m∗ )−5 . Lemma 3.29 ensures that this tree sum is
+over a partition of the exact histories, not a duplicated majorant. Every sum is rooted, so no volume
+factor occurs.
+
+4      Permanent weak renormalization group
+Let H be a finite-dimensional real Hilbert space, let C ⪰ 0 be a covariance on H, and let S = (sij )ni,j=1 ⪰ 0
+have sii = 1. Put Σ = S ⊗ C.
+  For each i, let Bi ⪰ 0 and put B = diag(B1 , . . . , Bn ).
+Lemma 4.1 (Gram replica regulator bound). One has
+                                                             n
+                                                                  !
+                                                             X
+                                  B ΣB
+                                    1/2    1/2
+                                                ≤ C    1/2
+                                                               Bi C 1/2 ,
+                                                                                 i=1
+
+and
+                                                           Xn
+                                            Tr B 1/2 ΣB 1/2 =   Tr(CBi ).
+                                                                               i=1
+
+Proof. Choose unit vectors vi with sij = ⟨vi , vj ⟩, and define
+                                                                      1/2
+                                                        X
+                                 T (x1 , . . . , xn ) =   vi ⊗ C 1/2 Bi xi .
+                                                                         i
+
+Then
+                                                  T ∗ T = B 1/2 (S ⊗ C)B 1/2 .
+Furthermore,                                                                                                      !
+                                X                                                                    X
+                       TT =∗
+                                      |vi ⟩⟨vi | ⊗ C     1/2
+                                                                Bi C     1/2
+                                                                               ⪯I ⊗C       1/2
+                                                                                                             Bi       C 1/2 .
+                                  i                                                                  i
+
+The norm bound follows because T T and T T have the same nonzero spectrum. The trace identity uses
+                                        ∗                  ∗
+
+sii = 1.
+Corollary 4.2 (Uniform Gaussian exponential moment). If
+
+                                                                    X
+                                                      2∥C∥                   Bi < 1,
+                                                                     i
+
+then                                  (                         )
+                                                                                           i Tr(CB  )
+                                                                                      P                          
+                                                                                                 Pi
+                                       X
+                           EΣ exp               ⟨ζi , Bi ζi ⟩       ≤ exp                                              .
+                                            i
+                                                                                   1 − 2∥C∥∥             i Bi ∥
+
+
+
+
+                                                                     23
+Let X = B 1/2 ΣB 1/2 . The Gaussian determinant formula gives
+
+                                            Ee⟨ζ,Bζ⟩ = det(I − 2X)−1/2 .
+
+Since X ⪰ 0,
+                                        1                    Tr X
+                                       − log det(I − 2X) ≤          .
+                                        2                  1 − 2∥X∥
+Apply the lemma.
+Lemma 4.3 (Pruefer factorial identity). For n ≥ 2,
+                                    n
+                               1 X Y                 1     3n − 3
+                                                                 
+                                       dT (i)! =                    ≤ 8n .
+                               n!                n(n − 1)   n − 2
+                                    T ∈Tn
+                                   i=1
+
+Proof. For a degree sequence di ≥ 1,         i di = 2n − 2, the number of labelled trees with that sequence is
+                                            P
+
+                                                       (n − 2)!
+                                                                   .
+                                                       i (di − 1)!
+                                                      Q
+
+Hence
+                             1 XY               1                      X   Y
+                                  dT (i)! =                                    di
+                             n!             n(n − 1)
+                                iT                               P di ≥1   i
+                                                                  di =2n−2
+                                                                                 n
+                                                       1
+                                                                      
+                                                                           x
+                                                  =          [x2n−2 ]
+                                                    n(n − 1)            (1 − x)2
+                                                       1       3n − 3
+                                                                     
+                                                  =                     .
+                                                    n(n − 1) n − 2
+The last quantity is at most 8n .
+Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+BKAR identity and species rows
+                                     ≤N
+                                ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+
+Assume also that the complete species allocation gives
+
+                                                         X
+                                                4∥C∥           Bα < 1
+                                                         α∈I
+
+for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+exponential losses and the factor σ −2 , is strictly below one.
+   Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+replica number, forest parameters, and previous RG depth.
+Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+   The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+exponential constant depending on N .
+
+
+
+
+                                                           24
+4.1     Output recertification
+Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+tube and real-valued on the real slice. Put
+
+                                                   gP = ∥DRP (0)∥loc ,
+
+and
+                                         hP = sup ∥D2 RP (η + itθ)∥loc ,
+                                                   η,θ,t
+
+where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
+Lemma 4.5 (Output recertification). For real η, θ,
+                                                 1    1                  1
+                     Re RP (η + iθ) ≤ Re RP (0) + gP + (gP + hP )qP (η) + hP qP (θ).
+                                                 2    2                  2
+Consequently
+                                                   1
+                                                   βPout :=
+                                                     (gP + hP )
+                                                   2
+is a valid nonnegative quadratic-growth allocation for RP .
+
+Proof. Taylor expansion on the real segment gives
+                                                                       Z 1
+                         RP (η) = RP (0) + DRP (0)[η] +                      (1 − t)D2 RP (tη)[η, η] dt.
+                                                                        0
+
+Hence
+                                                                   1
+                                   RP (η) ≤ RP (0) + gP qP (η)1/2 + hP qP (η).
+                                                                   2
+        √
+Using       x ≤ (1 + x)/2 yields
+                                                    1    1
+                                   RP (η) ≤ RP (0) + gP + (gP + hP )qP (η).
+                                                    2    2
+Taylor expansion on the imaginary segment gives
+                                                                       Z 1
+                    RP (η + iθ) = RP (η) + iDRP (η)[θ] −                     (1 − t)D2 RP (η + itθ)[θ, θ] dt.
+                                                                         0
+
+Since RP is real on the real slice, DRP (η)[θ] is real, so the linear imaginary term has zero real part. The
+displayed estimate follows.
+
+Consequence (Rooted allocation cone). If
+                                                                X        ′
+                                      [R]∂,C;a′ := sup                 ea |P | (gP + hP ),
+                                                            e
+                                                                P ∋e
+
+then                                           X        ′                    1
+                                         sup          ea |P | βPout ≤          [R]∂,C;a′ .
+                                          e                                  2
+                                               P ∋e
+
+Thus reproduction of the complex boundary seminorm automatically reproduces a regulator-allocation
+cone.
+4.2     Marked hierarchy
+Fix an integer N ≥ 0. An activity carries an active structural multi-index α, |α| ≤ 3, a passive
+bounded-source multi-index I, |I| ≤ N , and at most two passive exterior roots. Define
+                                                                                |I|
+                                                    X                       σs
+                               ∥F ∥a;3,N = sup              ea|X| max              α
+                                                                                 ∥Dstr DJI FX ∥.
+                                               e                      |α|≤3 |I|!
+                                                    X∋e            |I|≤N
+
+
+
+
+                                                                 25
+Theorem 4.6 (Arbitrary fixed passive-source order). For every prescribed finite N , the integrated
+ultraviolet map extends to one rooted domain D(a; 3, N ) with constants uniform in volume, microscopic
+cutoff, and preceding weak depth. It is C 3 in the active structural variables and analytic through source
+order N . The regular map, invariant graph, hybrid bad seed, and irregular transfer obey the corresponding
+∥ · ∥a;3,N rows.
+    In particular, for the irregular map,
+
+                           max ∥DJI Eirr ∥a;3,0 + ∥DR DJI Eirr ∥ ≤ CN u−pN e−cN /u .
+                                                                
+                         |I|≤N
+
+Proof. On the regular chart, bounded local source parameters enter holomorphically. Source differentiation
+inserts bounded finite-range atoms and does not increase the Gaussian field-derivative degree at a BKAR
+vertex. The factorial source norm pays Leibniz and Faà di Bruno combinatorics. The active graph
+transform still uses only the structural C 3 rows.
+   For an inner-chart bad core, the absolute zero row holds jointly on an exterior/source product tube.
+Multivariable Cauchy gives
+
+                             e−bq(η) GX (η)−1 ∥Dstr
+                                                α
+                                                         X ∥TV ≤ Cα,N bu (X).
+                                                    DJI λcurv
+
+For transition and outer labels, differentiate the smooth finite-dimensional density directly. Every cutoff
+derivative remains supported on the same charged event. For fixed N , the resulting Bell-polynomial loss
+is a fixed polynomial in |X|, u−1 , and the chart constants, and is absorbed by the bad-action exponential.
+   After compatible-core composition, a rooted decorated tree with V vertices has at most V N placements
+of N labelled source leaves. For 0 < m < 1,
+                                        X                        N!
+                                               V N mV −1 ≤               .
+                                                             (1 − m)N +1
+                                        V ≥1
+
+Combining this with the fixed susceptibility reserve for active structural marks and one R-derivative
+proves the displayed irregular bound.
+
+4.3    Gaussian reference and optical covariance
+This section constructs the Gaussian objects used by the weak block, Wick coordinates, replica forests,
+and source connectors. Two objects must not be conflated:
+1. the fixed tangent Feynman Gaussian on mean-zero lattice one-forms;
+2. its exact conditional detail Gaussian for the linearized forty-nine-path Karcher block.
+The first carries the massless retained field. The second is an optical, high-pass covariance with a uniform
+gap. The nonlinear Wilson action, Haar and exponential-coordinate density, Karcher coarea factor, cutoffs,
+inherited interaction, and source factors are not hidden in either covariance; they are exposed as exact
+activities after the normal-fiber change of variables.
+4.3.1 Grounded Feynman field and retained torons
+Let Λ be a periodic four-dimensional lattice. Write AΛ = ℓ2 (E(Λ); g) for real Lie-algebra-valued one-forms
+with the normalized edge scalar product. Let d0 and d1 be the lattice coboundaries from zero-forms to
+one-forms and from one-forms to plaquette two-forms. Put
+                                               n                   o
+                                        A0Λ = A ∈ AΛ : A(0)
+                                                          b     =0 .
+
+Constant connection modes are retained compact toron/background variables; they are never inverted or
+integrated by the Gaussian reference.
+Lemma 4.7 (Exact lattice Feynman scalarization). On A0Λ ,
+
+                                     QF := d∗1 d1 + d0 d∗0 = ∆Λ ⊗ I4 ⊗ Ig .
+
+At momentum p ̸= 0 its symbol is
+                                                                        4
+                                 b F (p) = ω(p)I4d ,
+                                                                        X            pµ
+                                 Q                           ω(p) = 4         sin2      .
+                                                  G
+                                                                        µ=1
+                                                                                      2
+
+If J = d∗1 h and J ′ = d∗1 h′ are gauge-invariant curl currents, then the Feynman covariance CF = Q−1
+                                                                                                   F and
+the transverse covariance have the same matrix elements between J and J ′ .
+
+
+                                                       26
+Proof. At nonzero momentum let δµ (p) = eipµ − 1. Then
+                                   d∗1 d1 = ωI4 − δδ ∗ ,     d0 d∗0 = δδ ∗ ,
+which proves the first two statements. Since d∗0 d∗1 = 0, every curl current is transverse. The difference
+between the Feynman and transverse covariances is longitudinal and therefore vanishes between such
+currents. The finite color factor is diagonal. The omitted zero momentum is precisely the retained toron
+sector.
+4.3.2 Forty-nine-path optical coercivity
+For a coarse momentum k ∈ [−π/2, π/2]4 , let
+                            Af (k) = M (k + πe) e∈{0,1}4 : C64 −→ C4
+                                              
+
+be the complete folded linear block symbol printed in Theorem 2.4. Separate the acoustic alias and the
+remaining fifteen aliases:
+                             Af (k) = M0 (k) Ah (k) ,    M0 (k) = M (k).
+                                                   
+
+Let
+                                   Hf (k) = diage∈{0,1}4 ω(k + πe)I4
+                                                                           
+
+be the color-free Feynman precision; the full operator is Hf ⊗ Ig .
+Lemma 4.8 (Uniform invertibility of the acoustic block). For every k ∈ [−π/2, π/2]4 ,
+                                               1                               √
+                              σmin (M0 (k)) ≥ √ ,          ∥M0 (k)−1 ∥2 ≤          2.
+                                                2
+Moreover,
+                                               81
+                                           r
+                             ∥Ah (k)∥2 ≤          ,    ∥M0 (k)−1 Ah (k)∥2 ≤ 9.
+                                                2
+Proof. On the coarse Brillouin zone all cos kλ are nonnegative and cos(kµ /2) ≥ 2−1/2 . Hence every
+diagonal entry of M0 obeys                                      √
+                                                      −1/2 7   7 2
+                                     |(M0 )µµ | ≥ 2 2        =     .
+                                                           8    8
+For µ ̸= ν, the exact symbol formula and 0 ≤ cos kα , cos kβ ≤ 1 give
+                                                                  √
+                                                 1        1         2
+                                   |(M0 )µν | ≤     ·1·  √   ·6=      .
+                                                24         2       8
+Writing M0 = D + E, each row and column of E has at most three entries, so
+                                                          √
+                                        p               3 2
+                                 ∥E∥2 ≤ ∥E∥1 ∥E∥∞ ≤          .
+                                                          8
+Therefore                                         √   √
+                                                 7 2 3 2   1
+                                    σmin (M0 ) ≥    −    =√ .
+                                                  8   8     2
+The complete folded-symbol estimate in Theorem 2.4 gives ∥Af (k)∥2 ≤ 81/2; restriction to the high-alias
+                                                                    p
+
+columns cannot increase the norm. The final estimate follows by multiplication.
+Theorem 4.9 (Analytic vertical optical gap). For every real coarse momentum k and every x = (x0 , xh ) ∈
+ker Af (k),
+                                                        1
+                                        ⟨x, Hf (k)x⟩ ≥    ∥x∥22 .
+                                                       41
+Equivalently, with
+                              T (k)z = −M0 (k)−1 Ah (k)z, z ,           z ∈ C60 ,
+                                                           
+
+the detail precision
+                                       Qopt (k) = T (k)∗ Hf (k)T (k)
+satisfies
+                                       2I60 ⪯ Qopt (k) ⪯ 1312I60 .
+The same statements hold after tensoring with Ig in color.
+
+
+                                                      27
+Proof. If e ̸= 0, at least one component is shifted by π, and therefore
+                                                                 kµ
+                                            ω(k + πe) ≥ 4 cos2      ≥ 2.
+                                                                  2
+For x ∈ ker Af , Lemma 4.8 gives x0 = −M0−1 Ah xh and hence
+
+                                      ∥x∥22 ≤ (1 + 92 )∥xh ∥22 = 82∥xh ∥22 .
+
+The high aliases alone contribute at least 2∥xh ∥22 , proving the 1/41 bound. In the z = xh coordinates the
+same argument gives Qopt ⪰ 2I. Since ω ≤ 16 and ∥T ∥22 ≤ 82, the upper bound is 16 · 82 = 1312.
+Corollary 4.10 (Exponential optical covariance). There are explicit constants τopt > 0 and Ks < ∞
+(s = 0, 1, 2, 3), depending only on the fixed forty-nine-path template, such that
+
+                                              Copt (k) = Qopt (k)−1
+
+extends holomorphically to | Im kµ | < τopt and its real-space kernel obeys, in scale-j lattice units,
+                                    X
+                               sup      eτopt |x−y|1 /2 ∥∇s Copt,j (x, y)∥ ≤ Ks .
+                                  x
+                                        y
+
+After canonical rescaling, the physical decay length is O(ℓj ) and all constants are independent of volume,
+cutoff, root position, and preceding ultraviolet depth. All entries of M0 , Ah , Hf are trigonometric poly-
+nomials. The real-zone lower bounds in Lemma 4.8 and Theorem 4.9 are strict. Let LM and LQ be the
+finite suprema of the first complex derivatives of M0 and Qopt on the closed strip | Im kµ | ≤ 10−3 . Taking
+
+                                                           1       1
+                                                                      
+                                    τopt = min 10−3 , √          ,
+                                                        4 2LM 2LQ
+keeps M0 and Qopt invertible by Neumann perturbation. Cauchy estimates give the fixed derivative bounds.
+Shifting each Fourier contour by the sign of xµ − yµ yields exponential kernel decay. Periodization can
+only sum translated exponentially decaying images, so the same Schur bounds hold uniformly on finite
+tori.
+4.3.3 Exact Gaussian disintegration and harmonic extension
+Let C≥j be the mean-zero Feynman covariance before the scale-j block and let Bj = 12 Af,j be the
+normalized linearized retained map. On the mean-zero coarse space define
+
+                                 Cjc = Bj C≥j Bj∗ ,        Jj = C≥j Bj∗ (Cjc )−1 ,
+
+and
+                                              Cjd = C≥j − Jj Cjc Jj∗ .
+All inverses are taken only on the stated mean-zero spaces; torons remain in the retained compact
+background.
+Theorem 4.11 (Exact linear Gaussian fiber decomposition). The operators above satisfy
+
+                           Bj Jj = I,        Bj Cjd = 0,       C≥j = Cjd + Jj Cjc Jj∗ .
+
+If W ∼ N (0, Cjc ) and ζ ∼ N (0, Cjd ) are independent, then
+
+                                                  A = Jj W + ζ
+
+has covariance C≥j and Bj A = W . Conversely, this is the exact conditional disintegration of the fine
+Feynman Gaussian given the retained linear block. In the folded Fourier frame, Cjd is the pushforward of
+Copt from Corollary 4.10.
+Proof. These are the finite-dimensional Gaussian Schur-complement identities. Since Cjc = Bj C≥j Bj∗ ,
+Bj Jj = I. Substitution gives Bj Cjd = 0 and the covariance sum. The characteristic function of Jj W + ζ is
+therefore the one with covariance C≥j . The folded optical parameterization T (k) identifies the conditional
+detail space with ker Af (k), and the conditional precision is the restriction of Hf to that space.
+
+
+                                                        28
+  After canonical scale-two rescaling, define C≥j+1 to be the rescaled coarse covariance Cjc . Thus the
+notation
+                                          C≥j = Cj + C≥j+1
+used below means the exact identity of Theorem 4.11, with Cj = Cjd and with the remaining covariance
+embedded by Jj before the canonical identification. It is not a declaration of an unconstructed translation-
+invariant product slicing.
+Corollary 4.12 (Harmonic-extension Wick martingale). For every finite polynomial P in the fine tangent
+field,
+                           Eζ∼Cjd : P (Jj W + ζ) :C≥j =: (P ◦ Jj )(W ) :Cjc .
+                                                       
+
+The identity commutes with every fixed background mark and every prescribed finite family of passive
+bounded source marks. The contraction operators commute and C≥j = Cjd + Jj Cjc Jj∗ . Therefore
+                              1
+                              2 ∆C d       − 21 ∆C≥j                    − 21 ∆C c
+                          e       j    e               P (Jj W + ·) 0 = e      j    (P ◦ Jj )(W ).
+
+The covariance is fixed and independent of the background and source parameters, so those derivatives
+commute with the contraction operators.
+4.3.4 Exact Wilson–Haar factorization in the nonlinear fiber chart
+Let PN (W, ζ) be the exact nonlinear normal-fiber chart proved in Sections 2.4– 3.2, and let Jcoarea be its
+exact finite-volume coarea density. On the inner regular chart, write dγj (ζ) for the normalized Gaussian
+with covariance Cjd .
+Theorem 4.13 (Exact regular-reference identity). At finite volume and before any thermodynamic or
+cutoff limit, the inner regular part of one Wilson fiber integral has the exact form
+                Z                          Z              Z
+                            −1
+                   F (U )e−u SW (U ) dU = dW ρ0,j (W ) dγj (ζ) F (PN (W, ζ))e−Vj (W,ζ;u) .
+
+Here ρ0,j owns the field-independent linear Jacobian and the empty support Gaussian normalization
+exactly once, while
+                                                             1
+                       Vj (W, ζ; u) = u−1 SW (PN (W, ζ)) − ⟨ζ, (Cjd )−1 ζ⟩
+                                                             2
+                                      − log JHaar (W, ζ) − log Jcoarea (W, ζ) − cj (W )
+
+is defined with cj (W ) chosen to remove the empty-support term. Thus the identity is a change of measure,
+not a Gaussian approximation. All nonquadratic Wilson terms, the complete field-dependent Haar and
+coarea factors, normal-section corrections, inherited interactions, sources, and regular cutoffs remain
+visible in Vj or in the charged irregular operators. No Gaussian product factorization across spatial
+components is asserted.
+Proof. Apply the exact finite-volume normal-fiber and coarea identity to the compact Wilson integral in
+the boundary-rooted gauge. Multiply and divide by the strictly positive normalized density of γj . The
+displayed formula then follows by the definition of Vj and the once-only normalization cj . The exact
+partition into inner, curvature, collar, and outer labels is made before logarithms and is recombined
+before reflection positivity is used. Gauge covariance, signed-hypercubic covariance, and aligned-reflection
+compatibility follow from covariance of the Karcher map, its normal section, the tree gauge, and the
+scalar Feynman precision. Individual artificial Gaussian detail measures are not claimed to be reflection
+positive.
+Corollary 4.14 (Uniform connector row). Let X, Y be two finite scale-j supports. Every covariance
+contraction from the exact detail Gaussian is bounded by the scale-local bond
+                                                 XX
+                                  ωj (X, Y ) = K       e−mopt d(x,y)/ℓj .
+                                                             x∈X y∈Y
+
+For every fixed marked order, the corresponding row and column sums are uniform under the standing
+convention. Along the distinguished path of any connected covariance tree joining source buffers A and B,
+                                  Y
+                                           ωj (X, Y ) ≤ C n e−mopt dist(A,B)/ℓj
+                                (X,Y ) on path
+
+
+                                                                 29
+after canonical connector paths are included in the report
