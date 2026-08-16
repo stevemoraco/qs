@@ -1,0 +1,62 @@
+name: YM Kirk v4 Section 7 exact-source extraction
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-section7-extract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract Theorem 7.2 and Corollary 7.4 contexts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          roots = [Path('source_audit/kirk_v4')]
+          patterns = [
+              'Theorem 7.2',
+              'Corollary 7.4',
+              'Theorem 7.2 (',
+              'Corollary 7.4 (',
+          ]
+          hits = []
+          for root in roots:
+              for p in root.rglob('*.txt'):
+                  try:
+                      text = p.read_text(encoding='utf-8', errors='ignore')
+                  except Exception:
+                      continue
+                  seen = set()
+                  for pat in patterns:
+                      start = 0
+                      while True:
+                          i = text.find(pat, start)
+                          if i < 0:
+                              break
+                          key = (p.as_posix(), i)
+                          if key not in seen:
+                              seen.add(key)
+                              lo = max(0, i - 3500)
+                              hi = min(len(text), i + 16000)
+                              hits.append((p.as_posix(), i, text[lo:hi]))
+                          start = i + 1
+          if not hits:
+              raise SystemExit('No exact Section 7 theorem markers found in pinned source audit')
+          print(f'FOUND {len(hits)} UNIQUE CONTEXTS')
+          for n, (path, offset, context) in enumerate(hits, 1):
+              print('\n' + '=' * 100)
+              print(f'CONTEXT {n}: {path} @ char {offset}')
+              print('=' * 100)
+              print(context)
+          PY
