@@ -76,7 +76,7 @@ theorem rssTarget_requires_idealSquareGap
 theorem flatWeight_zeroTail_factor
     {m : ℝ} (hm : m ≠ 0) :
     m / (m * (1 - 0)) = 1 := by
-  field_simp [hm]
+  simp [hm]
 
 #print axioms conditionNumberFactor_ge_one
 #print axioms weightedExclusion_requires_idealPreflight
