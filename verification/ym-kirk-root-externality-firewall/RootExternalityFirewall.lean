@@ -21,7 +21,10 @@ theorem eliminate_root_feedback
     (hr : r = c + d * x) :
     x = (a + b * c) + effectiveCoeff t b d * x := by
   rw [hr] at hx
-  simpa [effectiveCoeff] using hx
+  calc
+    x = a + t * x + b * (c + d * x) := hx
+    _ = (a + b * c) + (t + b * d) * x := by ring
+    _ = (a + b * c) + effectiveCoeff t b d * x := by rfl
 
 /-- A perfect source-free coefficient can be destroyed by hidden root
 feedback: `t = 0`, `b = d = 2` produces effective coefficient `4`. -/
