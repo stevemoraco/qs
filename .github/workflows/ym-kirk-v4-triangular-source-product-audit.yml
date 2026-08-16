@@ -1,0 +1,145 @@
+name: YM Kirk v4 triangular source product audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-triangular-source-product-audit-20260816
+    paths:
+      - .github/workflows/ym-kirk-v4-triangular-source-product-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-triangular-source-product-audit-20260816
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract triangular source-renormalization interfaces
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          src = Path('latest.txt')
+          if not src.exists():
+              raise SystemExit('latest.txt missing after source probe')
+          lines = src.read_text(encoding='utf-8', errors='replace').splitlines()
+          out = Path('source_audit/kirk_v4/triangular_source_product')
+          out.mkdir(parents=True, exist_ok=True)
+
+          phrases = [
+              'triangular source-renormalization',
+              'triangular source renormalization',
+              'triangular source theorem',
+              'finite triangular source theorem',
+              'counterterm matrix',
+              'counterterm matrices',
+              'products are bounded',
+              'product is bounded',
+              'fixed finite jet family',
+              'renormalized local source',
+              'local root norm',
+              'source normalization',
+              'source-renormalization matrix',
+              'source renormalization matrix',
+          ]
+
+          chunks = []
+          counts = {}
+          hit_lines = set()
+          for phrase in phrases:
+              hits = [i for i, line in enumerate(lines) if phrase.lower() in line.lower()]
+              counts[phrase] = len(hits)
+              for k, i in enumerate(hits[:40], 1):
+                  hit_lines.add(i)
+                  lo = max(0, i - 90)
+                  hi = min(len(lines), i + 150)
+                  chunks.append(
+                      f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          heading = re.compile(r'^\s*(Theorem|Lemma|Corollary|Proposition|Definition)\s+([A-Z]?\d+(?:\.\d+)*)\b', re.I)
+          candidates = []
+          for i, line in enumerate(lines):
+              m = heading.search(line)
+              if not m:
+                  continue
+              window = '\n'.join(lines[i:min(len(lines), i+80)]).lower()
+              if any(term in window for term in (
+                  'triangular source', 'source-renormalization', 'source renormalization',
+                  'counterterm matrix', 'renormalized local source', 'local root norm')):
+                  candidates.append((i, m.group(0).strip()))
+                  lo = max(0, i - 25)
+                  hi = min(len(lines), i + 180)
+                  chunks.append(
+                      f'===== CANDIDATE {m.group(0).strip()} line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          # For every phrase hit, record the nearest preceding declaration heading.
+          nearest = []
+          heading_lines = [(i, heading.search(line).group(0).strip())
+                           for i, line in enumerate(lines) if heading.search(line)]
+          for i in sorted(hit_lines):
+              prev = [(j, name) for j, name in heading_lines if j <= i]
+              nearest.append((i+1, prev[-1] if prev else None))
+
+          (out/'COUNTS.txt').write_text(
+              '\n'.join(f'{k}: {v}' for k, v in counts.items()) + '\n',
+              encoding='utf-8')
+          (out/'CANDIDATES.txt').write_text(
+              '\n'.join(f'line {i+1}: {name}' for i, name in candidates) + '\n',
+              encoding='utf-8')
+          (out/'NEAREST_HEADINGS.txt').write_text(
+              '\n'.join(
+                  f'phrase line {line}: ' +
+                  ('none' if item is None else f'line {item[0]+1}: {item[1]}')
+                  for line, item in nearest) + '\n',
+              encoding='utf-8')
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks) + '\n', encoding='utf-8')
+          (out/'QUESTION.txt').write_text(
+              'Does Part V prove one regulator/volume/depth-uniform bound on products of the declared triangular source-renormalization matrices for each fixed finite jet family?\n'
+              'Is that theorem in the same local-root norm used by Lemma 8.1 and Theorems 7.2/8.9?\n'
+              'If only each individual finite matrix is bounded, the product bound does not follow.\n',
+              encoding='utf-8')
+
+          print('\n'.join(f'{k}: {v}' for k, v in counts.items()))
+          print('candidate declarations:', len(candidates))
+          if not hit_lines:
+              raise SystemExit('no triangular/source-renormalization phrases found')
+          PY
+      - name: Preserve provenance and audit
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/triangular_source_product
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve triangular source product interfaces'
+          git push origin HEAD:verification/ym-kirk-v4-triangular-source-product-audit-20260816
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-triangular-source-product-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/triangular_source_product/
