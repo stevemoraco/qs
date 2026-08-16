@@ -39,11 +39,20 @@ theorem quartic_boundary_square
     adSq = 4 * d + 8 * c2 - 32 := by
   omega
 
+theorem quartic_ce_conic_bundle_c2_eq_sixteen
+    (rSq d2Sq d4Sq e2 f2 : ℤ)
+    (hdouble : rSq = 2 * d2Sq)
+    (hce : rSq = 2 * d4Sq - 4 * e2 + f2)
+    (hrr : d4Sq = d2Sq + 2 * e2 - 8) :
+    f2 = 16 := by
+  omega
+
 #print axioms ns_trace_from_self_intersection
 #print axioms quartic_ns_trace
 #print axioms quartic_ns_trace_negative_square
 #print axioms tsch_irregular_square_gap
 #print axioms quartic_square_gap
 #print axioms quartic_boundary_square
+#print axioms quartic_ce_conic_bundle_c2_eq_sixteen
 
 end Millennium.Hodge.Bidegree24ScalarCore
