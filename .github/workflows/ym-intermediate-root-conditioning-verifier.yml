@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_intermediate_root_conditioning/IntermediateRootConditioningFirewall.lean
-          test "$(git hash-object "$SRC")" = dcf3087380b4dc39c0a33ee2f32d85a99a70ffe6
+          test "$(git hash-object "$SRC")" = 638fe2c1f53cbeae3e9345c00056eff0ad6311fa
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_intermediate_root_conditioning/IntermediateRootConditioningFirewall.lean')
