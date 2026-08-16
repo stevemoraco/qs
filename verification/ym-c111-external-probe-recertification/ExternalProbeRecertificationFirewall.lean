@@ -64,18 +64,18 @@ theorem cauchy_rows_give_fixed_recertification
     (g + h) / 2 ≤ (M / r + 2 * M / r ^ 2) / 2 := by linarith
     _ = M * (1 / (2 * r) + 1 / r ^ 2) := by
       field_simp [ne_of_gt hr]
-      <;> ring
 
-def decayingCompactRow (n : ℕ) : ℝ :=
+noncomputable def decayingCompactRow (n : ℕ) : ℝ :=
   1 / ((n : ℝ) + 1)
 
-def growingRecertificationCost (n : ℕ) : ℝ :=
+noncomputable def growingRecertificationCost (n : ℕ) : ℝ :=
   (n : ℝ) + 1
 
 theorem growingCost_mul_decayingRow (n : ℕ) :
     growingRecertificationCost n * decayingCompactRow n = 1 := by
+  dsimp [growingRecertificationCost, decayingCompactRow]
   have hne : ((n : ℝ) + 1) ≠ 0 := by positivity
-  simp [growingRecertificationCost, decayingCompactRow, hne]
+  field_simp
 
 theorem variable_recertification_can_destroy_subunit_admission
     (delta : ℝ) (hdelta : delta < 1) (n : ℕ) :
