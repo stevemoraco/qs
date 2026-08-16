@@ -3,7 +3,7 @@ import Mathlib
 /-!
 # RH B202 BGST crossing-margin finite core
 
-Finite real algebra behind the B202/B202A producer preflight.
+Finite real algebra behind the B202/B202A/B202B producer preflight.
 
 Formalized here:
 * if `delta < rho <= 2*delta`, the normalized imaginary height `delta/rho`
@@ -13,6 +13,7 @@ Formalized here:
 * the universal `2/7` entering-sign negative Rayleigh margin when the normalized
   imaginary height is at least one half;
 * the more general geometric-ratio margin once `kappa^2*b^2 >= 1`;
+* coefficient-only 2x2 jump identities and the `j0/7` negative witness;
 * the leaving-sign block has an even larger negative witness;
 * a generic normalized negative margin `c*T` transfers to B200 soft response
   at least `c/(1+c)`;
@@ -81,6 +82,50 @@ theorem entering_pair_margin_kappa
   rw [pairQ_witness]
   nlinarith
 
+/-- Quadratic form of a real symmetric order-two jump matrix
+`[[j0,j1],[j1,j2]]`. -/
+def coeffQ (j0 j1 j2 x y : ℝ) : ℝ :=
+  j0 * x ^ 2 + 2 * j1 * x * y + j2 * y ^ 2
+
+/-- The coefficient-defined vector `(-j1,j0)` evaluates to `j0*det(J)`. -/
+theorem coeffQ_witness (j0 j1 j2 : ℝ) :
+    coeffQ j0 j1 j2 (-j1) j0 =
+      j0 * (j0 * j2 - j1 ^ 2) := by
+  simp [coeffQ]
+  ring
+
+/-- Coefficient-only version of the dyadic entering-sign margin.  The first
+hypothesis is the unit-circle moment identity after clearing denominators; the
+second is exactly the determinant form of normalized height at least one half.
+No recovered node coordinate appears in the conclusion. -/
+theorem coefficient_only_entering_margin
+    {j0 j1 j2 : ℝ}
+    (hj0 : 0 < j0)
+    (hcircle : 2 * j1 ^ 2 - j0 * j2 = j0 ^ 2)
+    (hdet : j0 ^ 2 / 4 ≤ j1 ^ 2 - j0 * j2) :
+    coeffQ j0 j1 j2 (-j1) j0 ≤
+      -(j0 / 7) * (j1 ^ 2 + j0 ^ 2) := by
+  have hdetneg : j0 * j2 - j1 ^ 2 ≤ -(j0 ^ 2 / 4) := by
+    nlinarith
+  have hj1 : j1 ^ 2 ≤ (3 / 4 : ℝ) * j0 ^ 2 := by
+    nlinarith
+  have hnorm : j1 ^ 2 + j0 ^ 2 ≤ (7 / 4 : ℝ) * j0 ^ 2 := by
+    nlinarith
+  have hq :
+      j0 * (j0 * j2 - j1 ^ 2) ≤ j0 * (-(j0 ^ 2 / 4)) :=
+    mul_le_mul_of_nonneg_left hdetneg (le_of_lt hj0)
+  have hneg :
+      -(j0 / 7) * ((7 / 4 : ℝ) * j0 ^ 2) ≤
+        -(j0 / 7) * (j1 ^ 2 + j0 ^ 2) := by
+    apply mul_le_mul_of_nonpos_left hnorm
+    nlinarith
+  calc
+    coeffQ j0 j1 j2 (-j1) j0 =
+        j0 * (j0 * j2 - j1 ^ 2) := coeffQ_witness j0 j1 j2
+    _ ≤ j0 * (-(j0 ^ 2 / 4)) := hq
+    _ = -(j0 / 7) * ((7 / 4 : ℝ) * j0 ^ 2) := by ring
+    _ ≤ -(j0 / 7) * (j1 ^ 2 + j0 ^ 2) := hneg
+
 /-- Reversing the crossing sign has an explicit unit-vector negative witness of
 size two, hence certainly at least the `2/7` universal margin. -/
 theorem leaving_pair_margin (a b : ℝ) :
@@ -117,6 +162,8 @@ theorem soft_response_of_two_sevenths_margin
 #print axioms pairQ_witness
 #print axioms entering_pair_margin
 #print axioms entering_pair_margin_kappa
+#print axioms coeffQ_witness
+#print axioms coefficient_only_entering_margin
 #print axioms leaving_pair_margin
 #print axioms soft_response_of_margin
 #print axioms soft_response_of_two_sevenths_margin
