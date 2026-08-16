@@ -54,22 +54,24 @@ jobs:
           python3 - "$out/lemma_8_3_bbox.xhtml" "$out" <<'PY'
           import sys, re, html
           from pathlib import Path
-          import xml.etree.ElementTree as ET
 
           bbox = Path(sys.argv[1])
           out = Path(sys.argv[2])
-          root = ET.parse(bbox).getroot()
+          raw = bbox.read_text(encoding='utf-8', errors='replace')
+          pat = re.compile(
+              r'<word\s+xMin="(?P<xMin>[^"]+)"\s+yMin="(?P<yMin>[^"]+)"\s+'
+              r'xMax="(?P<xMax>[^"]+)"\s+yMax="(?P<yMax>[^"]+)">(?P<text>.*?)</word>',
+              re.S)
           words = []
-          for el in root.iter():
-              tag = el.tag.rsplit('}', 1)[-1]
-              if tag != 'word':
-                  continue
-              text = ''.join(el.itertext()).strip()
+          for m in pat.finditer(raw):
+              text = html.unescape(re.sub(r'<[^>]+>', '', m.group('text'))).strip()
               if not text:
                   continue
-              attrs = {k: float(el.attrib[k]) for k in ('xMin','yMin','xMax','yMax')}
+              attrs = {k: float(m.group(k)) for k in ('xMin','yMin','xMax','yMax')}
               words.append((text, attrs))
 
+          if not words:
+              raise SystemExit('no bbox words parsed')
           gate_hits = [i for i,(t,a) in enumerate(words) if 'Gate' in t or 'G1' in t]
           if not gate_hits:
               raise SystemExit('Gate-G1 token not found in bbox output')
@@ -83,8 +85,6 @@ jobs:
               for t,a in nearby:
                   lines.append(f"{t!r}\tx=({a['xMin']:.3f},{a['xMax']:.3f})\ty=({a['yMin']:.3f},{a['yMax']:.3f})")
 
-          # Also preserve every word whose text contains alpha, u_j-like symbols,
-          # or a minus sign, with a wide coordinate neighborhood.
           special = []
           for i,(t,a) in enumerate(words):
               norm = t.replace('−','-').replace('–','-')
@@ -93,10 +93,8 @@ jobs:
           lines.append('\n===== SPECIAL TOKENS ON PAGE =====')
           for i,t,a in special:
               lines.append(f"{i}\t{t!r}\tx=({a['xMin']:.3f},{a['xMax']:.3f})\ty=({a['yMin']:.3f},{a['yMax']:.3f})")
-
           (out/'lemma_8_3_bbox_tokens.txt').write_text('\n'.join(lines)+'\n', encoding='utf-8')
 
-          # Machine-readable local reconstruction by text-line clustering.
           ys = sorted({round(a['yMin'], 1) for _,a in words})
           clustered = []
           for y in ys:
