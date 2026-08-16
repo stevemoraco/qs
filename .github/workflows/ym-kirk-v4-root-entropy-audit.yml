@@ -24,50 +24,61 @@ jobs:
           fi
       - name: Pin immutable Kirk source
         run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
-      - name: Extract rooted-norm and coarsest-scale entropy contexts
+      - name: Extract compact rooted-norm theorem contexts
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import re
           from pathlib import Path
-          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
-          out=Path('source_audit/kirk_v4/root_entropy'); out.mkdir(parents=True,exist_ok=True)
-          targets=[
-            'Theorem 7.2','Corollary 7.4','Lemma 8.6','Corollary 8.7','Lemma 8.8',
-            'root norm','rooted norm','one/two-root','fixed root algebra','finer decoration',
-            'active nonroot','least-label','lowest common ancestor','coarsest scale',
-            'conditional logarithm','summable','uniformly summable'
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+          out=Path('source_audit/kirk_v4/root_entropy_compact'); out.mkdir(parents=True,exist_ok=True)
+          patterns={
+            'Theorem_7_2': re.compile(r'^\s*Theorem\s+7\.2\b',re.I),
+            'Corollary_7_4': re.compile(r'^\s*Corollary\s+7\.4\b',re.I),
+            'Lemma_8_6': re.compile(r'^\s*Lemma\s+8\.6\b',re.I),
+            'Corollary_8_7': re.compile(r'^\s*Corollary\s+8\.7\b',re.I),
+            'Lemma_8_8': re.compile(r'^\s*Lemma\s+8\.8\b',re.I),
+          }
+          chunks=[]; counts={}
+          for name,pat in patterns.items():
+            hits=[i for i,l in enumerate(lines) if pat.search(l)]
+            counts[name]=len(hits)
+            for k,i in enumerate(hits[:12],1):
+              lo=max(0,i-10); hi=min(len(lines),i+100)
+              chunks.append(f'===== {name} DECL {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          phrases=[
+            'fixed root algebra sums every finer decoration independently of the number of active nonroot supports',
+            'uniformly summable one/two-root norm',
+            'finer decorations attached to this coarsest skeleton',
+            'least-label convention',
+            'lowest common ancestor',
           ]
-          counts={}; ledger=[]; low=text.lower()
-          for target in targets:
-            pos=0; n=0
-            for _ in range(40):
-              i=low.find(target.lower(),pos)
-              if i<0: break
-              n+=1
-              ledger.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-4500):min(len(text),i+15000)]+'\n')
-              pos=i+len(target)
-            counts[target]=n
-          required=['Theorem 7.2','Corollary 7.4','Lemma 8.6','Corollary 8.7','Lemma 8.8']
-          missing=[x for x in required if counts[x]==0]
-          (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          for phrase in phrases:
+            hits=[i for i,l in enumerate(lines) if phrase.lower() in l.lower()]
+            counts[phrase]=len(hits)
+            for k,i in enumerate(hits[:20],1):
+              lo=max(0,i-12); hi=min(len(lines),i+35)
+              chunks.append(f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n'+ '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo,hi)))
+          (out/'TARGETED.txt').write_text('\n\n'.join(chunks)+'\n',encoding='utf-8')
           (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
-          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          missing=[k for k in patterns if counts[k]==0]
+          if missing: raise SystemExit('missing theorem declaration anchors: '+', '.join(missing))
           PY
-      - name: Preserve immutable audit contexts
+      - name: Preserve compact source contexts
         run: |
-          cp kirk_latest_record.json source_audit/kirk_v4/root_entropy/
-          sha256sum kirk_latest.pdf > source_audit/kirk_v4/root_entropy/PDF_SHA256.txt
+          cp kirk_latest_record.json source_audit/kirk_v4/root_entropy_compact/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/root_entropy_compact/PDF_SHA256.txt
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
-          git add source_audit/kirk_v4/root_entropy
+          git add source_audit/kirk_v4/root_entropy_compact
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve Kirk v4 root entropy contexts'
+          git commit -m 'audit(ym): preserve compact Kirk root entropy contexts'
           git push origin HEAD:verification/ym-kirk-v4-root-entropy-audit-20260815-run3-gpt56sol
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kirk-v4-root-entropy-audit
+          name: kirk-v4-root-entropy-compact-audit
           if-no-files-found: warn
           retention-days: 30
-          path: source_audit/kirk_v4/root_entropy/
+          path: source_audit/kirk_v4/root_entropy_compact/
