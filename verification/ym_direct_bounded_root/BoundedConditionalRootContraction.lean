@@ -34,9 +34,8 @@ theorem weightedMean_abs_le
     (hsum : ∑ i, w i = 1)
     (hf : ∀ i, |f i| ≤ B) :
     |weightedMean w f| ≤ B := by
-  apply abs_le.mpr
-  constructor
-  · calc
+  have hlow : -B ≤ weightedMean w f := by
+    calc
       -B = ∑ i, w i * (-B) := by
         rw [← Finset.sum_mul, hsum, one_mul]
       _ ≤ ∑ i, w i * f i := by
@@ -44,7 +43,8 @@ theorem weightedMean_abs_le
         intro i hi
         exact mul_le_mul_of_nonneg_left (abs_le.mp (hf i)).1 (hw i)
       _ = weightedMean w f := by rfl
-  · calc
+  have hupp : weightedMean w f ≤ B := by
+    calc
       weightedMean w f = ∑ i, w i * f i := by rfl
       _ ≤ ∑ i, w i * B := by
         apply Finset.sum_le_sum
@@ -52,6 +52,10 @@ theorem weightedMean_abs_le
         exact mul_le_mul_of_nonneg_left (abs_le.mp (hf i)).2 (hw i)
       _ = B := by
         rw [← Finset.sum_mul, hsum, one_mul]
+  apply abs_le.mpr
+  constructor
+  · linarith
+  · linarith
 
 /-- Product roots remain bounded under a positive normalized finite
 expectation. -/
@@ -64,7 +68,7 @@ theorem weightedMean_product_abs_le
     (hg : ∀ i, |g i| ≤ Bg) :
     |weightedMean w (fun i => f i * g i)| ≤ Bf * Bg := by
   apply weightedMean_abs_le w (fun i => f i * g i) (Bf * Bg)
-  · positivity
+  · exact mul_nonneg hBf hBg
   · exact hw
   · exact hsum
   · intro i
@@ -96,9 +100,10 @@ theorem weightedCovariance_abs_le
           weightedMean w f * weightedMean w g| ≤
         |weightedMean w (fun i => f i * g i)| +
           |weightedMean w f * weightedMean w g| := by
-    simpa [sub_eq_add_neg] using
-      (abs_add (weightedMean w (fun i => f i * g i))
-        (-(weightedMean w f * weightedMean w g)))
+    simpa only [Real.norm_eq_abs] using
+      (norm_sub_le
+        (weightedMean w (fun i => f i * g i))
+        (weightedMean w f * weightedMean w g))
   calc
     |weightedCovariance w f g| =
         |weightedMean w (fun i => f i * g i) -
