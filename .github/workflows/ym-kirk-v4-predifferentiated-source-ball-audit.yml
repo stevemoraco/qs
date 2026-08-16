@@ -1,0 +1,72 @@
+name: YM Kirk v4 pre-differentiated source-ball audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-source-tree-analyticity-audit-20260816-run3
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-source-tree-analyticity-audit-20260816-run3
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Probe source-ball precursor vocabulary
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest_raw.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/prediff_source_ball'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'complex source','complex sources','source amplitude','source amplitudes',
+            'source parameter','source parameters','source neighborhood','source neighbourhood',
+            'analytic source ball','source ball','holomorphic','holomorphy',
+            'source incidence','local source incidence','finite compact matching expansion',
+            'KP margin','strict KP','source logarithm','connected source logarithm',
+            'source functional is analytic','uniformly analytic','analytic uniformly'
+          ]
+          low=text.lower(); ledger=[]; counts={}
+          for target in targets:
+            pos=0; n=0
+            while True:
+              i=low.find(target.lower(),pos)
+              if i<0: break
+              n+=1
+              ledger.append(f'=== {target} hit {n} at {i} ===\n'+text[max(0,i-3200):min(len(text),i+9000)]+'\n')
+              pos=i+len(target)
+              if n>=50: break
+            counts[target]=n
+          (out/'TARGETED.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          PY
+      - name: Preserve audit contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/prediff_source_ball/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/prediff_source_ball/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/prediff_source_ball
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve pre-differentiated source-ball contexts'
+          git push origin HEAD:verification/ym-kirk-v4-source-tree-analyticity-audit-20260816-run3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-prediff-source-ball-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/prediff_source_ball/
