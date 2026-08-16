@@ -615,4 +615,35 @@ active background marks. The localization is the fixed Taylor/Wick localization 
   [2]       [2]
 (EX )2 = EX ; on the finite local jet its complement is the already defined Πirr = I − Πext . It contains
 the vacuum coordinate, the tangent-normalized Yang–Mills coordinate, every declared marked/contact
-jet below degree five, and every low-jet row in that finite marked block, inc
+jet below degree five, and every low-jet row in that finite marked block, including the explicitly listed
+total-difference, Bianchi, and reflection-odd rows. Define
+                               [3,2]                       [2]
+                             Airr := {F = (FX )X : EX FX = 0 for every X}.
+
+
+                                                         43
+Equivalently, after localization the output jet is acted on by the existing projector Πirr = I − Πext . This
+is the stable marked fiber used by the permanent one-step envelope; no quotient by a null sector is taken.
+Theorem 5.8 (The marked invariant graph remains in the actual stable fiber). The regular one-step
+map, including its two active background marks, has the supportwise form
+                                                                                      [2]
+                          (u, R) 7−→ f (u, R), Φirr (u, R) ,               Φirr,X = Pirr,X Φreg,X .
+                                                          
+
+           [3,2]
+It maps Airr       into itself. The centered invariant graph constructed by the graph transform therefore
+satisfies
+                                                                   [3,2]
+                                                    R⋆ (u) ∈ Airr .
+For its tangent H = R⋆′ (0) =
+                                 P
+                                   X HX one has, support by support,
+
+                                             [2]
+                                            EX HX = 0             for every X.                            (19)
+
+The same identity holds after every finite passive-source mark consumed by the local background coordinate.
+Proof. Step (E4) localizes each exact connected history, transfers the extracted jet to the finite coordinate
+block, and retains the complementary activity. The exact Loc/collect dichotomy proves that localizing
+before canonical hull collect is identical to collecting first and applying the projector on the final
+                                                                                

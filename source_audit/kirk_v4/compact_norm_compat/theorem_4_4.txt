@@ -667,4 +667,39 @@ and on the unmarked scalar subfiber,
                                                              1
                                                   r(Ljet ) ≤ .
                                                              4
-Proof. The Wick martingale eliminates every covariance-contraction lowering term. L
+Proof. The Wick martingale eliminates every covariance-contraction lowering term. Lemma 4.16 gives
+identity on the same-degree field jet and only degree-+2r corrections. Canonical cell rescaling multiplies
+a homogeneous degree-∆ jet by 24−∆ .
+   The extraction projector removes every declared jet below the stable threshold. Hence the stable matrix
+is block upper triangular with the displayed diagonal. Its entries come from finitely many derivatives of
+finite local analytic maps, so they are finite uniform constants. The spectrum of a finite block triangular
+matrix is the union of the spectra of its diagonal blocks.
+
+
+                                                      31
+4.5    Localization and exact collect
+Fix one finite dyadic macrostep L = 2s . All fields are expressed in the scale-dependent Wick coordinates
+of the stable-jet theorem. Engineering degree includes discrete derivatives and every declared active
+structural mark.
+
+Rooted histories and collect. Let HL be the absolutely summable family of connected regular
+macrostep histories. A history h has a reported connected support P (h), a distinguished root, and a
+canonical hull
+                                             Y = H(h).
+The hull contains the reported supports, shortest covariance connector paths, and the fixed finite atlas
+collar.
+Definition 4.18 (Exact collect). For a coarse connected support Y , define
+                                                     X
+                                        (CL F )Y =         Fh .
+                                                       h∈HL
+                                                      H(h)=Y
+
+The history certificate is retained as a passive label until this sum is formed.
+Lemma 4.19 (Collect is a rooted partition). The sets
+
+                                              {h : H(h) = Y }
+
+partition HL . Hence collect is exact, and for every bounded linear localization operator AY ,
+                                                       X
+                                       AY (CL F )Y =        AY Fh .
+                          

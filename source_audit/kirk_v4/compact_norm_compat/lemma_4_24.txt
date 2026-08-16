@@ -647,4 +647,28 @@ fixed-group finite-size modulus
 
 where the exponential term retains the permanently localized wrapping row and the polynomial term is
 the massless acoustic sum–integral row.
-   Fix once and for all a tail-compatible admissible directed schedul
+   Fix once and for all a tail-compatible admissible directed schedule s of the form (32). Write aj = 2j a0 ,
+let Mj be the scheduled periodic side at scale aj , and let µ   bsj,u be the full normalized physical weak
+measure at that scale, including the centered regular coordinate and the exactly recombined U4 irregular
+and wrapping sectors. The exact reduced one-step map on that tail is denoted by Fj . Define
+                                               hj (u) := gaj (b
+                                                              µsj,u ).                                     (12)
+Let F∞ , h∞ , and Σ∞ denote the corresponding rooted-thermodynamic maps obtained from the same
+canonically rescaled local functional. The finite-volume symbols are nonautonomous; no fixed-volume
+Taylor coefficient is identified with the thermodynamic coefficient merely from an estimate along one
+orbit.
+Lemma 5.5 (Finite-volume two-jet comparison and orbitwise finite-size row). There are c > 0 and finite
+Ck , pk such that, for 0 ≤ k ≤ 2,
+                          ∂uk (hj − h∞ )(u) + ∂uk (Σj − Σ∞ )(u) + ∂uk (Fj − F∞ )(u)
+                                     h                                 i
+                                ≤ Ck δG (Mj )u2−k + u3−k + u−pk e−c/u .                                    (13)
+
+For Σj , the derivative is in its scalar argument. This is a comparison through the quadratic jet; no
+exponential or polynomial all-orders convergence rate for the full massless functional is asserted. If
+(uj , Mj ) is a directed orbit and
+                                              δG (Mj ) ≤ uj ,                                     (14)
+then
+                  Fj (uj ) = F∞ (uj ) + OG (u3j ),                       ∂u (Fj − F∞ )(uj ) = OG (u2j ),   (15)
+             Σj (hj (uj )) = Σ∞ (h∞ (uj )) + OG (u3j ).                                                    (16)
+The same rows hold through the two background marks used by ga . All constants are independent of j,
+preceding weak depth, cutoff, volume, and the scheduled orbit with terminal coupling in the fix
