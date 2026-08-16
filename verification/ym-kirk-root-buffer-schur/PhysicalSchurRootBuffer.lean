@@ -42,7 +42,7 @@ theorem weighted_row_applied_to_bounded_source
     w * (∑ i, kernel i * source i)
         ≤ w * (∑ i, kernel i * B) := hweighted
     _ = (w * (∑ i, kernel i)) * B := by
-      rw [Finset.sum_mul]
+      rw [← Finset.sum_mul]
       ring
     _ ≤ A * B := mul_le_mul_of_nonneg_right hrow hB
 
@@ -86,7 +86,7 @@ theorem weighted_schur_two_buffer_le
         (∑ i, left i * (wRight * (∑ j, kernel i j * right j)))
         ≤ wLeft * (∑ i, left i * (A * B)) := hweighted
     _ = (wLeft * (∑ i, left i)) * (A * B) := by
-      rw [Finset.sum_mul]
+      rw [← Finset.sum_mul]
       ring
     _ ≤ F * (A * B) :=
       mul_le_mul_of_nonneg_right hleftMass (mul_nonneg hA hB)
