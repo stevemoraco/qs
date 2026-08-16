@@ -83,33 +83,45 @@ jobs:
               out.append(context)
           Path('_audit_out/marked_root_hits.txt').write_text('\n'.join(out)+'\n',encoding='utf-8')
 
-          sec45=[h for h in headings if h[1].split('.')[0] in {'4','5'}]
+          # h = (line, kind, theorem-number, title, complete-heading-line).
+          # The failed-first audit accidentally classified h[1] (kind) instead of h[2] (number).
+          sec45=[h for h in headings if h[2].split('.')[0] in {'4','5'}]
           Path('_audit_out/section45_headings.tsv').write_text(
               '\n'.join('\t'.join(map(str,h)) for h in sec45)+'\n', encoding='utf-8')
 
+          candidate_rx=re.compile(r'bi[- ]graded|bigraded|marked|root|source|connector|BKAR|passive|structural',re.I)
+          sec45_candidates=[h for h in sec45 if candidate_rx.search(h[3])]
+          Path('_audit_out/section45_candidate_headings.tsv').write_text(
+              '\n'.join('\t'.join(map(str,h)) for h in sec45_candidates)+'\n', encoding='utf-8')
+
           exact_bi=[x for x in hits if x[0] in {r'bi[- ]graded',r'bigraded'}]
           named=[h for h in headings if re.search(r'bi[- ]graded|bigraded|two[- ]root|marked',h[3],re.I)]
+          exact_named_bi=[h for h in headings if re.search(r'bi[- ]graded|bigraded',h[3],re.I)]
           report=[]
           report.append(f'PDF_SHA256\t{actual}')
           report.append(f'TOTAL_HEADINGS\t{len(headings)}')
           report.append(f'SECTION_4_5_HEADINGS\t{len(sec45)}')
+          report.append(f'SECTION_4_5_CANDIDATE_HEADINGS\t{len(sec45_candidates)}')
           report.append(f'BI_GRADED_TEXT_HITS\t{len(exact_bi)}')
+          report.append(f'EXACT_NAMED_BI_GRADED_HEADINGS\t{len(exact_named_bi)}')
           report.append(f'NAMED_MARKED_OR_ROOT_HEADINGS\t{len(named)}')
+          for h in exact_named_bi:
+              report.append('EXACT_BI_HEADING\t'+'\t'.join(map(str,h)))
           for h in named:
               report.append('NAMED\t'+'\t'.join(map(str,h)))
           for x in exact_bi:
               report.append(f'BI_HIT\tline={x[1]}\tnearest={x[3]}\ttext={x[2].strip()}')
           Path('_audit_out/origin_report.tsv').write_text('\n'.join(report)+'\n',encoding='utf-8')
 
-          # Exact local window around the only U5 proof call and all candidate named suppliers.
+          # Exact local windows around the U5 proof call and every plausible Section 4-5 supplier.
           selected=[]
           selected_lines=set()
           for x in exact_bi:
               selected_lines.add(x[1])
-          for h in named:
+          for h in sec45_candidates:
               selected_lines.add(h[0])
           for n in sorted(selected_lines):
-              lo=max(1,n-80); hi=min(len(lines),n+160)
+              lo=max(1,n-70); hi=min(len(lines),n+150)
               selected.append('='*130)
               selected.append(f'WINDOW AROUND LINE {n}; NEAREST HEADING {nearest_heading(n)}')
               selected.append('='*130)
@@ -118,6 +130,8 @@ jobs:
           PY
           sha256sum _audit_out/* > _audit_out/SHA256SUMS
           cat _audit_out/origin_report.tsv
+          echo '--- SECTION 4-5 CANDIDATES ---'
+          cat _audit_out/section45_candidate_headings.tsv
           wc -l -c _audit_out/*
       - name: Upload origin audit
         uses: actions/upload-artifact@v4
