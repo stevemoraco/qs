@@ -1,0 +1,68 @@
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+independent of M . For finer weak scales, ℓ−1      −1
+                                            j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+                           X
+                       sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+                                                   irr
+                                                                     Ctree ηw ≤ σ < 1.                 (112)
+                                                        
+                                                       ∥ ≤ ηw ,
+                        v
+                            X∋v
+
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+                                                                                                         −α
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+                                                                                                    −cuj
+                                                                                                          .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+
