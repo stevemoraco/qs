@@ -38,7 +38,7 @@ theorem bkar_trace_support_margin
     exact mul_le_mul_of_nonneg_right hmargin hS
   calc
     T / (1 - q) + kappaStar * S
-        ≤ d * q * S + kappaStar * S := add_le_add_right hcost _
+        ≤ d * q * S + kappaStar * S := add_le_add hcost (le_refl _)
     _ = (d * q + kappaStar) * S := by ring
     _ ≤ kappa * S := hmarginS
 
@@ -46,8 +46,6 @@ theorem bkar_trace_support_margin
 support exponent, a strictly positive residual support exponent exists. -/
 theorem bkar_positive_residual_support
     (d q kappa : ℝ)
-    (hd : 0 ≤ d)
-    (hq0 : 0 ≤ q)
     (hlt : d * q < kappa) :
     ∃ kappaStar > 0, d * q + kappaStar ≤ kappa := by
   refine ⟨(kappa - d * q) / 2, ?_, ?_⟩
