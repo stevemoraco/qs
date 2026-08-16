@@ -15,66 +15,54 @@ statement.
 
 namespace YMC70ZeroOrderEnvelopeFirewall
 
-def m : ℝ := 1 / 4
+/-- The local holomorphy cap is satisfied for sigma=1/2 and a=1. -/
+theorem localHolomorphyGate :
+    (1 / 2 : ℝ) * 1 < 1 := by
+  norm_num
 
-def sigma : ℝ := 1 / 2
+/-- C70B/B3's displayed geometric profile gate passes strictly for m=1/4,
+lambda=2. -/
+theorem printedProfileGate :
+    (1 / 4 : ℝ) * (1 / (1 - (1 / 2 : ℝ) * 1)) < 1 := by
+  norm_num
 
-def a : ℝ := 1
+/-- The displayed profile ratio is exactly one half. -/
+theorem printedRatio_eq_half :
+    (1 / 4 : ℝ) * (1 / (1 - (1 / 2 : ℝ) * 1)) = 1 / 2 := by
+  norm_num
 
-def M : ℝ := 3
+/-- B1's unpaid zero-order envelope M=3 reverses the geometric conclusion. -/
+theorem unpaidZeroOrderRatio :
+    1 < (1 / 4 : ℝ) * 3 * (1 / (1 - (1 / 2 : ℝ) * 1)) := by
+  norm_num
 
-def lambda : ℝ := 1 / (1 - sigma * a)
-
-/-- The local holomorphy cap is satisfied in the counterexample. -/
-theorem localHolomorphyGate : sigma * a < 1 := by
-  norm_num [sigma, a]
-
-/-- C70B/B3's displayed geometric profile gate passes strictly. -/
-theorem printedProfileGate : m * lambda < 1 := by
-  norm_num [m, lambda, sigma, a]
-
-/-- B1's unpaid zero-order envelope reverses the geometric conclusion. -/
-theorem unpaidZeroOrderRatio : 1 < m * M * lambda := by
-  norm_num [m, M, lambda, sigma, a]
-
-/-- The exact size-layer terms used in the paper counterexample. -/
-def layerTerm (V : ℕ) : ℝ := 6 * (3 / 2 : ℝ) ^ V
-
-/-- Consecutive size layers grow by the exact factor 3/2. -/
-theorem layerTerm_succ (V : ℕ) :
-    layerTerm (V + 1) = (3 / 2 : ℝ) * layerTerm V := by
-  simp [layerTerm, pow_succ]
-  ring
-
-/-- In particular the positive size-layer sequence is strictly increasing. -/
-theorem layerTerm_strict_growth (V : ℕ) :
-    layerTerm V < layerTerm (V + 1) := by
-  rw [layerTerm_succ]
-  have hpos : 0 < layerTerm V := by
-    positivity
-  nlinarith
+/-- The actual size-layer ratio is exactly three halves. -/
+theorem actualRatio_eq_threeHalves :
+    (1 / 4 : ℝ) * 3 * (1 / (1 - (1 / 2 : ℝ) * 1)) = 3 / 2 := by
+  norm_num
 
 /-- If the zero-order envelope has already been normalized below one,
 then multiplying by it cannot make a nonnegative geometric ratio worse. -/
 theorem normalizedZeroOrder_safe
     {m0 M0 lam0 : ℝ}
     (hm0 : 0 ≤ m0)
-    (hM0 : 0 ≤ M0)
     (hM1 : M0 ≤ 1)
     (hlam0 : 0 ≤ lam0)
     (hgate : m0 * lam0 < 1) :
     m0 * M0 * lam0 < 1 := by
-  have hmul : m0 * M0 ≤ m0 := by
-    nlinarith
-  have hle : m0 * M0 * lam0 ≤ m0 * lam0 :=
+  have hmul : m0 * M0 ≤ m0 * 1 :=
+    mul_le_mul_of_nonneg_left hM1 hm0
+  have hle : m0 * M0 * lam0 ≤ (m0 * 1) * lam0 :=
     mul_le_mul_of_nonneg_right hmul hlam0
-  exact lt_of_le_of_lt hle hgate
+  have hle' : m0 * M0 * lam0 ≤ m0 * lam0 := by
+    simpa using hle
+  exact lt_of_le_of_lt hle' hgate
 
 #print axioms localHolomorphyGate
 #print axioms printedProfileGate
+#print axioms printedRatio_eq_half
 #print axioms unpaidZeroOrderRatio
-#print axioms layerTerm_succ
-#print axioms layerTerm_strict_growth
+#print axioms actualRatio_eq_threeHalves
 #print axioms normalizedZeroOrder_safe
 
 end YMC70ZeroOrderEnvelopeFirewall
