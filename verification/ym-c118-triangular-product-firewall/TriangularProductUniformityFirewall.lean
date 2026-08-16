@@ -31,7 +31,13 @@ chosen gauge. -/
 theorem unipotentStep_pairGauge_le_two (x : ℝ × ℝ) :
     pairGauge (unipotentStep x) ≤ 2 * pairGauge x := by
   dsimp [pairGauge, unipotentStep]
-  have hadd : |x.1 + x.2| ≤ |x.1| + |x.2| := abs_add x.1 x.2
+  have hx : -|x.1| ≤ x.1 ∧ x.1 ≤ |x.1| :=
+    abs_le.mp (le_refl |x.1|)
+  have hy : -|x.2| ≤ x.2 ∧ x.2 ≤ |x.2| :=
+    abs_le.mp (le_refl |x.2|)
+  have hadd : |x.1 + x.2| ≤ |x.1| + |x.2| := by
+    rw [abs_le]
+    constructor <;> linarith [hx.1, hx.2, hy.1, hy.2]
   have h1 : 0 ≤ |x.1| := abs_nonneg x.1
   have h2 : 0 ≤ |x.2| := abs_nonneg x.2
   linarith
