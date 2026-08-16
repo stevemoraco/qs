@@ -1,0 +1,87 @@
+name: YM Kirk v4 N1 rooted source-domain radius audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-n1-domain-radius-20260816-run3-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-n1-domain-radius.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-n1-domain-radius-20260816-run3-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact rooted-domain/source-radius contexts
+        run: |
+          set -euo pipefail
+          pdftotext -layout kirk_latest.pdf latest_layout.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, hashlib
+          text=Path('latest_layout.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower()
+          out=Path('source_audit/kirk_v4/n1_domain_radius'); out.mkdir(parents=True,exist_ok=True)
+
+          literal_targets=[
+            'D(a; 3, N', 'D(a;3,N', 'rooted domain', 'domain D(',
+            'bounded local source parameters', 'source tube', 'source ball',
+            'exterior/source product tube', 'source norm', 'source parameters enter holomorphically',
+            'Theorem 4.6 (Arbitrary fixed passive-source order)'
+          ]
+          chunks=[]; counts={}
+          for t in literal_targets:
+            pos=0; n=0
+            while True:
+              i=low.find(t.lower(),pos)
+              if i<0: break
+              n+=1
+              chunks.append(f'=== {t} hit {n} at {i} ===\n'+text[max(0,i-18000):min(len(text),i+22000)]+'\n')
+              pos=i+len(t)
+              if n>=80: break
+            counts[t]=n
+
+          # Enumerate compact D(...) tokens and source/domain lines to catch typography variants.
+          dtokens=[]
+          for m in re.finditer(r'D\s*\([^\n\)]{0,160}\)', text):
+            s=m.group(0)
+            if any(x in s for x in ['a','3','N','source']):
+              dtokens.append((m.start(),s))
+          lines=[]
+          for ln,line in enumerate(text.splitlines(),1):
+            ll=line.lower()
+            if ('rooted domain' in ll or 'source tube' in ll or 'source ball' in ll or
+                ('source' in ll and 'domain' in ll) or 'd(a;' in ll or 'd(a ;' in ll):
+              lines.append(f'{ln}: {line}')
+          (out/'D_TOKENS.txt').write_text('\n'.join(f'{i}: {s}' for i,s in dtokens)+'\n',encoding='utf-8')
+          (out/'SOURCE_DOMAIN_LINES.txt').write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          (out/'TARGETED.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          (out/'PDF_SHA256.txt').write_text(hashlib.sha256(Path('kirk_latest.pdf').read_bytes()).hexdigest()+'  kirk_latest.pdf\n',encoding='utf-8')
+          rec=Path('kirk_latest_record.json')
+          if rec.exists(): (out/'kirk_latest_record.json').write_text(rec.read_text(encoding='utf-8'),encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          print('D tokens:', len(dtokens), 'source/domain lines:', len(lines))
+          if counts.get('Theorem 4.6 (Arbitrary fixed passive-source order)',0)==0:
+            raise SystemExit('missing Theorem 4.6 anchor')
+          PY
+      - name: Commit audit output
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/n1_domain_radius
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve exact N=1 source-domain radius contexts'
+          git push origin HEAD:verification/ym-kirk-v4-n1-domain-radius-20260816-run3-gpt56sol
