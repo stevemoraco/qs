@@ -1,4 +1,10 @@
 ===== Theorem_7_2 DECL 1 line 4767 =====
+4751: same spatial exponent mE . For normalized local fields the weak triangular source theorem supplies the
+4752: finite root seminorm before this matching-scale insertion. Thus arbitrary finite local source order changes
+4753: only CQA ,QB and not the connector exponent.
+4754: 
+4755: 7    Compact boundary-to-center closure
+4756: Proposition 7.1 (Exact full-joint marked response row). For q = 0, 1, 2, the exact matching-scale
 4757: connected source kernels obey
 4758:                       X                                X
 4759:                   sup     emE d(x,y) |Kq (x, y)| + sup   emE d(x,y) |Kq (x, y)| ≤ Aq < ∞.   (106)
@@ -109,8 +115,19 @@
 4864: If a fine source Jm is averaged to scale j < m, define
 4865:                                                      X
 4866:                                         Jj (X) = ℓ−4
+4867:                                                   j    ℓ4m Jm (z),                                      (109)
+4868:                                                         z∈X
+4869: 
+4870: where X is one scale-j cell.
+4871: Lemma 8.1 (Source-incidence contraction). The block source map satisfies
 
 ===== Corollary_7_4 DECL 1 line 4790 =====
+4774: Theorem 7.3 (Exact local-source retention and Gate–E closure). Let F be a bounded local matching
+4775: observable and let B be any bounded registered exterior perturbation supported at distance at least r from
+4776: F . Through source order two,
+4777: 
+4778:                              DJq ⟨F ; B⟩c J=0 ≤ CF,B,q e−mE r ,     q = 0, 1, 2.                      (107)
+4779: 
 4780: The same estimate holds for a finite family of compact-boundary or optical chart perturbations whose
 4781: centered score rows are uniformly bounded in the permanent marked norm. This is the boundary-to-center
 4782: statement consumed by the source forest.
@@ -221,8 +238,19 @@
 4887:      ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
 4888:      pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
 4889:      scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+4890:      weak/irregular recombination has a summable rooted remainder.
+4891: (R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+4892:      macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+4893:      are not counted as independent long-distance connectors.
+4894: (R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
 
 ===== Corollary_7_4 DECL 2 line 4978 =====
+4962: 
+4963: The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+4964: Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+4965: connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+4966: each Gaussian contraction the bond
+4967:                                            Ke−mopt d(X,Y )/ℓj
 4968: of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
 4969: distinguished path the triangle inequality gives
 4970:                                  Y
@@ -333,8 +361,265 @@
 5075:      connected majorant is bounded at every separation by
 5076:                                                                                        ′
 5077:                             Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+5078: 
+5079:      and                                 X                             X
+5080:                                sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+5081:                                 z                              z′
+5082:                                          z′                            z
+
+===== Lemma_8_3 DECL 1 line 4932 =====
+4916:                      m(M ) := min          inf                          , mE ≥ m∗ > 0.
+4917:                                2        jw ≤j≤M           ℓj
+4918: 
+4919: The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+4920: M → ∞ cannot decrease the exponent.
+4921: 
+4922: 
+4923:                                                        73
+4924: 
+4925: Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+4926: in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
+4927: independent of M . For finer weak scales, ℓ−1      −1
+4928:                                             j ≥ ℓjw , so the weak rate is minimized at the coarsest weak
+4929: scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+4930: supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+4931: (111).
+4932: Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw , and σ ∈ (0, 1)
+4933: such that, for every j ≥ jw , the exact source-free scale-j interaction and irregular remainder satisfy
+4934:                            X
+4935:                        sup      ea|X| ∥Vj,X ∥ + ∥Vj,X
+4936:                                                    irr
+4937:                                                                      Ctree ηw ≤ σ < 1.                 (112)
+4938:                                                         
+4939:                                                        ∥ ≤ ηw ,
+4940:                         v
+4941:                             X∋v
+4942: 
+4943: After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+4944: expansion is bounded by the same factor σ.
+4945: Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+4946:                                                                                                          −α
+4947: on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+4948:                                                                                                     −cuj
+4949:                                                                                                           .
+4950: Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+4951: toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+4952: fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+4953: j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+4954: row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+4955: on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+4956: has strict finite range.
+4957: Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+4958: sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+4959: after Riemann source normalization, by
+4960: 
+4961:                                C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+4962: 
+4963: The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+4964: Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+4965: connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+4966: each Gaussian contraction the bond
+4967:                                            Ke−mopt d(X,Y )/ℓj
+4968: of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+4969: distinguished path the triangle inequality gives
+4970:                                  Y
+4971:                                          e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+4972:                              (X,Y ) on path
+4973: 
+4974: All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+4975: branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+4976: and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+4977: fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+4978: Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+4979: norm because of Lemma 8.1.
+4980: 
+4981: Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+4982: in physical sets A, B,
+4983:                            |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+4984: with m0 > 0 independent of spatial volume and microscopic cutoff.
+4985: Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+4986: its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+4987: spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+4988: m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+4989: 
+4990: 
+4991:                                                      74
+4992: 
+4993: Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+4994: normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+4995: decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+4996: before the logarithm is taken, so no all-good denominator occurs. Write
+4997: 
+4998:                                      Wm (J) = log Zm (J) − log Zm (0)
+4999: 
+5000: for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+5001: finite macrobridge is an identity, not an asymptotic expansion.
+5002:    A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+5003: At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+5004: incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+5005: transported without joining retain their existing components. At the terminal matching logarithm, the
+5006: remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+5007: fixed by the least source label, so isomorphic terms are not counted more than once.
+5008: Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+5009: derivative order n,                                        X
+5010:                              Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+5011:                                                       τ ∈Tm,n
+5012: 
+5013: where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+5014: analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+5015: taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+5016: Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+5017: Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+5018: identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+5019: Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+5020: joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+5021: Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
+5025: summable independently of m, so dominated convergence gives the last assertion.
+5026: 
+5027:     For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+5028: If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+5029: scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+5030: recursively generated tree, not a choice made after absolute values or bounds have been applied.
+5031: Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+5032: the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+5033: Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+
+===== Lemma_8_4 DECL 1 line 4957 =====
+4941:                             X∋v
+4942: 
+4943: After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+4944: expansion is bounded by the same factor σ.
+4945: Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj ∥a ≤ Cuj
+4946:                                                                                                          −α
+4947: on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−pj e
+4948:                                                                                                     −cuj
+4949:                                                                                                           .
+4950: Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+4951: toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+4952: fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+4953: j ≥ jw . The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+4954: row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+4955: on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+4956: has strict finite range.
+4957: Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+4958: sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+4959: after Riemann source normalization, by
+4960: 
+4961:                                C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+4962: 
+4963: The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+4964: Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+4965: connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+4966: each Gaussian contraction the bond
+4967:                                            Ke−mopt d(X,Y )/ℓj
+4968: of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+4969: distinguished path the triangle inequality gives
+4970:                                  Y
+4971:                                          e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+4972:                              (X,Y ) on path
+4973: 
+4974: All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+4975: branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+4976: and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+4977: fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+4978: Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+4979: norm because of Lemma 8.1.
+4980: 
+4981: Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+4982: in physical sets A, B,
+4983:                            |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+4984: with m0 > 0 independent of spatial volume and microscopic cutoff.
+4985: Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+4986: its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+4987: spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+4988: m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+4989: 
+4990: 
+4991:                                                      74
+4992: 
+4993: Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+4994: normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+4995: decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+4996: before the logarithm is taken, so no all-good denominator occurs. Write
+4997: 
+4998:                                      Wm (J) = log Zm (J) − log Zm (0)
+4999: 
+5000: for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+5001: finite macrobridge is an identity, not an asymptotic expansion.
+5002:    A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+5003: At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+5004: incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+5005: transported without joining retain their existing components. At the terminal matching logarithm, the
+5006: remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+5007: fixed by the least source label, so isomorphic terms are not counted more than once.
+5008: Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+5009: derivative order n,                                        X
+5010:                              Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+5011:                                                       τ ∈Tm,n
+5012: 
+5013: where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+5014: analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+5015: taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+5016: Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+5017: Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+5018: identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+5019: Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+5020: joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+5021: Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
+5025: summable independently of m, so dominated convergence gives the last assertion.
+5026: 
+5027:     For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+5028: If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+5029: scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+5030: recursively generated tree, not a choice made after absolute values or bounds have been applied.
+5031: Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+5032: the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+5033: Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+5037: Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+5038: its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+5039: scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+5040: 
+5041: Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+5042: logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+5043: carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+5044: root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+5045: broken lexicographically.
+5046: Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+5047: exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+5048: its coarsest skeleton have a uniformly summable one/two-root norm. Put
+5049: 
+5050:                                              dw := CR + m−1
+5051:                                                          w .
+5052: 
+5053: 
+5054: 
+5055:                                                      75
+5056: 
+5057: For d ≥ dw ,                   X
+5058:                                       Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+5059:                                j≥jw
+5060: 
+5061: For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
 
 ===== Lemma_8_6 DECL 1 line 5008 =====
+4992: 
+4993: Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+4994: normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+4995: decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+4996: before the logarithm is taken, so no all-good denominator occurs. Write
+4997: 
 4998:                                      Wm (J) = log Zm (J) − log Zm (0)
 4999: 
 5000: for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
@@ -445,8 +730,19 @@
 5105: 
 5106:                                 κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
 5107: 
+5108: Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+5109: allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+5110: Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+5111: renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+5112: two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
 
 ===== Corollary_8_7 DECL 1 line 5031 =====
+5015: taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+5016: Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+5017: Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+5018: identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+5019: Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+5020: joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
 5021: Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
 5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
 5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
@@ -557,8 +853,19 @@
 5128:                                                          T ∈Tn {i,j}∈E(T )
 5129: 
 5130: 
+5131: uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+5132: renormalized local or marked sources, the corresponding smeared cumulants satisfy
+5133:                                                                              n
+5134:                                                                              Y
+5135:                               |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
 
 ===== Lemma_8_8 DECL 1 line 5046 =====
+5030: recursively generated tree, not a choice made after absolute values or bounds have been applied.
+5031: Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+5032: the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+5033: Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
 5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
 5037: Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
 5038: its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
@@ -669,8 +976,15 @@
 5143: bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
 5144: unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
 5145: renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+5146: remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+5147: The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+5148: summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+5149: separated-group exponential.
+5150: Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood of the
 
 ===== PHRASE uniformly summable one/two-root norm HIT 1 line 5048 =====
+5034: bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+5035: irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
 5036: source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
 5037: Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
 5038: its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
@@ -718,8 +1032,15 @@
 5080:                                sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
 5081:                                 z                              z′
 5082:                                          z′                            z
+5083: 
+5084:  (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+5085:      then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+5086:      by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+5087:      by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
 
 ===== PHRASE least-label convention HIT 1 line 5036 =====
+5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
 5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
 5025: summable independently of m, so dominated convergence gives the last assertion.
 5026: 
@@ -767,8 +1088,15 @@
 5068: x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
 5069: and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
 5070: physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+5071: they are contracted into the exact local atom described in the statement.
+5072: Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+5073: resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+5074:  (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+5075:      connected majorant is bounded at every separation by
 
 ===== PHRASE least-label convention HIT 2 line 5065 =====
+5051:                                                          w .
+5052: 
 5053: 
 5054: 
 5055:                                                      75
@@ -816,8 +1144,15 @@
 5097: the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
 5098: not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
 5099: counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+5100: seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+5101: local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+5102: physical rate without suppressing or hiding contact terms.
+5103: 
+5104: All-order source trees Let
 
 ===== PHRASE lowest common ancestor HIT 1 line 5027 =====
+5013: where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+5014: analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
 5015: taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
 5016: Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
 5017: Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
@@ -865,8 +1200,15 @@
 5059:                                j≥jw
 5060: 
 5061: For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+5062: bounded observables and controlled in the local source topology for renormalized fields.
+5063: Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+5064: tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+5065: logarithm formula at which the two source components are joined. The least-label convention removes
+5066: automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
 
 ===== PHRASE lowest common ancestor HIT 2 line 5035 =====
+5021: Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+5022: logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
 5023: while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
 5024: one/two-root bounds control a component while its source leaves remain external. These majorants are
 5025: summable independently of m, so dominated convergence gives the last assertion.
@@ -914,8 +1256,15 @@
 5067: decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
 5068: x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
 5069: and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+5070: physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+5071: they are contracted into the exact local atom described in the statement.
+5072: Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+5073: resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+5074:  (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
 
 ===== PHRASE lowest common ancestor HIT 3 line 5063 =====
+5049: 
+5050:                                              dw := CR + m−1
 5051:                                                          w .
 5052: 
 5053: 
@@ -963,8 +1312,15 @@
 5095:    For bounded observables, the covariance and every short-distance connected local atom are bounded
 5096: by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
 5097: the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+5098: not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+5099: counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+5100: seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+5101: local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+5102: physical rate without suppressing or hiding contact terms.
 
 ===== PHRASE lowest common ancestor HIT 4 line 6742 =====
+6728: case every Fi fixes zero, has positive derivative, and can be written as Fi (u) = uϕi (u) with ϕi positive and
+6729: uniformly C 2 . Its finite composition therefore factors as ui (g) = g 2 ψi (g 2 ) with ψi > 0. Differentiating
 6730: the exact recurrence twicep and using Fi (ui ) ≤
 6731:                                            ′
 6732:                                                     1 + Cui and |Fi′′ (ui )| ≤ C gives polynomial growth in i.
@@ -1012,8 +1368,15 @@
 6774: reported support. Suppression of a unary chain is the exact ordered transfer product. After these
 6775: operations, a tree with at most four distinguished leaves has only a fixed number of essential branching
 6776: edges, while all arbitrarily long unary portions are already contained in the parity transfer product. The
+6777: unique lowest common ancestor of all labels is an ordinary tree invariant. If a g derivative lands on a
+6778: coarser conditional map, its mark is attached at that map and therefore moves v⊤ to that scale. Hence
+6779: no marked vertex can occur above v⊤ .
+6780:    The shell selector is applied only after the full packet at v⊤ has been collected. A remote unmarked
+6781: side decoration is not cut from its parent and is not asked to carry an external Taylor factor. If exact
 
 ===== PHRASE lowest common ancestor HIT 5 line 6760 =====
+6746:         contact belongs to one complete one-step packet before multiscale composition;
+6747:   (iv) the coefficients are exactly those of the Banach-valued Faà di Bruno formula.
 6748: No infinite-depth passage is asserted in this lemma.
 6749: Proof. Apply the joint-cumulant derivative identity to every exact normalized weak conditional and, on
 6750: a crossing cell, to the exact finite macrobridge and joint compact–optical logarithm. Then apply the
@@ -1061,8 +1424,15 @@
 6792: and one passive-source order large enough for the two curvature roots. Let ∥·∥⋆ be the adapted rooted marked
 6793: norm furnished by the macrostep local/nonlocal theorem and the macrostep-to-one-step construction. At
 6794:                    (2)
+6795: weak scale j, let Ij be the space of complete reflection-even two-root packet kernels satisfying K(0) = 0,
+6796: equivalently                                     X
+6797:                                         K(p) =      pbj,α pbj,β Sαβ (p),
+6798:                                                      α,β
+6799: 
 
 ===== PHRASE lowest common ancestor HIT 6 line 6777 =====
+6763: full reported-support shell k using a scalar translation- and reflection-invariant selector. The selected
+6764: class is therefore a complete BRS/reflection packet with every denominator and normalization contact
 6765: still inside it.
 6766:     If j ≤ k + C0 , the permanent rooted-support row of that whole packet gives
 6767:                                                                  k−j
@@ -1110,3 +1480,120 @@
 6809: the fixed physical source normalization,
 6810:                                                                 (2)
 6811:                                                       X
+6812:                                       ∥K∥⋆,r ≤ C2−2j      ∥Sαβ ∥⋆,r .                             (211)
+6813:                                                                  α,β
+6814: 
+6815: Thus the strict contraction concerns the entire complete rooted packet; it is not inferred from the finite
+6816: local jet block alone.
+
+===== PHRASE strict rooted margin HIT 1 line 4974 =====
+4960: 
+4961:                                C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+4962: 
+4963: The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+4964: Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+4965: connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+4966: each Gaussian contraction the bond
+4967:                                            Ke−mopt d(X,Y )/ℓj
+4968: of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+4969: distinguished path the triangle inequality gives
+4970:                                  Y
+4971:                                          e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+4972:                              (X,Y ) on path
+4973: 
+4974: All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+4975: branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+4976: and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+4977: fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+4978: Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+4979: norm because of Lemma 8.1.
+4980: 
+4981: Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+4982: in physical sets A, B,
+4983:                            |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+4984: with m0 > 0 independent of spatial volume and microscopic cutoff.
+4985: Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+4986: its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+4987: spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+4988: m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+4989: 
+4990: 
+4991:                                                      74
+4992: 
+4993: Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+4994: normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+4995: decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+4996: before the logarithm is taken, so no all-good denominator occurs. Write
+4997: 
+4998:                                      Wm (J) = log Zm (J) − log Zm (0)
+4999: 
+5000: for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+5001: finite macrobridge is an identity, not an asymptotic expansion.
+5002:    A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+5003: At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+5004: incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+5005: transported without joining retain their existing components. At the terminal matching logarithm, the
+5006: remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+5007: fixed by the least source label, so isomorphic terms are not counted more than once.
+5008: Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+5009: derivative order n,                                        X
+5010:                              Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+5011:                                                       τ ∈Tm,n
+5012: 
+5013: where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+
+===== PHRASE every additional nonreference vertex HIT 1 line 4887 =====
+4873:                         ∥Jj ∥∞ ≤ ∥Jm ∥∞ ,  ℓ4j   |Jj (X)| ≤ ℓ4m   |Jm (z)| .                            (110)
+4874:                                                         X                      z
+4875: 
+4876: The same inequalities hold componentwise for a fixed finite family of bounded tensor sources. For
+4877: a renormalized local-field source, the geometric averaging is followed by its finite triangular source-
+4878: renormalization matrix. Those matrices are treated in the local root norm; after the declared source
+4879: normalization their products are bounded on every fixed finite jet family and do not alter the connector
+4880: exponent.
+4881: Proof. Each coarse value is a convex average of the fine values, proving the first inequality. The second
+4882: follows by the triangle inequality and the partition of the fine cells into coarse cells.
+4883: 
+4884: Connectors at one scale The exact iterated conditional logarithm is divided into two propagation
+4885: regimes.
+4886: (R1) There is a fixed weak threshold jw such that every finer scale j ≥ jw lies in one strict rooted expansion
+4887:      ball. After distributing the support weight in the tree estimate, every additional nonreference vertex
+4888:      pays a common branch factor σ < 1. The exact Karcher detail covariance obeys the exponential
+4889:      scale-local bond of Corollary 4.14; fixed connector words have physical diameter O(ℓj ), and the
+4890:      weak/irregular recombination has a summable rooted remainder.
+4891: (R2) The finitely many scales between jw and the compact matching scale are integrated inside the finite
+4892:      macrobridge. Their source dependence is absorbed into bounded matching-scale local atoms; they
+4893:      are not counted as independent long-distance connectors.
+4894: (R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+4895:      Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+4896:      common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+4897:      acoustic reference channel beyond the exact owner-map inventory.
+4898: (R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+4899:      column bounds uniform in all exterior variables.
+4900:    Define the quantitative rates
+4901: 
+4902:                     mw := ℓ−1
+4903:                            jw min{c0 | log σ|, mopt },
+4904:                                                                      1                                  (111)
+4905:                  mmatch := mE ,                             m∗ :=      min{mw , mmatch } > 0.
+4906:                                                                      2
+4907: where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+4908: matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+4909: finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+4910: Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+4911: directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+4912: with the fixed matching bridge has exponential rate at least
+4913: 
+4914:                                1                min{c0 | log σ|, mopt }
+4915:                                                                            
+4916:                      m(M ) := min          inf                          , mE ≥ m∗ > 0.
+4917:                                2        jw ≤j≤M           ℓj
+4918: 
+4919: The lower bound is independent of M , microscopic spacing, volume, and boundary condition. Passing to
+4920: M → ∞ cannot decrease the exponent.
+4921: 
+4922: 
+4923:                                                        73
+4924: 
+4925: Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+4926: in physical units before the microscopic depth is sent to infinity. Hence σ, mopt , mE , ℓjw , and ℓ0 are
