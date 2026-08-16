@@ -22,8 +22,14 @@ jobs:
       - name: Ensure pdftotext
         run: |
           if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
-      - name: Pin immutable Kirk source
-        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Pin immutable Kirk v4 PDF directly
+        run: |
+          set -euo pipefail
+          url='https://zenodo.org/api/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence,%20Mass%20Gap,%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf/content'
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 180 "$url" -o kirk_latest.pdf
+          got="$(sha256sum kirk_latest.pdf | awk '{print $1}')"
+          test "$got" = 'c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          pdftotext -layout kirk_latest.pdf latest.txt
       - name: Extract closure contexts
         run: |
           set -euo pipefail
@@ -61,10 +67,10 @@ jobs:
           missing=[k for k in required if counts.get(k,0)==0]
           if missing: raise SystemExit('missing required anchors: '+', '.join(missing))
           PY
-      - name: Preserve source and contexts
+      - name: Preserve contexts
         run: |
-          cp kirk_latest_record.json source_audit/kirk_v4/gaussian_trace_support_closure/
           sha256sum kirk_latest.pdf > source_audit/kirk_v4/gaussian_trace_support_closure/PDF_SHA256.txt
+          printf '%s\n' 'record=21765806' 'version=4.0' 'doi=10.5281/zenodo.21765806' > source_audit/kirk_v4/gaussian_trace_support_closure/SOURCE.txt
           git config user.name 'millennium-braid-source-audit'
           git config user.email 'actions@users.noreply.github.com'
           git add source_audit/kirk_v4/gaussian_trace_support_closure
