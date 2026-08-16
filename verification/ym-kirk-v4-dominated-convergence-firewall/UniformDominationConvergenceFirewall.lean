@@ -36,14 +36,14 @@ theorem alternating01_even (k : ℕ) :
     alternating01 (2 * k) = 0 := by
   unfold alternating01
   have h : (2 * k) % 2 = 0 := by omega
-  simp [h]
+  rw [if_pos h]
 
 /-- Odd indices give the value `1`. -/
 theorem alternating01_odd (k : ℕ) :
     alternating01 (2 * k + 1) = 1 := by
   unfold alternating01
   have h : (2 * k + 1) % 2 ≠ 0 := by omega
-  simp [h]
+  rw [if_neg h]
 
 /-- The uniformly dominated alternating sequence has no real epsilon-tail
 limit. This is the finite logical firewall against the inference
