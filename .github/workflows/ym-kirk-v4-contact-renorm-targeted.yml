@@ -1,0 +1,59 @@
+name: YM Kirk v4 contact-renorm targeted audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-contact-renorm-targeted-20260816-run3-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract compact theorem contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          low=text.lower(); out=Path('source_audit/kirk_v4/contact_renorm_targeted'); out.mkdir(parents=True,exist_ok=True)
+          anchors=[
+            'Lemma 8.10','Theorem 8.11','Corollary 8.12',
+            'finite triangular source-renormalization matrix',
+            'finite triangular source renormalization matrix',
+            'maximal contact subtree','maximal contact subtrees',
+            'contact subtree','contact cluster','local root','source tree',
+            'Cauchy bounds','analytic source ball','fixed neighbourhood of the origin'
+          ]
+          for idx,a in enumerate(anchors):
+            poss=[]; start=0
+            while len(poss)<8:
+              i=low.find(a.lower(),start)
+              if i<0: break
+              poss.append(i); start=i+len(a)
+            chunks=[]
+            for n,i in enumerate(poss,1):
+              chunks.append(f'=== {a} hit {n} at {i} ===\n'+text[max(0,i-3500):min(len(text),i+9000)])
+            safe=''.join(ch if ch.isalnum() else '_' for ch in a)[:80]
+            (out/f'{idx:02d}_{safe}.txt').write_text('\n\n'.join(chunks),encoding='utf-8')
+          cp=Path('kirk_latest_record.json')
+          if cp.exists(): (out/'kirk_latest_record.json').write_bytes(cp.read_bytes())
+          import hashlib
+          pdf=Path('kirk_latest.pdf').read_bytes(); (out/'PDF_SHA256.txt').write_text(hashlib.sha256(pdf).hexdigest()+'  kirk_latest.pdf\n')
+          PY
+      - name: Preserve contexts
+        run: |
+          git config user.name millennium-braid-source-audit
+          git config user.email actions@users.noreply.github.com
+          git add source_audit/kirk_v4/contact_renorm_targeted
+          git commit -m 'audit(ym): preserve Kirk v4 contact-renormalization contexts'
+          git push origin HEAD:verification/ym-kirk-v4-contact-renorm-targeted-20260816-run3-gpt56sol
