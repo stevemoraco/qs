@@ -1,0 +1,146 @@
+name: YM Kirk v4 final spectral-window audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-final-spectral-window-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+
+      - name: Pin immutable Kirk v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+
+      - name: Extract final reconstruction and noncollapse chain
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          src = Path('latest.txt')
+          pdf = Path('kirk_latest.pdf')
+          if not src.exists() or not pdf.exists():
+              raise SystemExit('latest source probe did not create latest.txt and kirk_latest.pdf')
+
+          lines = src.read_text(encoding='utf-8', errors='replace').splitlines()
+          out = Path('source_audit/kirk_v4/final_spectral_window')
+          out.mkdir(parents=True, exist_ok=True)
+
+          # The pinned v4 text places the OS reconstruction, common clustering gap,
+          # endpoint interpolation, reflected noncollapse, and finite spectral window
+          # in this contiguous range. Keep a wider guard band so no proof paragraph,
+          # cell-boundary statement, or terminal remainder is silently omitted.
+          lo = 5900
+          hi = min(len(lines), 6750)
+          excerpt = '\n'.join(f'{i+1}: {lines[i]}' for i in range(lo - 1, hi)) + '\n'
+          (out / 'FINAL_SPECTRAL_CHAIN.txt').write_text(excerpt, encoding='utf-8')
+
+          heading = re.compile(
+              r'^\s*(Theorem|Lemma|Corollary|Proposition|Definition)\s+([A-Z]?\d+(?:\.\d+)*)\b',
+              re.I,
+          )
+          headings = []
+          for i in range(lo - 1, hi):
+              m = heading.search(lines[i])
+              if m:
+                  headings.append(f'line {i+1}: {m.group(0).strip()} :: {lines[i].strip()}')
+          (out / 'HEADINGS.txt').write_text('\n'.join(headings) + '\n', encoding='utf-8')
+
+          phrases = [
+              'Unique vacuum and complete local mass gap',
+              'Positive Gaussian OS norm',
+              'Uniform endpoint interpolation master theorem',
+              'terminal remainder',
+              'no-crossing',
+              'reflected noncollapse',
+              'finite spectral window',
+              'spectral mass',
+              'nontriviality',
+              'common diagonal',
+              'same common subsequence',
+              'source algebra',
+              'null ideal',
+              'endpoint packet',
+              'cell boundary',
+          ]
+          chunks = []
+          counts = {}
+          for phrase in phrases:
+              hits = [i for i, line in enumerate(lines) if phrase.lower() in line.lower()]
+              counts[phrase] = len(hits)
+              for k, i in enumerate(hits, 1):
+                  a = max(0, i - 70)
+                  b = min(len(lines), i + 170)
+                  chunks.append(
+                      f'===== {phrase} HIT {k} source line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(a, b))
+                  )
+          (out / 'TARGETED.txt').write_text('\n\n'.join(chunks) + '\n', encoding='utf-8')
+          (out / 'COUNTS.txt').write_text(
+              '\n'.join(f'{k}: {v}' for k, v in counts.items()) + '\n',
+              encoding='utf-8',
+          )
+          (out / 'QUESTION.txt').write_text(
+              'Does the exact Section-10 endpoint interpolation prove a cutoff/volume/depth-uniform '
+              'positive reflected OS norm for one source in the same projective Schwinger family and '
+              'common diagonal subsequence used by Theorem 9.3?\n'
+              'Are the crossing-cell boundaries and no-crossing terminal remainder controlled through '
+              'two interpolation derivatives without differentiating a discontinuous stopping index?\n'
+              'Does the resulting non-null vector have positive spectral mass in a finite interval above '
+              'the common Hamiltonian gap, rather than merely nonzero Euclidean variance?\n',
+              encoding='utf-8',
+          )
+
+          for name in ('kirk_latest_record.json', 'kirk_source_probe_report.json'):
+              p = Path(name)
+              if p.exists():
+                  (out / name).write_bytes(p.read_bytes())
+
+          print(f'source lines: {len(lines)}')
+          print(f'extracted range: {lo}-{hi}')
+          print(f'headings: {len(headings)}')
+          print(json.dumps(counts, indent=2))
+          PY
+
+      - name: Preserve provenance and source audit
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/final_spectral_window
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve final spectral-window source chain'
+          git push origin HEAD:verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-final-spectral-window-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            source_audit/kirk_v4/final_spectral_window/
+            kirk_latest.pdf
