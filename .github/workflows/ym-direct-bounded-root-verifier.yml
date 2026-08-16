@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_direct_bounded_root/BoundedConditionalRootContraction.lean
-          test "$(git hash-object "$SRC")" = c3f55095588ac5fa0983d4c7c8ca887905cd10e6
+          test "$(git hash-object "$SRC")" = 4f0b9b6943f2fa5bba5be5630499a4ec10e2370d
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_direct_bounded_root/BoundedConditionalRootContraction.lean')
