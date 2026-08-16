@@ -4,8 +4,6 @@ namespace Millennium.BSD.MaximalSquareZeroSelector
 
 variable {K I : Type*}
 variable [Field K]
-variable [Fintype I]
-variable [DecidableEq I]
 
 abbrev V (K I : Type*) := (I → K) × (I → K)
 
@@ -39,17 +37,9 @@ theorem selector_kernel_is_image (v : V K I) :
     refine ⟨(0, v.1), ?_⟩
     ext i
     · simp [selector]
-    · simpa [selector, hsecond]
+    · simp [selector, hsecond]
   · rintro ⟨w, rfl⟩
     exact selector_sq_zero w
-
-def omega (v w : V K I) : K :=
-  (∑ i, v.1 i * w.2 i) - ∑ i, v.2 i * w.1 i
-
-theorem selector_hamiltonian (v w : V K I) :
-    omega (selector v) w + omega v (selector w) = 0 := by
-  simp [omega, selector]
-  ring
 
 theorem selector_kills_first (x : I → K) :
     selector (x, 0) = 0 := by
@@ -58,6 +48,19 @@ theorem selector_kills_first (x : I → K) :
 theorem selector_hits_first (x : I → K) :
     selector (0, x) = (x, 0) := by
   ext i <;> simp [selector]
+
+section
+
+variable [Fintype I]
+
+def omega (v w : V K I) : K :=
+  (∑ i, v.1 i * w.2 i) - ∑ i, v.2 i * w.1 i
+
+theorem selector_hamiltonian (v w : V K I) :
+    omega (selector v) w + omega v (selector w) = 0 := by
+  simp [omega, selector]
+
+end
 
 #print axioms selector_sq_zero
 #print axioms selector_eq_zero_iff
