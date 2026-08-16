@@ -1,0 +1,695 @@
+=== Cauchy bounds hit 1 at 30150 ===
+                                                      
+                                                    T −1
+                                      Af (z)Af (z)                      − 0.896
+                                                     
+                                                             ≤                          ,
+                                                                     2
+
+and hence
+                                                   2     81/2 + 0.07
+                                                       p             
+                                      ∥P0 (z)∥ ≤                       < 0.546.
+                                                       49/2 − 0.896
+Analyticity in a fixed strip gives exponential Fourier-kernel decay.
+
+2.2    Exact normal fiber chart and coarea
+Let Xm , Ym be exponentially weighted Banach coordinate spaces and let
+
+                    L : Xm → Ym ,         P : Ym → Xm ,              LP = I,        ∥P ∥m = p < 1.
+
+Put K = ker L and write
+
+                            B(x) = Lx + N (x),              N (0) = 0,       DN (0) = 0.
+
+
+                                                            7
+Theorem 2.5 (Normal fiber chart). For w ∈ Ym and ζ ∈ K, consider
+                                       F (y; w, ζ) = y + N (P y + ζ) − w.
+Assume on a product ball that
+                                       η := sup ∥DN (P y + ζ)P ∥m < 1.
+Then there is a unique analytic solution y = T (w, ζ) and
+                                            PN (w, ζ) := P T (w, ζ) + ζ
+is an exact fiber chart:
+                                                  B(PN (w, ζ)) = w.
+If A = I + DN (PN )P , then
+                                Dw T = A− 1,            Dζ T = −A− 1DN (PN )|K ,
+and hence
+                           Dw PN = P A− 1,           Dζ PN = IK − P A− 1DN (PN )|K .
+All derivatives through order three are finite sums of products of A− 1, P, D2 N, D3 N and are exponentially
+local in the same Banach matrix algebra.
+Proof. For fixed (w, ζ), the map
+                                                 y 7→ w − N (P y + ζ)
+is an η-contraction on a sufficiently chosen invariant ball. Banach’s fixed-point theorem gives T . The
+exact fiber identity follows by substitution. Differentiating
+                                              T + N (P T + ζ) = w
+gives the displayed first derivatives. Repeated differentiation gives the second- and third-order Bell-
+polynomial formulas. Since ∥A− 1∥ ≤ (1 − η)− 1, every term is bounded in the same exponential matrix
+algebra.
+Corollary 2.6 (Explicit zero-detail constants). Let
+                                 Mr (ρ) =     sup ∥Dr N (x)∥m ,                  r = 2, 3,
+                                            ∥x∥m ≤ρ
+
+and suppose
+                                                          1
+                                                    pρM2 (ρ) ≤
+                                                            .
+                                                          4
+For the zero-detail section S(w) = PN (w, 0), using the conservative folded-strip value p ≤ 0.546, one has
+                                            ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+                                                                 
+
+while det J0 is a once-only field-independent normalization.
+Proof. The chart factors as
+                                       (w, ζ) 7→ (T (w, ζ), ζ) 7→ J0 (T, ζ).
+The first derivative is block triangular:
+                                                 A− 1   −A− 1DN |K
+                                                                        
+                                                                             .
+                                                  0        IK
+Its determinant is det A− 1.
+
+
+                                                           8
+2.3     Nonlinear forty-nine-path section
+Lemma 2.8 (Finite-cell analytic atlas and uniform Cauchy bounds). Let P49 be the finite path atlas
+for one retained cell and its finite aligned-reflection template family. There exist fixed radii 0 < η0 < η1 ,
+uniform under the standing convention, such that the product exponential, multiplication, inversion,
+logarithm, and Karcher-mean maps defining every template extend holomorphically from Tη0 to Tη1 .
+   Write the canonically rescaled local block as
+
+                             B(x) = Lx + N (x),       N (0) = 0,             DN (0) = 0.
+
+For every exponential kernel rate 0 < m < mP and r = 2, 3, there is a finite constant
+
+                                             CN,r (m; η0 , η1 ) < ∞
+
+such that
+                                    sup ∥Dr N (x)∥Km ≤ CN,r (m; η0 , η1 ),
+                                   x∈Tη0
+
+uniformly under the standing convention. The same constants, enlarged by a finite maximum, serve the
+aligned-reflection templates.
+Proof. For one retained cell the block depends on finitely many g coordinates. The exponential and
+multiplication maps are entire, while inversion and the principal logarithm are holomorphic on a fixed
+neighborhood of the identity. At the flat field the Karcher critical point has positive Hessian on the
+retained tangent space; the analytic implicit-function theorem therefore supplies a unique holomorphic
+Karcher mean on a fixed complex neighborhood. The path family and the reflected template family are
+finite, so one may choose common nested radii 0 < η0 < η1 for all of them. On the larger finite-dimensional
+complex polydisc, every elementary map and their finite compositions are holomorphic and uniformly
+bounded. Cauchy’s integral estimate on the smaller polydisc gives uniform derivative bounds through
+order three with denominator powers of η1 − η0 .
+   The global block is obtained by translating this fixed finite cell. Each output row meets only a fixed
+number of input cells, and each input column enters only a fixed number of output cells. Multiplying the
+finite-cell Cauchy bounds by these fixed incidence numbers gives the two-sided exponentially weighted
+Schur-kernel bounds. These incidence numbers do not depend on the total volume or preceding weak
+depth. The aligned-reflection family is finite, so one takes a finite maximum.
+Proposition 2.9 (Model-specific nonlinear normal section for the forty-nine-path block). Let
+
+                             pm := ∥P0 ∥Km < 0.546,           C2 := CN,2 (m; η0 , η1 ),
+
+and choose
+                                                               1
+                                                                    
+                                                          η0
+                                           ρm = min          ,           .
+                                                          4 4pm C2
+For every retained coordinate w with ∥w∥Km ≤ ρm , the retained-space equation
+
+                                               y + N (P0 y) = w
+
+has a unique solution y = T (w, 0) in ∥y∥Km ≤ 2ρm . The zero-detail normal section
+
+                                              S(w) := P0 T (w, 0)
+
+satisfies
+                                  B(S(w)) = w,        ∥S(w)∥Km ≤ 2pm ρm .
+It is analytic and exponentially quasi-local, and its first three marked derivatives have volume- and
+depth-independent bounds. The same conclusion holds on the aligned-reflection templates after taking the
+minimum radius over that finite family.
+Proof. For fixed w, define
+                                            Φw (y) := w − N (P0 y).
+If ∥y∥ ≤ 2ρm , then ∥P0 y∥ ≤ η0 /2. Since DN (0) = 0, Lemma 2.8 gives
+                                                                                 pm  1
+                          ∥Dy Φw (y)∥ = ∥DN (P0 y)P0 ∥ ≤ 2p2m C2 ρm ≤               < .
+                                                                                  2  2
+
+                                                          9
+The second-order integral formula gives
+                                         1                            pm
+                          ∥N (P0 y)∥ ≤     C2 ∥P0 y∥2 ≤ 2C2 p2m ρ2m ≤    ρm < ρm .
+                                         2                             2
+Thus Φw maps the 2ρm ball into itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential charts as
+                                                 b Z : a 7−→ w.
+                                                 B
+
+On the common weak chart,
+                                    b Z (a) = ϑ(I + KZ (a)),            7
+                                   DB                              ϑ=     ,
+                                                                        8
+
+
+                                                      10
+where KZ has fixed propagation range and
+                                                                                  1
+                              sup max{∥KZ (a)∥1→1 , ∥KZ (a)∥∞→∞ } ≤                 .
+                               a                                                  4
+The same row and column estimates hold after the fixed marked derivatives used below.
+Proof. At the flat field, the selected straight input contributes ϑI. The cross-anchor cancellation can be
+read directly from the flat forty-nine-path symbol. Its diagonal detour part is proportional to
+                                                      kµ Y
+                                              cos          cos kλ ,
+                                                       2
+                                                        λ̸=µ
+
+so in position space every detour coefficient has an odd displacement in all three transverse directions
+relative to the selected all-even anchor column. For µ ̸= ν, the factor
+                                        kν
+                           sin kµ sin      (2 cos kα cos kβ + cos kα + cos kβ + 2)
+                                        2
+has an odd µ displacement. Thus no detour term lands on another selected anchor link; the orientation
+signs are the sine signs in this formula. The flat simultaneous derivative is therefore exactly ϑI. Away
+from the flat field, every entry is an analytic function of finitely many path holonomies and differs from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                    4
+Every principal subproblem obtained by fixing the exterior anchors has the same lower Lipschitz bound
+and a volume-independent inverse derivative.
+Proof. For v = a − b, integrate the derivative along the segment from b to a. Schur’s test gives
+∥KZ ∥2→2 ≤ 1/4, proving both bounds. The lower bound gives injectivity; the inverse-function theorem
+gives the smooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.
+
+=== Cauchy bounds hit 2 at 32150 ===
+fixed (w, ζ), the map
+                                                 y 7→ w − N (P y + ζ)
+is an η-contraction on a sufficiently chosen invariant ball. Banach’s fixed-point theorem gives T . The
+exact fiber identity follows by substitution. Differentiating
+                                              T + N (P T + ζ) = w
+gives the displayed first derivatives. Repeated differentiation gives the second- and third-order Bell-
+polynomial formulas. Since ∥A− 1∥ ≤ (1 − η)− 1, every term is bounded in the same exponential matrix
+algebra.
+Corollary 2.6 (Explicit zero-detail constants). Let
+                                 Mr (ρ) =     sup ∥Dr N (x)∥m ,                  r = 2, 3,
+                                            ∥x∥m ≤ρ
+
+and suppose
+                                                          1
+                                                    pρM2 (ρ) ≤
+                                                            .
+                                                          4
+For the zero-detail section S(w) = PN (w, 0), using the conservative folded-strip value p ≤ 0.546, one has
+                                            ∥DS∥m ≤ 0.728000 < 1,
+                                         ∥D2 S∥m ≤ 0.385828 M2 (ρ),
+and
+                               ∥D3 S∥m ≤ 0.280883 M3 (ρ) + 0.613449 M2 (ρ)2 .
+Theorem 2.7 (Exact coarea factor). Let
+                                                  J0 (y, ζ) = P y + ζ.
+Relative to this fixed linear frame,
+                                                                                     −1
+                                 det DPN = det J0 det I + DN (PN )P                        .
+Thus the field-dependent coarea logarithm is
+                                          − log det I + DN (PN )P ,
+                                                                 
+
+while det J0 is a once-only field-independent normalization.
+Proof. The chart factors as
+                                       (w, ζ) 7→ (T (w, ζ), ζ) 7→ J0 (T, ζ).
+The first derivative is block triangular:
+                                                 A− 1   −A− 1DN |K
+                                                                        
+                                                                             .
+                                                  0        IK
+Its determinant is det A− 1.
+
+
+                                                           8
+2.3     Nonlinear forty-nine-path section
+Lemma 2.8 (Finite-cell analytic atlas and uniform Cauchy bounds). Let P49 be the finite path atlas
+for one retained cell and its finite aligned-reflection template family. There exist fixed radii 0 < η0 < η1 ,
+uniform under the standing convention, such that the product exponential, multiplication, inversion,
+logarithm, and Karcher-mean maps defining every template extend holomorphically from Tη0 to Tη1 .
+   Write the canonically rescaled local block as
+
+                             B(x) = Lx + N (x),       N (0) = 0,             DN (0) = 0.
+
+For every exponential kernel rate 0 < m < mP and r = 2, 3, there is a finite constant
+
+                                             CN,r (m; η0 , η1 ) < ∞
+
+such that
+                                    sup ∥Dr N (x)∥Km ≤ CN,r (m; η0 , η1 ),
+                                   x∈Tη0
+
+uniformly under the standing convention. The same constants, enlarged by a finite maximum, serve the
+aligned-reflection templates.
+Proof. For one retained cell the block depends on finitely many g coordinates. The exponential and
+multiplication maps are entire, while inversion and the principal logarithm are holomorphic on a fixed
+neighborhood of the identity. At the flat field the Karcher critical point has positive Hessian on the
+retained tangent space; the analytic implicit-function theorem therefore supplies a unique holomorphic
+Karcher mean on a fixed complex neighborhood. The path family and the reflected template family are
+finite, so one may choose common nested radii 0 < η0 < η1 for all of them. On the larger finite-dimensional
+complex polydisc, every elementary map and their finite compositions are holomorphic and uniformly
+bounded. Cauchy’s integral estimate on the smaller polydisc gives uniform derivative bounds through
+order three with denominator powers of η1 − η0 .
+   The global block is obtained by translating this fixed finite cell. Each output row meets only a fixed
+number of input cells, and each input column enters only a fixed number of output cells. Multiplying the
+finite-cell Cauchy bounds by these fixed incidence numbers gives the two-sided exponentially weighted
+Schur-kernel bounds. These incidence numbers do not depend on the total volume or preceding weak
+depth. The aligned-reflection family is finite, so one takes a finite maximum.
+Proposition 2.9 (Model-specific nonlinear normal section for the forty-nine-path block). Let
+
+                             pm := ∥P0 ∥Km < 0.546,           C2 := CN,2 (m; η0 , η1 ),
+
+and choose
+                                                               1
+                                                                    
+                                                          η0
+                                           ρm = min          ,           .
+                                                          4 4pm C2
+For every retained coordinate w with ∥w∥Km ≤ ρm , the retained-space equation
+
+                                               y + N (P0 y) = w
+
+has a unique solution y = T (w, 0) in ∥y∥Km ≤ 2ρm . The zero-detail normal section
+
+                                              S(w) := P0 T (w, 0)
+
+satisfies
+                                  B(S(w)) = w,        ∥S(w)∥Km ≤ 2pm ρm .
+It is analytic and exponentially quasi-local, and its first three marked derivatives have volume- and
+depth-independent bounds. The same conclusion holds on the aligned-reflection templates after taking the
+minimum radius over that finite family.
+Proof. For fixed w, define
+                                            Φw (y) := w − N (P0 y).
+If ∥y∥ ≤ 2ρm , then ∥P0 y∥ ≤ η0 /2. Since DN (0) = 0, Lemma 2.8 gives
+                                                                                 pm  1
+                          ∥Dy Φw (y)∥ = ∥DN (P0 y)P0 ∥ ≤ 2p2m C2 ρm ≤               < .
+                                                                                  2  2
+
+                                                          9
+The second-order integral formula gives
+                                         1                            pm
+                          ∥N (P0 y)∥ ≤     C2 ∥P0 y∥2 ≤ 2C2 p2m ρ2m ≤    ρm < ρm .
+                                         2                             2
+Thus Φw maps the 2ρm ball into itself and is a contraction. For its fixed point,
+
+                             B(P0 T ) = LP0 T + N (P0 T ) = T + N (P0 T ) = w.
+
+Analyticity follows from the analytic implicit-function theorem. Differentiation through order three gives
+finite Bell polynomials in
+                               (I + DN (S)P0 )−1 , P0 , D2 N, D3 N.
+The inverse norm is below two and the other factors are bounded by Theorem 2.4 and Lemma 2.8.
+
+3     Charged chart complement and irregular sector
+          √
+Put g = u and Rg = g −2ε with 0 < ε < 1/6. The symbol χ > 0 denotes the curvature-bad threshold
+in this section and in the following two irregular-sector sections; the rooted support exponent remains
+denoted by κ elsewhere.
+   For an enlarged finite tube cell Q+ define the faithful fine Wilson charge and retained coherent deficit
+by the same representation-normalized plaquette function used in the microscopic measure:
+                                     X                              X
+                        AQ+ (U ) =      wG,ρ (Up ),     DQ (U ) =       wG,ρ (Wp′ ).
+                                    p⊂Q+                            p′ ⊂Q′
+
+Let TQ be a fixed smooth invariant dispersion function formed from the squared relative-loop distances of
+the forty-nine path inputs. It vanishes on the flat set, its small sublevel set lies inside the common Karcher
+chart, and it uses only one fixed enlarged-cell template. On that sublevel set the retained holonomies
+Wp′ are defined by the local Karcher atlas. Multiply the displayed retained deficit by a fixed chart cutoff
+that is one on a prescribed smaller Karcher sublevel and zero before the edge of the larger Karcher tube;
+this gives a smooth invariant extension to the complete finite-cell configuration space. The threshold tch
+below is chosen so that the entire curvature-label support lies where this cutoff equals one.
+Lemma 3.1 (Representation-normalized charge and derivative ledger). For every fixed G, faithful ρ,
+and integer 0 ≤ r ≤ 2sG + 3, there are finite constants depending only on the fixed cell atlas such that
+
+                                wG,ρ (U ) ≥ 0,      wG,ρ (U ) = 0 ⇐⇒ U = e,
+
+                             cG ∥X∥2 ≤ wG,ρ (eX ) ≤ CG ∥X∥2       (∥X∥ ≤ r0,G ),
+and
+             ∥DwG,ρ (U )∥ ≤ CG wG,ρ (U )1/2 ,       ∥Dr wG,ρ (U )∥ ≤ CG,r     (2 ≤ r ≤ 2sG + 3).
+The same bounds, with finite template constants, hold after composition with every Wilson word, retained
+plaquette word, reflected word, or seam word used below.
+Proof. Nonnegativity and the zero set are Proposition 1.2. In the chosen invariant metric the Hessian of
+wG,ρ at the identity is positive definite; Taylor’s theorem gives the two-sided quadratic comparison. The
+first-derivative estimate follows from that comparison on the identity tube. On its compact complement
+wG,ρ has a positive minimum while its derivative is bounded, so the same inequality holds globally after
+enlarging the constant. All higher derivatives are bounded because wG,ρ is a smooth matrix coefficient
+on compact G. Every word in the fixed path atlas is a finite composition of multiplication and inversion,
+so the chain rule gives the asserted finite derivative bounds.
+
+Lemma 3.2 (Simultaneous selected-anchor derivative). Select the first fine link of every straight two-link
+anchor as the anchor variable; these links are distinct. Hold every remaining fine link in a detail list Z,
+and write the simultaneous retained-coordinate map in product exponential charts as
+                                                 b Z : a 7−→ w.
+                                                 B
+
+On the common weak chart,
+                                    b Z (a) = ϑ(I + KZ (a)),            7
+                                   DB                              ϑ=     ,
+                                                                        8
+
+
+                                                      10
+where KZ has fixed propagation range and
+                                                                                  1
+                              sup max{∥KZ (a)∥1→1 , ∥KZ (a)∥∞→∞ } ≤                 .
+                               a                                                  4
+The same row and column estimates hold after the fixed marked derivatives used below.
+Proof. At the flat field, the selected straight input contributes ϑI. The cross-anchor cancellation can be
+read directly from the flat forty-nine-path symbol. Its diagonal detour part is proportional to
+                                                      kµ Y
+                                              cos          cos kλ ,
+                                                       2
+                                                        λ̸=µ
+
+so in position space every detour coefficient has an odd displacement in all three transverse directions
+relative to the selected all-even anchor column. For µ ̸= ν, the factor
+                                        kν
+                           sin kµ sin      (2 cos kα cos kβ + cos kα + cos kβ + 2)
+                                        2
+has an odd µ displacement. Thus no detour term lands on another selected anchor link; the orientation
+signs are the sine signs in this formula. The flat simultaneous derivative is therefore exactly ϑI. Away
+from the flat field, every entry is an analytic function of finitely many path holonomies and differs from
+its flat value by O(g(1 + Rg )). The forty-nine-path tubes have fixed row and column incidence. Shrinking
+the common weak threshold makes the two Schur sums at most 1/4. Chart-trivialization and every fixed
+mark add only another finite-incidence O(g(1 + Rg )) term.
+
+Theorem 3.3 (Fixed-chart global anchor coordinate). For fixed details Z, the map B
+                                                                                 b Z is bi-Lipschitz
+on the convex product chart and a diffeomorphism onto its image. More precisely,
+                             3                      b Z (b)∥2 ≤ ϑ 5 ∥a − b∥2 .
+                                          b Z (a) − B
+                            ϑ ∥a − b∥2 ≤ ∥B
+                             4                                    4
+Every principal subproblem obtained by fixing the exterior anchors has the same lower Lipschitz bound
+and a volume-independent inverse derivative.
+Proof. For v = a − b, integrate the derivative along the segment from b to a. Schur’s test gives
+∥KZ ∥2→2 ≤ 1/4, proving both bounds. The lower bound gives injectivity; the inverse-function theorem
+gives the smooth inverse. A principal submatrix of KZ has no larger row or column sum, so the same proof
+applies with exterior anchors fixed. Higher fixed marked derivatives follow by differentiating (I + KZ )−1
+and using its Neumann series.
+Theorem 3.4 (Finite-cell retention and chart charge). There are constants Cret < ∞, cch > 0, and
+tch > 0, depending only on the fixed cell atlas, such that
+
+                                            DQ (U ) ≤ Cret AQ+ (U )
+
+for every fine configuration. Moreover,
+
+                                   TQ (U ) ≥ tch /4     =⇒     AQ+ (U ) ≥ cch .
+
+The constants are independent of total volume, ultraviolet depth, periodic wrapping, and the aligned-
+reflection template.
+Proof. Use a boundary-rooted tree gauge on the fixed finite contractible cell. By Lemma 3.1, the zero set
+of AQ+ is precisely the flat set. On that set all common-endpoint paths agree, hence DQ = TQ = 0. Near
+the flat set, the representation-normalized quadratic comparison and the grounded finite-cell Poincaré
+inequality give
+                                          AQ+ ≍ ∥dX∥2 ≍ ∥X∥2 ,
+while smoothness of the finite path atlas and the fact that every retained plaquette word equals the
+identity on the flat set give DQ + TQ ≤ C∥X∥2 . This proves the retention inequality on one neighborhood
+of the flat set.
+   Remove a smaller such neighborhood. On the resulting compact set, AQ+ has a strictly positive
+minimum and the smoothly extended DQ is bounded, so their quotient is bounded there as well. This
+
+
+                                                         11
+proves the global displayed inequality without extending a quotient through its zero set. Finally choose
+tch inside the chart reserve. The closed set {TQ ≥ tch /4} is disjoint from the flat set; compactness and
+Lemma 3.1 give a positive minimum cch of AQ+ on it. Taking the finite maximum and minimum over the
+bulk and aligned-reflection templates proves the stated uniformity.
+
+  Choose smooth decreasing cutoffs γD , γ0 , γ1 ∈ [0, 1] with γ0 ≤ γ1 and
+
+                               γD = 1 (DQ ≤ χ2 /4), γD = 0 (DQ ≥ χ2 ),
+                               γ0 = 1 (TQ ≤ tch /8), γ0 = 0 (TQ ≥ tch /4),
+                               γ1 = 1 (TQ ≤ tch /2), γ1 = 0 (TQ ≥ t
+
+=== Cauchy bounds hit 3 at 498916 ===
+on π and dπ its dimension. By Peter–Weyl
+and the spectral Weyl law [16],
+                                  X                                                dG
+                                       d2π (1 + λπ )−s < ∞         ⇐⇒         s>      .
+                                                                                    2
+                                 π∈G
+                                   b
+Therefore sG = ⌊dG /4⌋ + 1 gives 2sG > dG /2 and
+
+                                      ∥f ∥A(G) ≤ CG,sG ∥(1 − ∆G )sG f ∥2 .
+                                                                     |I|
+For a pivot product GI , tensorization gives the constant CG,sG . The original-support reserve absorbs its
+logarithm after the finite matching separation is enlarged.
+
+                       Group               dim G      sG        coefficient 11CA log 2/(24π 2 )
+                       SU(4)                 15       4                    11 log 2/(6π 2 )
+                       Sp(2) (USp(4))        10       3                    11 log 2/(8π 2 )
+                       G2                    14       4                    11 log 2/(6π 2 )
+
+   The higher Sobolev order concerns internal compact-pivot derivatives. It does not increase the physical
+source-mark budget; those marks remain the fixed orders consumed by the boundary-to-center and Ward
+arguments. In the ordered-multijet realization of Lemma A.17, one Sobolev monomial uses at most
+eight distinct flow variables at an SU(4) or G2 pivot and at most six at an Sp(2) pivot. Repeated color
+directions retain distinct variables. Thus, for example, D12 D22 is represented by the ordered word (1, 1, 2, 2)
+rather than by a fourth derivative along a single flow.
+
+D      Ordinary periodic torons, seams, and wrapping templates
+The finite-volume model used throughout is the ordinary periodic product space GE(Λ) with periodic
+gauge transformations. It is a single, explicit lattice model; no twisted boundary condition and no sum
+over nontrivial principal-bundle sectors is part of the construction. Since the target spacetime R4 is
+contractible, this restriction is compatible with the theorem’s local continuum scope.
+  Define the compact set of ordinary periodic flat holonomies
+
+                          TG := {(h1 , h2 , h3 , h4 ) ∈ G4 : [hµ , hν ] = e for all µ, ν}.
+
+Lemma D.1 (Tree-gauge reduction of ordinary periodic flat fields). Every flat configuration in the
+ordinary periodic link model is gauge equivalent to a seam representative whose interior links are the
+identity and whose four fundamental seam holonomies form an element of TG . Conversely every element
+of TG defines such a flat periodic configuration. The remaining gauge action is simultaneous conjugation
+of the four holonomies.
+
+
+                                                          110
+Proof. Choose a maximal lattice tree in a fundamental periodic cell and gauge its links to the identity.
+Flatness makes the holonomy of a path depend only on its homotopy class. The four links closing the
+fundamental cycles therefore supply holonomies hµ . The commutator loop of two fundamental cycles
+is a product of plaquette boundaries, so flatness gives [hµ , hν ] = e. Reversing this construction gives
+a flat seam representative from every commuting four-tuple. A gauge transformation at the tree root
+conjugates all four holonomies simultaneously, and all other gauge freedom has already been fixed.
+Lemma D.2 (Finite toron and seam atlas). For every fixed compact G, the set TG has a finite cover by
+ambient product-coordinate neighborhoods on which every block word, Karcher word, coarea factor, Haar
+factor, reflected word, and source word used in the proof is analytic in the local variables and in the toron
+parameters. All derivatives through order 2sG + 3 have a finite common bound. The aligned coordinate
+reflections and seam placements add only a finite template family.
+Proof. The commutator equations define a closed subset of compact G4 , hence TG is compact. Around
+each of its points choose ordinary product charts in the ambient manifold G4 ; no quotient chart or
+classification of singular conjugacy classes is required. In tree gauge, every local factor is a fixed finite
+composition of multiplication, inversion, the local exponential/logarithm, and the Karcher implicit
+function, with some arguments left- or right-multiplied by the fixed seam holonomies. These maps are
+analytic on a sufficiently small product neighborhood and have finite Cauchy bounds through the declared
+order. Compactness gives a finite subcover. There are four seam directions and a finite aligned-reflection
+family, so taking a finite maximum gives the common constants.
+Theorem D.3 (Ordinary-periodic toron and optical admission). The complete full-alias right-inverse,
+normal-section, optical-coercivity, Haar-minorization, owner, and boundary-to-center estimates hold
+uniformly over every flat toron background in TG , every admitted seam and aligned-reflection template,
+and every periodic wrapping certificate. The acoustic toron/background variables remain explicit and are
+never inverted. No constant uniform over different groups is asserted.
+Proof. Lift a seam representative to the universal covering lattice. A flat background is gauged to the
+identity there; deck translation in direction µ acts on Lie-algebra fields by the unitary operator Ad(hµ ).
+Since the hµ commute, these unitary operators are simultaneously diagonalizable over the complexified
+color space. On each joint color eigenspace the folded block and optical symbols are therefore the
+identity-background, color-free symbols evaluated at a real quasi-momentum shifted by the corresponding
+deck phase. The estimates
+                                                  49                      8
+                                Af (k)Af (k)∗ ⪰      I4 ,   ∥P0 (k)∥2 ≤      ,
+                                                   2                      49
+and the printed complex-strip and optical lower bounds hold for every real quasi-momentum. They
+consequently survive every toron phase without a loss of constant. The retained acoustic variables,
+including toron tangents, are kept in the exterior/background register; only the same normal optical
+complement is inverted.
+   Lemma D.2 supplies the nonlinear, coarea, Haar, and marked derivative bounds uniformly over a finite
+toron/seam cover. On the covering lattice the local gauge trivialization sends every plaquette holonomy
+to a conjugate of the corresponding fluctuation plaquette. The representation-normalized Wilson function
+is conjugation invariant, so the charge and its differentiated finite-word ledger are unchanged by this
+trivialization. The 2sG differentiated bad-core row of Theorem 3.20 is therefore uniform on the same
+cover. Consequently the complete one-pivot score and Haar minorization retain their printed constants
+after taking the finite template maximum. On intersections use the fixed least-label owner, so no factor is
+duplicated. A wrapping certificate records only the four lattice directions, the fixed block range, a finite
+seam crossing pattern, and an aligned reflection type; there are finitely many such local templates at one
+normalized step. Their iteration is already controlled by the permanent wrapping ideal rather than by a
+sum over topological sectors. Taking the finite maximum proves the stated admission and leaves the joint
+Haar–optical boundary-to-center mechanism unchanged.
+
+E     Invariant tensor spaces through engineering dimension six
+The low-dimensional color input can be stated without choosing a basis. The degree-two invariant
+polynomial is unique for every simple g. A primitive degree-three invariant occurs only for Ar , r ≥ 2.
+Hence the reflection-even dimension-four scalar block is one-dimensional for every G, while the dimension-
+six block may contain the additional cubic curvature contraction in type A. The antisymmetric structure
+
+
+                                                      111
+tensor is always present through the bracket but contributes only inside the already retained covariant
+derivative and commutator jets.
+   The manuscript uses the complete finite quotient generated by curvature, covariant derivatives, metric
+and epsilon contractions, invariant color tensors, total-difference classes, and equation-of-motion contacts
+through the declared engineering cutoff. No argument relies on a hand-picked SU(2) basis once this
+quotient is used.
+
+F      Theorem-level specialization and dependency map
+The purpose of this appendix is provenance rather than a new estimate. It identifies every independent
+fixed-group input in the register CG , the first proof call at which that dependence enters, and the later
+statements that consume it. In particular, the completion proof in Theorem 11.1 does not rely on an
+unprinted constant or on a rank-one identity.
+
+                             Table 3: Provenance of the fixed-group register.
+
+    register entry       first proof call         dependence certified        principal later consumers
+                                                  there
+    Bi-invariant local   Lemma 2.1                Compactness and             The normal fiber and
+    geometry:                                     analytic bi-invariant       coarea construction,
+    injectivity and                               geometry give finite        followed operationally by
+    convexity radii, a                            radii and a strict local    Lemma 2.8 and
+    positive Karcher                              Hessian bound               Proposition 2.9.
+    radius, and a                                 depending only on the
+    lower                                         fixed group.
+    Karcher-Hessian
+    bound
+    Holomorphic          Lemma 2.1 and            Nested compact              Exact chart/coarea
+    multiplication,      Lemma 2.8                complex tubes and           activities, marked
+    inversion,                                    Cauchy estimates            recertification, the
+    exponential,                                  provide the declared        matching product tube,
+    logarithm, BCH,                               finite derivative ledger;   and every differentiated
+    and finite-word                               the path and                finite word.
+    derivative bounds                             reflected-template
+    through order                                 families are finite.
+    2sG + 3
+    Faithful             Proposition 1.2 and      Faithfulness makes the      Theorem 3.4,
+    Wilson-action        Lemma 3.1                identity the unique zero;   Theorem 3.20, and the
+    data: normalized                              compactness gives a         regular/irregular
+    Hessian, local                                positive charge off the     recombination rows.
+    quadratic                                     identity tube and
+    comparison,                                   bounded derivatives
+    positive                                      through the registered
+    complement                                    order.
+    charge, and
+    differentiated
+    word bounds
+    Dimension and        Appendix C and          The Weyl-law sum is          Lemma 6.30, the
+    compact Sobolev      Lemma 6.29              finite because               multipivot compact
+    data: dG , sG ,                              2sG > dG /2, giving the      collect, and the
+    and CG,sG                                    one-pivot                    Haar–optical connected
+                                                 Fourier–Wiener and           forest.
+                                                 trace-nuclear bound.
+
+
+
+
+                                                    112
+    register entry        first proof call           dependence certified        principal later consumers
+                                                     there
+    Ordinary-             Lemma D.2                  Compactness of the          Theorem D.3, then the
+    periodic toron,                                  commuting-holonomy          matching,
+    seam,                                            set and finiteness of the   boundary-to-center, and
+    aligned-reflection,                              local seam and              source-transport
+    and wrapping-                                    reflection words give       arguments.
+    template register                                one finite
+                                                     derivative/template
+                                                     maximum.
+    Adjoint color         Theorem 5.16               SI–8 supplies the           Theorem 5.17, the
+    factor CA (G)                                    standard pure-gauge         directed shooting law, and
+                                                     coefficient, while the      Corollary 11.2.
+                                                     exact unit-tangent
+                                                     scheme comparison
+                                                     transfers it to the
+                                                     Karcher coupling
+                                                     coordinate without a
+                                                     new group constant.
+    Finite                Theorem 8.16               Simplicity fixes the        Lemma 8.22,
+    invariant-jet                                    dimension-four scalar       Theorem 8.24,
+    dimensions and                                   block; Chevalley            Theorem 8.26, and the
+    invariant tensors                                finiteness and the          Ward and rotation-defect
+    through                                          possible type-A cubic       hierarchy.
+    engineering                                      tensor enlarge only a
+    dimension six                                    finite dimension-six
+                                                     space.
+    Derived               Lemma 6.9,                 These are finite            Corollary 6.11, the
+    compact-pivot         Lemma 6.20, and            consequences of the         complete compact collect,
+    constants:            Lemma 6.29                 geometry,                   and the mixed
+    one-pivot score                                  faithful-action, Sobolev,   Haar–optical forest.
+    bounds, centered                                 and finite-template rows
+    Haar contraction,                                above; they are not
+    trace constants,                                 additional independent
+    and finite                                       entries of CG .
+    junction maxima
+
+   The table also separates the common mechanisms into four logical classes. Replica–BKAR, Kotecký–
+Preiss, history compatibility, support reporting, least-label source forests, OS reconstruction, and spectral-
+gap promotion are color-free. The full-alias symbol, normal right inverse, optical split, and spacetime
+BPHZL degrees tensor with Ig . Karcher, action-charge, Peter–Weyl, and ordinary-periodic template
+estimates enter only through the finite constants displayed above. Invariant jets and dimension-six color
+tensors are enlarged finite spaces rather than rank-one identities.
+   The rank-one paper [14] is obtained by taking G = SU
