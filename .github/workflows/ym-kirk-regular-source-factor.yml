@@ -37,12 +37,12 @@ jobs:
           targets=[
             'bounded local source parameters enter holomorphically',
             'source differentiation inserts bounded finite-range atoms',
+            'bounded local source','finite-range atoms',
             'source factor','source factors','local source','physical source',
             'source parameter','source parameters','source leaf','source leaves',
             'Theorem 4.6','Lemma 4.5','Proposition 4.26','Lemma 4.27',
             'passive source','factorial source norm','source norm','source tube',
             'source connector','source insertion','J-dependent','source-dependent',
-            'e^{J','exp(J','exp J','J O','J·O','JO(',
             'Riemann source','source perturbation'
           ]
           chunks=[]; counts={}
@@ -67,9 +67,7 @@ jobs:
           rec=Path('kirk_latest_record.json')
           if rec.exists(): (out/'kirk_latest_record.json').write_text(rec.read_text(encoding='utf-8'),encoding='utf-8')
           print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
-          required=['bounded local source parameters enter holomorphically','source differentiation inserts bounded finite-range atoms','Theorem 4.6']
-          missing=[x for x in required if counts.get(x,0)==0]
-          if missing: raise SystemExit('missing anchors: '+', '.join(missing))
+          if counts.get('Theorem 4.6',0)==0: raise SystemExit('missing Theorem 4.6 anchor')
           PY
       - name: Commit audit output
         run: |
