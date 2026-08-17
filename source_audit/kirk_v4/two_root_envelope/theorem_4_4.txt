@@ -1,0 +1,42 @@
+1590: Theorem 4.4 (Summed replica-BKAR admission). Assume the exact simultaneous hard-core/Gaussian
+1591: BKAR identity and species rows
+1592:                                      ≤N
+1593:                                 ∥Dq Dmark Fα ∥βα ≤ Aα,N q!σ −q ,           q ≥ 0.
+1594: 
+1595: Assume also that the complete species allocation gives
+1596: 
+1597:                                                          X
+1598:                                                 4∥C∥           Bα < 1
+1599:                                                          α∈I
+1600: 
+1601: for every auxiliary replica family, and that the parent-normalized rooted tree link constant, after the fixed
+1602: exponential losses and the factor σ −2 , is strictly below one.
+1603:    Then the normalized connected logarithm, summed with its exact 1/n!, converges absolutely in a
+1604: weakened rooted support norm and is Fréchet-C N in the declared structural marks, uniformly in volume,
+1605: replica number, forest parameters, and previous RG depth.
+1606: Proof. Differentiate the BKAR functional along a tree. A hard-core derivative costs one overlap bond
+1607: and no field derivative. A covariance derivative costs one covariance connector and one field derivative at
+1608: each endpoint. If di covariance edges meet vertex i, the analytic row contributes di !σ −di Aαi ,N .
+1609:    The Gram lemma bounds every auxiliary Gaussian regulator moment uniformly in the replica family.
+1610: Summing the choices of hard-core versus covariance derivatives costs only 2n−1 . The Pruefer lemma
+1611: shows that the exact 1/n! in the connected logarithm absorbs the product of vertex factorials with only
+1612: an exponential loss. The remaining rooted tree sum is the ordinary parent-normalized geometric recursion
+1613: in the effective link constant. Fixed structural marks are distributed by Leibniz and change only the
+1614: exponential constant depending on N .
+1615: 
+1616: 
+1617: 
+1618: 
+1619:                                                            24
+1620: 
+1621: 4.1     Output recertification
+1622: Let RP be a post-localization output activity on support P . Assume that RP is holomorphic on a complex
+1623: tube and real-valued on the real slice. Put
+1624: 
+1625:                                                    gP = ∥DRP (0)∥loc ,
+1626: 
+1627: and
+1628:                                          hP = sup ∥D2 RP (η + itθ)∥loc ,
+1629:                                                    η,θ,t
+1630: 
+1631: where η ranges over the real weak collar, θ over the permitted imaginary ball, and 0 ≤ t ≤ 1.
