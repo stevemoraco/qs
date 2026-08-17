@@ -13,7 +13,6 @@ theorem relativeHeat_diagonal_invariant
     relativeHeat (lambda * r) (lambda ^ 2 * h) = relativeHeat r h := by
   unfold relativeHeat
   field_simp [hr, hlambda]
-  ring
 
 /-- On one fixed observation window, heat time `tau * r^2` has relative coordinate `tau`. -/
 theorem relativeHeat_on_ray {r tau : ℝ} (hr : r ≠ 0) :
