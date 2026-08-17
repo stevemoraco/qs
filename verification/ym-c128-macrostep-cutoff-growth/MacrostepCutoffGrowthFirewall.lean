@@ -53,7 +53,7 @@ theorem pointwise_finite_and_unbounded_gain_are_insufficient :
     rcases h with ⟨D, hD⟩
     exact (no_cutoff_closes_hostile_family D) hD
 
-/-- A degree-independent supplier exponent does admit a cutoff. -/
+/-- A degree-independent supplier exponent has a good cutoff. -/
 theorem constant_supplier_has_good_cutoff :
     ∃ D : ℕ, constantSupplierExponent D + 2 < localizationGain D := by
   refine ⟨6, ?_⟩
