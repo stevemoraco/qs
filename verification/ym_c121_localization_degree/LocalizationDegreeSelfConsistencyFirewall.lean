@@ -84,10 +84,8 @@ theorem uniformly_bounded_exponents_can_be_beaten
     (Gamma : ℕ → ℕ) (G c : ℕ)
     (hG : ∀ D : ℕ, Gamma D ≤ G) :
     ∃ D : ℕ, Gamma D + c < localizationGain D := by
-  let D := G + c + 1
-  refine ⟨D, ?_⟩
-  have hD := hG D
-  dsimp [D]
+  refine ⟨G + c + 1, ?_⟩
+  have hD := hG (G + c + 1)
   simp only [localizationGain]
   omega
 
