@@ -1,0 +1,146 @@
+name: YM Kirk v4 Schlingemann algebraic endpoint audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-schlingemann-endpoint-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-schlingemann-endpoint-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract bounded-observable, locality, reflection and time-zero contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re
+
+          root = Path('source_audit/kirk_v4')
+          patterns = [
+              'bounded positive-scale observables',
+              'bounded positive-scale observable',
+              'bounded matching-scale cylinders',
+              'time-zero', 'time zero', 'sharp time', 'equal-time', 'single time',
+              'spatial Wilson', 'Wilson loop', 'Wilson loops',
+              'countable algebra', 'local algebra', 'positive-time algebra',
+              'reflection-positive', 'reflection positive',
+              'continuously translation-covariant', 'translation-covariant',
+              'B_R(z)', 'BR (z)', 'physical ball',
+              'plaquette', 'spatial plaquette', 'local cylinder',
+              'Theorem 8.15', 'Theorem 9.1', 'Lemma 9.2', 'Theorem 9.3',
+          ]
+          source_files = []
+          for p in root.rglob('*.txt'):
+              try:
+                  raw = p.read_bytes()
+                  text = raw.decode('utf-8', errors='ignore')
+              except Exception:
+                  continue
+              source_files.append((p, raw, text))
+
+          all_hits = []
+          for p, raw, text in source_files:
+              digest = hashlib.sha256(raw).hexdigest()
+              lower = text.lower()
+              for pat in patterns:
+                  needle = pat.lower()
+                  start = 0
+                  while True:
+                      i = lower.find(needle, start)
+                      if i < 0:
+                          break
+                      lo = max(0, i - 7000)
+                      hi = min(len(text), i + 22000)
+                      all_hits.append({
+                          'path': p.as_posix(), 'sha256': digest, 'pattern': pat,
+                          'offset': i, 'window_lo': lo, 'window_hi': hi,
+                          'context': text[lo:hi]
+                      })
+                      start = i + max(1, len(needle))
+
+          # Exact-deduplicate repeated source windows by normalized central text.
+          seen = set(); unique = []
+          for h in sorted(all_hits, key=lambda x:(x['path'],x['offset'],x['pattern'])):
+              center = re.sub(r'\s+', ' ', h['context'][6500:8500]).strip()
+              key = (h['pattern'].lower(), center)
+              if key in seen:
+                  continue
+              seen.add(key); unique.append(h)
+
+          with open('_audit_out/HIT_COUNTS.tsv','w') as f:
+              f.write('pattern\traw_hits\tunique_hits\n')
+              for pat in patterns:
+                  raw_n=sum(h['pattern']==pat for h in all_hits)
+                  uni_n=sum(h['pattern']==pat for h in unique)
+                  f.write(f'{pat}\t{raw_n}\t{uni_n}\n')
+
+          with open('_audit_out/EXACT_CONTEXTS.txt','w') as f:
+              f.write(f'SOURCE_TXT_FILES={len(source_files)}\nRAW_HITS={len(all_hits)}\nUNIQUE_HITS={len(unique)}\n')
+              for n,h in enumerate(unique,1):
+                  f.write('\n'+'='*120+'\n')
+                  f.write(f"CONTEXT {n}\nPATTERN: {h['pattern']}\nPATH: {h['path']}\nFILE_SHA256: {h['sha256']}\n")
+                  f.write(f"CHAR_OFFSET: {h['offset']}\nWINDOW: [{h['window_lo']},{h['window_hi']})\n")
+                  f.write('='*120+'\n'+h['context']+'\n')
+
+          # Focused theorem windows from the largest phrase ledgers, retaining every exact anchor.
+          anchors = [
+              'Theorem 8.15 (Common positive-scale Schwinger system)',
+              'Theorem 9.1', 'Lemma 9.2', 'Theorem 9.3',
+              'bounded positive-scale observables',
+              'bounded matching-scale cylinders',
+              'time-zero', 'time zero', 'sharp time',
+          ]
+          focused=[]
+          for p, raw, text in source_files:
+              lower=text.lower(); digest=hashlib.sha256(raw).hexdigest()
+              for anchor in anchors:
+                  start=0; needle=anchor.lower()
+                  while True:
+                      i=lower.find(needle,start)
+                      if i<0: break
+                      lo=max(0,i-12000); hi=min(len(text),i+45000)
+                      focused.append((anchor,p.as_posix(),digest,i,lo,hi,text[lo:hi]))
+                      start=i+len(needle)
+          with open('_audit_out/FOCUSED_THEOREM_WINDOWS.txt','w') as f:
+              for n,(a,p,d,i,lo,hi,c) in enumerate(focused,1):
+                  f.write('\n'+'#'*120+'\n')
+                  f.write(f'WINDOW {n}\nANCHOR: {a}\nPATH: {p}\nFILE_SHA256: {d}\nOFFSET: {i}\nRANGE: [{lo},{hi})\n')
+                  f.write('#'*120+'\n'+c+'\n')
+
+          # A terse decision ledger: exact phrases relevant to Schlingemann's hypotheses.
+          predicates = {
+              'bounded_observable_family': [r'bounded positive-scale observab', r'bounded matching-scale cylinder'],
+              'reflection_positivity': [r'reflection-positive', r'reflection positive'],
+              'translation_continuity_or_covariance': [r'continuously translation-covariant', r'translation-covariant'],
+              'explicit_time_zero': [r'time-zero', r'time zero', r'sharp time'],
+              'locality_or_disjoint_support': [r'disjoint support', r'local algebra', r'local cylinder'],
+              'wilson_loop_family': [r'wilson loop'],
+          }
+          corpus='\n'.join(text for _,_,text in source_files).lower()
+          with open('_audit_out/PREDICATE_COUNTS.tsv','w') as f:
+              f.write('predicate\tregex\tcount\n')
+              for name, regs in predicates.items():
+                  for rg in regs:
+                      f.write(f'{name}\t{rg}\t{len(re.findall(rg, corpus))}\n')
+          PY
+          grep -n -i -E 'time[- ]zero|sharp time|bounded positive-scale|bounded matching-scale|Wilson loop|reflection-positive|translation-covariant|disjoint support|local algebra' _audit_out/EXACT_CONTEXTS.txt > _audit_out/KEY_LINES.txt || true
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          wc -c -l _audit_out/*
+      - name: Upload exact Schlingemann endpoint audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-schlingemann-endpoint-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
