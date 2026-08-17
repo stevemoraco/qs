@@ -29,7 +29,7 @@ theorem nonnegative_gap_does_not_bound_exponential_by_unit_gap :
 fits inside the tube margin. -/
 theorem quadratic_transfer_tube_step
     (q qnext r delta : ℝ)
-    (hq0 : 0 ≤ q) (hqr : q ≤ r) (hr0 : 0 ≤ r)
+    (hq0 : 0 ≤ q) (hqr : q ≤ r) (_hr0 : 0 ≤ r)
     (hstep : qnext ≤ q ^ 2 + delta)
     (htube : r ^ 2 + delta ≤ r) :
     qnext ≤ r := by
@@ -84,11 +84,12 @@ theorem quadratic_transfer_tube_from_scale
   | succ n ih =>
       have hKn : K ≤ K + n := Nat.le_add_right K n
       have hn0 : 0 ≤ q (K + n) := hqnonneg (K + n) hKn
+      have hir : q (K + n) ≤ r := ih hKn
       have hs := hstep (K + n) hKn
       have hd := hdefect (K + n) hKn
       have hout := quadratic_transfer_tube_step
         (q (K + n)) (q (K + n + 1)) r (delta (K + n))
-        hn0 ih hr0 hs hd
+        hn0 hir hr0 hs hd
       simpa [Nat.add_assoc] using hout
 
 /-- Concrete tail tube at radius 1/2. -/
