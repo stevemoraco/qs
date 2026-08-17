@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -22,12 +22,19 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Preflight proof holes
         shell: bash
         run: |
           set -euo pipefail
           SRC=verification/ym-fs-tailmatched-afir-repair/FaizalShabirTailMatchedAFIRRepair.lean
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+      - name: Verify flattened Lean theorem source
+        id: axle
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-fs-tailmatched-afir-repair/FaizalShabirTailMatchedAFIRRepair.lean
           SRC="$SRC" python3 - <<'PY'
           import hashlib, json, os, pathlib, urllib.request
           path = pathlib.Path(os.environ['SRC'])
@@ -56,6 +63,9 @@ jobs:
           pathlib.Path('/tmp/ym-fs-tailmatched-afir-receipt.json').write_text(
             json.dumps(receipt, indent=2)
           )
+          pathlib.Path('verification/ym-fs-tailmatched-afir-repair/AXLE_RECEIPT.json').write_text(
+            json.dumps(receipt, indent=2) + '\n'
+          )
           print(json.dumps(receipt, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
@@ -71,6 +81,19 @@ jobs:
           if bad:
             raise SystemExit(1)
           PY
+      - name: Preserve diagnostic receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=verification/ym-fs-tailmatched-afir-repair/AXLE_RECEIPT.json
+          if [ ! -f "$FILE" ]; then exit 0; fi
+          git config user.name 'ym-lean-verifier'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$FILE"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'verify(ym): preserve AFIR AXLE receipt'
+          git push origin HEAD:verification/ym-fs-tailmatched-afir-repair-20260817
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,3 +101,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
           path: /tmp/ym-fs-tailmatched-afir-receipt.json
+      - name: Enforce clean verdict
+        shell: bash
+        run: |
+          test "${{ steps.axle.outcome }}" = success
