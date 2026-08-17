@@ -62,8 +62,8 @@ theorem zero_one_two_root_triangular_absorption
         (root1 + c10 * (root0 / (1 - branch))) + branch * total1 := by
     calc
       total1 ≤ root1 + branch * total1 + c10 * total0 := h1
-      _ ≤ root1 + branch * total1 + c10 * (root0 / (1 - branch)) :=
-        add_le_add_left hc10bound (root1 + branch * total1)
+      _ ≤ root1 + branch * total1 + c10 * (root0 / (1 - branch)) := by
+        linarith
       _ = (root1 + c10 * (root0 / (1 - branch))) + branch * total1 := by
         ring
   have h1bound :
@@ -95,10 +95,8 @@ theorem zero_one_two_root_triangular_absorption
               c21 *
                 ((root1 + c10 * (root0 / (1 - branch))) /
                   (1 - branch)) +
-            c20 * (root0 / (1 - branch)) :=
-        add_le_add
-          (add_le_add_left hc21bound (root2 + branch * total2))
-          hc20bound
+            c20 * (root0 / (1 - branch)) := by
+        linarith
       _ =
           (root2 +
               c21 *
