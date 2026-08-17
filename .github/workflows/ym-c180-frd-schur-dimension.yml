@@ -26,7 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/ym-c180-frd-schur-dimension/FaizalShabirFRDSchurDimensionFirewall.lean
+          SRC=verification/ym-c180-frd-schur-dimension/FaizalShabirFRDSchurDimensionFirewallRepaired.lean
           if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
           SRC="$SRC" python3 - <<'PY'
           import hashlib, json, os, pathlib, urllib.request
