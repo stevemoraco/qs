@@ -30,6 +30,7 @@ theorem ordered_two_root_placement_weight (n : ℕ) :
       ((n : ℝ) + 1) ^ 2 := by
   rw [ordered_two_root_placements_card]
   push_cast
+  rfl
 
 /-- Exact nonnegative tail potential for the series
 `∑ n, (n+1)^2 m^n`. -/
