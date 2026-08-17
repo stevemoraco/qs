@@ -6,7 +6,7 @@ import Mathlib
 Finite real-algebra firewall for the passive-root bookkeeping omitted from the
 printed proof of Kirk-v4 Theorem 5.27(U5).
 
-The source-free connected-tree weight already pays all nonroot vertices.  If a
+The source-free connected-tree weight already pays all nonroot vertices. If a
 finite source-order contribution has nonnegative weight `source`, and a tree has
 at least one possible vertex `vertices`, then choosing zero or one passive root
 costs no more than the common two-root envelope `source * vertices^2`.
@@ -15,8 +15,13 @@ by the same envelope.
 
 This is the finite core behind the source repair: for fixed source order `N`,
 the manuscript's own placement estimate at order `N + 2` pays `N` labelled
-source leaves together with at most two passive exterior roots.  It introduces
+source leaves together with at most two passive exterior roots. It introduces
 no new contraction threshold; it changes only a finite prefactor.
+
+The last four declarations additionally separate root placement from root size:
+if every fixed passive root has norm at most `M`, with `M >= 1`, then zero, one,
+or two roots cost at most `M^2`, and this cost combines multiplicatively with
+the quadratic placement envelope.
 
 This file does not formalize replica--BKAR, Kirk's rooted Banach spaces, the
 boundedness of the actual root atoms, weak RG, multiscale forests, continuum
@@ -55,7 +60,7 @@ theorem zero_root_placement_le_two_root_envelope
     (one_root_placement_le_two_root_envelope source vertices hsource hvertices)
 
 /-- Any placement multiplier for at most two roots is paid by the quadratic
-vertex envelope.  In the application, `source` already contains the fixed
+vertex envelope. In the application, `source` already contains the fixed
 source-leaf placement factor and the source-free tree weight. -/
 theorem at_most_two_root_multiplier_le_quadratic_envelope
     (source vertices rootMultiplier : ℝ)
@@ -106,11 +111,68 @@ theorem finite_at_most_two_root_placement_budget
     at_most_two_root_multiplier_le_quadratic_envelope
       (source t) (vertices t) (rootMultiplier t) (hsource t ht) (hroot t ht)
 
+/-- If `M >= 1`, the empty-root norm factor is paid by the common two-root
+norm envelope `M^2`. -/
+theorem zero_root_atom_cost_le_uniform_square
+    (M : ℝ)
+    (hM : 1 ≤ M) :
+    1 ≤ M ^ 2 := by
+  have hM_nonneg : 0 ≤ M := le_trans (by norm_num) hM
+  have hmul : (1 : ℝ) * 1 ≤ M * M :=
+    mul_le_mul hM hM (by norm_num) hM_nonneg
+  simpa [pow_two] using hmul
+
+/-- One passive root of norm at most `M`, with `M >= 1`, is paid by the common
+two-root norm envelope `M^2`. -/
+theorem one_root_atom_cost_le_uniform_square
+    (rootCost M : ℝ)
+    (hroot : rootCost ≤ M)
+    (hM : 1 ≤ M) :
+    rootCost ≤ M ^ 2 := by
+  have hM_nonneg : 0 ≤ M := le_trans (by norm_num) hM
+  have hM_square : M ≤ M ^ 2 := by
+    have hmul := mul_le_mul_of_nonneg_left hM hM_nonneg
+    simpa [pow_two] using hmul
+  exact hroot.trans hM_square
+
+/-- Two passive roots, each of norm at most `M`, cost at most `M^2`. -/
+theorem two_root_atom_cost_le_uniform_square
+    (rootCost₁ rootCost₂ M : ℝ)
+    (hroot₂_nonneg : 0 ≤ rootCost₂)
+    (hroot₁ : rootCost₁ ≤ M)
+    (hroot₂ : rootCost₂ ≤ M)
+    (hM_nonneg : 0 ≤ M) :
+    rootCost₁ * rootCost₂ ≤ M ^ 2 := by
+  have hmul : rootCost₁ * rootCost₂ ≤ M * M :=
+    mul_le_mul hroot₁ hroot₂ hroot₂_nonneg hM_nonneg
+  simpa [pow_two] using hmul
+
+/-- The root-size square and the two-root placement square combine without
+changing the source-free contraction threshold. -/
+theorem combined_placement_and_root_cost
+    (source vertices rootMultiplier rootCost M : ℝ)
+    (hsource : 0 ≤ source)
+    (hrootMultiplier : rootMultiplier ≤ vertices ^ 2)
+    (hrootCost_nonneg : 0 ≤ rootCost)
+    (hrootCost : rootCost ≤ M ^ 2) :
+    source * rootMultiplier * rootCost ≤
+      source * vertices ^ 2 * M ^ 2 := by
+  have hplacement :
+      source * rootMultiplier ≤ source * vertices ^ 2 :=
+    mul_le_mul_of_nonneg_left hrootMultiplier hsource
+  have hplacement_nonneg : 0 ≤ source * vertices ^ 2 :=
+    mul_nonneg hsource (sq_nonneg vertices)
+  exact mul_le_mul hplacement hrootCost hrootCost_nonneg hplacement_nonneg
+
 #print axioms one_root_placement_le_two_root_envelope
 #print axioms zero_root_placement_le_two_root_envelope
 #print axioms at_most_two_root_multiplier_le_quadratic_envelope
 #print axioms finite_zero_root_row_le_two_root_envelope
 #print axioms finite_one_root_row_le_two_root_envelope
 #print axioms finite_at_most_two_root_placement_budget
+#print axioms zero_root_atom_cost_le_uniform_square
+#print axioms one_root_atom_cost_le_uniform_square
+#print axioms two_root_atom_cost_le_uniform_square
+#print axioms combined_placement_and_root_cost
 
 end Millennium.YangMills.BigradedRootPlacementEntropy
