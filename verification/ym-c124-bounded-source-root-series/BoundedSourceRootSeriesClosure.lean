@@ -67,7 +67,6 @@ theorem bounded_root_prefactor_series
 theorem bounded_source_two_root_series
     (rooted : ℕ → ℝ) (M m : ℝ)
     (hM : 0 ≤ M)
-    (hm0 : 0 ≤ m)
     (hroot0 : ∀ n, 0 ≤ rooted n)
     (hdom : ∀ n,
       rooted n ≤ M * ((((n : ℝ) + 1) ^ 2) * m ^ n))
