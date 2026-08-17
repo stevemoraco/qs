@@ -3,8 +3,8 @@ import Mathlib
 /-!
 # Faizal--Shabir connected-log exponential recertification
 
-Finite real-exponential majorants for the load-bearing repair gate
-`YM-FS-CONNECTED-LOG-TAIL-TO-OS-SCHUR`.
+Finite real-exponential and finite Schur-row majorants for the load-bearing
+repair gate `YM-FS-CONNECTED-LOG-TAIL-TO-OS-SCHUR`.
 
 The analytic operator theorem still has to place the connected logarithm and
 its collar tail in one regulator/volume/scale-uniform submultiplicative Schur
@@ -12,20 +12,15 @@ its collar tail in one regulator/volume/scale-uniform submultiplicative Schur
 noncommutative exponential perturbation estimate shows that exponentiation
 changes only a bounded prefactor, not the tail exponent.
 
-This file kernelizes only the scalar majorant mechanism:
-
-* `exp x - 1 <= x exp x`;
-* adding a tail to a bounded logarithm changes the exponential by at most
-  `tail * exp(baseLog + tail)` in the scalar order;
-* if `tail <= C * decay`, with `0 <= decay <= 1`, then exponentiation preserves
-  the same `decay` factor with the uniform prefactor `C * exp(M + C)`.
-
-It does not formalize polymer activities, connected logarithms, Schur kernels,
-operator exponentials, Osterwalder--Schrader transfer operators, Yang--Mills,
-a mass gap, or a Clay theorem.
+This file kernelizes only finite/scalar majorants. It does not formalize
+polymer activities, infinite kernels, operator exponentials,
+Osterwalder--Schrader transfer operators, Yang--Mills, a mass gap, or a Clay
+theorem.
 -/
 
 namespace Millennium.YangMills.FaizalShabirConnectedLogExponentialRecertification
+
+open scoped BigOperators
 
 /-- Elementary exponential remainder bound used as the scalar majorant for the
 Banach-algebra exponential perturbation estimate. -/
@@ -128,9 +123,64 @@ theorem exponential_tail_preserves_decay
     _ ≤ (C * decay) * Real.exp (M + C) := hmono
     _ = (C * Real.exp (M + C)) * decay := by ring
 
+/-- Finite nonnegative kernel row bounds are submultiplicative under kernel
+composition. This is the finite Schur-row algebra consumed by the abstract
+exponential recertification once actual absolute kernel coefficients are
+supplied. -/
+theorem nonnegative_kernel_row_composition
+    {ι : Type*} [Fintype ι]
+    (K L : ι → ι → ℝ)
+    (rK rL : ℝ)
+    (hKnonneg : ∀ i j, 0 ≤ K i j)
+    (hKrow : ∀ i, (∑ j, K i j) ≤ rK)
+    (hLrow : ∀ j, (∑ k, L j k) ≤ rL)
+    (hrL : 0 ≤ rL) :
+    ∀ i, (∑ k, ∑ j, K i j * L j k) ≤ rK * rL := by
+  intro i
+  rw [Finset.sum_comm]
+  calc
+    (∑ j, ∑ k, K i j * L j k) =
+        ∑ j, K i j * (∑ k, L j k) := by
+      apply Finset.sum_congr rfl
+      intro j hj
+      rw [Finset.mul_sum]
+    _ ≤ ∑ j, K i j * rL := by
+      exact Finset.sum_le_sum fun j hj =>
+        mul_le_mul_of_nonneg_left (hLrow j) (hKnonneg i j)
+    _ = (∑ j, K i j) * rL := by
+      rw [Finset.sum_mul]
+    _ ≤ rK * rL := mul_le_mul_of_nonneg_right (hKrow i) hrL
+
+/-- Finite nonnegative kernel column bounds are likewise submultiplicative. -/
+theorem nonnegative_kernel_column_composition
+    {ι : Type*} [Fintype ι]
+    (K L : ι → ι → ℝ)
+    (cK cL : ℝ)
+    (hLnonneg : ∀ j k, 0 ≤ L j k)
+    (hKcol : ∀ j, (∑ i, K i j) ≤ cK)
+    (hLcol : ∀ k, (∑ j, L j k) ≤ cL)
+    (hcK : 0 ≤ cK) :
+    ∀ k, (∑ i, ∑ j, K i j * L j k) ≤ cK * cL := by
+  intro k
+  rw [Finset.sum_comm]
+  calc
+    (∑ j, ∑ i, K i j * L j k) =
+        ∑ j, (∑ i, K i j) * L j k := by
+      apply Finset.sum_congr rfl
+      intro j hj
+      rw [Finset.sum_mul]
+    _ ≤ ∑ j, cK * L j k := by
+      exact Finset.sum_le_sum fun j hj =>
+        mul_le_mul_of_nonneg_right (hKcol j) (hLnonneg j k)
+    _ = cK * (∑ j, L j k) := by
+      rw [Finset.mul_sum]
+    _ ≤ cK * cL := mul_le_mul_of_nonneg_left (hLcol k) hcK
+
 #print axioms exp_sub_one_le_mul_exp
 #print axioms exponential_perturbation_majorant
 #print axioms bounded_ball_exponential_tail
 #print axioms exponential_tail_preserves_decay
+#print axioms nonnegative_kernel_row_composition
+#print axioms nonnegative_kernel_column_composition
 
 end Millennium.YangMills.FaizalShabirConnectedLogExponentialRecertification
