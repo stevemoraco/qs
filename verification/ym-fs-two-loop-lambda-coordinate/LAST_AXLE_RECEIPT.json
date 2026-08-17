@@ -1,0 +1,55 @@
+{
+  "source_path": "verification/ym-fs-two-loop-lambda-coordinate/FaizalShabirTwoLoopLambdaCoordinateFirewall.lean",
+  "source_sha256": "8497aa6403d300c77739ddc6f89a1eeed3633f1966ddf65c22987a42eda1d193",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir two-loop transmutation-coordinate firewalls\n\nFinite real-algebra facts used in the hostile audit of arXiv:2606.19362v1,\nSection 10. These declarations do not formalize Yang--Mills theory, RG,\nSchwinger functions, Osterwalder--Schrader reconstruction, or a Clay theorem.\n\nThey record two load-bearing scalar points:\n\n* replacing a contraction `c * x` by the bare factor `x` requires `c \u2264 1`\n  when `x > 0`;\n* a nonzero correction of harmonic size `B/(n+1)` is critical: multiplication\n  by its natural scale `n+1` recovers the coefficient `B` exactly.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall\n\n/-- Dropping a positive multiplicative prefactor from `c*x` to `x` is valid\nonly if that prefactor is at most one. -/\ntheorem dropped_prefactor_requires_le_one\n    (c x : \u211d) (hx : 0 < x) (h : c * x \u2264 x) :\n    c \u2264 1 := by\n  have h' : c * x \u2264 (1 : \u211d) * x := by simpa using h\n  exact (mul_le_mul_right hx).mp h'\n\n/-- Conversely, a prefactor bounded by one can safely be dropped against a\nnonnegative scale factor. -/\ntheorem prefactor_le_one_allows_drop\n    (c x : \u211d) (hx : 0 \u2264 x) (hc : c \u2264 1) :\n    c * x \u2264 x := by\n  have h := mul_le_mul_of_nonneg_right hc hx\n  simpa using h\n\n/-- A coefficient `B` multiplying the harmonic correction survives exactly\nunder the natural `(n+1)` normalization. -/\ntheorem harmonic_coefficient_survives_normalization\n    (B : \u211d) (n : \u2115) :\n    ((n : \u211d) + 1) * (B / ((n : \u211d) + 1)) = B := by\n  have hn : (n : \u211d) + 1 \u2260 0 := by positivity\n  field_simp [hn]\n\n/-- A nonzero harmonic coefficient therefore cannot disappear under the\nnatural scale normalization. -/\ntheorem nonzero_harmonic_coefficient_stays_nonzero\n    (B : \u211d) (hB : B \u2260 0) (n : \u2115) :\n    ((n : \u211d) + 1) * (B / ((n : \u211d) + 1)) \u2260 0 := by\n  rw [harmonic_coefficient_survives_normalization]\n  exact hB\n\n/-- Exact finite-step shadow of an inverse-coupling recurrence\n`h' = h + A + B/(n+1)`: after subtracting the one-loop increment `A`, the\nscale-normalized residual is precisely the harmonic coefficient `B`. -/\ntheorem inverse_coupling_harmonic_residual_exact\n    (h hNext A B : \u211d) (n : \u2115)\n    (hstep : hNext = h + A + B / ((n : \u211d) + 1)) :\n    ((n : \u211d) + 1) * (hNext - h - A) = B := by\n  calc\n    ((n : \u211d) + 1) * (hNext - h - A) =\n        ((n : \u211d) + 1) * (B / ((n : \u211d) + 1)) := by\n          rw [hstep]\n          ring\n    _ = B := harmonic_coefficient_survives_normalization B n\n\n/-- If the harmonic coefficient is nonzero, the one-loop-subtracted inverse\ncoupling has nonzero scale-normalized residual. -/\ntheorem inverse_coupling_nonzero_two_loop_residual\n    (h hNext A B : \u211d) (n : \u2115) (hB : B \u2260 0)\n    (hstep : hNext = h + A + B / ((n : \u211d) + 1)) :\n    ((n : \u211d) + 1) * (hNext - h - A) \u2260 0 := by\n  rw [inverse_coupling_harmonic_residual_exact h hNext A B n hstep]\n  exact hB\n\n#print axioms dropped_prefactor_requires_le_one\n#print axioms prefactor_le_one_allows_drop\n#print axioms harmonic_coefficient_survives_normalization\n#print axioms nonzero_harmonic_coefficient_stays_nonzero\n#print axioms inverse_coupling_harmonic_residual_exact\n#print axioms inverse_coupling_nonzero_two_loop_residual\n\nend Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall\n\n",
+    "failed_declarations": [
+      "Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.dropped_prefactor_requires_le_one"
+    ],
+    "lean_messages": {
+      "errors": [
+        "-:26:30-26:32: error(lean.invalidField): Invalid field `mp`: The environment does not contain `Function.mp`, so it is not possible to project the field `mp` from an expression\n  mul_le_mul_right ?m.43\nof type\n  \u2200 (a : ?m.37), a * ?m.41 \u2264 a * ?m.42\n",
+        "-:26:26-26:28: error: Application type mismatch: The argument\n  hx\nhas type\n  0 < x\nbut is expected to have type\n  ?m.41 \u2264 ?m.42\nin the application\n  mul_le_mul_right hx\n"
+      ],
+      "infos": [
+        "-:75:0-75:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.dropped_prefactor_requires_le_one' depends on axioms: [propext,\n sorryAx,\n Classical.choice,\n Quot.sound]\n",
+        "-:76:0-76:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.prefactor_le_one_allows_drop' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:77:0-77:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.harmonic_coefficient_survives_normalization' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:78:0-78:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.nonzero_harmonic_coefficient_stays_nonzero' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:79:0-79:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.inverse_coupling_harmonic_residual_exact' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:80:0-80:6: info: 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.inverse_coupling_nonzero_two_loop_residual' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": false,
+    "timings": {
+      "parse_ms": 336,
+      "total_ms": 338
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [
+        "-:26:30: info: unsolved goals at error:\nc x : \u211d\nhx : 0 < x\nh : c * x \u2264 x\nh' : c * x \u2264 1 * x\n\u22a2 c \u2264 1",
+        "-:26:26: info: unsolved goals at error:\nc x : \u211d\nhx : 0 < x\nh : c * x \u2264 x\nh' : c * x \u2264 1 * x\n\u22a2 c \u2264 1"
+      ],
+      "warnings": [
+        "Declaration 'Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall.dropped_prefactor_requires_le_one' is incomplete (uses 'sorry' or has errors)"
+      ]
+    },
+    "info": {
+      "request_id": "21cb5259-9959-49bd-bd94-cebbcb94bf15",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 395,
+      "queue_time_ms": 2,
+      "execution_time_ms": 393,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 16,
+      "environment_total_time_us": 391029,
+      "environment_pool_size": 64
+    }
+  }
+}
