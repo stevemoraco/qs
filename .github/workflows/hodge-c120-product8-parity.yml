@@ -47,7 +47,18 @@ jobs:
           summary.write_text('## AXLE Lean receipt\n\n```json\n'+rendered+'\n```\n')
           lean=result.get('lean_messages',{})
           tool=result.get('tool_messages',{})
-          bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in rendered)
+          messages=[]
+          for group,label in ((lean.get('errors',[]),'Lean error'),(lean.get('warnings',[]),'Lean warning'),(tool.get('errors',[]),'Tool error'),(tool.get('warnings',[]),'Tool warning')):
+            for item in group:
+              text=item if isinstance(item,str) else json.dumps(item,sort_keys=True)
+              text=text.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print(f'::error file={path}::{label}: {text}')
+              messages.append(text)
+          failed=result.get('failed_declarations',[])
+          if failed:
+            text=('failed declarations: '+json.dumps(failed)).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+            print(f'::error file={path}::{text}')
+          bad=(not result.get('okay') or bool(failed) or bool(messages) or 'sorryAx' in rendered)
           if bad:
             raise SystemExit(1)
           PY
