@@ -18,13 +18,15 @@ namespace Millennium.YangMills.RootDegreeCostFirewall
 
 open scoped BigOperators
 
-def nonrootContraction (n : ℕ) : ℝ := ((1 : ℝ) / 2) ^ n
+noncomputable def nonrootContraction (n : ℕ) : ℝ := ((1 : ℝ) / 2) ^ n
 
-def oneRootIncidentCost (n : ℕ) : ℝ := (2 : ℝ) ^ n
+noncomputable def oneRootIncidentCost (n : ℕ) : ℝ := (2 : ℝ) ^ n
 
 theorem one_root_degree_cost_cancels_nonroot_contraction (n : ℕ) :
     oneRootIncidentCost n * nonrootContraction n = 1 := by
-  simp [oneRootIncidentCost, nonrootContraction, ← mul_pow]
+  dsimp [oneRootIncidentCost, nonrootContraction]
+  rw [← mul_pow]
+  norm_num
 
 theorem nominal_nonroot_factor_is_subunit :
     (0 : ℝ) ≤ (1 : ℝ) / 2 ∧ (1 : ℝ) / 2 < 1 := by
@@ -33,7 +35,14 @@ theorem nominal_nonroot_factor_is_subunit :
 theorem hostile_rooted_star_partial_sum (N : ℕ) :
     (∑ n ∈ Finset.range N,
       oneRootIncidentCost n * nonrootContraction n) = (N : ℝ) := by
-  simp [one_root_degree_cost_cancels_nonroot_contraction]
+  calc
+    (∑ n ∈ Finset.range N,
+      oneRootIncidentCost n * nonrootContraction n) =
+        ∑ _n ∈ Finset.range N, (1 : ℝ) := by
+          apply Finset.sum_congr rfl
+          intro n hn
+          exact one_root_degree_cost_cancels_nonroot_contraction n
+    _ = (N : ℝ) := by simp
 
 theorem fixed_root_count_does_not_give_fixed_prefactor (E : ℝ) :
     ∃ N : ℕ,
