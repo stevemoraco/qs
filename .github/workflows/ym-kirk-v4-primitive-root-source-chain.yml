@@ -1,0 +1,95 @@
+name: YM Kirk v4 primitive-root source chain
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-primitive-root-source-chain.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+
+      - name: Pin immutable Kirk v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+
+      - name: Extract primitive-root source chain
+        run: |
+          set -euo pipefail
+          expected=c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa
+          actual=$(sha256sum kirk_latest.pdf | awk '{print $1}')
+          test "$actual" = "$expected"
+          out=source_audit/kirk_v4/primitive_root_source_chain
+          mkdir -p "$out"
+          {
+            echo 'PINNED KIRK V4 PRIMITIVE-ROOT SOURCE CHAIN'
+            echo "PDF SHA-256: $actual"
+            echo
+            for range in \
+              '1390 1464' \
+              '1560 1705' \
+              '2140 2225' \
+              '2237 2452' \
+              '3173 3330' \
+              '3943 4010' \
+              '4156 4172' \
+              '4638 4683' \
+              '4780 4883' \
+              '4997 5073' \
+              '5360 5421' \
+              '5488 5532' \
+              '5954 5972' \
+              '6038 6070' \
+              '6105 6152' \
+              '6691 6738'; do
+              set -- $range
+              echo "===== SOURCE LINES $1-$2 ====="
+              awk -v a="$1" -v b="$2" 'NR>=a && NR<=b {print NR ": " $0}' latest.txt
+              echo
+            done
+          } > "$out/PRIMITIVE_ROOT_SOURCE_CHAIN.txt"
+          printf '%s\n%s\n%s\n' \
+            'Does the pinned source merely declare one/two passive exterior roots, or does it type normalized local roots into an upstream finite marked fiber and assert a uniform source/root seminorm before U5?' \
+            'Is the claimed primitive-root row upstream of Theorem 5.27(U5), or does it depend circularly on U5 or on the later terminal matching theorem?' \
+            'Which obligations remain independent analytic replays rather than missing source dependencies?' \
+            > "$out/QUESTION.txt"
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+
+      - name: Preserve source audit
+        run: |
+          set -euo pipefail
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/primitive_root_source_chain
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve primitive-root source chain'
+          git push origin HEAD:verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-primitive-root-source-chain
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            source_audit/kirk_v4/primitive_root_source_chain/
+            kirk_latest.pdf
