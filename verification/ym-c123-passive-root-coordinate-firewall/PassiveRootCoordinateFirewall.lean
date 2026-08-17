@@ -30,7 +30,7 @@ theorem independent_passive_root_coordinate (C : ℝ) :
   · simp [structuralSeminorm]
   · have hnonneg : 0 ≤ |C| + 1 := by positivity
     have hC : C ≤ |C| := le_abs_self C
-    simp only [passiveRootSeminorm, Prod.snd]
+    simp only [passiveRootSeminorm]
     rw [abs_of_nonneg hnonneg]
     linarith
 
