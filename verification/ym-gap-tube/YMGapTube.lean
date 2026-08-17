@@ -68,11 +68,54 @@ theorem half_tube_of_quarter_defect
   · norm_num at hdelta ⊢
     linarith
 
+/-- Tail version: nothing is assumed about the finite prefix before K. -/
+theorem quadratic_transfer_tube_from_scale
+    (q delta : ℕ → ℝ) (K : ℕ) (r : ℝ)
+    (hr0 : 0 ≤ r)
+    (hqnonneg : ∀ k, K ≤ k → 0 ≤ q k)
+    (hentry : q K ≤ r)
+    (hstep : ∀ k, K ≤ k → q (k + 1) ≤ (q k) ^ 2 + delta k)
+    (hdefect : ∀ k, K ≤ k → r ^ 2 + delta k ≤ r) :
+    ∀ k, K ≤ k → q k ≤ r := by
+  intro k hk
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le hk
+  induction n with
+  | zero => simpa using hentry
+  | succ n ih =>
+      have hKn : K ≤ K + n := Nat.le_add_right K n
+      have hn0 : 0 ≤ q (K + n) := hqnonneg (K + n) hKn
+      have hs := hstep (K + n) hKn
+      have hd := hdefect (K + n) hKn
+      have hout := quadratic_transfer_tube_step
+        (q (K + n)) (q (K + n + 1)) r (delta (K + n))
+        hn0 ih hr0 hs hd
+      simpa [Nat.add_assoc] using hout
+
+/-- Concrete tail tube at radius 1/2. -/
+theorem half_transfer_tube_from_scale
+    (q delta : ℕ → ℝ) (K : ℕ)
+    (hqnonneg : ∀ k, K ≤ k → 0 ≤ q k)
+    (hentry : q K ≤ (1 / 2 : ℝ))
+    (hstep : ∀ k, K ≤ k → q (k + 1) ≤ (q k) ^ 2 + delta k)
+    (hdefect : ∀ k, K ≤ k → delta k ≤ (1 / 4 : ℝ)) :
+    ∀ k, K ≤ k → q k ≤ (1 / 2 : ℝ) := by
+  apply quadratic_transfer_tube_from_scale q delta K (1 / 2)
+  · norm_num
+  · exact hqnonneg
+  · exact hentry
+  · exact hstep
+  · intro k hk
+    have hd := hdefect k hk
+    norm_num at hd ⊢
+    linarith
+
 #print axioms finite_loss_does_not_force_positive_remainder
 #print axioms positive_remainder_of_totalLoss_lt_initial
 #print axioms nonnegative_gap_does_not_bound_exponential_by_unit_gap
 #print axioms quadratic_transfer_tube_step
 #print axioms quadratic_transfer_tube_all_scales
 #print axioms half_tube_of_quarter_defect
+#print axioms quadratic_transfer_tube_from_scale
+#print axioms half_transfer_tube_from_scale
 
 end YMGapTube
