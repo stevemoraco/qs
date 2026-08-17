@@ -36,7 +36,6 @@ theorem complement_max_bound_does_not_imply_absolute_step_bound :
 max branch collapses and the desired absolute one-step estimate follows. -/
 theorem complement_max_step_repair
     (x y c e : ℝ)
-    (he : 0 ≤ e)
     (hc : c ≤ x)
     (hlower : x - e ≤ y)
     (hupper : y ≤ max x c + e) :
@@ -52,13 +51,11 @@ theorem complement_max_step_repair
 /-- The same repair with the paper's factor-three error budget. -/
 theorem complement_max_step_repair_three
     (x y c ε : ℝ)
-    (hε : 0 ≤ ε)
     (hc : c ≤ x)
     (hlower : x - 3 * ε ≤ y)
     (hupper : y ≤ max x c + 3 * ε) :
     |y - x| ≤ 3 * ε := by
-  have he : 0 ≤ 3 * ε := mul_nonneg (by norm_num) hε
-  exact complement_max_step_repair x y c (3 * ε) he hc hlower hupper
+  exact complement_max_step_repair x y c (3 * ε) hc hlower hupper
 
 #print axioms complement_max_bound_does_not_imply_absolute_step_bound
 #print axioms complement_max_step_repair
