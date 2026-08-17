@@ -83,7 +83,6 @@ theorem two_direction_mixed_row
     (coeff M fieldRate sourceRate₁ sourceRate₂ : ℝ)
     (hM : 0 ≤ M)
     (hfield : 0 ≤ fieldRate)
-    (hs1 : 0 ≤ sourceRate₁)
     (hs2 : 0 ≤ sourceRate₂)
     (hcoeff :
       coeff ≤
@@ -96,8 +95,6 @@ theorem two_direction_mixed_row
   have h2 : sourceRate₂ ≤ max 1 sourceRate₂ := le_max_right 1 sourceRate₂
   have hM1 : 0 ≤ max 1 sourceRate₁ := by
     exact le_trans (by norm_num) (le_max_left 1 sourceRate₁)
-  have hM2 : 0 ≤ max 1 sourceRate₂ := by
-    exact le_trans (by norm_num) (le_max_left 1 sourceRate₂)
   have hp :
       sourceRate₁ * sourceRate₂ ≤
         max 1 sourceRate₁ * max 1 sourceRate₂ :=
@@ -121,9 +118,6 @@ fixed effective field rate, a selected-root constant cannot change its
 factorial exponent or its field-degree rate. -/
 theorem fixed_root_factor_preserves_species_rate
     (q : ℕ) (rootConst M fieldRate coeff : ℝ)
-    (hroot : 0 ≤ rootConst)
-    (hM : 0 ≤ M)
-    (hfield : 0 ≤ fieldRate)
     (hcoeff :
       coeff ≤ rootConst * (M * (q.factorial : ℝ) * fieldRate ^ q)) :
     coeff ≤
