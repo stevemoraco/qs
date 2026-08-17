@@ -99,7 +99,9 @@ theorem exact_commuting_visible_edge_has_no_visibility_loss
     (hcoarse : coarseRadius ≤ rate)
     (hinverse : fineRadius ≤ coarseRadius + 0 / visibility) :
     fineRadius ≤ rate := by
-  simpa using hinverse.trans (by simpa using hcoarse)
+  have hzero : (0 : ℝ) / visibility = 0 := zero_div visibility
+  rw [hzero, add_zero] at hinverse
+  exact hinverse.trans hcoarse
 
 #print axioms range_tail_physical_normalization
 #print axioms o_a_remainder_is_small_in_physical_units
