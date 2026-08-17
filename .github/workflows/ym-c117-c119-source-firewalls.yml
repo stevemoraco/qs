@@ -1,0 +1,23 @@
+name: Verify YM C117-C119 source firewalls
+
+on:
+  push:
+    branches:
+      - verification/ym-c117-c119-source-firewalls-20260817-gpt56pro
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: C117 fixed-order/common-radius firewall
+        run: python3 verification/ym_source_firewalls/check_ym_c117_one_mark_fusion_firewall.py
+      - name: C118 cubic Gaussian source firewall
+        run: python3 verification/ym_source_firewalls/check_ym_c118_cubic_gaussian_source.py
+      - name: C119 power-source/log-action firewall
+        run: python3 verification/ym_source_firewalls/check_ym_c119_power_source_vs_log_action.py
