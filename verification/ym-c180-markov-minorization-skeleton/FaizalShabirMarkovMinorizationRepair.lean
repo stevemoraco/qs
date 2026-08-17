@@ -40,7 +40,8 @@ theorem edgeEnergy_minorization
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro y hy
-  exact mul_le_mul_of_nonneg_right (hminor x hx y hy) (sq_nonneg (f x - f y))
+  simpa [mul_assoc] using
+    (mul_le_mul_of_nonneg_right (hminor x hx y hy) (sq_nonneg (f x - f y)))
 
 /-- A multiplicative lower comparison of the actual Dirichlet form gives the
 relative upper-error estimate needed by the spectral consumer. -/
