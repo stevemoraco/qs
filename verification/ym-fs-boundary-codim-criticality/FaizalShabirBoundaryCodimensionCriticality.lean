@@ -26,7 +26,6 @@ theorem boundary_three_over_volume_four
     (hL : L ≠ 0) :
     L ^ 3 / L ^ 4 = 1 / L := by
   field_simp
-  ring
 
 /-- If the physical spacing is `a = 1/L`, the generic boundary/volume ratio is
 exactly of order `a`. -/
@@ -57,7 +56,6 @@ theorem extra_boundary_cancellation_gives_spacing_square
     L ^ 2 / L ^ 4 = a ^ 2 := by
   rw [ha]
   field_simp
-  ring
 
 /-- After the physical `1/a` normalization, the one-extra-power repair costs
 only `a`. -/
