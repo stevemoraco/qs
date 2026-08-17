@@ -1,0 +1,57 @@
+{
+  "source_path": "verification/ym-fs-lambda-coordinate-firewall/FaizalShabirLambdaCoordinateFirewall.lean",
+  "source_sha256": "8444d2c2a141904c40e257eff3cdb2c6c7948438954d92b23d5fb915d3640ee1",
+  "axle_environment": "lean-4.30.0",
+  "bad": true,
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir AF/IR transmutation-coordinate firewall\n\nFinite scalar algebra behind a load-bearing warning for the weak-coupling\nidentification step. Two squared-coupling trajectories can become very close\nwhile retaining a nonzero constant offset in inverse squared coupling, the\ncoordinate that carries the integration constant of the one-loop flow.\n\nThis file does not formalize Yang--Mills, renormalization, Lambda_YM,\nOsterwalder--Schrader reconstruction, a mass gap, or a Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall\n\n/-- Two reciprocal affine squared-coupling coordinates differ by an explicitly\nquadratically small rational term. -/\ntheorem reciprocal_affine_difference\n    (x c d : \u211d)\n    (hxc : x + c \u2260 0)\n    (hxd : x + d \u2260 0) :\n    1 / (x + c) - 1 / (x + d) =\n      (d - c) / ((x + c) * (x + d)) := by\n  field_simp\n  ring\n\n/-- Inverting the same two squared-coupling coordinates recovers the constant\noffset exactly. -/\ntheorem inverse_reciprocal_offset\n    (x c d : \u211d)\n    (hxc : x + c \u2260 0)\n    (hxd : x + d \u2260 0) :\n    1 / (1 / (x + c)) - 1 / (1 / (x + d)) = c - d := by\n  field_simp\n  ring\n\n/-- Concrete one-unit-offset family: the raw squared couplings differ by a\nproduct-denominator term while the inverse squared couplings remain separated\nby exactly one unit. -/\ntheorem one_unit_transmutation_offset\n    (x : \u211d)\n    (hx1 : x + 1 \u2260 0)\n    (hx2 : x + 2 \u2260 0) :\n    (1 / (x + 1) - 1 / (x + 2) =\n      1 / ((x + 1) * (x + 2))) \u2227\n    (1 / (1 / (x + 1)) - 1 / (1 / (x + 2)) = -1) := by\n  constructor\n  \u00b7 simpa using reciprocal_affine_difference x 1 2 hx1 hx2\n  \u00b7 simpa using inverse_reciprocal_offset x 1 2 hx1 hx2\n\n/-- Equality of the inverse-squared-coupling coordinate forces equality of the\naffine integration constants in this model. -/\ntheorem inverse_coordinate_identifies_offset\n    (x c d : \u211d)\n    (hxc : x + c \u2260 0)\n    (hxd : x + d \u2260 0)\n    (hmatch : 1 / (1 / (x + c)) = 1 / (1 / (x + d))) :\n    c = d := by\n  have hoff := inverse_reciprocal_offset x c d hxc hxd\n  rw [hmatch] at hoff\n  linarith\n\n#print axioms reciprocal_affine_difference\n#print axioms inverse_reciprocal_offset\n#print axioms one_unit_transmutation_offset\n#print axioms inverse_coordinate_identifies_offset\n\nend Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall\n\n",
+    "failed_declarations": [
+      "Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.one_unit_transmutation_offset"
+    ],
+    "lean_messages": {
+      "errors": [
+        "-:49:4-49:58: error: Type mismatch: After simplification, term\n  reciprocal_affine_difference x 1 2 hx1 hx2\n has type\n  (x + 1)\u207b\u00b9 - (x + 2)\u207b\u00b9 = (2 - 1) / ((x + 1) * (x + 2))\nbut is expected to have type\n  (x + 1)\u207b\u00b9 - (x + 2)\u207b\u00b9 = (x + 2)\u207b\u00b9 * (x + 1)\u207b\u00b9\n",
+        "-:50:4-50:55: error: Type mismatch: After simplification, term\n  inverse_reciprocal_offset x 1 2 hx1 hx2\n has type\n  True\nbut is expected to have type\n  1 - 2 = -1\n"
+      ],
+      "infos": [
+        "-:64:0-64:6: info: 'Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.reciprocal_affine_difference' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:65:0-65:6: info: 'Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.inverse_reciprocal_offset' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:66:0-66:6: info: 'Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.one_unit_transmutation_offset' depends on axioms: [propext,\n sorryAx,\n Classical.choice,\n Quot.sound]\n",
+        "-:67:0-67:6: info: 'Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.inverse_coordinate_identifies_offset' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": [
+        "-:32:5-32:8: warning: unused variable `hxc`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n",
+        "-:33:5-33:8: warning: unused variable `hxd`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n"
+      ]
+    },
+    "okay": false,
+    "timings": {
+      "parse_ms": 203,
+      "total_ms": 206
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [
+        "-:49:4: info: unsolved goals at error:\ncase left\nx : \u211d\nhx1 : x + 1 \u2260 0\nhx2 : x + 2 \u2260 0\n\u22a2 1 / (x + 1) - 1 / (x + 2) = 1 / ((x + 1) * (x + 2))",
+        "-:50:4: info: unsolved goals at error:\ncase right\nx : \u211d\nhx1 : x + 1 \u2260 0\nhx2 : x + 2 \u2260 0\n\u22a2 1 / (1 / (x + 1)) - 1 / (1 / (x + 2)) = -1"
+      ],
+      "warnings": [
+        "Declaration 'Millennium.YangMills.FaizalShabirLambdaCoordinateFirewall.one_unit_transmutation_offset' is incomplete (uses 'sorry' or has errors)"
+      ]
+    },
+    "info": {
+      "request_id": "59f84850-8cb1-4b15-a480-6a69d8aa39fd",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 263,
+      "queue_time_ms": 9,
+      "execution_time_ms": 254,
+      "cached_response": false,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 9,
+      "environment_total_time_us": 250606,
+      "environment_pool_size": 64
+    }
+  }
+}
