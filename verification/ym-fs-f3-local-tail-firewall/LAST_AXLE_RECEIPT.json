@@ -1,0 +1,59 @@
+{
+  "source_path": "verification/ym-fs-f3-local-tail-firewall/FaizalShabirLocalTailFirewall.lean",
+  "source_sha256": "cbbfd42904a901cd87e8b2950b0d0adabfcffb760d50e8b30608b4f56ba03ef2",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir Appendix-F local-tail firewall\n\nFinite scalar logic behind a hostile audit of arXiv:2606.19362v1, Lemma F.3.\n\nThe printed proof bounds each differentiated local polymer activity by an envelope depending\non its diameter, then sums activities whose diameters satisfy only an *upper* scale cap.  An\nupper diameter cap does not create a decaying scale factor: a fixed nonzero local activity may\nremain present at every scale.\n\nThis file formalizes only that logical obstruction and the minimal repaired shape.  It does not\nformalize polymer gases, BKAR, OS kernels, Yang--Mills theory, continuum reconstruction, or\na Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirLocalTailFirewall\n\n/-- A scale family can have uniformly bounded diameter while keeping a nonvanishing local\nweight at every scale. -/\ndef persistentLocalWeight (_k : \u2115) : \u211d := 1\n\ndef persistentLocalDiameter (_k : \u2115) : \u2115 := 1\n\n@[simp] theorem persistent_local_weight_eq_one (k : \u2115) :\n    persistentLocalWeight k = 1 := rfl\n\n@[simp] theorem persistent_local_diameter_eq_one (k : \u2115) :\n    persistentLocalDiameter k = 1 := rfl\n\n/-- Any scale-dependent upper diameter cap at least one admits the persistent local family. -/\ntheorem persistent_local_diameter_fits_any_upper_cap\n    (k cap : \u2115) (hcap : 1 \u2264 cap) :\n    persistentLocalDiameter k \u2264 cap := by\n  simpa [persistentLocalDiameter] using hcap\n\n/-- Once a proposed scale-tail bound drops below one, the persistent local family violates it.\nThis is the exact quantifier obstruction: an upper support cap plus a scale-independent local\nactivity envelope cannot imply a vanishing scale bound. -/\ntheorem persistent_local_family_refutes_small_tail\n    (tail : \u2115 \u2192 \u211d) (k : \u2115) (htail : tail k < 1) :\n    \u00ac persistentLocalWeight k \u2264 tail k := by\n  simp only [persistentLocalWeight]\n  exact not_le.mpr htail\n\n/-- A nonnegative sum containing one persistent positive local contribution cannot be bounded\nby a tail that has already fallen below that contribution. -/\ntheorem persistent_local_term_blocks_small_total\n    (local rest tail : \u211d)\n    (hrest : 0 \u2264 rest)\n    (htail : tail < local) :\n    \u00ac local + rest \u2264 tail := by\n  intro h\n  linarith\n\n/-- Minimal repaired scalar shape: to deduce a small total from a local/tail decomposition,\nsmallness must be supplied for *both* pieces (or the local piece must cancel/vanish exactly). -/\ntheorem repaired_local_plus_tail_budget\n    (local tail budget : \u211d)\n    (hlocal : local \u2264 budget / 2)\n    (htail : tail \u2264 budget / 2) :\n    local + tail \u2264 budget := by\n  linarith\n\n/-- Exact-cancellation specialization of the repaired shape. -/\ntheorem exact_local_cancellation_reduces_to_tail\n    (local tail budget : \u211d)\n    (hlocal : local = 0)\n    (htail : tail \u2264 budget) :\n    local + tail \u2264 budget := by\n  linarith\n\n#print axioms persistent_local_weight_eq_one\n#print axioms persistent_local_diameter_eq_one\n#print axioms persistent_local_diameter_fits_any_upper_cap\n#print axioms persistent_local_family_refutes_small_tail\n#print axioms persistent_local_term_blocks_small_total\n#print axioms repaired_local_plus_tail_budget\n#print axioms exact_local_cancellation_reduces_to_tail\n\nend Millennium.YangMills.FaizalShabirLocalTailFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [
+        "-:50:5-50:10: error: unexpected token 'local'; expected '_' or identifier\n",
+        "-:50:10-50:15: error: unexpected identifier; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:52:25-52:26: error: unexpected token ')'; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:53:11-53:13: error: unexpected token '+'; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:60:5-60:10: error: unexpected token 'local'; expected '_' or identifier\n",
+        "-:60:10-60:15: error: unexpected identifier; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:61:19-61:21: error: unexpected token '\u2264'; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:63:9-63:11: error: unexpected token '+'; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:68:5-68:10: error: unexpected token 'local'; expected '_' or identifier\n",
+        "-:68:10-68:15: error: unexpected identifier; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:69:19-69:21: error: unexpected token '='; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:71:9-71:11: error: unexpected token '+'; expected 'add_aesop_rules', 'binder_predicate', 'builtin_cbv_simproc', 'builtin_dsimproc', 'builtin_simproc', 'cbv_simproc', 'dsimproc', 'elab', 'elab_rules', 'grind_pattern', 'infix', 'infixl', 'infixr', 'instance', 'macro', 'macro_rules', 'notation', 'notation3', 'postfix', 'prefix', 'simproc', 'syntax' or 'unif_hint'\n",
+        "-:78:14-78:54: error(lean.unknownIdentifier): Unknown constant `persistent_local_term_blocks_small_total`\n",
+        "-:79:14-79:45: error(lean.unknownIdentifier): Unknown constant `repaired_local_plus_tail_budget`\n",
+        "-:80:14-80:54: error(lean.unknownIdentifier): Unknown constant `exact_local_cancellation_reduces_to_tail`\n"
+      ],
+      "infos": [
+        "-:74:0-74:6: info: 'Millennium.YangMills.FaizalShabirLocalTailFirewall.persistent_local_weight_eq_one' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:75:0-75:6: info: 'Millennium.YangMills.FaizalShabirLocalTailFirewall.persistent_local_diameter_eq_one' does not depend on any axioms\n",
+        "-:76:0-76:6: info: 'Millennium.YangMills.FaizalShabirLocalTailFirewall.persistent_local_diameter_fits_any_upper_cap' does not depend on any axioms\n",
+        "-:77:0-77:6: info: 'Millennium.YangMills.FaizalShabirLocalTailFirewall.persistent_local_family_refutes_small_tail' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": false,
+    "timings": {
+      "parse_ms": 88,
+      "total_ms": 88
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "736e2c9d-0762-43a3-a90c-d8c6b3c0872a",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 144,
+      "queue_time_ms": 6,
+      "execution_time_ms": 138,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 13,
+      "environment_total_time_us": 136124,
+      "environment_pool_size": 64
+    }
+  }
+}
