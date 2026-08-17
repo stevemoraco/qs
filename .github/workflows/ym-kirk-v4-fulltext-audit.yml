@@ -1,0 +1,69 @@
+name: Extract pinned Kirk v4 full text
+
+on:
+  push:
+    branches:
+      - audit/ym-kirk-v4-fulltext-20260817-gpt56pro
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install PDF text tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils jq
+
+      - name: Download exact latest record and PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/ym_kirk_v4_fulltext
+          curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 -sS \
+            https://zenodo.org/api/records/21765806 \
+            -o evidence/ym_kirk_v4_fulltext/record.json
+          jq -e '.id == 21765806' evidence/ym_kirk_v4_fulltext/record.json >/dev/null
+          FILE_URL=$(jq -er '.files[] | select(.key | endswith(".pdf")) | .links.self' \
+            evidence/ym_kirk_v4_fulltext/record.json)
+          curl --fail-with-body --retry 5 --retry-all-errors --retry-delay 2 -L -sS \
+            "$FILE_URL" -o evidence/ym_kirk_v4_fulltext/Kirk_v4.pdf
+          test "$(sha256sum evidence/ym_kirk_v4_fulltext/Kirk_v4.pdf | awk '{print $1}')" \
+            = c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa
+
+      - name: Extract and index full manuscript
+        shell: bash
+        run: |
+          set -euo pipefail
+          pdftotext -layout evidence/ym_kirk_v4_fulltext/Kirk_v4.pdf \
+            evidence/ym_kirk_v4_fulltext/Kirk_v4.txt
+          pdfinfo evidence/ym_kirk_v4_fulltext/Kirk_v4.pdf \
+            > evidence/ym_kirk_v4_fulltext/pdfinfo.txt
+          {
+            echo "record=21765806"
+            echo "pdf_sha256=$(sha256sum evidence/ym_kirk_v4_fulltext/Kirk_v4.pdf | awk '{print $1}')"
+            echo "text_sha256=$(sha256sum evidence/ym_kirk_v4_fulltext/Kirk_v4.txt | awk '{print $1}')"
+            echo "text_lines=$(wc -l < evidence/ym_kirk_v4_fulltext/Kirk_v4.txt)"
+            echo "text_bytes=$(wc -c < evidence/ym_kirk_v4_fulltext/Kirk_v4.txt)"
+          } > evidence/ym_kirk_v4_fulltext/manifest.txt
+          grep -n -E 'Theorem 5\.26|Lemma 8\.1|Theorem 8\.9|Theorem 10\.4|Theorem 10\.7|Theorem 11\.|Clay' \
+            evidence/ym_kirk_v4_fulltext/Kirk_v4.txt \
+            > evidence/ym_kirk_v4_fulltext/key-headings.txt || true
+
+      - name: Upload exact audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-fulltext
+          path: evidence/ym_kirk_v4_fulltext/
+          if-no-files-found: error
+          retention-days: 30
