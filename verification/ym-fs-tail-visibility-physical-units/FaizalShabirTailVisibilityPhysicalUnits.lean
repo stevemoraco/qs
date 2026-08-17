@@ -91,11 +91,11 @@ theorem inverse_visibility_keeps_edge
     hvisibility hcoarse hdebt hinverse
   linarith
 
-/-- In the zero-debt case, a merely positive visibility is enough to transfer
-the coarse spectral-radius ceiling without any visibility penalty. -/
-theorem exact_commuting_visible_edge_has_no_visibility_loss
+/-- In the zero-debt scalar shadow, the coarse spectral-radius ceiling transfers
+with no visibility penalty. The upstream Hilbert-space projection theorem still
+requires positive visibility in order to produce the inverse inequality. -/
+theorem exact_zero_debt_edge_has_no_visibility_loss
     (fineRadius coarseRadius visibility rate : ℝ)
-    (hvisibility : 0 < visibility)
     (hcoarse : coarseRadius ≤ rate)
     (hinverse : fineRadius ≤ coarseRadius + 0 / visibility) :
     fineRadius ≤ rate := by
@@ -108,6 +108,6 @@ theorem exact_commuting_visible_edge_has_no_visibility_loss
 #print axioms visibility_relative_debt_division
 #print axioms inverse_visibility_preserves_edge_fraction
 #print axioms inverse_visibility_keeps_edge
-#print axioms exact_commuting_visible_edge_has_no_visibility_loss
+#print axioms exact_zero_debt_edge_has_no_visibility_loss
 
 end Millennium.YangMills.FaizalShabirTailVisibilityPhysicalUnits
