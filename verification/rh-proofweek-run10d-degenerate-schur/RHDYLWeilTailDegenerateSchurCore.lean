@@ -31,7 +31,7 @@ theorem zeroKernel_nonzeroCross_beatsAnyLevel
     exact mul_ne_zero (by norm_num) hb
   have hmul : (2 * b) * r = d - c - 1 := by
     dsimp [r]
-    field_simp [h2b] <;> ring
+    field_simp [h2b]
   rw [show tailCost 0 b c r = (2 * b) * r + c by simp [tailCost]]
   rw [hmul]
   linarith
