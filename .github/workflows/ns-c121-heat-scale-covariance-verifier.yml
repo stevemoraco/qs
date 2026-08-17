@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ns_c121_heat_scale_covariance/NSHeatScaleCovarianceFirewall.lean
-          test "$(git hash-object "$SRC")" = e74676f2b593dd0549c8d6f8c1e69ed715d64931
+          test "$(git hash-object "$SRC")" = 4a1237b927fbcc6dfd4950bc1e91e23d53c8e22e
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ns_c121_heat_scale_covariance/NSHeatScaleCovarianceFirewall.lean')
