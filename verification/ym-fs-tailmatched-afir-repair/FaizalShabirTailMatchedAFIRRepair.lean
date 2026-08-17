@@ -7,13 +7,13 @@ Finite algebra supporting two load-bearing repairs in the hard audit of
 arXiv:2606.19362v1.
 
 1. Positivity of every member of a Gram family does not imply that the family
-   is monotone in an interpolation parameter.  Hence positivity of a BKAR/
+   is monotone in an interpolation parameter. Hence positivity of a BKAR/
    coupling-interpolated Gram operator does not, by itself, prove that the
    interpolation derivative or integrated increment is positive.
 
 2. An additive AF/IR comparison can genuinely vanish when one has a *signed
    equality* and fixes the initial/matching constant by the full future error
-   tail.  Then the finite-scale discrepancy is exactly the remaining tail.
+   tail. Then the finite-scale discrepancy is exactly the remaining tail.
    This is the algebraic content that the phrase "absorb the initial
    difference into the summable error" would need; an absolute one-sided
    inequality is insufficient.
@@ -24,14 +24,16 @@ the two-loop beta function, Lambda_YM, OS reconstruction, or any Clay theorem.
 
 namespace Millennium.YangMills.FaizalShabirTailMatchedAFIRRepair
 
-/-- Two positive Gram values can have a strictly negative increment.  This is
+/-- Two positive Gram values can have a strictly negative increment. This is
 the finite firewall against inferring monotonicity of a Gram interpolation from
 positivity of its values alone. -/
 theorem positive_gram_values_do_not_force_positive_increment :
     0 ≤ (1 : ℝ) ^ 2 ∧
       0 ≤ ((1 : ℝ) / 2) ^ 2 ∧
       (((1 : ℝ) / 2) ^ 2 - (1 : ℝ) ^ 2) < 0 := by
-  norm_num
+  constructor
+  · norm_num
+  constructor <;> norm_num
 
 /-- If the matching constant cancels the complete prefix-plus-tail error, then
 the discrepancy after the prefix is exactly minus the remaining tail. -/
@@ -52,8 +54,9 @@ theorem matched_tail_bound_controls_discrepancy
     |dK| ≤ rho := by
   have hd : dK = -tail :=
     matched_total_error_turns_prefix_into_tail d0 prefix tail dK hmatch hprefix
-  rw [hd, abs_neg]
-  exact htail
+  calc
+    |dK| = |tail| := by simpa [hd]
+    _ ≤ rho := htail
 
 /-- Exact-zero tail gives exact AF/IR matching at the corresponding scale. -/
 theorem zero_remaining_tail_gives_exact_match
