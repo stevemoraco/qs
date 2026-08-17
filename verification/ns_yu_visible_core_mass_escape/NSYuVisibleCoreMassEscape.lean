@@ -9,6 +9,8 @@ This file sanity-checks the normalization obstruction to passing from global
 canonical projective concentration to concentration on a fixed visible core.
 It does **not** formalize integration, conditional measures, Navier--Stokes,
 Runlong Yu's estimate, smooth profile extraction, or any Clay theorem.
+
+Replay target: exact warning-free finite algebra under the guarded verifier.
 -/
 
 namespace NSYuVisibleCoreMassEscape
