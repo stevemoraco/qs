@@ -1,0 +1,45 @@
+{
+  "source_path": "verification/ym-fs-c178-collar-schur-support/FaizalShabirCollarSchurSupportFirewall.lean",
+  "source_sha256": "efc43238a4a2a4688789eed81c8b45ebef45409ccf1e2a0bb69ffb86ad1564d3",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir collar-Schur support firewall\n\nFinite real-algebra/geometry shadow of the load-bearing inference around\narXiv:2606.19362v1 Eq. (5.29).\n\nThe displayed support condition there allows a kernel contribution whose two\nendpoints both lie in the collar while having zero mutual separation. Exponential\nlocality in the endpoint distance then gives no `exp (-c * R)` gain merely from\nmembership in a collar of radius `R`.\n\nThe source also states that the localization-error kernel has vanishing row and\ncolumn sums. The last two declarations record the finite two-point shadow of a\npossible cancellation-sensitive repair: a zero-sum local kernel acts through a\nsquared difference rather than through the constant mode.\n\nThis file does not formalize the Yang--Mills transfer kernel, Schur's test,\npolymer expansions, FRD, OS reconstruction, a mass gap, or a Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall\n\n/-- Being inside a positive-radius collar does not force the two endpoints to\nbe separated by that radius: both boundary distances and their mutual distance\nmay all be zero. -/\ntheorem collar_membership_does_not_force_pair_separation\n    (R : \u211d) (hR : 0 < R) :\n    min (0 : \u211d) 0 \u2264 R \u2227 \u00ac R \u2264 0 := by\n  constructor\n  \u00b7 simp [le_of_lt hR]\n  \u00b7 exact not_le.mpr hR\n\n/-- A unit local contribution at zero endpoint distance is strictly larger than\n`exp (-c R)` for every positive decay rate and positive collar radius. -/\ntheorem local_unit_term_exceeds_claimed_collar_tail\n    (c R : \u211d) (hc : 0 < c) (hR : 0 < R) :\n    Real.exp (-c * R) < 1 := by\n  have hneg : -c * R < 0 := by\n    nlinarith [mul_pos hc hR]\n  have h := Real.exp_lt_exp.mpr hneg\n  simpa using h\n\n/-- Equivalently, the radius-only exponential bound cannot dominate a unit\nzero-distance term. -/\ntheorem local_unit_term_not_bounded_by_claimed_collar_tail\n    (c R : \u211d) (hc : 0 < c) (hR : 0 < R) :\n    \u00ac ((1 : \u211d) \u2264 Real.exp (-c * R)) := by\n  intro h\n  have hlt := local_unit_term_exceeds_claimed_collar_tail c R hc hR\n  linarith\n\n/-- Correct direction: a genuine lower bound on endpoint separation supplies\nthe desired radius exponential payment. -/\ntheorem endpoint_separation_pays_collar_radius\n    (c R d : \u211d) (hc : 0 \u2264 c) (hRd : R \u2264 d) :\n    Real.exp (-c * d) \u2264 Real.exp (-c * R) := by\n  apply Real.exp_le_exp.mpr\n  nlinarith\n\n/-- Two-point zero-row-sum model: the local quadratic form is exactly a\nDirichlet difference square. -/\ntheorem two_point_zero_sum_quadratic_identity\n    (w x y : \u211d) :\n    w * x * x - w * x * y - w * y * x + w * y * y =\n      w * (x - y) ^ 2 := by\n  ring\n\n/-- If a zero-sum local term has nonnegative weight, a bound on the local\nvariation pays the quadratic form even when the coefficient itself is O(1). -/\ntheorem two_point_zero_sum_form_paid_by_difference\n    (w x y \u03b4 : \u211d)\n    (hw : 0 \u2264 w)\n    (hdiff : (x - y) ^ 2 \u2264 \u03b4 ^ 2) :\n    w * (x - y) ^ 2 \u2264 w * \u03b4 ^ 2 := by\n  exact mul_le_mul_of_nonneg_left hdiff hw\n\n#print axioms collar_membership_does_not_force_pair_separation\n#print axioms local_unit_term_exceeds_claimed_collar_tail\n#print axioms local_unit_term_not_bounded_by_claimed_collar_tail\n#print axioms endpoint_separation_pays_collar_radius\n#print axioms two_point_zero_sum_quadratic_identity\n#print axioms two_point_zero_sum_form_paid_by_difference\n\nend Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:79:0-79:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.collar_membership_does_not_force_pair_separation' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:80:0-80:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.local_unit_term_exceeds_claimed_collar_tail' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:81:0-81:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.local_unit_term_not_bounded_by_claimed_collar_tail' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:82:0-82:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.endpoint_separation_pays_collar_radius' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:83:0-83:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.two_point_zero_sum_quadratic_identity' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:84:0-84:6: info: 'Millennium.YangMills.FaizalShabirCollarSchurSupportFirewall.two_point_zero_sum_form_paid_by_difference' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 250,
+      "total_ms": 252
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "3b1004f5-a468-451a-a3c7-e27e539660fd",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 306,
+      "queue_time_ms": 3,
+      "execution_time_ms": 302,
+      "cached_response": false,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 11,
+      "environment_total_time_us": 299744,
+      "environment_pool_size": 64
+    }
+  }
+}
