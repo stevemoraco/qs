@@ -14,24 +14,25 @@ noncomputable def cubicCharacteristicPhase (t x : ℝ) : ℂ :=
 
 theorem cubicCharacteristicExponent_re (t x : ℝ) :
     (Complex.I * ((t * x ^ 3 : ℝ) : ℂ)).re = 0 := by
+  norm_num [Complex.mul_re]
+
+theorem cubicCharacteristicPhase_norm (t x : ℝ) :
+    ‖cubicCharacteristicPhase t x‖ = 1 := by
+  rw [cubicCharacteristicPhase, Complex.norm_exp]
+  rw [cubicCharacteristicExponent_re]
   simp
 
-theorem cubicCharacteristicPhase_abs (t x : ℝ) :
-    Complex.abs (cubicCharacteristicPhase t x) = 1 := by
-  rw [cubicCharacteristicPhase, Complex.abs_exp]
-  simp
-
-theorem cubicCharacteristicPhase_abs_le_one (t x : ℝ) :
-    Complex.abs (cubicCharacteristicPhase t x) ≤ 1 := by
-  rw [cubicCharacteristicPhase_abs]
+theorem cubicCharacteristicPhase_norm_le_one (t x : ℝ) :
+    ‖cubicCharacteristicPhase t x‖ ≤ 1 := by
+  rw [cubicCharacteristicPhase_norm]
 
 theorem cubicCharacteristicPhase_zero_source (x : ℝ) :
     cubicCharacteristicPhase 0 x = 1 := by
   simp [cubicCharacteristicPhase]
 
 #print axioms cubicCharacteristicExponent_re
-#print axioms cubicCharacteristicPhase_abs
-#print axioms cubicCharacteristicPhase_abs_le_one
+#print axioms cubicCharacteristicPhase_norm
+#print axioms cubicCharacteristicPhase_norm_le_one
 #print axioms cubicCharacteristicPhase_zero_source
 
 end Millennium.YangMills
