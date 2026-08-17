@@ -1,0 +1,145 @@
+name: YM Kirk v4 per-placement rooted BKAR audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-per-placement-bkar-audit-20260816
+    paths:
+      - .github/workflows/ym-kirk-v4-per-placement-bkar-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-per-placement-bkar-audit-20260816
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract per-placement rooted BKAR proof and root semantics
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          lines = Path('latest.txt').read_text(encoding='utf-8', errors='replace').splitlines()
+          out = Path('source_audit/kirk_v4/per_placement_bkar')
+          out.mkdir(parents=True, exist_ok=True)
+
+          lo, hi = 1200, 2150
+          hi = min(hi, len(lines))
+          window = '\n'.join(f'{j}: {lines[j-1]}' for j in range(lo, hi + 1)) + '\n'
+          (out / 'THEOREM_44_46_WINDOW.txt').write_text(window, encoding='utf-8')
+
+          phrases = [
+              'Theorem 4.4', 'Theorem 4.6', 'replica–BKAR', 'replica-BKAR',
+              'parent-normalized', 'fixed structural marks',
+              'passive exterior roots', 'passive exterior root',
+              'passive roots', 'passive root', 'exterior roots', 'exterior root',
+              'one-root', 'two-root', 'zero-, one-, and two-root',
+              'rooted connector', 'source connector', 'connector row',
+              'rooted activity', 'rooted support norm', 'rooted support seminorm',
+              'retained roots', 'retained root', 'distinguished roots',
+              'distinguished root', 'root buffer', 'root constant',
+              'root insertion', 'root placement', 'source-leaf placement',
+              'covariance endpoint', 'hard-core', 'child factor',
+              'forest parameter', 'preceding weak depth',
+          ]
+          hits = {}
+          chunks = []
+          for phrase in phrases:
+              found = [i for i, line in enumerate(lines) if phrase.lower() in line.lower()]
+              hits[phrase] = [i + 1 for i in found]
+              for k, i in enumerate(found[:80], 1):
+                  a = max(0, i - 120)
+                  b = min(len(lines), i + 260)
+                  chunks.append(
+                      f'===== {phrase} HIT {k} source line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(a, b))
+                  )
+
+          (out / 'PHRASE_HITS.json').write_text(json.dumps(hits, indent=2) + '\n')
+          (out / 'TARGETED.txt').write_text('\n\n'.join(chunks) + '\n', encoding='utf-8')
+
+          fixed_ranges = [
+              (650, 980, 'EARLY_ROOTED_NORM_DEFINITIONS'),
+              (1150, 1325, 'PRE_BKAR_ROOTED_SUPPORT'),
+              (1560, 1740, 'THEOREMS_44_46'),
+              (2160, 2285, 'THEOREM_422_ROOTED_LOCALIZATION'),
+              (2280, 2465, 'ROOTED_ENVELOPE_AND_BKAR_REUSE'),
+              (3260, 3425, 'WEAK_CONNECTOR_ROWS'),
+              (4580, 4785, 'MATCHING_CONNECTOR_ROWS'),
+              (4760, 5125, 'SECTIONS7_8_RETAINED_ROOTS'),
+              (5600, 5750, 'LATER_ROOTED_RESPONSE_ROWS'),
+              (5980, 6325, 'SOURCE_BUFFER_AND_TWO_ROOT_ROWS'),
+              (6380, 6860, 'MULTISCALE_ROOTED_CONSUMERS'),
+              (6960, 7460, 'ROOTED_FOREST_PROOF'),
+          ]
+          fixed_chunks = []
+          for lo1, hi1, label in fixed_ranges:
+              lo1 = max(1, lo1)
+              hi1 = min(len(lines), hi1)
+              fixed_chunks.append(
+                  f'===== FIXED RANGE {label} source lines {lo1}-{hi1} =====\n' +
+                  '\n'.join(f'{j}: {lines[j-1]}' for j in range(lo1, hi1 + 1))
+              )
+          (out / 'ROOT_SEMANTICS.txt').write_text(
+              '\n\n'.join(fixed_chunks) + '\n', encoding='utf-8'
+          )
+
+          decl = re.compile(r'^\s*(Theorem|Lemma|Corollary|Proposition|Definition)\s+([A-Z]?\d+(?:\.\d+)*)\b', re.I)
+          declarations = []
+          seen = set()
+          for lo1, hi1, label in fixed_ranges:
+              for i in range(max(1, lo1) - 1, min(len(lines), hi1)):
+                  m = decl.search(lines[i])
+                  if m and i not in seen:
+                      seen.add(i)
+                      declarations.append({'line': i + 1, 'heading': m.group(0).strip(), 'window': label})
+          (out / 'DECLARATIONS.json').write_text(json.dumps(declarations, indent=2) + '\n')
+
+          (out / 'QUESTION.md').write_text(
+              '# Fixed-root per-placement BKAR audit\n\n'
+              'Determine whether Theorems 4.4 and 4.6 actually prove, for each fixed placement of at most two passive exterior roots, the same parent-normalized nonroot child factor `m < 1`, or whether the later U5 statement silently assumes that extension.\n\n'
+              'Trace every definition and later use of passive/exterior/retained/distinguished roots, root buffers, root constants, and connector rows. Determine whether the weak passive roots are explicitly identified with the later bounded local root-buffer objects whose internal contacts are absorbed into a root constant while the outside nonroot row is unchanged.\n\n'
+              'Audit separately: root exclusion from child count; endpoint/hard-core derivative ownership; polynomial placement count; fixed-placement operator norm; and transport through localization/collect. C122 already closes the polynomial placement sum once a per-placement estimate is supplied.\n',
+              encoding='utf-8',
+          )
+
+          if not hits['Theorem 4.4'] or not hits['Theorem 4.6']:
+              raise SystemExit('expected Theorem 4.4/4.6 declarations not found')
+          print(json.dumps(hits, indent=2))
+          PY
+      - name: Preserve provenance and audit
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/per_placement_bkar
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): extract section 7-8 retained-root semantics'
+          git push origin HEAD:verification/ym-kirk-v4-per-placement-bkar-audit-20260816
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-per-placement-bkar-source-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/per_placement_bkar/
