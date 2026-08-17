@@ -101,12 +101,11 @@ theorem exact_compression_can_hide_arbitrarily_soft_fine_mode
   · norm_num
   · rfl
 
-/-- On the observed/visible mode itself, a nonnegative power-two compression
-bound can be inverted. The obstruction is therefore not the visible mode; it
-is the uncontrolled complement. -/
+/-- On the observed/visible mode itself, a power-two compression bound can be
+inverted once the candidate ceiling is nonnegative. The obstruction is
+therefore not the visible mode; it is the uncontrolled complement. -/
 theorem power_two_compression_controls_visible_mode
     (visible ceiling : ℝ)
-    (hvisible : 0 ≤ visible)
     (hceiling : 0 ≤ ceiling)
     (hpow : visible ^ 2 ≤ ceiling ^ 2) :
     visible ≤ ceiling := by
