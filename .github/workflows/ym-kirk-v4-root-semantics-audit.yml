@@ -1,0 +1,148 @@
+name: YM Kirk v4 passive exterior-root semantics audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-root-semantics-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Extract root definitions and source/root identification claims
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          expected='c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          pdf=Path('kirk_latest.pdf')
+          actual=hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+
+          heading_re=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?',re.I)
+          section_re=re.compile(r'^\s*([A-G]|[0-9]+(?:\.[0-9]+)*)\s+(.+?)\s*$')
+          heads=[]; sections=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m: heads.append((n,m.group(1),m.group(2),m.group(3) or '',line.strip()))
+              s=section_re.match(line)
+              if s: sections.append((n,s.group(1),s.group(2).strip(),line.strip()))
+          def nearest_heading(n):
+              out=None
+              for h in heads:
+                  if h[0]>n: break
+                  out=h
+              return out
+          def nearest_section(n):
+              out=None
+              for s in sections:
+                  if s[0]>n: break
+                  out=s
+              return out
+
+          patterns={
+            'PASSIVE_EXTERIOR_ROOT':r'passive exterior root',
+            'SOURCE_LEAF':r'source leaf|source leaves|source derivative is a labelled leaf|source derivative.*leaf',
+            'ROOT_LEAF':r'root leaf|root leaves',
+            'DECLARED_ROOT':r'declared root|distinguished root',
+            'ROOT_VERTEX':r'root vertex|root vertices',
+            'ROOT_LABEL':r'root label|root labels|labelled root',
+            'ROOT_BUFFER':r'root buffer|root buffers',
+            'ROOT_CONSTANT':r'root constant|root prefactor',
+            'ROOT_SEMINORM':r'root seminorm|root norm|rooted local-packet norm',
+            'ROOT_ATOM':r'root atom|root insertion|primitive root',
+            'SOURCE_ROOT_NEAR':r'source.{0,100}root|root.{0,100}source',
+            'DMARK':r'Dmark|D_mark|marked derivative|mark derivative',
+            'MARK_DISTRIBUTION':r'marks? (?:are|is) distributed|distributed by Leibniz|root placement|placements? of.*root',
+            'LOWEST_COMMON_ANCESTOR':r'lowest common ancestor',
+            'SOURCE_CUMULANT':r'source derivative.*cumulant|connected cumulant differentiation|source-labelled history',
+            'FIXED_ROOT_ALGEBRA':r'fixed root algebra|root algebra',
+            'ROOT_EXTERNALITY':r'nonroot vertex|nonroot vertices|root changes only|leaves the source buffers outside',
+          }
+
+          hits=[]; counts=[]
+          for label,pat in patterns.items():
+              rx=re.compile(pat,re.I)
+              ns=[n for n,l in enumerate(lines,1) if rx.search(l)]
+              counts.append(f'PATTERN\t{label}\tHITS={len(ns)}')
+              for rank,n in enumerate(ns,1):
+                  lo=max(1,n-45); hi=min(len(lines),n+110)
+                  hits += ['='*150,f'PATTERN {label} HIT {rank}; LINE={n}; SECTION={nearest_section(n)}; HEADING={nearest_heading(n)}','='*150]
+                  hits += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          # Exact windows around the only root declaration and the multiscale forest definitions.
+          exact=[]
+          anchors=['4.4','4.6','4.22','5.21','5.27','6.43','6.44','8.1','8.3','8.6','8.7','8.8','8.9','8.10','8.11']
+          for a in anchors:
+              rx=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+'+re.escape(a)+r'\b',re.I)
+              ns=[n for n,l in enumerate(lines,1) if rx.match(l)]
+              counts.append(f'ANCHOR\t{a}\tHITS={len(ns)}')
+              for rank,n in enumerate(ns,1):
+                  lo=max(1,n-70); hi=min(len(lines),n+260)
+                  exact += ['='*150,f'ANCHOR {a} HIT {rank}; LINE={n}; SECTION={nearest_section(n)}','='*150]
+                  exact += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          # Appendix headings and exact Appendix B block.
+          appendix=[]
+          for s in sections:
+              if s[1] in list('ABCDEFG'):
+                  appendix.append('\t'.join(map(str,s)))
+          bstarts=[s[0] for s in sections if s[1]=='B']
+          cstarts=[s[0] for s in sections if s[1]=='C']
+          if bstarts:
+              blo=bstarts[0]
+              bhi=(cstarts[0]-1) if cstarts and cstarts[0]>blo else min(len(lines),blo+800)
+              bblock=[f'{k}: {lines[k-1]}' for k in range(blo,bhi+1)]
+          else:
+              bblock=['APPENDIX B NOT FOUND']
+
+          # Compact line-only semantic ledger.
+          union=re.compile('|'.join('(?:'+p+')' for p in patterns.values()),re.I)
+          ledger=[]
+          for n,l in enumerate(lines,1):
+              if union.search(l):
+                  ledger.append(f'{n}\t{nearest_section(n)}\t{nearest_heading(n)}\t{l.strip()}')
+
+          Path('_audit_out/root_semantics_windows.txt').write_text('\n'.join(hits)+'\n',encoding='utf-8')
+          Path('_audit_out/exact_anchor_windows.txt').write_text('\n'.join(exact)+'\n',encoding='utf-8')
+          Path('_audit_out/root_semantics_ledger.tsv').write_text('\n'.join(ledger)+'\n',encoding='utf-8')
+          Path('_audit_out/appendix_headings.tsv').write_text('\n'.join(appendix)+'\n',encoding='utf-8')
+          Path('_audit_out/appendix_B_exact.txt').write_text('\n'.join(bblock)+'\n',encoding='utf-8')
+          Path('_audit_out/manifest.tsv').write_text('\n'.join([f'PDF_SHA256\t{actual}',f'TOTAL_HEADINGS\t{len(heads)}',f'TOTAL_SECTIONS\t{len(sections)}',*counts])+'\n',encoding='utf-8')
+          if not any('PASSIVE_EXTERIOR_ROOT' in x and 'HITS=2' in x for x in counts):
+              raise SystemExit('unexpected passive-root occurrence count')
+          if not any('SOURCE_LEAF' in x and 'HITS=' in x for x in counts):
+              raise SystemExit('source-leaf scan failed')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/manifest.tsv
+          wc -l -c _audit_out/*
+      - name: Upload root semantics audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-root-semantics-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
