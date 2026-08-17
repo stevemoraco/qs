@@ -1,0 +1,47 @@
+{
+  "source_path": "verification/ym-fs-relative-defect-firewall/FaizalShabirRelativeDefectFirewall.lean",
+  "source_sha256": "44979f49a9a36099cdd5758319e4dbf9790c5cdd51881ff985867fe118911ccf",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir relative transfer-defect firewall\n\nFinite real-analysis facts behind the physical-unit defect audit of the\nFaizal--Shabir transfer-gap recursion.\n\nThe manuscript's Theorem 5.4 reaches a loss term proportional to\n`exp (a_next * Delta) * defect / a_next` and then bounds the exponential\nfactor by `exp a_next` using only `Delta >= 0`. That inference is false:\nfor positive spacing and any `Delta > 1`, the inequality goes in the\nopposite direction.\n\nThe correct multiplicative factor is the reciprocal transfer radius when\n`lambda = exp (-a * Delta)`. Thus an additive operator defect must be\ncontrolled relative to the current transfer radius (or inside an invariant\nnormalized-gap tube), not merely by an absolute summability estimate.\n\nThe final declarations record the exact same-base exponent race between a\nphysical transfer radius `exp (-m*a0*b^(k+1))` and a collar tail\n`exp (-c*r0*b^k)`. In that matched-base case, the normalized exponent is\n`b^k * (m*a0*b - c*r0)`, so the collar wins pointwise only after the missing\ncoefficient comparison `m*a0*b <= c*r0` is supplied.\n\nThis file formalizes only finite scalar identities and inequalities. It does\nnot formalize transfer operators, OS Hilbert spaces, Yang--Mills theory, or a\nClay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirRelativeDefectFirewall\n\n/-- Positive spacing and a gap larger than one make the manuscript's claimed\n`exp (a*Delta) <= exp a` bound fail in the strict opposite direction. -/\ntheorem exp_unit_gap_bound_fails\n    (a Delta : \u211d)\n    (ha : 0 < a)\n    (hDelta : 1 < Delta) :\n    Real.exp a < Real.exp (a * Delta) := by\n  apply Real.exp_lt_exp.mpr\n  nlinarith\n\n/-- A concrete valid hostile value: `Delta = 2` already violates the claimed\nunit-gap exponential bound for every positive spacing. -/\ntheorem exp_double_gap_counterexample\n    (a : \u211d)\n    (ha : 0 < a) :\n    Real.exp a < Real.exp (a * 2) := by\n  exact exp_unit_gap_bound_fails a 2 ha (by norm_num)\n\n/-- The physical gap exponential is exactly reciprocal to its transfer radius.\nThis is the load-bearing relative-error normalization. -/\ntheorem gap_factor_times_transfer_radius\n    (a Delta : \u211d) :\n    Real.exp (a * Delta) * Real.exp (-(a * Delta)) = 1 := by\n  rw [\u2190 Real.exp_add]\n  simp\n\n/-- If `lambda` is the transfer radius `exp (-a*Delta)`, multiplying by the\nphysical gap factor cancels it exactly. -/\ntheorem gap_factor_is_reciprocal_radius\n    (a Delta lambda : \u211d)\n    (hlambda : lambda = Real.exp (-(a * Delta))) :\n    Real.exp (a * Delta) * lambda = 1 := by\n  subst lambda\n  exact gap_factor_times_transfer_radius a Delta\n\n/-- A defect controlled by a fixed fraction of the transfer radius remains a\nfixed relative perturbation. -/\ntheorem relative_defect_budget\n    (radius defect theta : \u211d)\n    (hdefect : defect \u2264 theta * radius) :\n    radius + defect \u2264 (1 + theta) * radius := by\n  linarith\n\n/-- If the additive defect is bounded by `theta * exp (-a*Delta)`, then after\nmultiplication by the physical gap factor it costs at most `theta`. -/\ntheorem normalized_defect_from_relative_radius_bound\n    (a Delta defect theta : \u211d)\n    (hdefect : defect \u2264 theta * Real.exp (-(a * Delta))) :\n    Real.exp (a * Delta) * defect \u2264 theta := by\n  have hpos : 0 \u2264 Real.exp (a * Delta) := le_of_lt (Real.exp_pos _)\n  have hmul := mul_le_mul_of_nonneg_left hdefect hpos\n  calc\n    Real.exp (a * Delta) * defect\n        \u2264 Real.exp (a * Delta) * (theta * Real.exp (-(a * Delta))) := hmul\n    _ = theta * (Real.exp (a * Delta) * Real.exp (-(a * Delta))) := by ring\n    _ = theta := by rw [gap_factor_times_transfer_radius]; ring\n\n/-- In the matched-base case `a_(k+1)=a0*b^(k+1)` and\n`R_k=r0*b^k`, the exponent of the physical-normalized collar tail factors\nexactly into one power `b^k` times a fixed coefficient race. -/\ntheorem same_base_relative_tail_exponent\n    (m a0 b c r0 : \u211d) (k : \u2115) :\n    m * (a0 * b ^ (k + 1)) - c * (r0 * b ^ k)\n      = b ^ k * (m * a0 * b - c * r0) := by\n  rw [pow_succ]\n  ring\n\n/-- If the collar-decay coefficient beats the physical transfer coefficient\nin the matched-base case, the normalized exponential tail is at most one at\nevery scale. This is the finite scalar shadow of the missing relative-tail\ncomparison theorem. -/\ntheorem same_base_relative_tail_le_one\n    (m a0 b c r0 : \u211d) (k : \u2115)\n    (hb : 0 \u2264 b)\n    (hmargin : m * a0 * b \u2264 c * r0) :\n    Real.exp (m * (a0 * b ^ (k + 1)) - c * (r0 * b ^ k)) \u2264 1 := by\n  have hnonpos :\n      m * (a0 * b ^ (k + 1)) - c * (r0 * b ^ k) \u2264 0 := by\n    rw [same_base_relative_tail_exponent]\n    exact mul_nonpos_of_nonneg_of_nonpos\n      (pow_nonneg hb k) (sub_nonpos.mpr hmargin)\n  have h := Real.exp_le_exp.mpr hnonpos\n  simpa using h\n\n#print axioms exp_unit_gap_bound_fails\n#print axioms exp_double_gap_counterexample\n#print axioms gap_factor_times_transfer_radius\n#print axioms gap_factor_is_reciprocal_radius\n#print axioms relative_defect_budget\n#print axioms normalized_defect_from_relative_radius_bound\n#print axioms same_base_relative_tail_exponent\n#print axioms same_base_relative_tail_le_one\n\nend Millennium.YangMills.FaizalShabirRelativeDefectFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:117:0-117:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.exp_unit_gap_bound_fails' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:118:0-118:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.exp_double_gap_counterexample' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:119:0-119:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.gap_factor_times_transfer_radius' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:120:0-120:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.gap_factor_is_reciprocal_radius' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:121:0-121:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.relative_defect_budget' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:122:0-122:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.normalized_defect_from_relative_radius_bound' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:123:0-123:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.same_base_relative_tail_exponent' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:124:0-124:6: info: 'Millennium.YangMills.FaizalShabirRelativeDefectFirewall.same_base_relative_tail_le_one' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 225,
+      "total_ms": 227
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "cbf0e29f-9dbf-47c1-a919-a016a253ed26",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 286,
+      "queue_time_ms": 5,
+      "execution_time_ms": 281,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 13,
+      "environment_total_time_us": 277973,
+      "environment_pool_size": 64
+    }
+  }
+}
