@@ -6,7 +6,7 @@ import Mathlib
 An infinite graded coefficient family is measured by a nonnegative `tsum`.
 Degree truncation is contractive, a uniformly scaled tail is bounded by the
 same coefficientwise multiplier, and fixed bounded handoffs preserve the tail
-exponent.  These are the order-theoretic core of using a weighted analytic
+exponent. These are the order-theoretic core of using a weighted analytic
 coefficient `l1` norm instead of raw degree-dependent coefficient-functional
 norms.
 
@@ -17,6 +17,8 @@ localization, replica--BKAR, Yang--Mills theory, a mass gap, or a Clay theorem.
 namespace Millennium.YangMills.AnalyticCoefficientLocalization
 
 open scoped BigOperators ENNReal
+
+noncomputable section
 
 variable {ι : Type*}
 
@@ -35,7 +37,7 @@ theorem projectedMass_le_total
     (degree : ι → ℕ) (D : ℕ) (mass : ι → ℝ≥0∞) :
     projectedMass degree D mass ≤ ∑' i, mass i := by
   unfold projectedMass
-  apply tsum_le_tsum
+  apply ENNReal.tsum_le_tsum
   intro i
   by_cases h : degree i ≤ D
   · simp [h]
@@ -46,7 +48,7 @@ theorem tailMass_le_total
     (degree : ι → ℕ) (D : ℕ) (mass : ι → ℝ≥0∞) :
     tailMass degree D mass ≤ ∑' i, mass i := by
   unfold tailMass
-  apply tsum_le_tsum
+  apply ENNReal.tsum_le_tsum
   intro i
   by_cases h : D < degree i
   · simp [h]
@@ -66,11 +68,12 @@ theorem scaledTailMass_le_uniform
     (hscale : ∀ i, D < degree i → scale i ≤ Q) :
     scaledTailMass degree D scale mass ≤ ∑' i, Q * mass i := by
   unfold scaledTailMass
-  apply tsum_le_tsum
+  apply ENNReal.tsum_le_tsum
   intro i
   by_cases h : D < degree i
   · simp only [h, if_true]
-    exact mul_le_mul_right' (hscale i h) (mass i)
+    gcongr
+    exact hscale i h
   · simp [h]
 
 /-- If the total coefficient mass has already been bounded after multiplying
@@ -94,7 +97,7 @@ theorem fixed_handoff_preserves_tail_bound
     output ≤ (K * Q) * total := by
   calc
     output ≤ K * input := houtput
-    _ ≤ K * (Q * total) := mul_le_mul_left' hinput K
+    _ ≤ K * (Q * total) := by gcongr
     _ = (K * Q) * total := by rw [mul_assoc]
 
 /-- Six fixed bounded handoffs preserve one common tail exponent and multiply
@@ -112,27 +115,12 @@ theorem six_handoffs_preserve_tail_bound
     r6 ≤ (K6 * K5 * K4 * K3 * K2 * K1 * Q) * total := by
   calc
     r6 ≤ K6 * r5 := h6
-    _ ≤ K6 * (K5 * r4) := mul_le_mul_left' h5 K6
-    _ ≤ K6 * (K5 * (K4 * r3)) :=
-      mul_le_mul_left' (mul_le_mul_left' h4 K5) K6
-    _ ≤ K6 * (K5 * (K4 * (K3 * r2))) :=
-      mul_le_mul_left'
-        (mul_le_mul_left' (mul_le_mul_left' h3 K4) K5) K6
-    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * r1)))) :=
-      mul_le_mul_left'
-        (mul_le_mul_left'
-          (mul_le_mul_left' (mul_le_mul_left' h2 K3) K4) K5) K6
-    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * (K1 * r0))))) :=
-      mul_le_mul_left'
-        (mul_le_mul_left'
-          (mul_le_mul_left'
-            (mul_le_mul_left' (mul_le_mul_left' h1 K2) K3) K4) K5) K6
-    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * (K1 * (Q * total)))))) :=
-      mul_le_mul_left'
-        (mul_le_mul_left'
-          (mul_le_mul_left'
-            (mul_le_mul_left'
-              (mul_le_mul_left' (mul_le_mul_left' h0 K1) K2) K3) K4) K5) K6
+    _ ≤ K6 * (K5 * r4) := by gcongr
+    _ ≤ K6 * (K5 * (K4 * r3)) := by gcongr
+    _ ≤ K6 * (K5 * (K4 * (K3 * r2))) := by gcongr
+    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * r1)))) := by gcongr
+    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * (K1 * r0))))) := by gcongr
+    _ ≤ K6 * (K5 * (K4 * (K3 * (K2 * (K1 * (Q * total)))))) := by gcongr
     _ = (K6 * K5 * K4 * K3 * K2 * K1 * Q) * total := by
       ac_rfl
 
