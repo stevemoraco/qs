@@ -89,3 +89,5 @@ jobs:
         shell: bash
         run: |
           test "${{ steps.axle.outcome }}" = success
+
+# Re-run marker after removing failed-first unused premises.
