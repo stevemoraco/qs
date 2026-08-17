@@ -9,7 +9,11 @@ A normalized completely monotone multiplier is convex.  If it stays within
 `epsilon` of one at the end of a low-energy plateau and within `epsilon` of
 zero at a later stop-band point, convexity forces a fixed positive error floor.
 
-This file formalizes only the secant-slope algebra.  It does **not** formalize
+A second finite firewall records that a nonzero spectral multiplier does not
+remove a high eigenmode from its range: a Rayleigh upper bound on the multiplied
+mode immediately implies the same upper bound on the original eigenvalue.
+
+This file formalizes only these scalar facts.  It does **not** formalize
 Bernstein's theorem, positive measures, spectral functional calculus,
 reflection positivity, Yang--Mills, or any Clay theorem.
 -/
@@ -81,9 +85,35 @@ theorem no_one_four_error_below_one_fifth
   have hfloor := one_four_error_floor epsilon f1 f4 hf1 hf4 hsecant
   linarith
 
+/-- A nonzero spectral multiplier cannot hide an eigenvalue from a Rayleigh
+upper bound.  Cancelling the positive squared multiplier recovers the original
+spectral inequality. -/
+theorem nonzero_spectral_multiplier_cancels
+    (lambda weight C sigma : ℝ)
+    (hweight : weight ≠ 0)
+    (hbound :
+      lambda * weight ^ 2 ≤ (C * sigma ^ 2) * weight ^ 2) :
+    lambda ≤ C * sigma ^ 2 := by
+  have hweightSq : 0 < weight ^ 2 := sq_pos_of_ne_zero hweight
+  exact (mul_le_mul_right hweightSq).mp hbound
+
+/-- Thus a high eigenmode contradicts any claimed low-pass Rayleigh bound on
+the full range of a multiplier that is nonzero on that mode. -/
+theorem high_mode_refutes_full_range_lowpass_bound
+    (lambda weight C sigma : ℝ)
+    (hweight : weight ≠ 0)
+    (hhigh : C * sigma ^ 2 < lambda) :
+    ¬ lambda * weight ^ 2 ≤ (C * sigma ^ 2) * weight ^ 2 := by
+  intro hbound
+  have hlow := nonzero_spectral_multiplier_cancels
+    lambda weight C sigma hweight hbound
+  linarith
+
 #print axioms flatTop_cross_multiplied
 #print axioms flatTop_error_lower_bound
 #print axioms one_four_error_floor
 #print axioms no_one_four_error_below_one_fifth
+#print axioms nonzero_spectral_multiplier_cancels
+#print axioms high_mode_refutes_full_range_lowpass_bound
 
 end YMFSCompletelyMonotoneFlatTopNoGo
