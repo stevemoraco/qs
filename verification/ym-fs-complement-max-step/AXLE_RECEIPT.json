@@ -1,26 +1,24 @@
 {
   "source_path": "verification/ym-fs-complement-max-step/FaizalShabirComplementMaxStepFirewall.lean",
-  "source_sha256": "43ab5417b63b72f14b3edcf9facc0e18cb1f5b1c7ae71d6d3d351da6ea439a97",
+  "source_sha256": "27682f3225a7c987972c5aec80f6a36d170f1fcd901282b1de684d6d622a2c76",
   "axle_environment": "lean-4.30.0",
-  "bad": true,
+  "bad": false,
   "axle_result": {
-    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir complement-max step firewall\n\nFinite real-algebra firewall for the inference from equations (6.47) to (6.48)\nin the detailed multiscale argument of arXiv:2606.19362v1.\n\nThe displayed estimate has the shape\n\n  x - e <= y <= max x c + e,\n\nwith `c = 1 - delta`.  This does not imply `|y-x| <= e` unless the visible\nspectral edge already dominates the complement ceiling (`c <= x`) or another\nargument removes the max branch.\n\nThis file formalizes the exact counterexample and the repaired one-step theorem.\nIt does not formalize transfer operators, Yang--Mills theory, OS reconstruction,\nor any Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirComplementMaxStepFirewall\n\n/-- Exact counterexample to dropping the complement `max` branch: with zero\nerror, the two-sided estimate permits an upward jump from `0` to `1/2`. -/\ntheorem complement_max_bound_does_not_imply_absolute_step_bound :\n    \u2203 x y c e : \u211d,\n      0 \u2264 e \u2227\n      x - e \u2264 y \u2227\n      y \u2264 max x c + e \u2227\n      \u00ac |y - x| \u2264 e := by\n  refine \u27e80, (1 : \u211d) / 2, (1 : \u211d) / 2, 0, ?_\u27e9\n  norm_num\n\n/-- Once the visible spectral value is at least the complement ceiling, the\nmax branch collapses and the desired absolute one-step estimate follows. -/\ntheorem complement_max_step_repair\n    (x y c e : \u211d)\n    (he : 0 \u2264 e)\n    (hc : c \u2264 x)\n    (hlower : x - e \u2264 y)\n    (hupper : y \u2264 max x c + e) :\n    |y - x| \u2264 e := by\n  have hmax : max x c = x := max_eq_left hc\n  have hyupper : y - x \u2264 e := by\n    rw [hmax] at hupper\n    linarith\n  have hylower : -e \u2264 y - x := by\n    linarith\n  exact abs_le.mpr \u27e8hylower, hyupper\u27e9\n\n/-- The same repair with the paper's factor-three error budget. -/\ntheorem complement_max_step_repair_three\n    (x y c \u03b5 : \u211d)\n    (h\u03b5 : 0 \u2264 \u03b5)\n    (hc : c \u2264 x)\n    (hlower : x - 3 * \u03b5 \u2264 y)\n    (hupper : y \u2264 max x c + 3 * \u03b5) :\n    |y - x| \u2264 3 * \u03b5 := by\n  have he : 0 \u2264 3 * \u03b5 := mul_nonneg (by norm_num) h\u03b5\n  exact complement_max_step_repair x y c (3 * \u03b5) he hc hlower hupper\n\n#print axioms complement_max_bound_does_not_imply_absolute_step_bound\n#print axioms complement_max_step_repair\n#print axioms complement_max_step_repair_three\n\nend Millennium.YangMills.FaizalShabirComplementMaxStepFirewall\n\n",
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir complement-max step firewall\n\nFinite real-algebra firewall for the inference from equations (6.47) to (6.48)\nin the detailed multiscale argument of arXiv:2606.19362v1.\n\nThe displayed estimate has the shape\n\n  x - e <= y <= max x c + e,\n\nwith `c = 1 - delta`.  This does not imply `|y-x| <= e` unless the visible\nspectral edge already dominates the complement ceiling (`c <= x`) or another\nargument removes the max branch.\n\nThis file formalizes the exact counterexample and the repaired one-step theorem.\nIt does not formalize transfer operators, Yang--Mills theory, OS reconstruction,\nor any Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirComplementMaxStepFirewall\n\n/-- Exact counterexample to dropping the complement `max` branch: with zero\nerror, the two-sided estimate permits an upward jump from `0` to `1/2`. -/\ntheorem complement_max_bound_does_not_imply_absolute_step_bound :\n    \u2203 x y c e : \u211d,\n      0 \u2264 e \u2227\n      x - e \u2264 y \u2227\n      y \u2264 max x c + e \u2227\n      \u00ac |y - x| \u2264 e := by\n  refine \u27e80, (1 : \u211d) / 2, (1 : \u211d) / 2, 0, ?_\u27e9\n  norm_num\n\n/-- Once the visible spectral value is at least the complement ceiling, the\nmax branch collapses and the desired absolute one-step estimate follows. -/\ntheorem complement_max_step_repair\n    (x y c e : \u211d)\n    (hc : c \u2264 x)\n    (hlower : x - e \u2264 y)\n    (hupper : y \u2264 max x c + e) :\n    |y - x| \u2264 e := by\n  have hmax : max x c = x := max_eq_left hc\n  have hyupper : y - x \u2264 e := by\n    rw [hmax] at hupper\n    linarith\n  have hylower : -e \u2264 y - x := by\n    linarith\n  exact abs_le.mpr \u27e8hylower, hyupper\u27e9\n\n/-- The same repair with the paper's factor-three error budget. -/\ntheorem complement_max_step_repair_three\n    (x y c \u03b5 : \u211d)\n    (hc : c \u2264 x)\n    (hlower : x - 3 * \u03b5 \u2264 y)\n    (hupper : y \u2264 max x c + 3 * \u03b5) :\n    |y - x| \u2264 3 * \u03b5 := by\n  exact complement_max_step_repair x y c (3 * \u03b5) hc hlower hupper\n\n#print axioms complement_max_bound_does_not_imply_absolute_step_bound\n#print axioms complement_max_step_repair\n#print axioms complement_max_step_repair_three\n\nend Millennium.YangMills.FaizalShabirComplementMaxStepFirewall\n\n",
     "failed_declarations": [],
     "lean_messages": {
       "errors": [],
       "infos": [
-        "-:63:0-63:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_bound_does_not_imply_absolute_step_bound' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
-        "-:64:0-64:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_step_repair' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
-        "-:65:0-65:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_step_repair_three' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+        "-:60:0-60:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_bound_does_not_imply_absolute_step_bound' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:61:0-61:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_step_repair' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:62:0-62:6: info: 'Millennium.YangMills.FaizalShabirComplementMaxStepFirewall.complement_max_step_repair_three' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
       ],
-      "warnings": [
-        "-:39:5-39:7: warning: unused variable `he`\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n"
-      ]
+      "warnings": []
     },
     "okay": true,
     "timings": {
-      "parse_ms": 112,
-      "total_ms": 113
+      "parse_ms": 104,
+      "total_ms": 105
     },
     "tool_messages": {
       "errors": [],
@@ -28,17 +26,17 @@
       "warnings": []
     },
     "info": {
-      "request_id": "3addf9e4-c450-43ab-98c3-6b859abc0d17",
+      "request_id": "d9a3a5af-1985-4c9f-a034-6293d971f1b2",
       "environment": "lean-4.30.0",
-      "total_request_time_ms": 171,
-      "queue_time_ms": 6,
-      "execution_time_ms": 165,
+      "total_request_time_ms": 156,
+      "queue_time_ms": 2,
+      "execution_time_ms": 154,
       "cached_response": false,
       "_executor_commit_sha": "c7ff197",
       "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
       "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
-      "environment_wait_time_us": 12,
-      "environment_total_time_us": 163352,
+      "environment_wait_time_us": 14,
+      "environment_total_time_us": 152309,
       "environment_pool_size": 64
     }
   }
