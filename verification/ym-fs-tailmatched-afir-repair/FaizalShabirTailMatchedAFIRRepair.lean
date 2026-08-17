@@ -28,36 +28,36 @@ theorem positive_gram_values_do_not_force_positive_increment :
       (((1 : ℝ) / 2) ^ 2 - (1 : ℝ) ^ 2) < 0 := by
   norm_num
 
-/-- Exact signed matching turns a finite prefix into minus the remaining tail. -/
-theorem matched_total_error_turns_prefix_into_tail
-    (d0 prefix tail dK : ℝ)
-    (hmatch : d0 + prefix + tail = 0)
-    (hprefix : dK = d0 + prefix) :
+/-- Exact signed matching turns a finite partial sum into minus the remaining tail. -/
+theorem matched_total_error_turns_partial_into_tail
+    (d0 pref tail dK : ℝ)
+    (hmatch : d0 + pref + tail = 0)
+    (hpartial : dK = d0 + pref) :
     dK = -tail := by
   linarith
 
 /-- An interval bound on the remaining tail transfers to the matched discrepancy. -/
 theorem matched_tail_interval_controls_discrepancy
-    (d0 prefix tail dK rho : ℝ)
-    (hmatch : d0 + prefix + tail = 0)
-    (hprefix : dK = d0 + prefix)
+    (d0 pref tail dK rho : ℝ)
+    (hmatch : d0 + pref + tail = 0)
+    (hpartial : dK = d0 + pref)
     (htailLo : -rho ≤ tail)
     (htailHi : tail ≤ rho) :
     -rho ≤ dK ∧ dK ≤ rho := by
   have hd : dK = -tail :=
-    matched_total_error_turns_prefix_into_tail d0 prefix tail dK hmatch hprefix
+    matched_total_error_turns_partial_into_tail d0 pref tail dK hmatch hpartial
   constructor <;> rw [hd] <;> linarith
 
 /-- Exact-zero tail gives exact AF/IR matching at the corresponding scale. -/
 theorem zero_remaining_tail_gives_exact_match
-    (d0 prefix dK : ℝ)
-    (hmatch : d0 + prefix = 0)
-    (hprefix : dK = d0 + prefix) :
+    (d0 pref dK : ℝ)
+    (hmatch : d0 + pref = 0)
+    (hpartial : dK = d0 + pref) :
     dK = 0 := by
   linarith
 
 #print axioms positive_gram_values_do_not_force_positive_increment
-#print axioms matched_total_error_turns_prefix_into_tail
+#print axioms matched_total_error_turns_partial_into_tail
 #print axioms matched_tail_interval_controls_discrepancy
 #print axioms zero_remaining_tail_gives_exact_match
 
