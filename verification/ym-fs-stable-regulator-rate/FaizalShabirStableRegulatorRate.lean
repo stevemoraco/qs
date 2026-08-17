@@ -27,7 +27,6 @@ theorem normalized_refinement_ratio_exact
     (hb : b ≠ 0) :
     (q * d) / (a / b) = (q * b) * (d / a) := by
   field_simp [ha, hb]
-  ring
 
 /-- At the critical rate `q*b = 1`, refinement leaves the normalized mismatch unchanged. -/
 theorem critical_rate_preserves_normalized_debt
