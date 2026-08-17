@@ -9,7 +9,9 @@ theorem physicalMass_geometric
     (ha0 : a0 ≠ 0) (hb : b ≠ 0) :
     physicalMass mLat (a0 * b^k) = physicalMass mLat a0 / b^k := by
   have hpow : b^k ≠ 0 := pow_ne_zero k hb
-  field_simp [physicalMass, ha0, hpow]
+  simp only [physicalMass]
+  field_simp [ha0, hpow]
+  ring
 
 theorem quadratic_recurrence_invariant_step
     (C eps x delta next : ℚ)
@@ -34,8 +36,7 @@ theorem finite_window_physical_floor
     (ha : 0 < a)
     (hA : a ≤ A) :
     mLat / A ≤ mLat / a := by
-  have hApos : 0 < A := lt_of_lt_of_le ha hA
-  exact (div_le_div_iff_of_pos_left hm hApos ha).2 hA
+  exact div_le_div_of_nonneg_left hm ha hA
 
 #print axioms physicalMass_geometric
 #print axioms quadratic_recurrence_invariant_step
