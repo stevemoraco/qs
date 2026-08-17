@@ -40,7 +40,7 @@ theorem twoRootTail_step
 /-- Every finite partial sum plus its exact tail equals the initial potential. -/
 theorem partial_sum_add_twoRootTail
     (m : ℝ) (N : ℕ) (hm : m ≠ 1) :
-    (∑ n in Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) +
+    (∑ n ∈ Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) +
         twoRootTail m N =
       twoRootTail m 0 := by
   induction N with
@@ -73,15 +73,15 @@ theorem twoRootTail_zero
 only threshold is the original geometric condition `m < 1`. -/
 theorem finite_two_root_placement_bound
     (m : ℝ) (N : ℕ) (hm0 : 0 ≤ m) (hm1 : m < 1) :
-    (∑ n in Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) ≤
+    (∑ n ∈ Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) ≤
       (1 + m) / (1 - m) ^ 3 := by
   have hm_ne : m ≠ 1 := ne_of_lt hm1
   have hid := partial_sum_add_twoRootTail m N hm_ne
   have htail := twoRootTail_nonneg m N hm0 hm1
   have hzero := twoRootTail_zero m hm_ne
   calc
-    (∑ n in Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) ≤
-        (∑ n in Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) +
+    (∑ n ∈ Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) ≤
+        (∑ n ∈ Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n) +
           twoRootTail m N := by linarith
     _ = twoRootTail m 0 := hid
     _ = (1 + m) / (1 - m) ^ 3 := hzero
@@ -93,11 +93,11 @@ theorem finite_dominated_root_placement_bound
     (hweight0 : ∀ n, 0 ≤ weight n)
     (hweight2 : ∀ n, weight n ≤ ((n : ℝ) + 1) ^ 2)
     (hm0 : 0 ≤ m) (hm1 : m < 1) :
-    (∑ n in Finset.range N, weight n * m ^ n) ≤
+    (∑ n ∈ Finset.range N, weight n * m ^ n) ≤
       (1 + m) / (1 - m) ^ 3 := by
   calc
-    (∑ n in Finset.range N, weight n * m ^ n) ≤
-        ∑ n in Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n := by
+    (∑ n ∈ Finset.range N, weight n * m ^ n) ≤
+        ∑ n ∈ Finset.range N, (((n : ℝ) + 1) ^ 2) * m ^ n := by
       apply Finset.sum_le_sum
       intro n hn
       exact mul_le_mul_of_nonneg_right (hweight2 n) (pow_nonneg hm0 n)
