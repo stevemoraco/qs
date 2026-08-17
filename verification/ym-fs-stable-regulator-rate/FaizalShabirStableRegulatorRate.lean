@@ -57,7 +57,6 @@ theorem strict_subcritical_rate_strictly_contracts
     (ha : a ≠ 0)
     (hb : b ≠ 0)
     (hnorm : 0 < d / a)
-    (hfactor_nonneg : 0 ≤ q * b)
     (hfactor : q * b < 1) :
     (q * d) / (a / b) < d / a := by
   rw [normalized_refinement_ratio_exact d a q b ha hb]
