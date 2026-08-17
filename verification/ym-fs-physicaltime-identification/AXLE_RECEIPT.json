@@ -1,0 +1,49 @@
+{
+  "source_path": "verification/ym-fs-physicaltime-identification/FaizalShabirPhysicalTimeIdentificationFirewall.lean",
+  "source_sha256": "96099814dabae535bf3474bcc0ebd099a45264386257da3ed3bba5649194ce93",
+  "axle_environment": "lean-4.30.0",
+  "bad": false,
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir physical-time identification firewalls\n\nFinite scalar logic extracted from a hostile audit of arXiv:2606.19362v1.\n\nThe file formalizes only:\n\n* additive summable/telescoping-style control does not itself force two\n  trajectories to coincide;\n* a scale-correct sign-free normalized transfer recurrence once an analytic\n  operator estimate supplies the combined norm defect;\n* a concrete invariant normalized tube at blocking power two;\n* finite physical-time accumulation: `n` one-slice discrepancies of size\n  `rate * a` cost at most `rate * t` when `n*a <= t`;\n* an order-`a` one-step discrepancy can therefore accumulate to an order-one\n  physical-time discrepancy, so continuum identification needs `o(a)` (or an\n  equivalent generator/semigroup comparison), not merely `o(1)` one-step\n  closeness.\n\nThis file does not formalize Hilbert-space operator norms, the Faizal--Shabir\nRG map, lattice Yang--Mills, Osterwalder--Schrader reconstruction, a mass gap,\nor the Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall\n\n/-- Constant unit separation: an additive recurrence with zero defect can hold\nat every step without the distance ever tending to zero. -/\ndef constantDistance (_k : \u2115) : \u211d := 1\n\n/-- Zero additive defect. -/\ndef zeroDefect (_k : \u2115) : \u211d := 0\n\n/-- The displayed additive comparison `d_{k+1} <= d_k + eps_k` is compatible\nwith a permanently nonzero distance, even with identically zero defects. -/\ntheorem additive_recurrence_does_not_force_vanishing (k : \u2115) :\n    constantDistance (k + 1) \u2264 constantDistance k + zeroDefect k := by\n  norm_num [constantDistance, zeroDefect]\n\n/-- The same countermodel never identifies the two trajectories. -/\ntheorem additive_countermodel_stays_separated (k : \u2115) :\n    constantDistance k = 1 := by\n  rfl\n\n/-- A lower scalar/operator-order comparison cannot be used as an upper\nRayleigh comparison. This is the one-dimensional direction shadow. -/\ntheorem lower_order_is_not_upper_order :\n    (0 : \u211d) \u2264 1 \u2227 \u00ac ((1 : \u211d) \u2264 0) := by\n  norm_num\n\n/--\nScale-correct sign-free normalization shadow.\n\nThink of `lamNext <= lam^b + defect` as the excited-sector operator-norm\nconsequence of\n\n`T_next = V* T^b V - D + E`\n\nwith `defect = ||D|| + ||E||`; no sign of `D` is used. If the physical\nnormalization weights obey `wNext = w^b`, then the normalized quantity obeys\n\n`qNext <= q^b + wNext * defect`.\n-/\ntheorem normalized_sign_free_step\n    (b : \u2115) (w lam lamNext defect : \u211d)\n    (hw : 0 \u2264 w)\n    (hstep : lamNext \u2264 lam ^ b + defect) :\n    w ^ b * lamNext \u2264 (w * lam) ^ b + w ^ b * defect := by\n  have hwb : 0 \u2264 w ^ b := pow_nonneg hw b\n  have hmul := mul_le_mul_of_nonneg_left hstep hwb\n  calc\n    w ^ b * lamNext \u2264 w ^ b * (lam ^ b + defect) := hmul\n    _ = (w * lam) ^ b + w ^ b * defect := by ring\n\n/-- Any normalized one-step majorant closes an invariant tube once its whole\nright-hand side is below the tube radius. -/\ntheorem normalized_tube_from_budget\n    (qNext qPow normalizedDefect radius : \u211d)\n    (hstep : qNext \u2264 qPow + normalizedDefect)\n    (hbudget : qPow + normalizedDefect \u2264 radius) :\n    qNext \u2264 radius :=\n  hstep.trans hbudget\n\n/-- Concrete power-two invariant tube: `q <= 1/2` and normalized defect\n`<= 1/4` imply `qNext <= 1/2` from `qNext <= q^2 + defect`. -/\ntheorem half_tube_power_two\n    (q qNext normalizedDefect : \u211d)\n    (hq0 : 0 \u2264 q)\n    (hq : q \u2264 1 / 2)\n    (hdefect : normalizedDefect \u2264 1 / 4)\n    (hstep : qNext \u2264 q ^ 2 + normalizedDefect) :\n    qNext \u2264 1 / 2 := by\n  have hhalfminus : 0 \u2264 (1 / 2 : \u211d) - q := sub_nonneg.mpr hq\n  have hprod : 0 \u2264 q * ((1 / 2 : \u211d) - q) :=\n    mul_nonneg hq0 hhalfminus\n  nlinarith\n\n/-- Finite additive telescoping with a common one-step discrepancy. -/\ntheorem finite_additive_telescope\n    (D : \u2115 \u2192 \u211d) (step : \u211d)\n    (h0 : D 0 \u2264 0)\n    (hstep : \u2200 k : \u2115, D (k + 1) \u2264 D k + step) :\n    \u2200 n : \u2115, D n \u2264 (n : \u211d) * step := by\n  intro n\n  induction n with\n  | zero =>\n      simpa using h0\n  | succ n ih =>\n      calc\n        D (n + 1) \u2264 D n + step := hstep n\n        _ \u2264 (n : \u211d) * step + step := by linarith\n        _ = ((n + 1 : \u2115) : \u211d) * step := by\n          rw [Nat.cast_add, Nat.cast_one]\n          ring\n\n/--\nPhysical-time accumulation firewall.\n\nIf every one-slice discrepancy is at most `rate * a`, then over `n` slices\ncovering physical time at most `t` the accumulated discrepancy is at most\n`rate * t`. Therefore a family with `rate -> 0` gives a genuine vanishing\nfixed-physical-time comparison.\n-/\ntheorem physical_time_telescope\n    (D : \u2115 \u2192 \u211d) (rate a t : \u211d) (n : \u2115)\n    (h0 : D 0 \u2264 0)\n    (hrate : 0 \u2264 rate)\n    (hstep : \u2200 k : \u2115, D (k + 1) \u2264 D k + rate * a)\n    (htime : (n : \u211d) * a \u2264 t) :\n    D n \u2264 rate * t := by\n  have htel : D n \u2264 (n : \u211d) * (rate * a) :=\n    finite_additive_telescope D (rate * a) h0 hstep n\n  have hmul : rate * ((n : \u211d) * a) \u2264 rate * t :=\n    mul_le_mul_of_nonneg_left htime hrate\n  calc\n    D n \u2264 (n : \u211d) * (rate * a) := htel\n    _ = rate * ((n : \u211d) * a) := by ring\n    _ \u2264 rate * t := hmul\n\n/-- Exact finite witness that merely `O(a)` one-step closeness need not vanish\nat fixed physical time: if `n*a = 1`, then `n` discrepancies of size `c*a`\naccumulate to exactly `c`. -/\ntheorem order_a_step_error_can_accumulate_to_order_one\n    (n : \u2115) (a c : \u211d)\n    (hunit : (n : \u211d) * a = 1) :\n    (n : \u211d) * (c * a) = c := by\n  calc\n    (n : \u211d) * (c * a) = c * ((n : \u211d) * a) := by ring\n    _ = c := by rw [hunit, mul_one]\n\n#print axioms additive_recurrence_does_not_force_vanishing\n#print axioms additive_countermodel_stays_separated\n#print axioms lower_order_is_not_upper_order\n#print axioms normalized_sign_free_step\n#print axioms normalized_tube_from_budget\n#print axioms half_tube_power_two\n#print axioms finite_additive_telescope\n#print axioms physical_time_telescope\n#print axioms order_a_step_error_can_accumulate_to_order_one\n\nend Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:153:0-153:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.additive_recurrence_does_not_force_vanishing' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:154:0-154:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.additive_countermodel_stays_separated' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:155:0-155:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.lower_order_is_not_upper_order' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:156:0-156:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.normalized_sign_free_step' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:157:0-157:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.normalized_tube_from_budget' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:158:0-158:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.half_tube_power_two' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:159:0-159:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.finite_additive_telescope' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:160:0-160:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.physical_time_telescope' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:161:0-161:6: info: 'Millennium.YangMills.FaizalShabirPhysicalTimeIdentificationFirewall.order_a_step_error_can_accumulate_to_order_one' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 324,
+      "total_ms": 327
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "8662573b-2ced-4afb-abe2-52b129c43cd7",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 393,
+      "queue_time_ms": 6,
+      "execution_time_ms": 387,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 10,
+      "environment_total_time_us": 384846,
+      "environment_pool_size": 64
+    }
+  }
+}
