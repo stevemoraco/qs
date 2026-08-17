@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-fs-two-loop-lambda-coordinate-20260817
       - name: Verify flattened Lean theorem source
         shell: bash
         run: |
@@ -71,6 +73,20 @@ jobs:
           if bad:
             raise SystemExit(1)
           PY
+      - name: Preserve receipt in branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f /tmp/ym-fs-two-loop-lambda-coordinate-axle-receipt.json ]; then exit 0; fi
+          cp /tmp/ym-fs-two-loop-lambda-coordinate-axle-receipt.json \
+            verification/ym-fs-two-loop-lambda-coordinate/LAST_AXLE_RECEIPT.json
+          git config user.name 'ym-lean-verifier'
+          git config user.email 'actions@users.noreply.github.com'
+          git add verification/ym-fs-two-loop-lambda-coordinate/LAST_AXLE_RECEIPT.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'verify(ym): preserve two-loop Lambda AXLE receipt'
+          git push origin HEAD:verification/ym-fs-two-loop-lambda-coordinate-20260817
       - uses: actions/upload-artifact@v4
         if: always()
         with:
