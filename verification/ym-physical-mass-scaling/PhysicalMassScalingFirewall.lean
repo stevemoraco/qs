@@ -11,7 +11,6 @@ theorem physicalMass_geometric
   have hpow : b^k ≠ 0 := pow_ne_zero k hb
   simp only [physicalMass]
   field_simp [ha0, hpow]
-  ring
 
 theorem quadratic_recurrence_invariant_step
     (C eps x delta next : ℚ)
