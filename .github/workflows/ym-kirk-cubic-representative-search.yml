@@ -1,0 +1,107 @@
+name: YM Kirk v4 cubic source representative search
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-cubic-representative-search.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Search all cubic representative spellings
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re, subprocess
+
+          raw=Path('latest_raw.txt').read_text(encoding='utf-8',errors='replace')
+          flat=' '.join(raw.split())
+          low=flat.lower()
+          out=Path('source_audit/kirk_v4/cubic_source_normalization')
+          out.mkdir(parents=True,exist_ok=True)
+
+          terms=[
+            'dabc','d_{abc}','d abc','symmetric color tensor','primitive cubic',
+            'three curvatures','cubic curvature','curvature cubic','cubic invariant',
+            'tr(f^3)','tr f3','tr(f f f)','f mu nu f nu rho f rho mu',
+            'dimension-six source','dimension six source','degree-six source','degree six source',
+            'engineering-dimension-six source','engineering dimension six source',
+            'dimension-six local','dimension six local','dimension-six field','dimension six field',
+            'source coordinate','source coordinates','source factor','source factors',
+            'source owner','source owner map','source word','source words',
+            'canonical dimensional scaling','a dimension-','a^4','a−2','a-2',
+            'gauge-invariant curvature jets','local gauge-invariant curvature-jet',
+            'curvature-jet observable theory','curvature-jet observable scope',
+            'dimension-six regulator spaces','table 3','appendix e',
+            'g a3','ga3','a3','wick source','gaussian wick source'
+          ]
+          counts={}; chunks=[]
+          for term in terms:
+            needle=term.lower(); pos=0; n=0
+            while True:
+              i=low.find(needle,pos)
+              if i<0: break
+              n+=1
+              chunks.append(
+                f'===== {term} HIT {n} AT {i} =====\n'
+                + flat[max(0,i-7000):min(len(flat),i+14000)]+'\n'
+              )
+              pos=i+len(needle)
+              if n>=50: break
+            counts[term]=n
+
+          # Also extract every sentence containing both a dimension-six/cubic keyword
+          # and a source/observable/field keyword after whitespace normalization.
+          sentences=re.split(r'(?<=[.!?])\s+',flat)
+          joint=[]
+          for sentence in sentences:
+            s=sentence.lower()
+            if any(k in s for k in ['cubic','dimension-six','dimension six','three curvatures']):
+              if any(k in s for k in ['source','observable','field','jet','operator']):
+                joint.append(sentence)
+
+          (out/'CUBIC_REPRESENTATIVE_TARGETED.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          (out/'CUBIC_REPRESENTATIVE_COUNTS.json').write_text(json.dumps(counts,indent=2)+'\n',encoding='utf-8')
+          (out/'CUBIC_SOURCE_JOINT_SENTENCES.txt').write_text('\n\n'.join(joint)+'\n',encoding='utf-8')
+          (out/'CUBIC_REPRESENTATIVE_PDF_SHA256.txt').write_text(
+            subprocess.check_output(['sha256sum','kirk_latest.pdf'],text=True),encoding='utf-8')
+
+          if counts.get('primitive cubic',0)==0 or counts.get('curvature-jet observable theory',0)==0:
+            raise SystemExit('missing broad cubic/observable anchors')
+          PY
+      - name: Commit representative search
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/cubic_source_normalization
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve cubic source representative search'
+          git push origin HEAD:verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-cubic-source-representative-search
+          retention-days: 30
+          if-no-files-found: warn
+          path: source_audit/kirk_v4/cubic_source_normalization/
