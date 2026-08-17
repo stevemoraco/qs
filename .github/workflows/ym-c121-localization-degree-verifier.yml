@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_c121_localization_degree/LocalizationDegreeSelfConsistencyFirewall.lean
-          test "$(git hash-object "$SRC")" = 4e332fb8627875c597567ce6aff35b993164f0b8
+          test "$(git hash-object "$SRC")" = 4f3262cfc9c913eae3c1ff70515b0828de0f3d4d
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_c121_localization_degree/LocalizationDegreeSelfConsistencyFirewall.lean')
