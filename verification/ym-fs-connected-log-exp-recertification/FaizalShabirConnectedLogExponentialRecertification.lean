@@ -8,13 +8,13 @@ Finite real-exponential majorants for the load-bearing repair gate
 
 The analytic operator theorem still has to place the connected logarithm and
 its collar tail in one regulator/volume/scale-uniform submultiplicative Schur
-(or stronger Banach-algebra) norm.  Once that is supplied, the standard
+(or stronger Banach-algebra) norm. Once that is supplied, the standard
 noncommutative exponential perturbation estimate shows that exponentiation
 changes only a bounded prefactor, not the tail exponent.
 
 This file kernelizes only the scalar majorant mechanism:
 
-* `exp x - 1 <= x exp x` for `x >= 0`;
+* `exp x - 1 <= x exp x`;
 * adding a nonnegative tail to a bounded logarithm changes the exponential by
   at most `tail * exp(baseLog + tail)`;
 * if `tail <= C * decay`, with `0 <= decay <= 1`, then exponentiation preserves
@@ -29,9 +29,7 @@ namespace Millennium.YangMills.FaizalShabirConnectedLogExponentialRecertificatio
 
 /-- Elementary exponential remainder bound used as the scalar majorant for the
 Banach-algebra exponential perturbation estimate. -/
-theorem exp_sub_one_le_mul_exp
-    (x : ℝ)
-    (hx : 0 ≤ x) :
+theorem exp_sub_one_le_mul_exp (x : ℝ) :
     Real.exp x - 1 ≤ x * Real.exp x := by
   have hbase : -x + 1 ≤ Real.exp (-x) := Real.add_one_le_exp (-x)
   have hone : 1 - Real.exp (-x) ≤ x := by
@@ -57,7 +55,7 @@ theorem exponential_perturbation_majorant
     (htail : 0 ≤ tail) :
     Real.exp (baseLog + tail) - Real.exp baseLog ≤
       tail * Real.exp (baseLog + tail) := by
-  have htail_exp := exp_sub_one_le_mul_exp tail htail
+  have htail_exp := exp_sub_one_le_mul_exp tail
   have hbase_nonneg : 0 ≤ Real.exp baseLog := le_of_lt (Real.exp_pos baseLog)
   have hmul :
       Real.exp baseLog * (Real.exp tail - 1) ≤
@@ -101,7 +99,7 @@ theorem bounded_ball_exponential_tail
 
 /-- If a connected-log tail has an exponential/small decay envelope
 `C * decay` with `decay <= 1`, scalar exponentiation preserves exactly the same
-`decay` factor.  The only loss is the regulator-independent prefactor
+`decay` factor. The only loss is the regulator-independent prefactor
 `C * exp(M + C)` once `M` and `C` are uniform. -/
 theorem exponential_tail_preserves_decay
     (baseLog tail M C decay : ℝ)
@@ -118,8 +116,10 @@ theorem exponential_tail_preserves_decay
     baseLog tail M (C * decay) hbaseLog htail0 henvelope0 htail
   have hCdecay : C * decay ≤ C := by
     nlinarith
+  have hsumC : M + C * decay ≤ M + C := by
+    linarith
   have hexp : Real.exp (M + C * decay) ≤ Real.exp (M + C) :=
-    Real.exp_le_exp.mpr (add_le_add_left hCdecay M)
+    Real.exp_le_exp.mpr hsumC
   have hleft_nonneg : 0 ≤ C * decay := mul_nonneg hC hdecay0
   have hmono :
       (C * decay) * Real.exp (M + C * decay) ≤
