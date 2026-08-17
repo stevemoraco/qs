@@ -72,7 +72,6 @@ theorem relative_dirichlet_tail_preserves_edge
 
 theorem relative_dirichlet_tail_transfers_ceiling
     (ideal tail θ r : ℝ)
-    (hθ0 : 0 ≤ θ)
     (hθ1 : θ ≤ 1)
     (hideal : ideal ≤ r)
     (htail : tail ≤ θ * (1 - ideal)) :
