@@ -1,0 +1,109 @@
+name: YM FS complement max step firewall
+
+on:
+  push:
+    branches:
+      - verification/ym-fs-complement-max-step-20260817
+    paths:
+      - verification/ym-fs-complement-max-step/*.lean
+      - .github/workflows/ym-fs-complement-max-step.yml
+  pull_request:
+    paths:
+      - verification/ym-fs-complement-max-step/*.lean
+      - .github/workflows/ym-fs-complement-max-step.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-fs-complement-max-step-20260817
+      - name: Verify flattened Lean theorem source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-fs-complement-max-step/FaizalShabirComplementMaxStepFirewall.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+          SRC="$SRC" python3 - <<'PY'
+          import hashlib, json, os, pathlib, urllib.request
+          path = pathlib.Path(os.environ['SRC'])
+          source = path.read_text()
+          payload = json.dumps({
+            'content': source,
+            'environment': 'lean-4.30.0',
+            'ignore_imports': True,
+            'mathlib_options': False,
+            'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+            'https://axle.axiommath.ai/api/v1/check',
+            data=payload,
+            headers={'Content-Type': 'application/json'},
+            method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=960) as response:
+            result = json.load(response)
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+            not result.get('okay')
+            or bool(result.get('failed_declarations', []))
+            or bool(lean.get('errors', []))
+            or bool(lean.get('warnings', []))
+            or bool(tool.get('errors', []))
+            or bool(tool.get('warnings', []))
+            or 'sorryAx' in json.dumps(result)
+          )
+          receipt = {
+            'source_path': str(path),
+            'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
+            'axle_environment': 'lean-4.30.0',
+            'bad': bad,
+            'axle_result': result,
+          }
+          out = pathlib.Path('verification/ym-fs-complement-max-step/AXLE_RECEIPT.json')
+          out.write_text(json.dumps(receipt, indent=2) + '\n')
+          pathlib.Path('/tmp/ym-fs-complement-max-step-receipt.json').write_text(
+            json.dumps(receipt, indent=2) + '\n'
+          )
+          print(json.dumps(receipt, indent=2))
+          if bad:
+            raise SystemExit(1)
+          PY
+      - name: Preserve receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f verification/ym-fs-complement-max-step/AXLE_RECEIPT.json ]; then exit 0; fi
+          git config user.name 'ym-fs-axle-replay'
+          git config user.email 'actions@users.noreply.github.com'
+          git add verification/ym-fs-complement-max-step/AXLE_RECEIPT.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'verify(ym): preserve complement-max AXLE receipt'
+          git push origin HEAD:verification/ym-fs-complement-max-step-20260817
+      - name: Enforce clean verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/ym-fs-complement-max-step/AXLE_RECEIPT.json')
+          if not p.exists():
+              raise SystemExit(1)
+          receipt = json.loads(p.read_text())
+          raise SystemExit(1 if receipt.get('bad', True) else 0)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-fs-complement-max-step-axle-receipt
+          if-no-files-found: warn
+          retention-days: 30
+          path: /tmp/ym-fs-complement-max-step-receipt.json
