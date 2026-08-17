@@ -38,22 +38,31 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import json
+          import subprocess
 
           raw = Path('latest_raw.txt').read_text(encoding='utf-8', errors='replace')
           layout = Path('latest_layout.txt').read_text(encoding='utf-8', errors='replace')
-          low = raw.lower()
+
+          # PDF text extraction inserts hard line/page breaks inside mathematical phrases.
+          # Search a whitespace-normalized copy so phrase presence is layout-independent.
+          flat = ' '.join(raw.split())
+          flat_low = flat.lower()
+          layout_flat = ' '.join(layout.split())
+          layout_low = layout_flat.lower()
+
           out = Path('source_audit/kirk_v4/cubic_source_normalization')
           out.mkdir(parents=True, exist_ok=True)
 
           targets = [
               'primitive cubic symmetric color tensor',
+              'primitive cubic',
+              'symmetric tensor',
+              'first multiplies three curvatures',
               'dimension-six block',
               'engineering dimension six',
-              'Marked Gaussian Wick martingale',
-              'Gaussian Wick martingale',
-              'homogeneous Wick chaos',
-              'u_j -> 0',
-              'uj -> 0',
+              'marked gaussian wick martingale',
+              'gaussian wick martingale',
+              'homogeneous wick chaos',
               'toward the ultraviolet',
               'normalized source coordinates',
               'source normalization',
@@ -65,8 +74,8 @@ jobs:
               'cubic source',
               'source amplitude',
               'common analytic source ball',
-              'OS linear-growth condition',
-              'For every fixed engineering cutoff',
+              'os linear-growth condition',
+              'for every fixed engineering cutoff',
               'all fixed marked rows',
               'every fixed finite jet family',
               'every fixed n',
@@ -77,17 +86,18 @@ jobs:
           for target in targets:
               pos = 0
               n = 0
+              needle = target.lower()
               while True:
-                  i = low.find(target.lower(), pos)
+                  i = flat_low.find(needle, pos)
                   if i < 0:
                       break
                   n += 1
                   chunks.append(
-                      f'===== PHRASE {target} HIT {n} AT {i} =====\n'
-                      + raw[max(0, i - 9000):min(len(raw), i + 16000)]
+                      f'===== NORMALIZED PHRASE {target} HIT {n} AT {i} =====\n'
+                      + flat[max(0, i - 9000):min(len(flat), i + 16000)]
                       + '\n'
                   )
-                  pos = i + len(target)
+                  pos = i + len(needle)
                   if n >= 30:
                       break
               counts[target] = n
@@ -98,19 +108,46 @@ jobs:
               'Lemma 8.1', 'Theorem 8.11', 'Corollary 8.12',
               'Lemma 8.13', 'Theorem 8.16', 'Lemma 8.44',
           ]
+          heading_counts = {}
           for heading in headings:
-              i = raw.find(heading)
+              needle = heading.lower()
+              i = flat_low.find(needle)
+              heading_counts[heading] = int(i >= 0)
               if i >= 0:
                   chunks.append(
-                      f'===== HEADING {heading} AT {i} =====\n'
-                      + raw[max(0, i - 5000):min(len(raw), i + 24000)]
+                      f'===== NORMALIZED HEADING {heading} AT {i} =====\n'
+                      + flat[max(0, i - 5000):min(len(flat), i + 26000)]
                       + '\n'
                   )
 
+          # Preserve any literal layout hits too, useful for source review.
+          layout_chunks = []
+          for target in targets + headings:
+              needle = target.lower()
+              pos = 0
+              n = 0
+              while True:
+                  i = layout_low.find(needle, pos)
+                  if i < 0:
+                      break
+                  n += 1
+                  layout_chunks.append(
+                      f'===== LAYOUT-NORMALIZED {target} HIT {n} AT {i} =====\n'
+                      + layout_flat[max(0, i - 6000):min(len(layout_flat), i + 12000)]
+                      + '\n'
+                  )
+                  pos = i + len(needle)
+                  if n >= 10:
+                      break
+
           (out / 'TARGETED.txt').write_text('\n'.join(chunks), encoding='utf-8')
-          (out / 'COUNTS.json').write_text(json.dumps(counts, indent=2) + '\n', encoding='utf-8')
+          (out / 'LAYOUT_TARGETED.txt').write_text('\n'.join(layout_chunks), encoding='utf-8')
+          (out / 'COUNTS.json').write_text(
+              json.dumps({'phrases': counts, 'headings': heading_counts}, indent=2) + '\n',
+              encoding='utf-8'
+          )
           (out / 'PDF_SHA256.txt').write_text(
-              __import__('subprocess').check_output(['sha256sum', 'kirk_latest.pdf'], text=True),
+              subprocess.check_output(['sha256sum', 'kirk_latest.pdf'], text=True),
               encoding='utf-8'
           )
           (out / 'PROBE.json').write_text(Path('/tmp/probe.json').read_text(), encoding='utf-8')
@@ -120,8 +157,12 @@ jobs:
               '',
               'This file records source-presence counts only. It does not verify the manuscript mathematics.',
               '',
+              '## Whitespace-normalized phrase counts',
+              '',
           ]
           summary.extend(f'- `{k}`: {v}' for k, v in counts.items())
+          summary += ['', '## Heading counts', '']
+          summary.extend(f'- `{k}`: {v}' for k, v in heading_counts.items())
           summary += [
               '',
               '## Decision question',
@@ -130,18 +171,22 @@ jobs:
               '',
               'A positive nonzero Gaussian cubic normalization is incompatible with an ordinary regulator-uniform exponential-source disk; a vanishing normalization requires a separate nontriviality audit.',
               '',
+              'The extraction deliberately distinguishes phrase presence from proof: it does not infer the normalization coefficient merely from retention of the cubic invariant.',
+              '',
               '**FIVE/SIX-ALARM: OFF.**',
           ]
           (out / 'SUMMARY.md').write_text('\n'.join(summary) + '\n', encoding='utf-8')
 
-          required = [
+          required_phrases = [
               'primitive cubic symmetric color tensor',
               'common analytic source ball',
-              'For every fixed engineering cutoff',
+              'for every fixed engineering cutoff',
           ]
-          missing = [x for x in required if counts.get(x, 0) == 0]
+          required_headings = ['Theorem 5.26', 'Theorem 8.16', 'Corollary 8.12']
+          missing = [x for x in required_phrases if counts.get(x, 0) == 0]
+          missing += [x for x in required_headings if heading_counts.get(x, 0) == 0]
           if missing:
-              raise SystemExit('missing required source anchors: ' + ', '.join(missing))
+              raise SystemExit('missing required normalized source anchors: ' + ', '.join(missing))
           PY
 
       - name: Commit immutable extraction
