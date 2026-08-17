@@ -1,0 +1,135 @@
+name: YM Kirk v4 primitive passive-root atom audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-primitive-passive-root-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Trace primitive roots, atoms, and fixed-order source rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          pdf=Path('kirk_latest.pdf')
+          expected='c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          actual=hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+
+          heading_re=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?',re.I)
+          section_re=re.compile(r'^\s*([0-9]+(?:\.[0-9]+)*)\s+(.+?)\s*$')
+          heads=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m: heads.append((n,m.group(1),m.group(2),m.group(3) or '',line.strip()))
+          def nearest(n):
+              out=None
+              for h in heads:
+                  if h[0]>n: break
+                  out=h
+              return out
+
+          anchors=['3.16','3.19','3.20','4.1','4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9','4.10','4.11','4.12','4.13','4.14','4.21','4.22','4.27','4.29','5.20','5.27','6.22','6.27','6.44','8.1','8.3']
+          def get_anchor(a):
+              rx=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+'+re.escape(a)+r'\b',re.I)
+              return [n for n,l in enumerate(lines,1) if rx.match(l)]
+          aw=[]; manifest=[]
+          for a in anchors:
+              hits=get_anchor(a)
+              manifest.append(f'ANCHOR\t{a}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits,1):
+                  lo=max(1,n-130); hi=min(len(lines),n+600)
+                  aw += ['='*150,f'ANCHOR {a} HIT {rank}; LINE={n}; WINDOW=[{lo},{hi}]','='*150]
+                  aw += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          patterns={
+            'passive_exterior_root':r'passive exterior root|passive root|exterior root',
+            'root_atom':r'root atom|root insertion|root factor|root leaf|root operator',
+            'source_atom':r'source atom|source insertion|source leaf|marked atom|marked insertion',
+            'bounded_finite_range':r'bounded finite[- ]range|finite[- ]range atom|local bounded atom',
+            'source_holomorphy':r'source.{0,120}holomorph|holomorph.{0,120}source',
+            'source_derivative':r'source derivative|derivative.{0,60}(?:source|J)|D\s*J|D_J|∂\s*J|partial.{0,60}J',
+            'rooted_source_norm':r'rooted.{0,120}source|source.{0,120}rooted|permanent.{0,120}source|source.{0,120}permanent',
+            'one_two_roots':r'one or two.{0,80}root|zero, one, or two.{0,80}root|one/two[- ]root|two[- ]root',
+            'primitive_factor':r'primitive factor|primitive.{0,80}source|elementary factor|basic factor',
+            'physical_source':r'physical source|local source|passive source|external source|source parameter',
+            'root_uniformity':r'root.{0,160}(?:uniform|independent)|(?:uniform|independent).{0,160}root',
+            'source_uniformity':r'source.{0,160}(?:uniform|independent)|(?:uniform|independent).{0,160}source',
+            'source_order':r'passive[- ]source order|source order|prescribed finite source|arbitrary fixed source|every prescribed finite',
+            'placement_sum':r'V\s*\^\s*N|V N|placement|source[- ]leaf placement|sum.{0,100}V',
+            'owner_map':r'owner map|owner-map|ownership|owned by|owner',
+            'absolute_atom':r'absolute.{0,80}atom|atom.{0,80}absolute|norm.{0,80}atom|atom.{0,80}norm',
+          }
+          pw=[]; pc=[]
+          for label,pat in patterns.items():
+              rx=re.compile(pat,re.I)
+              hits=[n for n,l in enumerate(lines,1) if rx.search(l)]
+              pc.append(f'PATTERN\t{label}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits[:400],1):
+                  lo=max(1,n-50); hi=min(len(lines),n+120)
+                  pw += ['='*150,f'PATTERN {label} HIT {rank}; LINE={n}; NEAREST={nearest(n)}','='*150]
+                  pw += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          # Compact source-focused line ledger.
+          focus_rx=re.compile('|'.join('(?:'+p+')' for p in patterns.values()),re.I)
+          ledger=[]
+          for n,l in enumerate(lines,1):
+              if focus_rx.search(l):
+                  ledger.append(f'{n}\t{nearest(n)}\t{l.strip()}')
+
+          # Section 4.2--4.3 exact block, where marked-root currency is defined and first estimated.
+          sec_start=None; sec_end=None
+          for n,l in enumerate(lines,1):
+              if re.match(r'^\s*4\.2\s+',l): sec_start=n
+              if sec_start and re.match(r'^\s*4\.4\s+',l): sec_end=n-1; break
+          if sec_start is None:
+              # Fall back to theorem 4.1 through theorem 4.4 neighborhood.
+              hs=get_anchor('4.1'); he=get_anchor('4.4')
+              sec_start=max(1,(hs[0] if hs else 1)-80)
+              sec_end=min(len(lines),(he[0] if he else sec_start)+500)
+          if sec_end is None: sec_end=min(len(lines),sec_start+2500)
+          section=[f'{k}: {lines[k-1]}' for k in range(sec_start,sec_end+1)]
+
+          Path('_audit_out/anchor_windows.txt').write_text('\n'.join(aw)+'\n',encoding='utf-8')
+          Path('_audit_out/pattern_windows.txt').write_text('\n'.join(pw)+'\n',encoding='utf-8')
+          Path('_audit_out/source_root_ledger.tsv').write_text('\n'.join(ledger)+'\n',encoding='utf-8')
+          Path('_audit_out/section42_43_exact.txt').write_text('\n'.join(section)+'\n',encoding='utf-8')
+          Path('_audit_out/manifest.tsv').write_text('\n'.join([f'PDF_SHA256\t{actual}',f'TOTAL_HEADINGS\t{len(heads)}',f'SECTION_BLOCK\t{sec_start}\t{sec_end}',*manifest,*pc])+'\n',encoding='utf-8')
+          if not get_anchor('4.4') or not get_anchor('4.6'):
+              raise SystemExit('required Theorem 4.4/4.6 anchors missing')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/manifest.tsv
+          wc -l -c _audit_out/*
+      - name: Upload primitive-root audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-primitive-passive-root-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
