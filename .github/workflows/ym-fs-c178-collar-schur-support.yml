@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
@@ -63,9 +63,6 @@ jobs:
           pathlib.Path('/tmp/ym-c178-collar-schur-receipt.json').write_text(
             json.dumps(receipt, indent=2)
           )
-          pathlib.Path('verification/ym-fs-c178-collar-schur-support/AXLE_RECEIPT.json').write_text(
-            json.dumps(receipt, indent=2) + '\n'
-          )
           print(json.dumps(receipt, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
@@ -81,19 +78,6 @@ jobs:
           if bad:
             raise SystemExit(1)
           PY
-      - name: Preserve diagnostic receipt
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          FILE=verification/ym-fs-c178-collar-schur-support/AXLE_RECEIPT.json
-          if [ ! -f "$FILE" ]; then exit 0; fi
-          git config user.name 'ym-lean-verifier'
-          git config user.email 'actions@users.noreply.github.com'
-          git add "$FILE"
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'verify(ym): preserve C178 AXLE receipt'
-          git push origin HEAD:verification/ym-fs-c178-collar-schur-support-20260818
       - uses: actions/upload-artifact@v4
         if: always()
         with:
