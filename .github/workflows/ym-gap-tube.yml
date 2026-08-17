@@ -1,0 +1,75 @@
+name: YM gap tube Lean replay
+
+on:
+  push:
+    branches:
+      - verification/ym-gap-tube-20260816-gpt56sol
+  pull_request:
+    paths:
+      - 'verification/ym-gap-tube/**'
+      - '.github/workflows/ym-gap-tube.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-gap-tube/YMGapTube.lean
+          python3 - "$file" <<'PY'
+          import pathlib, re, sys
+          p = pathlib.Path(sys.argv[1])
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          forbidden = [r'^\s*(sorry|admit)\b', r'^\s*(axiom|constant|opaque)\b', r'\bunsafe\b', r'\bnative_decide\b', r'\bLean\.ofReduceBool\b']
+          for pattern in forbidden:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'{p}: forbidden proof device {m.group(0)!r}')
+          PY
+          sha256sum "$file" | tee verification/ym-gap-tube/source.sha256
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ym-gap-tube
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+          lean --version | tee lean-version.txt
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/ym-gap-tube
+        run: |
+          set -euo pipefail
+          lake env lean YMGapTube.lean 2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.|\badmit\b' lean-replay.log; then exit 1; fi
+          grep -F 'YMGapTube.finite_loss_does_not_force_positive_remainder' lean-replay.log
+          grep -F 'YMGapTube.nonnegative_gap_does_not_bound_exponential_by_unit_gap' lean-replay.log
+          grep -F 'YMGapTube.quadratic_transfer_tube_all_scales' lean-replay.log
+          grep -F 'YMGapTube.half_tube_of_quarter_defect' lean-replay.log
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-gap-tube-evidence
+          path: |
+            verification/ym-gap-tube/YMGapTube.lean
+            verification/ym-gap-tube/source.sha256
+            verification/ym-gap-tube/lean-version.txt
+            verification/ym-gap-tube/lean-replay.log
+          if-no-files-found: warn
