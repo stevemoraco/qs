@@ -16,7 +16,7 @@ theorem baselineDefectExists
     (baseline rho : ℕ)
     (hbase : baseline ≤ rho) :
     ∃ delta : ℕ, rho = baseline + delta := by
-  omega
+  exact Nat.exists_eq_add_of_le hbase
 
 /-- Vanishing of the additive defect is exactly baseline equality. -/
 theorem zeroDefectIffBaselineEquality
