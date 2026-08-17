@@ -18,6 +18,19 @@ open scoped BigOperators
 
 namespace Millennium.YangMills.TwoRootGeometricEnvelope
 
+/-- The ordered placements of two passive roots on `V` vertices form the
+Cartesian square and therefore have exactly `V^2` elements. -/
+theorem ordered_two_root_placements_card (V : ℕ) :
+    Fintype.card (Fin V × Fin V) = V ^ 2 := by
+  simp [pow_two]
+
+/-- The same count in the real-valued weight used by the geometric envelope. -/
+theorem ordered_two_root_placement_weight (n : ℕ) :
+    (Fintype.card (Fin (n + 1) × Fin (n + 1)) : ℝ) =
+      ((n : ℝ) + 1) ^ 2 := by
+  rw [ordered_two_root_placements_card]
+  push_cast
+
 /-- Exact nonnegative tail potential for the series
 `∑ n, (n+1)^2 m^n`. -/
 noncomputable def twoRootTail (m : ℝ) (n : ℕ) : ℝ :=
@@ -157,6 +170,8 @@ theorem dominated_root_placement_tsum_le
     exact finite_dominated_root_placement_bound
       weight m N hweight2 hm0 hm1
 
+#print axioms ordered_two_root_placements_card
+#print axioms ordered_two_root_placement_weight
 #print axioms twoRootTail_step
 #print axioms partial_sum_add_twoRootTail
 #print axioms twoRootTail_nonneg
