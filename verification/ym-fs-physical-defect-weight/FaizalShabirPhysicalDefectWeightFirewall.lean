@@ -80,7 +80,13 @@ theorem repeated_spacing_sized_defects_accumulate_linearly
     (aNext : ℝ)
     (haNext : 0 < aNext) :
     (Finset.range n).sum (fun _k => (1 / aNext) * aNext) = (n : ℝ) := by
-  simp [spacing_sized_raw_defect_has_unit_physical_cost aNext haNext]
+  calc
+    (Finset.range n).sum (fun _k => (1 / aNext) * aNext) =
+        (Finset.range n).sum (fun _k => (1 : ℝ)) := by
+          apply Finset.sum_congr rfl
+          intro k hk
+          exact spacing_sized_raw_defect_has_unit_physical_cost aNext haNext
+    _ = (n : ℝ) := by simp
 
 #print axioms transfer_edge_gap_le_scaled_energy
 #print axioms transfer_edge_gap_le_of_scaled_energy_le
