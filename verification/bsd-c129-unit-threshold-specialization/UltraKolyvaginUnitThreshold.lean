@@ -28,7 +28,6 @@ theorem consecutive_transition_exact
 theorem specialization_threshold_upper_bound
     (topUnit specUnit : ℕ → Prop)
     (muTop muSpec : ℕ)
-    (hTopBefore : ∀ i, i < muTop → ¬ topUnit i)
     (hSpecBefore : ∀ i, i < muSpec → ¬ specUnit i)
     (hTopAt : topUnit muTop)
     (hUnitMaps : ∀ i, topUnit i → specUnit i) :
