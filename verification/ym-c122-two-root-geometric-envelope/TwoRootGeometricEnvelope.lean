@@ -86,11 +86,11 @@ theorem finite_two_root_placement_bound
     _ = twoRootTail m 0 := hid
     _ = (1 + m) / (1 - m) ^ 3 := hzero
 
-/-- Any nonnegative fixed-root placement count bounded by `(n+1)^2` inherits
-the same finite-depth envelope. -/
+/-- Any fixed-root placement count bounded by `(n+1)^2` inherits the same
+finite-depth envelope.  Nonnegativity is needed only when passing to the
+infinite series. -/
 theorem finite_dominated_root_placement_bound
     (weight : ℕ → ℝ) (m : ℝ) (N : ℕ)
-    (hweight0 : ∀ n, 0 ≤ weight n)
     (hweight2 : ∀ n, weight n ≤ ((n : ℝ) + 1) ^ 2)
     (hm0 : 0 ≤ m) (hm1 : m < 1) :
     (∑ n ∈ Finset.range N, weight n * m ^ n) ≤
@@ -139,7 +139,7 @@ theorem dominated_root_placement_summable
     exact mul_nonneg (hweight0 n) (pow_nonneg hm0 n)
   · intro N
     exact finite_dominated_root_placement_bound
-      weight m N hweight0 hweight2 hm0 hm1
+      weight m N hweight2 hm0 hm1
 
 /-- The corresponding infinite dominated placement mass has the same explicit
 bound. -/
@@ -155,7 +155,7 @@ theorem dominated_root_placement_tsum_le
     exact mul_nonneg (hweight0 n) (pow_nonneg hm0 n)
   · intro N
     exact finite_dominated_root_placement_bound
-      weight m N hweight0 hweight2 hm0 hm1
+      weight m N hweight2 hm0 hm1
 
 #print axioms twoRootTail_step
 #print axioms partial_sum_add_twoRootTail
