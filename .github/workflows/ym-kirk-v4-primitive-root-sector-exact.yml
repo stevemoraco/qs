@@ -1,0 +1,120 @@
+name: YM Kirk v4 primitive-root sector exact audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-primitive-root-sector-exact.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Extract exact sector theorem windows and classify root claims
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          expected='c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          pdf=Path('kirk_latest.pdf')
+          actual=hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+
+          heading_re=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?',re.I)
+          heads=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m: heads.append((n,m.group(1),m.group(2),m.group(3) or '',line.strip()))
+
+          def exact_hits(number):
+              rx=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+'+re.escape(number)+r'\b',re.I)
+              return [n for n,l in enumerate(lines,1) if rx.match(l)]
+
+          targets=['3.16','3.17','3.19','3.20','4.4','4.5','4.6','4.22','4.29','5.21','5.24','5.25','5.26','5.27','6.22','6.27','6.30','6.31','6.39','6.43','6.44','7.2','7.4','8.1','8.3','8.9','8.23','8.24']
+          manifest=[f'PDF_SHA256\t{actual}',f'TOTAL_HEADINGS\t{len(heads)}']
+          out=[]
+          for t in targets:
+              hits=exact_hits(t)
+              manifest.append(f'TARGET\t{t}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits,1):
+                  lo=max(1,n-80); hi=min(len(lines),n+260)
+                  out += ['='*150,f'TARGET {t} HIT {rank}; LINE={n}; WINDOW=[{lo},{hi}]','='*150]
+                  out += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          claim_patterns={
+            'DECLARE_ROOTS':r'at most two passive exterior roots|zero, one, or two passive exterior roots',
+            'ROOT_ROW':r'root row|rooted atom|root atom|root insertion|root seminorm|finite local root norm|one/two-root.*norm|two-root.*row',
+            'PRESERVE_ROOTS':r'remain valid with one or two passive exterior roots|same domain controls the zero-, one-, and two-root',
+            'SOURCE_ATOM':r'source differentiation inserts bounded finite-range atoms|bounded finite-range atoms|source atom|marked atom',
+            'ROOT_CONSTANT':r'root constant|root prefactor|root type|root buffer',
+            'COMPOSITE_ROOT':r'composite-root|complete contact cluster|distinguished roots',
+            'UNIFORM_ROOT':r'root.{0,160}(?:uniform|independent)|(?:uniform|independent).{0,160}root',
+            'ROOT_ANALYTIC':r'root.{0,160}(?:analytic|holomorph|Cauchy)|(?:analytic|holomorph|Cauchy).{0,160}root',
+          }
+          claims=[]; counts=[]
+          for label,pat in claim_patterns.items():
+              rx=re.compile(pat,re.I)
+              hits=[n for n,l in enumerate(lines,1) if rx.search(l)]
+              counts.append(f'CLAIM\t{label}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits,1):
+                  lo=max(1,n-35); hi=min(len(lines),n+90)
+                  claims += ['='*150,f'CLAIM {label} HIT {rank}; LINE={n}','='*150]
+                  claims += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          # Exact Section 4.2 definition through the end of Theorem 4.6.
+          sec42=None; sec43=None
+          for n,l in enumerate(lines,1):
+              if re.match(r'^\s*4\.2\s+',l): sec42=n
+              if sec42 and re.match(r'^\s*4\.3\s+',l): sec43=n; break
+          if sec42 is None or sec43 is None:
+              raise SystemExit('Section 4.2/4.3 boundary not found')
+          section42=[f'{k}: {lines[k-1]}' for k in range(sec42,sec43)]
+
+          # Exact Section 5.5--5.6 block.
+          sec55=None; sec6=None
+          for n,l in enumerate(lines,1):
+              if re.match(r'^\s*5\.5\s+',l): sec55=n
+              if sec55 and re.match(r'^\s*6\s+',l): sec6=n; break
+          if sec55 is None: sec55=max(1,(exact_hits('5.21') or [1])[0]-40)
+          if sec6 is None: sec6=min(len(lines),(exact_hits('5.27') or [sec55])[0]+400)
+          section55=[f'{k}: {lines[k-1]}' for k in range(sec55,sec6)]
+
+          Path('_audit_out/exact_theorem_windows.txt').write_text('\n'.join(out)+'\n',encoding='utf-8')
+          Path('_audit_out/root_claim_windows.txt').write_text('\n'.join(claims)+'\n',encoding='utf-8')
+          Path('_audit_out/section42_exact.txt').write_text('\n'.join(section42)+'\n',encoding='utf-8')
+          Path('_audit_out/section55_56_exact.txt').write_text('\n'.join(section55)+'\n',encoding='utf-8')
+          Path('_audit_out/manifest.tsv').write_text('\n'.join([*manifest,*counts])+'\n',encoding='utf-8')
+          if not exact_hits('3.17') or not exact_hits('6.31') or not exact_hits('6.44'):
+              raise SystemExit('required exact sector anchor missing')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/manifest.tsv
+          wc -l -c _audit_out/*
+      - name: Upload exact sector audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-primitive-root-sector-exact
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
