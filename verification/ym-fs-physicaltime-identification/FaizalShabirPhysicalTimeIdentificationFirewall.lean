@@ -45,7 +45,7 @@ theorem additive_countermodel_stays_separated (k : ℕ) :
   rfl
 
 /-- A lower scalar/operator-order comparison cannot be used as an upper
-Rayleigh comparison.  This is the one-dimensional direction shadow. -/
+Rayleigh comparison. This is the one-dimensional direction shadow. -/
 theorem lower_order_is_not_upper_order :
     (0 : ℝ) ≤ 1 ∧ ¬ ((1 : ℝ) ≤ 0) := by
   norm_num
@@ -58,7 +58,7 @@ consequence of
 
 `T_next = V* T^b V - D + E`
 
-with `defect = ||D|| + ||E||`; no sign of `D` is used.  If the physical
+with `defect = ||D|| + ||E||`; no sign of `D` is used. If the physical
 normalization weights obey `wNext = w^b`, then the normalized quantity obeys
 
 `qNext <= q^b + wNext * defect`.
@@ -110,7 +110,7 @@ theorem finite_additive_telescope
   | succ n ih =>
       calc
         D (n + 1) ≤ D n + step := hstep n
-        _ ≤ (n : ℝ) * step + step := add_le_add_right ih step
+        _ ≤ (n : ℝ) * step + step := by linarith
         _ = ((n + 1 : ℕ) : ℝ) * step := by
           rw [Nat.cast_add, Nat.cast_one]
           ring
@@ -120,7 +120,7 @@ Physical-time accumulation firewall.
 
 If every one-slice discrepancy is at most `rate * a`, then over `n` slices
 covering physical time at most `t` the accumulated discrepancy is at most
-`rate * t`.  Therefore a family with `rate -> 0` gives a genuine vanishing
+`rate * t`. Therefore a family with `rate -> 0` gives a genuine vanishing
 fixed-physical-time comparison.
 -/
 theorem physical_time_telescope
