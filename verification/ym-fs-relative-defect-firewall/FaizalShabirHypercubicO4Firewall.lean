@@ -6,11 +6,13 @@ def hypercubicQuartic (x y : ℝ) : ℝ := x ^ 4 + y ^ 4
 
 theorem hypercubicQuartic_neg_left (x y : ℝ) :
     hypercubicQuartic (-x) y = hypercubicQuartic x y := by
-  simp [hypercubicQuartic]
+  unfold hypercubicQuartic
+  ring
 
 theorem hypercubicQuartic_neg_right (x y : ℝ) :
     hypercubicQuartic x (-y) = hypercubicQuartic x y := by
-  simp [hypercubicQuartic]
+  unfold hypercubicQuartic
+  ring
 
 theorem hypercubicQuartic_swap (x y : ℝ) :
     hypercubicQuartic y x = hypercubicQuartic x y := by
