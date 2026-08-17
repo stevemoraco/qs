@@ -1,0 +1,46 @@
+{
+  "source_path": "verification/ym-fs-frd-prefactor-rate-firewall/FaizalShabirFRDPrefactorRateFirewall.lean",
+  "source_sha256": "39f72e4ee3ff440566e616ac8e3e32c87b9b0a017b78c4ff6d8bd43fcc88b4a2",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir FRD prefactor-rate firewall\n\nFinite scalar algebra for the factor-count issue in arXiv:2606.19362v1,\nTheorem 5.1, Eq. (5.12), and the repaired decay-vs-entropy ledger attempted\nin Proposition 5.5.\n\nThe printed Schur estimate retains a multiplicative power of the one-kernel\nprefactor `C\u2081` before passing to a pure exponential diameter tail. These lemmas\nrecord that a per-factor prefactor can exactly cancel or reverse an otherwise\nstrict geometric decay unless its growth is paid in the final rate. They also\nrecord that polymer-count growth, boundary-attachment growth, and kernel decay\ncombine into one exact net geometric base.\n\nThis file does not formalize FRD kernels, polymers, Schur operators, OS\nHilbert spaces, Yang--Mills theory, a mass gap, or a Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall\n\n/-- A factor growing like `2^n` exactly cancels a geometric decay `(1/2)^n`.\nThis is the finite shadow of an unaccounted per-polymer-factor prefactor. -/\ntheorem prefactor_can_exactly_cancel_geometric_decay (n : \u2115) :\n    (2 : \u211d) ^ n * ((1 : \u211d) / 2) ^ n = 1 := by\n  rw [\u2190 mul_pow]\n  norm_num\n\n/-- A factor growing like `2^n` can reverse the decay `(3/4)^n` into growth\n`(3/2)^n`. -/\ntheorem prefactor_can_reverse_geometric_decay (n : \u2115) :\n    (2 : \u211d) ^ n * ((3 : \u211d) / 4) ^ n = ((3 : \u211d) / 2) ^ n := by\n  rw [\u2190 mul_pow]\n  norm_num\n\n/-- Per-diameter growth and per-diameter decay combine into one exact net\ngeometric base. Any repaired polymer tail estimate must control this product,\nnot the decay factor alone. -/\ntheorem per_diameter_growth_combines_exactly\n    (C growth decay : \u211d) (n : \u2115) :\n    C * growth ^ n * decay ^ n = C * (growth * decay) ^ n := by\n  rw [mul_pow]\n  ring\n\n/-- Polymer-count growth, boundary-attachment growth, and FRD decay combine\ninto one exact geometric base. The corrected strict-tail condition is on this\nfull product. -/\ntheorem count_boundary_decay_combine_exactly\n    (C countGrowth boundaryGrowth decay : \u211d) (n : \u2115) :\n    C * countGrowth ^ n * boundaryGrowth ^ n * decay ^ n =\n      C * (countGrowth * boundaryGrowth * decay) ^ n := by\n  rw [mul_pow, mul_pow]\n  ring\n\n/-- At the critical net rate `growth * decay = 1`, the apparent exponential\ndecay disappears completely and the contribution stays equal to the fixed\nprefactor `C`. -/\ntheorem critical_prefactor_erases_decay\n    (C growth decay : \u211d) (n : \u2115)\n    (hcrit : growth * decay = 1) :\n    C * growth ^ n * decay ^ n = C := by\n  rw [per_diameter_growth_combines_exactly C growth decay n, hcrit]\n  simp\n\n/-- If the net geometric base is larger than one, a positive contribution is\nalready amplified at one diameter step. -/\ntheorem supercritical_prefactor_breaks_one_step\n    (C growth decay : \u211d)\n    (hC : 0 < C)\n    (hsuper : 1 < growth * decay) :\n    C * growth ^ (1 : \u2115) * decay ^ (1 : \u2115) > C := by\n  simp only [pow_one]\n  calc\n    C * growth * decay = C * (growth * decay) := by ring\n    _ > C * 1 := mul_lt_mul_of_pos_left hsuper hC\n    _ = C := by ring\n\n/-- Even when the kernel decay base is strictly below one, count and boundary\ngrowth can make the full rate supercritical. This concrete witness has\n`decay = 3/4 < 1` but net base `(3/2)*(1)*(3/4) = 9/8 > 1`. -/\ntheorem decay_alone_does_not_control_full_rate :\n    (3 : \u211d) / 4 < 1 \u2227\n      1 < ((3 : \u211d) / 2) * 1 * ((3 : \u211d) / 4) := by\n  constructor <;> norm_num\n\n#print axioms prefactor_can_exactly_cancel_geometric_decay\n#print axioms prefactor_can_reverse_geometric_decay\n#print axioms per_diameter_growth_combines_exactly\n#print axioms count_boundary_decay_combine_exactly\n#print axioms critical_prefactor_erases_decay\n#print axioms supercritical_prefactor_breaks_one_step\n#print axioms decay_alone_does_not_control_full_rate\n\nend Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:87:0-87:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.prefactor_can_exactly_cancel_geometric_decay' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:88:0-88:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.prefactor_can_reverse_geometric_decay' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:89:0-89:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.per_diameter_growth_combines_exactly' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:90:0-90:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.count_boundary_decay_combine_exactly' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:91:0-91:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.critical_prefactor_erases_decay' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:92:0-92:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.supercritical_prefactor_breaks_one_step' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:93:0-93:6: info: 'Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall.decay_alone_does_not_control_full_rate' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 125,
+      "total_ms": 126
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "4f608cea-95e8-4096-9525-5a0924ab40ac",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 180,
+      "queue_time_ms": 0,
+      "execution_time_ms": 179,
+      "cached_response": false,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 9,
+      "environment_total_time_us": 177744,
+      "environment_pool_size": 64
+    }
+  }
+}
