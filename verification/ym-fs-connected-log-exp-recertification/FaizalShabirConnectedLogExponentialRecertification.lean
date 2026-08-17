@@ -3,8 +3,8 @@ import Mathlib
 /-!
 # Faizal--Shabir connected-log exponential recertification
 
-Finite real-exponential and finite Schur-row majorants for the load-bearing
-repair gate `YM-FS-CONNECTED-LOG-TAIL-TO-OS-SCHUR`.
+Finite real-exponential and finite Schur row/column majorants for the
+load-bearing repair gate `YM-FS-CONNECTED-LOG-TAIL-TO-OS-SCHUR`.
 
 The analytic operator theorem still has to place the connected logarithm and
 its collar tail in one regulator/volume/scale-uniform submultiplicative Schur
