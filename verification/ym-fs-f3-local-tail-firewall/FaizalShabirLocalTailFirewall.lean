@@ -6,11 +6,11 @@ import Mathlib
 Finite scalar logic behind a hostile audit of arXiv:2606.19362v1, Lemma F.3.
 
 The printed proof bounds each differentiated local polymer activity by an envelope depending
-on its diameter, then sums activities whose diameters satisfy only an *upper* scale cap.  An
+on its diameter, then sums activities whose diameters satisfy only an *upper* scale cap. An
 upper diameter cap does not create a decaying scale factor: a fixed nonzero local activity may
 remain present at every scale.
 
-This file formalizes only that logical obstruction and the minimal repaired shape.  It does not
+This file formalizes only that logical obstruction and the minimal repaired shape. It does not
 formalize polymer gases, BKAR, OS kernels, Yang--Mills theory, continuum reconstruction, or
 a Clay theorem.
 -/
@@ -47,28 +47,28 @@ theorem persistent_local_family_refutes_small_tail
 /-- A nonnegative sum containing one persistent positive local contribution cannot be bounded
 by a tail that has already fallen below that contribution. -/
 theorem persistent_local_term_blocks_small_total
-    (local rest tail : ℝ)
+    (localTerm rest tailBound : ℝ)
     (hrest : 0 ≤ rest)
-    (htail : tail < local) :
-    ¬ local + rest ≤ tail := by
+    (htail : tailBound < localTerm) :
+    ¬ localTerm + rest ≤ tailBound := by
   intro h
   linarith
 
 /-- Minimal repaired scalar shape: to deduce a small total from a local/tail decomposition,
 smallness must be supplied for *both* pieces (or the local piece must cancel/vanish exactly). -/
 theorem repaired_local_plus_tail_budget
-    (local tail budget : ℝ)
-    (hlocal : local ≤ budget / 2)
-    (htail : tail ≤ budget / 2) :
-    local + tail ≤ budget := by
+    (localTerm tailTerm budget : ℝ)
+    (hlocal : localTerm ≤ budget / 2)
+    (htail : tailTerm ≤ budget / 2) :
+    localTerm + tailTerm ≤ budget := by
   linarith
 
 /-- Exact-cancellation specialization of the repaired shape. -/
 theorem exact_local_cancellation_reduces_to_tail
-    (local tail budget : ℝ)
-    (hlocal : local = 0)
-    (htail : tail ≤ budget) :
-    local + tail ≤ budget := by
+    (localTerm tailTerm budget : ℝ)
+    (hlocal : localTerm = 0)
+    (htail : tailTerm ≤ budget) :
+    localTerm + tailTerm ≤ budget := by
   linarith
 
 #print axioms persistent_local_weight_eq_one
