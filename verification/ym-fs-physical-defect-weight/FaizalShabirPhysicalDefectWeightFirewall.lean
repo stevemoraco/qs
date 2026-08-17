@@ -61,7 +61,7 @@ theorem inverse_spacing_coefficient_realizes_any_positive_value
     (hM : 0 < M) :
     ∃ aNext : ℝ, 0 < aNext ∧ 1 / aNext = M := by
   refine ⟨M⁻¹, inv_pos.mpr hM, ?_⟩
-  simp [one_div, hM.ne']
+  simp
 
 /-- A raw one-step defect exactly of order the next lattice spacing has unit
 cost after multiplication by `1/aNext`. Thus `O(aNext)` is not a vanishing
@@ -79,7 +79,7 @@ theorem repeated_spacing_sized_defects_accumulate_linearly
     (n : ℕ)
     (aNext : ℝ)
     (haNext : 0 < aNext) :
-    (∑ _k in Finset.range n, (1 / aNext) * aNext) = (n : ℝ) := by
+    (Finset.range n).sum (fun _k => (1 / aNext) * aNext) = (n : ℝ) := by
   simp [spacing_sized_raw_defect_has_unit_physical_cost aNext haNext]
 
 #print axioms transfer_edge_gap_le_scaled_energy
