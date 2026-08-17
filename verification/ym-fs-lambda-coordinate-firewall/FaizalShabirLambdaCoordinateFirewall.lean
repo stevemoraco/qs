@@ -28,11 +28,9 @@ theorem reciprocal_affine_difference
 /-- Inverting the same two squared-coupling coordinates recovers the constant
 offset exactly. -/
 theorem inverse_reciprocal_offset
-    (x c d : ℝ)
-    (hxc : x + c ≠ 0)
-    (hxd : x + d ≠ 0) :
+    (x c d : ℝ) :
     1 / (1 / (x + c)) - 1 / (1 / (x + d)) = c - d := by
-  field_simp
+  simp only [one_div, inv_inv]
   ring
 
 /-- Concrete one-unit-offset family: the raw squared couplings differ by a
@@ -46,18 +44,18 @@ theorem one_unit_transmutation_offset
       1 / ((x + 1) * (x + 2))) ∧
     (1 / (1 / (x + 1)) - 1 / (1 / (x + 2)) = -1) := by
   constructor
-  · simpa using reciprocal_affine_difference x 1 2 hx1 hx2
-  · simpa using inverse_reciprocal_offset x 1 2 hx1 hx2
+  · field_simp [hx1, hx2]
+    ring
+  · simp only [one_div, inv_inv]
+    ring
 
 /-- Equality of the inverse-squared-coupling coordinate forces equality of the
 affine integration constants in this model. -/
 theorem inverse_coordinate_identifies_offset
     (x c d : ℝ)
-    (hxc : x + c ≠ 0)
-    (hxd : x + d ≠ 0)
     (hmatch : 1 / (1 / (x + c)) = 1 / (1 / (x + d))) :
     c = d := by
-  have hoff := inverse_reciprocal_offset x c d hxc hxd
+  have hoff := inverse_reciprocal_offset x c d
   rw [hmatch] at hoff
   linarith
 
