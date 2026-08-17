@@ -14,6 +14,13 @@ strict geometric decay unless its growth is paid in the final rate. They also
 record that polymer-count growth, boundary-attachment growth, and kernel decay
 combine into one exact net geometric base.
 
+The final declarations record the finite arithmetic behind a second source
+issue in Proposition 5.5: the number of coarse blocks touched by a connected
+four-dimensional polymer is not controlled by its graph diameter with unit
+coefficient. A side-three four-dimensional box has 81 vertices but graph
+`l1` diameter 8. The geometric interpretation is external; only the load-bearing
+integer and exponential inequalities are formalized here.
+
 This file does not formalize FRD kernels, polymers, Schur operators, OS
 Hilbert spaces, Yang--Mills theory, a mass gap, or a Clay theorem.
 -/
@@ -84,6 +91,21 @@ theorem decay_alone_does_not_control_full_rate :
       1 < ((3 : ℝ) / 2) * 1 * ((3 : ℝ) / 4) := by
   constructor <;> norm_num
 
+/-- Arithmetic shadow of the four-dimensional side-three box: its `l1` graph
+diameter is `4*2 = 8`, while it contains `3^4 = 81` vertices. Hence vertex/contact
+count is not bounded above by diameter with coefficient one. -/
+theorem four_dimensional_box_contacts_exceed_diameter :
+    4 * 2 < (3 : ℕ) ^ 4 := by
+  norm_num
+
+/-- Any strictly positive exponential contact weight distinguishes the 81-contact
+witness from the diameter-eight replacement in the wrong direction. -/
+theorem positive_contact_exponent_exposes_linearization_failure
+    (c : ℝ) (hc : 0 < c) :
+    Real.exp (c * 8) < Real.exp (c * 81) := by
+  apply Real.exp_lt_exp.mpr
+  nlinarith
+
 #print axioms prefactor_can_exactly_cancel_geometric_decay
 #print axioms prefactor_can_reverse_geometric_decay
 #print axioms per_diameter_growth_combines_exactly
@@ -91,5 +113,7 @@ theorem decay_alone_does_not_control_full_rate :
 #print axioms critical_prefactor_erases_decay
 #print axioms supercritical_prefactor_breaks_one_step
 #print axioms decay_alone_does_not_control_full_rate
+#print axioms four_dimensional_box_contacts_exceed_diameter
+#print axioms positive_contact_exponent_exposes_linearization_failure
 
 end Millennium.YangMills.FaizalShabirFRDPrefactorRateFirewall
