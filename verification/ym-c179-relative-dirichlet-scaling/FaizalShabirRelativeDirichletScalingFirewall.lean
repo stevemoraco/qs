@@ -78,15 +78,14 @@ theorem fixed_tail_obstructs_physical_relative_bound
     relative_budget_forces_physical_tail_scale r c theta m a htheta hedge hrel
   linarith
 
-/-- Merely knowing that a zero-sum local coefficient is bounded by a fixed
-constant does not provide a regulator-uniform relative coefficient when the
-physical edge shrinks below that constant. -/
-theorem bounded_locality_is_not_relative_smallness
+/-- A coefficient may remain uniformly bounded by a fixed locality constant
+while still violating the physical relative-form budget. -/
+theorem bounded_locality_with_small_edge_obstructs_relative_bound
     (edge c theta C : ℝ)
-    (hc_nonneg : 0 ≤ c)
     (hc_bound : c ≤ C)
     (htooSmall : theta * edge < 2 * c) :
-    ¬ (2 * c ≤ theta * edge) := by
+    c ≤ C ∧ ¬ (2 * c ≤ theta * edge) := by
+  refine ⟨hc_bound, ?_⟩
   intro h
   linarith
 
@@ -95,6 +94,6 @@ theorem bounded_locality_is_not_relative_smallness
 #print axioms relative_coefficient_lower_bound
 #print axioms relative_budget_forces_physical_tail_scale
 #print axioms fixed_tail_obstructs_physical_relative_bound
-#print axioms bounded_locality_is_not_relative_smallness
+#print axioms bounded_locality_with_small_edge_obstructs_relative_bound
 
 end Millennium.YangMills.FaizalShabirRelativeDirichletScalingFirewall
