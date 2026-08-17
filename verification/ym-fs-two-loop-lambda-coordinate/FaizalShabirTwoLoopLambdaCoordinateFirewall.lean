@@ -70,7 +70,6 @@ theorem inverse_coupling_harmonic_residual_exact
   rw [hstep]
   have hn : (n : ℝ) + 1 ≠ 0 := by positivity
   field_simp
-  ring
 
 /-- If the harmonic coefficient is nonzero, the one-loop-subtracted inverse
 coupling cannot have vanishing scale-normalized residual at that step. -/
