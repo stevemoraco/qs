@@ -1,0 +1,45 @@
+{
+  "source_path": "verification/ym-fs-irrelevant-constant-growth/FaizalShabirIrrelevantConstantGrowthFirewall.lean",
+  "source_sha256": "080fccae81bf6d144a98bcaf94cfcff45c3814c19bae0079201dd6a5ad8d4664",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir irrelevant-contraction constant-growth firewall\n\nFinite real-algebra firewall for the block-factor quantifier in arXiv:2606.19362v1,\nLemma 10.2. The source states an irrelevant-sector estimate with a finite constant `cStar`\nthat itself depends on the block factor `b`, then proposes enlarging `b` to force contraction.\nPointwise finiteness of `cStar b` does not imply that its growth is slower than the explicit\npower of `b`.\n\nFor four-dimensional Yang--Mills the displayed irrelevant exponent is omega = 2. The\nordinary contraction factor is `cStar / b^2`; the physical-time normalized factor from the\nrefining-lattice audit is `(cStar / b^2) * b = cStar / b`.\n\nThis file formalizes only that finite scalar quantifier distinction. It does not formalize the\npolymer norm, FRD, the RG map, regulator identification, OS reconstruction, Yang--Mills, or\na Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall\n\n/-- In the omega=2 case, a finite prefactor growing like `b^2` exactly cancels the claimed\nirrelevant scaling gain: the ordinary contraction factor is one. -/\ntheorem quadratic_prefactor_kills_ordinary_contraction\n    (b : \u211d) (hb : b \u2260 0) :\n    (b ^ 2) / (b ^ 2) = 1 := by\n  exact div_self (pow_ne_zero 2 hb)\n\n/-- Even the weaker statement \"increase b until cStar(b)/b^2 < 1\" does not follow from\npointwise finiteness alone: the explicit finite family `cStar(b)=b^2` is always critical. -/\ntheorem pointwise_finite_prefactor_can_stay_critical\n    (b : \u211d) (hb : b \u2260 0) :\n    \u00ac (b ^ 2) / (b ^ 2) < 1 := by\n  rw [quadratic_prefactor_kills_ordinary_contraction b hb]\n  norm_num\n\n/-- For physical-time AF/IR vanishing, omega=2 requires the stronger factor\n`(cStar/b^2)*b = cStar/b` to be strictly below one. A merely linear finite prefactor is\nexactly critical. -/\ntheorem linear_prefactor_is_physical_time_critical\n    (b : \u211d) (hb : b \u2260 0) :\n    ((b / (b ^ 2)) * b) = 1 := by\n  field_simp [hb]\n\n/-- Therefore pointwise finiteness of a block-factor dependent constant cannot by itself imply\nthe strict physical-time rate: `cStar(b)=b` is finite for every finite b but never yields a\nfactor below one. -/\ntheorem pointwise_finite_linear_prefactor_blocks_physical_contraction\n    (b : \u211d) (hb : b \u2260 0) :\n    \u00ac ((b / (b ^ 2)) * b) < 1 := by\n  rw [linear_prefactor_is_physical_time_critical b hb]\n  norm_num\n\n/-- Positive repair in the omega=2 case: an explicit strict bound `cStar < b` is exactly\nsufficient for physical-time contraction. -/\ntheorem sublinear_prefactor_gives_physical_contraction\n    (cStar b : \u211d)\n    (hb : 0 < b)\n    (hc : cStar < b) :\n    (cStar / (b ^ 2)) * b < 1 := by\n  have hb0 : b \u2260 0 := ne_of_gt hb\n  calc\n    (cStar / (b ^ 2)) * b = cStar / b := by field_simp [hb0]\n    _ < 1 := (div_lt_one hb).2 hc\n\n/-- For the ordinary, unnormalized irrelevant contraction, the weaker explicit bound\n`cStar < b^2` suffices. -/\ntheorem quadratic_bound_gives_ordinary_contraction\n    (cStar b : \u211d)\n    (hb : 0 < b)\n    (hc : cStar < b ^ 2) :\n    cStar / (b ^ 2) < 1 := by\n  have hb2 : 0 < b ^ 2 := sq_pos_of_pos hb\n  exact (div_lt_one hb2).2 hc\n\n#print axioms quadratic_prefactor_kills_ordinary_contraction\n#print axioms pointwise_finite_prefactor_can_stay_critical\n#print axioms linear_prefactor_is_physical_time_critical\n#print axioms pointwise_finite_linear_prefactor_blocks_physical_contraction\n#print axioms sublinear_prefactor_gives_physical_contraction\n#print axioms quadratic_bound_gives_ordinary_contraction\n\nend Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:77:0-77:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.quadratic_prefactor_kills_ordinary_contraction' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:78:0-78:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.pointwise_finite_prefactor_can_stay_critical' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:79:0-79:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.linear_prefactor_is_physical_time_critical' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:80:0-80:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.pointwise_finite_linear_prefactor_blocks_physical_contraction' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:81:0-81:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.sublinear_prefactor_gives_physical_contraction' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:82:0-82:6: info: 'Millennium.YangMills.FaizalShabirIrrelevantConstantGrowthFirewall.quadratic_bound_gives_ordinary_contraction' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 117,
+      "total_ms": 118
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "c2cc931d-fb53-4fab-8845-04bd1eed2c4e",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 174,
+      "queue_time_ms": 7,
+      "execution_time_ms": 166,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 11,
+      "environment_total_time_us": 164075,
+      "environment_pool_size": 64
+    }
+  }
+}
