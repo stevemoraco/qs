@@ -20,7 +20,6 @@ theorem two_sector_dense_family_repair
 
 theorem hidden_sector_blocks_global_target
     (visible hidden target : ℝ)
-    (hvisible : target ≤ visible)
     (hhidden : hidden < target) :
     twoSectorGap visible hidden < target := by
   exact lt_of_le_of_lt (min_le_right visible hidden) hhidden
