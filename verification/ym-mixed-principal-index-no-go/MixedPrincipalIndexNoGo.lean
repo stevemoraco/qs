@@ -14,9 +14,13 @@ theorem no_nonempty_principal_index_set_all_cross
     (hcross : ∀ {α β : ι}, α ∈ J → β ∈ J → cell α ≠ cell β) :
     J = ∅ := by
   ext α
-  simp only [Finset.mem_empty, iff_false]
-  intro hα
-  exact (hcross hα hα) rfl
+  constructor
+  · intro hα
+    have hf : False := (hcross hα hα) rfl
+    exact hf.elim
+  · intro hα
+    have hf : False := by simpa using hα
+    exact hf.elim
 
 #print axioms principal_pair_contains_diagonal
 #print axioms no_nonempty_principal_index_set_all_cross
