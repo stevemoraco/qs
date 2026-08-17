@@ -17,18 +17,21 @@ Even before that hidden-sector issue, the reversed scalar inequality
 strict upper bound on the fine contraction. Thus a coarse gap cannot be pushed
 backward to a UV refinement from the coarse interlacing inequality alone.
 
+Appendix E.9 contains the same missing bridge in another guise: to bound an
+arbitrary fine vector it asks for coarse vectors whose images approach that
+fine vector with error tending to zero. A proper isometric embedding need not
+have dense range. The elementary coordinate embedding `x |-> (x,0)` leaves the
+orthogonal hidden vector `(0,1)` at distance at least one from its entire range.
+
 The source also uses the same forward index both for a power-two ultraviolet
 refinement `a_next = a / 2` and for the coarse transfer identity whose physical
 time step obeys `a_next = 2 a`. These two positive-spacing relations are
 incompatible.
 
-This file formalizes only that finite spectral/scale logic and a sufficient
-abstract repair: add a complement spectral ceiling and an explicit leakage
-budget, and type coarse and refinement maps with opposite orientations.
-
-It does not formalize Hilbert-space transfer operators, the Faizal--Shabir
-block map, Yang--Mills, Osterwalder--Schrader reconstruction, asymptotic
-freedom, a mass gap, or a Clay theorem.
+This file formalizes only that finite spectral/scale logic and sufficient
+abstract repairs. It does not formalize Hilbert-space transfer operators, the
+Faizal--Shabir block map, Yang--Mills, Osterwalder--Schrader reconstruction,
+asymptotic freedom, a mass gap, or a Clay theorem.
 -/
 
 namespace Millennium.YangMills.FaizalShabirInverseGapObservabilityFirewall
@@ -70,11 +73,6 @@ mode. The visible fine eigenvalue is `1/2`, so its exact two-step coarse image
 is the fixed eigenvalue `1/4`. Nevertheless, for every proposed uniform fine
 ceiling `c < 1`, the hidden fine eigenvalue `(1+c)/2` lies strictly above `c`
 while remaining strictly below the vacuum eigenvalue `1`.
-
-This is the finite spectral shadow of the fact that a coarse compression sees
-only the range of the embedding. It therefore cannot propagate a coarse gap
-backward to all fine modes without an independent observability/complement
-spectral theorem.
 -/
 theorem exact_compression_can_hide_arbitrarily_soft_fine_mode
     (c : ℝ)
@@ -101,9 +99,27 @@ theorem exact_compression_can_hide_arbitrarily_soft_fine_mode
   · norm_num
   · rfl
 
+/-- The hidden coordinate `(0,1)` has squared distance at least one from every
+point `(x,0)` in the range of the coordinate embedding. -/
+theorem hidden_coordinate_distance_lower_bound
+    (x : ℝ) :
+    1 ≤ x ^ 2 + 1 := by
+  nlinarith [sq_nonneg x]
+
+/--
+A proper coordinate embedding cannot approximate its orthogonal hidden mode
+arbitrarily well. This is the finite-dimensional firewall for Appendix E.9's
+step "for arbitrary fine `phi`, pick coarse `psi` with `J psi -> phi`" unless
+density/surjectivity of the actual block-spin range is independently proved.
+-/
+theorem coordinate_embedding_range_not_dense
+    : ¬ (∀ ε : ℝ, 0 < ε → ∃ x : ℝ, x ^ 2 + 1 < ε ^ 2) := by
+  intro h
+  obtain ⟨x, hx⟩ := h (1 / 2) (by norm_num)
+  nlinarith [sq_nonneg x]
+
 /-- On the observed/visible mode itself, a power-two compression bound can be
-inverted once the candidate ceiling is nonnegative. The obstruction is
-therefore not the visible mode; it is the uncontrolled complement. -/
+inverted once the candidate ceiling is nonnegative. -/
 theorem power_two_compression_controls_visible_mode
     (visible ceiling : ℝ)
     (hceiling : 0 ≤ ceiling)
@@ -120,15 +136,7 @@ theorem complement_spectral_ceiling_closes_diagonal_model
     max visible hidden ≤ ceiling := by
   exact max_le hvisible hhidden
 
-/--
-Abstract leakage repair. If the full fine contraction is bounded by the worse
-of the visible/complement contractions plus a leakage term, then a common
-sector ceiling `ceiling` and leakage budget `delta` give the full ceiling
-`ceiling + delta`.
-
-A field-theoretic inverse-gap theorem may instantiate this with a complement
-spectral ceiling and a regulator-uniform off-diagonal leakage estimate.
--/
+/-- Abstract complement-plus-leakage repair. -/
 theorem compression_plus_complement_and_leakage
     (visible hidden leakage full ceiling delta : ℝ)
     (hfull : full ≤ max visible hidden + leakage)
@@ -142,9 +150,7 @@ theorem compression_plus_complement_and_leakage
       add_le_add (max_le hvisible hhidden) hleakage
 
 /-- A positive lattice spacing cannot simultaneously be the next scale of a
-power-two UV refinement and the next scale of a power-two coarse transfer.
-This is the scalar orientation contradiction appearing when one writes both
-`a_next = a/2` and `a_next = 2a` with the same forward index. -/
+power-two UV refinement and the next scale of a power-two coarse transfer. -/
 theorem power_two_refinement_and_coarsening_are_incompatible
     (a aNext : ℝ)
     (ha : 0 < a)
@@ -157,6 +163,8 @@ theorem power_two_refinement_and_coarsening_are_incompatible
 #print axioms visible_power_two_compression
 #print axioms reverse_power_inequality_does_not_give_fine_ceiling
 #print axioms exact_compression_can_hide_arbitrarily_soft_fine_mode
+#print axioms hidden_coordinate_distance_lower_bound
+#print axioms coordinate_embedding_range_not_dense
 #print axioms power_two_compression_controls_visible_mode
 #print axioms complement_spectral_ceiling_closes_diagonal_model
 #print axioms compression_plus_complement_and_leakage
