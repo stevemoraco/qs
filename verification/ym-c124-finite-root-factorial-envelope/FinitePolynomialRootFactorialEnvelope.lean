@@ -34,7 +34,7 @@ open scoped BigOperators
 The explicit factorial-envelope constant for a nonnegative derivative row
 supported in orders `0, ..., degree`.
 -/
-def factorialEnvelopeConstant
+noncomputable def factorialEnvelopeConstant
     (row : ℕ → ℝ) (degree : ℕ) (sigma : ℝ) : ℝ :=
   ∑ q ∈ Finset.range (degree + 1),
     row q * sigma ^ q / (Nat.factorial q : ℝ)
@@ -46,7 +46,11 @@ theorem factorialEnvelopeConstant_nonneg
     (hsigma : 0 ≤ sigma) :
     0 ≤ factorialEnvelopeConstant row degree sigma := by
   unfold factorialEnvelopeConstant
-  positivity
+  apply Finset.sum_nonneg
+  intro q hq
+  apply div_nonneg
+  · exact mul_nonneg (hrow q) (pow_nonneg hsigma q)
+  · positivity
 
 /--
 A nonnegative row that vanishes above a fixed degree obeys a factorial
@@ -75,7 +79,9 @@ theorem finite_degree_factorial_envelope
         ∀ i ∈ Finset.range (degree + 1),
           0 ≤ row i * sigma ^ i / (Nat.factorial i : ℝ) := by
       intro i hi
-      positivity
+      apply div_nonneg
+      · exact mul_nonneg (hrow i) (pow_nonneg hsigma.le i)
+      · positivity
     have hterm_le :
         row q * sigma ^ q / (Nat.factorial q : ℝ) ≤
           factorialEnvelopeConstant row degree sigma := by
