@@ -1,0 +1,116 @@
+name: YM Kirk v4 jet-cutoff dependence audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-jet-cutoff-dependence-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Trace extraction/projector and supplier quantifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re
+
+          pdf=Path('kirk_latest.pdf')
+          expected='c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          actual=hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+          lines=Path('latest.txt').read_text(encoding='utf-8',errors='replace').splitlines()
+
+          heading_re=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?',re.I)
+          heads=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m: heads.append((n,m.group(1),m.group(2),m.group(3) or '',line.strip()))
+          def nearest(n):
+              out=None
+              for h in heads:
+                  if h[0]>n: break
+                  out=h
+              return out
+
+          anchors=['4.13','4.14','4.15','4.16','4.17','4.18','4.19','4.20','4.21','4.22','4.23','4.24','4.25','4.26','4.27','4.28','4.29','4.30','4.31','5.20','5.27']
+          def get_anchor(a):
+              rx=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+'+re.escape(a)+r'\b',re.I)
+              return [n for n,l in enumerate(lines,1) if rx.match(l)]
+
+          aw=[]; manifest=[]
+          for a in anchors:
+              hits=get_anchor(a)
+              manifest.append(f'ANCHOR\t{a}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits,1):
+                  lo=max(1,n-100); hi=min(len(lines),n+400)
+                  aw += ['='*145,f'ANCHOR {a} HIT {rank}; LINE={n}; WINDOW=[{lo},{hi}]','='*145]
+                  aw += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          patterns={
+            'LocD':r'Loc\s*D|LocD|Π\s*D|ΠD',
+            'complete_jet':r'complete.*(?:local|Wick).*jet|(?:local|Wick).*jet.*complete',
+            'extraction':r'extraction projector|extraction sector|declared jet|jet extraction|local projection',
+            'D_uniform':r'uniform.{0,100}\bD\b|independent.{0,100}\bD\b|\bD\b.{0,100}(?:uniform|independent)',
+            'D_depend':r'depend.{0,100}\bD\b|\bD\b.{0,100}depend|C\s*D|p\s*D|CD|pD',
+            'D_choice':r'choose\s+D|fix\s+D|fixed\s+D|for every\s+D|for each\s+D|finite\s+D',
+            'all_degrees':r'all (?:engineering )?degrees|arbitrary (?:engineering )?degree|every (?:engineering )?degree|infinite jet|analytic jet|full jet',
+            'one_step':r'one-step|one step|normalized step|scale-two|scale 2',
+            'macrostep':r'macrostep|L\s*=\s*2|L = 2',
+            'supplier_growth':r'supplier|K\s*m|Km|Γ|Gamma|delta|δ',
+            'Cauchy_degree':r'Cauchy.{0,120}(?:degree|D)|(?:degree|D).{0,120}Cauchy|factorial.{0,120}(?:degree|jet)|(?:degree|jet).{0,120}factorial',
+          }
+          pw=[]; pc=[]
+          for label,pat in patterns.items():
+              rx=re.compile(pat,re.I)
+              hits=[n for n,l in enumerate(lines,1) if rx.search(l)]
+              pc.append(f'PATTERN\t{label}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits[:300],1):
+                  lo=max(1,n-35); hi=min(len(lines),n+90)
+                  pw += ['='*145,f'PATTERN {label} HIT {rank}; LINE={n}; NEAREST={nearest(n)}','='*145]
+                  pw += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          # Build a compact exact dependency ledger from the local Section 4.4--4.7 block.
+          lo=1; hi=len(lines)
+          h413=get_anchor('4.13'); h431=get_anchor('4.31')
+          if h413: lo=max(1,h413[0]-40)
+          if h431: hi=min(len(lines),h431[0]+80)
+          compact=[f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
+
+          Path('_audit_out/anchor_windows.txt').write_text('\n'.join(aw)+'\n',encoding='utf-8')
+          Path('_audit_out/pattern_windows.txt').write_text('\n'.join(pw)+'\n',encoding='utf-8')
+          Path('_audit_out/section4_localization_block.txt').write_text('\n'.join(compact)+'\n',encoding='utf-8')
+          Path('_audit_out/manifest.tsv').write_text('\n'.join([f'PDF_SHA256\t{actual}',f'TOTAL_HEADINGS\t{len(heads)}',*manifest,*pc])+'\n',encoding='utf-8')
+          if not get_anchor('4.20') or not get_anchor('4.29') or not get_anchor('4.30'):
+              raise SystemExit('required anchor missing')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/manifest.tsv
+          wc -l -c _audit_out/*
+      - name: Upload jet-cutoff audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-jet-cutoff-dependence-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
