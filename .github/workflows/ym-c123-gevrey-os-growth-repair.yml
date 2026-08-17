@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Trust preflight
         shell: bash
@@ -74,10 +74,11 @@ jobs:
           PY
 
       - name: Upload exact replay evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ym-c123-gevrey-os-growth-replay
           path: |
             verification/ym-c123-gevrey-os-growth-repair/GevreyOSGrowthRepair.lean
             ym-c123-axle-result.json
-          if-no-files-found: error
+          if-no-files-found: warn
