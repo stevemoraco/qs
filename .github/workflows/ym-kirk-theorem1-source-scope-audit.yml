@@ -1,0 +1,115 @@
+name: YM Kirk v4 Theorem 1.1 source-scope audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-theorem1-source-scope-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+
+      - name: Extract theorem and observable-scope contexts
+        run: |
+          set -euo pipefail
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, subprocess
+
+          raw = Path('latest_raw.txt').read_text(encoding='utf-8', errors='replace')
+          flat = ' '.join(raw.split())
+          low = flat.lower()
+          out = Path('source_audit/kirk_v4/cubic_source_normalization')
+          out.mkdir(parents=True, exist_ok=True)
+
+          headings = [
+              'Theorem 1.1', 'Remark 1.2', 'Theorem 8.15', 'Theorem 8.16',
+              'Theorem 10.5', 'Lemma 10.6', 'Theorem 11.1', 'Remark 11.3',
+          ]
+          phrases = [
+              'curvature-jet observable scope',
+              'normalized local source family',
+              'normalized local source families',
+              'local quantum field',
+              'local quantum fields',
+              'gauge-invariant local polynomial',
+              'gauge-invariant local polynomials',
+              'curvature-jet source multiplet',
+              'dimension-six regulator spaces',
+              'primitive cubic symmetric color tensor',
+              'principal source is the gaussian wick source',
+              'common positive-scale schwinger system',
+              'projectively compatible',
+              'fixed finite normalized local source family',
+              'fixed finite normalized local source families',
+          ]
+
+          chunks=[]
+          counts={}
+          for term in headings + phrases:
+              needle=term.lower(); pos=0; n=0
+              while True:
+                  i=low.find(needle,pos)
+                  if i<0: break
+                  n+=1
+                  chunks.append(
+                      f'===== {term} HIT {n} AT {i} =====\n'
+                      + flat[max(0,i-12000):min(len(flat),i+30000)] + '\n'
+                  )
+                  pos=i+len(needle)
+                  if n>=20: break
+              counts[term]=n
+
+          # Preserve the manuscript opening through the first large section break.
+          (out/'OPENING_60000.txt').write_text(flat[:60000]+'\n',encoding='utf-8')
+          (out/'THEOREM1_SCOPE_TARGETED.txt').write_text('\n'.join(chunks),encoding='utf-8')
+          (out/'THEOREM1_SCOPE_COUNTS.json').write_text(json.dumps(counts,indent=2)+'\n',encoding='utf-8')
+          (out/'THEOREM1_SCOPE_PDF_SHA256.txt').write_text(
+              subprocess.check_output(['sha256sum','kirk_latest.pdf'],text=True),
+              encoding='utf-8'
+          )
+
+          required=['Theorem 1.1','Theorem 8.15','Theorem 8.16','Theorem 11.1']
+          missing=[x for x in required if counts.get(x,0)==0]
+          if missing:
+              raise SystemExit('missing theorem-scope anchors: '+', '.join(missing))
+          PY
+
+      - name: Commit source-scope extraction
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/cubic_source_normalization
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve theorem 1.1 local-field scope'
+          git push origin HEAD:verification/ym-kirk-v4-cubic-source-normalization-audit-20260817-gpt56pro
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-theorem1-source-scope-audit
+          retention-days: 30
+          if-no-files-found: warn
+          path: source_audit/kirk_v4/cubic_source_normalization/
