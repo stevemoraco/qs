@@ -4,19 +4,15 @@ import Mathlib
 # Faizal--Shabir two-loop transmutation-coordinate firewalls
 
 Finite real-algebra facts used in the hostile audit of arXiv:2606.19362v1,
-Section 10.  These declarations do not formalize Yang--Mills theory, RG,
+Section 10. These declarations do not formalize Yang--Mills theory, RG,
 Schwinger functions, Osterwalder--Schrader reconstruction, or a Clay theorem.
 
 They record two load-bearing scalar points:
 
 * replacing a contraction `c * x` by the bare factor `x` requires `c ≤ 1`
   when `x > 0`;
-* a nonzero correction of harmonic size `B/(n+1)` is critical: although it
-  tends pointwise to zero, multiplication by its natural scale `n+1` recovers
-  the nonzero coefficient `B` exactly.  Thus a linear inverse-coupling law
-  cannot acquire a bounded limiting remainder merely from an `O(g^2)` term
-  when `g^2` is of order `1/n`; the coefficient/cancellation structure is
-  load-bearing.
+* a nonzero correction of harmonic size `B/(n+1)` is critical: multiplication
+  by its natural scale `n+1` recovers the coefficient `B` exactly.
 -/
 
 namespace Millennium.YangMills.FaizalShabirTwoLoopLambdaCoordinateFirewall
@@ -30,19 +26,12 @@ theorem dropped_prefactor_requires_le_one
   exact (mul_le_mul_right hx).mp h'
 
 /-- Conversely, a prefactor bounded by one can safely be dropped against a
-positive scale factor. -/
+nonnegative scale factor. -/
 theorem prefactor_le_one_allows_drop
     (c x : ℝ) (hx : 0 ≤ x) (hc : c ≤ 1) :
     c * x ≤ x := by
-  have := mul_le_mul_of_nonneg_right hc hx
-  simpa using this
-
-/-- The model harmonic correction `1/(n+1)` has exact unit scale-normalized
-size at every finite depth. -/
-theorem harmonic_correction_scale_exact (n : ℕ) :
-    ((n : ℝ) + 1) * (1 / ((n : ℝ) + 1)) = 1 := by
-  have hn : (n : ℝ) + 1 ≠ 0 := by positivity
-  field_simp
+  have h := mul_le_mul_of_nonneg_right hc hx
+  simpa using h
 
 /-- A coefficient `B` multiplying the harmonic correction survives exactly
 under the natural `(n+1)` normalization. -/
@@ -50,7 +39,7 @@ theorem harmonic_coefficient_survives_normalization
     (B : ℝ) (n : ℕ) :
     ((n : ℝ) + 1) * (B / ((n : ℝ) + 1)) = B := by
   have hn : (n : ℝ) + 1 ≠ 0 := by positivity
-  field_simp
+  field_simp [hn]
 
 /-- A nonzero harmonic coefficient therefore cannot disappear under the
 natural scale normalization. -/
@@ -62,17 +51,20 @@ theorem nonzero_harmonic_coefficient_stays_nonzero
 
 /-- Exact finite-step shadow of an inverse-coupling recurrence
 `h' = h + A + B/(n+1)`: after subtracting the one-loop increment `A`, the
-scale-normalized residual is precisely the two-loop coefficient `B`. -/
+scale-normalized residual is precisely the harmonic coefficient `B`. -/
 theorem inverse_coupling_harmonic_residual_exact
     (h hNext A B : ℝ) (n : ℕ)
     (hstep : hNext = h + A + B / ((n : ℝ) + 1)) :
     ((n : ℝ) + 1) * (hNext - h - A) = B := by
-  rw [hstep]
-  have hn : (n : ℝ) + 1 ≠ 0 := by positivity
-  field_simp
+  calc
+    ((n : ℝ) + 1) * (hNext - h - A) =
+        ((n : ℝ) + 1) * (B / ((n : ℝ) + 1)) := by
+          rw [hstep]
+          ring
+    _ = B := harmonic_coefficient_survives_normalization B n
 
 /-- If the harmonic coefficient is nonzero, the one-loop-subtracted inverse
-coupling cannot have vanishing scale-normalized residual at that step. -/
+coupling has nonzero scale-normalized residual. -/
 theorem inverse_coupling_nonzero_two_loop_residual
     (h hNext A B : ℝ) (n : ℕ) (hB : B ≠ 0)
     (hstep : hNext = h + A + B / ((n : ℝ) + 1)) :
@@ -82,7 +74,6 @@ theorem inverse_coupling_nonzero_two_loop_residual
 
 #print axioms dropped_prefactor_requires_le_one
 #print axioms prefactor_le_one_allows_drop
-#print axioms harmonic_correction_scale_exact
 #print axioms harmonic_coefficient_survives_normalization
 #print axioms nonzero_harmonic_coefficient_stays_nonzero
 #print axioms inverse_coupling_harmonic_residual_exact
