@@ -1,0 +1,45 @@
+{
+  "source_path": "verification/ym-fs-boundary-codim-criticality/FaizalShabirBoundaryCodimensionCriticality.lean",
+  "source_sha256": "abeaee86fb619da2a4d272b40f46aa23394d2fcf189c8542f02e4afc35232e85",
+  "axle_environment": "lean-4.30.0",
+  "bad": false,
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Four-dimensional boundary/volume criticality\n\nFinite scalar ledger for the Faizal--Shabir block-boundary repair frontier.\nIn four dimensions, a generic codimension-one boundary contribution scales like\n`L^3`, while the block volume scales like `L^4`.  Their ratio is exactly `1/L`.\nIf the physical lattice spacing at the corresponding refinement is `a = 1/L`,\nthen the raw boundary/volume defect is only `O(a)`, and dividing by the physical\ntime step `a` leaves an order-one defect.  A further cancellation giving an\n`L^2` numerator instead produces `a^2`, whose physical normalization is `a` and\ntherefore can vanish.\n\nThis file formalizes only this finite exponent/unit ledger. It does not prove\nany Yang--Mills boundary estimate, transfer-operator bound, OS theorem, mass\ngap, or Clay result.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality\n\n/-- In four dimensions, codimension-one boundary size divided by volume is\nexactly one inverse block length. -/\ntheorem boundary_three_over_volume_four\n    (L : \u211d)\n    (hL : L \u2260 0) :\n    L ^ 3 / L ^ 4 = 1 / L := by\n  field_simp\n\n/-- If the physical spacing is `a = 1/L`, the generic boundary/volume ratio is\nexactly of order `a`. -/\ntheorem boundary_volume_ratio_is_spacing\n    (L a : \u211d)\n    (hL : L \u2260 0)\n    (ha : a = 1 / L) :\n    L ^ 3 / L ^ 4 = a := by\n  rw [boundary_three_over_volume_four L hL, ha]\n\n/-- A raw defect exactly of codimension-one boundary/volume size has unit cost\nafter the physical `1/a` normalization. -/\ntheorem codim_one_boundary_is_physically_critical\n    (L a : \u211d)\n    (hL : L \u2260 0)\n    (ha : a = 1 / L)\n    (ha0 : a \u2260 0) :\n    (L ^ 3 / L ^ 4) / a = 1 := by\n  rw [boundary_volume_ratio_is_spacing L a hL ha]\n  field_simp\n\n/-- One extra inverse block-length gain changes the raw ratio from `a` to\n`a^2`. -/\ntheorem extra_boundary_cancellation_gives_spacing_square\n    (L a : \u211d)\n    (hL : L \u2260 0)\n    (ha : a = 1 / L) :\n    L ^ 2 / L ^ 4 = a ^ 2 := by\n  rw [ha]\n  field_simp\n\n/-- After the physical `1/a` normalization, the one-extra-power repair costs\nonly `a`. -/\ntheorem extra_boundary_cancellation_normalizes_to_spacing\n    (L a : \u211d)\n    (hL : L \u2260 0)\n    (ha : a = 1 / L)\n    (ha0 : a \u2260 0) :\n    (L ^ 2 / L ^ 4) / a = a := by\n  rw [extra_boundary_cancellation_gives_spacing_square L a hL ha]\n  field_simp\n\n#print axioms boundary_three_over_volume_four\n#print axioms boundary_volume_ratio_is_spacing\n#print axioms codim_one_boundary_is_physically_critical\n#print axioms extra_boundary_cancellation_gives_spacing_square\n#print axioms extra_boundary_cancellation_normalizes_to_spacing\n\nend Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:71:0-71:6: info: 'Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality.boundary_three_over_volume_four' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:72:0-72:6: info: 'Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality.boundary_volume_ratio_is_spacing' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:73:0-73:6: info: 'Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality.codim_one_boundary_is_physically_critical' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:74:0-74:6: info: 'Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality.extra_boundary_cancellation_gives_spacing_square' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:75:0-75:6: info: 'Millennium.YangMills.FaizalShabirBoundaryCodimensionCriticality.extra_boundary_cancellation_normalizes_to_spacing' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 85,
+      "total_ms": 86
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "425ec18d-1f0e-4089-a7da-fcdda95e9109",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 137,
+      "queue_time_ms": 1,
+      "execution_time_ms": 136,
+      "cached_response": false,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 13,
+      "environment_total_time_us": 134345,
+      "environment_pool_size": 64
+    }
+  }
+}
