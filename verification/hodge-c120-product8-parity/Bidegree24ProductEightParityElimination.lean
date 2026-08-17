@@ -88,7 +88,19 @@ theorem odd_det_cannot_send_section_even
     (hdet : OddZ (a * d - b * c))
     (hfirst : EvenZ (-2 * a + b))
     (hsecond : EvenZ (-2 * c + d)) : False := by
-  have hcoords := coordinates_even_of_odd_det a b c d (-2) 1 hdet hfirst hsecond
+  rcases hfirst with ⟨u, hu⟩
+  rcases hsecond with ⟨v, hv⟩
+  have hfirst' : EvenZ (a * (-2) + b * 1) := by
+    refine ⟨u, ?_⟩
+    calc
+      a * (-2) + b * 1 = -2 * a + b := by ring
+      _ = 2 * u := hu
+  have hsecond' : EvenZ (c * (-2) + d * 1) := by
+    refine ⟨v, ?_⟩
+    calc
+      c * (-2) + d * 1 = -2 * c + d := by ring
+      _ = 2 * v := hv
+  have hcoords := coordinates_even_of_odd_det a b c d (-2) 1 hdet hfirst' hsecond'
   rcases hcoords.2 with ⟨k, hk⟩
   omega
 
