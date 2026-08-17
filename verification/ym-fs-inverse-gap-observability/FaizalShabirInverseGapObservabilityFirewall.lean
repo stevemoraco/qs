@@ -12,6 +12,11 @@ orthogonal complement of the embedding. A coarse transfer can therefore have
 one fixed strict nonvacuum contraction while an unseen fine mode approaches the
 vacuum eigenvalue `1` arbitrarily closely.
 
+Even before that hidden-sector issue, the reversed scalar inequality
+`coarse <= fine^2` is one-way: a fixed small coarse contraction supplies no
+strict upper bound on the fine contraction. Thus a coarse gap cannot be pushed
+backward to a UV refinement from the coarse interlacing inequality alone.
+
 The source also uses the same forward index both for a power-two ultraviolet
 refinement `a_next = a / 2` and for the coarse transfer identity whose physical
 time step obeys `a_next = 2 a`. These two positive-spacing relations are
@@ -40,6 +45,24 @@ theorem hidden_mode_between_ceiling_and_vacuum
 theorem visible_power_two_compression :
     ((1 / 2 : ℝ) ^ 2) = 1 / 4 := by
   norm_num
+
+/--
+A fixed coarse upper bound `1/4 <= fine^2` does not bound the fine contraction
+away from `1`. For every proposed strict ceiling `c < 1`, there is a fine
+contraction above `c` and below `1` that still satisfies the same coarse
+inequality. This is the scalar direction firewall for trying to run a
+fine-to-coarse interlacing estimate backward toward the UV.
+-/
+theorem reverse_power_inequality_does_not_give_fine_ceiling
+    (c : ℝ)
+    (hc0 : 0 ≤ c)
+    (hc1 : c < 1) :
+    ∃ fine : ℝ,
+      c < fine ∧ fine < 1 ∧ (1 / 4 : ℝ) ≤ fine ^ 2 := by
+  refine ⟨(1 + c) / 2, ?_, ?_, ?_⟩
+  · linarith
+  · linarith
+  · nlinarith [sq_nonneg c]
 
 /--
 Exact visible compression can coexist with an arbitrarily soft hidden fine
@@ -133,6 +156,7 @@ theorem power_two_refinement_and_coarsening_are_incompatible
 
 #print axioms hidden_mode_between_ceiling_and_vacuum
 #print axioms visible_power_two_compression
+#print axioms reverse_power_inequality_does_not_give_fine_ceiling
 #print axioms exact_compression_can_hide_arbitrarily_soft_fine_mode
 #print axioms power_two_compression_controls_visible_mode
 #print axioms complement_spectral_ceiling_closes_diagonal_model
