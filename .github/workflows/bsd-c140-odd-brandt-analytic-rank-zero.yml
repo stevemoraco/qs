@@ -22,7 +22,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Query AXLE
+        id: axle
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -41,7 +43,24 @@ jobs:
           req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
           with urllib.request.urlopen(req,timeout=960) as response:
             result=json.load(response)
+          pathlib.Path('axle-c140.json').write_text(json.dumps(result,indent=2))
           print(json.dumps(result,indent=2))
+          PY
+      - name: Upload AXLE diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axle-c140
+          path: axle-c140.json
+          if-no-files-found: ignore
+      - name: Enforce clean compiler verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f axle-c140.json
+          python3 - <<'PY'
+          import json
+          result=json.load(open('axle-c140.json'))
           lean=result.get('lean_messages',{})
           tool=result.get('tool_messages',{})
           bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in json.dumps(result))
