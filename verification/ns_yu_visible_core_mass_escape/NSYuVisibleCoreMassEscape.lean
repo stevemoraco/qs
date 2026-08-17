@@ -72,7 +72,7 @@ theorem conditional_budget_division
     (hrestrict : m ^ 2 * EB ≤ E) :
     EB ≤ E / m ^ 2 := by
   have hm2 : 0 < m ^ 2 := sq_pos_of_pos hm
-  exact (le_div_iff₀ hm2).2 hrestrict
+  exact (le_div_iff₀ hm2).2 (by simpa [mul_comm] using hrestrict)
 
 #print axioms exact_three_atom_energy_ledger
 #print axioms exact_three_atom_mass_ledger
