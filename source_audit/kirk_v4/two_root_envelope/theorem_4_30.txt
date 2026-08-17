@@ -1,203 +1,41 @@
-6827:    Theorem 4.30 and the adapted one-step mean-value contraction following (29) contract the sum of
-6828: those two pieces, not merely its local projection, in one permanent rooted norm. Lemma 5.20, followed
-6829: by the uniform mean-value estimate on the centered weak graph in Theorem 5.1, supplies one equivalent
-6830: one-step norm and one ρ < 1 on the whole common weak tube. Those results were proved through three
-6831: active structural marks and arbitrary fixed passive source order, so they apply to the present complete
-6832: two-root packets and to already formed coupling derivatives. This proves (210) without promoting a
-6833: finite-dimensional jet estimate to a nonlocal packet estimate.
-6834:    The exact normalized source transfer commutes with translations, global color and aligned reflection.
-6835: A constant coarse profile pulls back to a constant fine profile. Therefore K(0) = 0 and reflection evenness
-6836: are preserved, which proves (209). Finally, each displayed lattice profile difference at scale ℓj = 2j r is
-6837: (r/ℓj ) = 2−j times the unit physical difference. Two differences give 2−2j , while the two support moments
-6838: are absorbed by the unused permanent exponent. This proves (211) directly on the whole packet.
-6839: Lemma A.14 (Top-scale geometric shell row). Assume the top marked ancestor is a weak conditional
-6840: vertex. Let j be its scale and k the full reported-support shell. Sum the corresponding whole complete
-6841: packets first and then perform the exact contact subtraction. For m = 0, 1, 2 the resulting row satisfies
-6842:                                                                        √
-6843:                                      [m]
-6844:                                    Bj,k ≤ Cm (j + 2)Qm eCm                   2
-6845:                                                                            j+1 −2k
-6846:                                                                                      ωj,k ,           (212)
-6847: where                                 (                   k−j
-6848:                                        (1 + 2k−j )q+2 e−c2 ,                  j ≤ k + C0 ,
-6849:                               ωj,k :=
-6850:                                        2−2(j−k−C0 ) ,                         j > k + C0 .
-6851: For every P, A < ∞,          X                √                                          √
-6852:                                    (j + 2)P eA j+1 ωj,k ≤ CP,A (k + 2)P eA k+1 .                      (213)
-6853:                              j≥0
-6854: 
-6855: The same statement holds with one curvature root replaced by a fixed finite defect root.
-6856: 
-6857: 
-6858:                                                            101
-6859: 
-6860: Proof. The complete marked packet at v⊤ is bounded by the one-step marked envelope, the fixed finite
-6861: essential hull and the exact
-6862:                          √ parity products on its suppressed unary chains. Lemmas A.4 and A.10 give
-6863: the factor (j + 2)Qm eCm j+1 .
-6864:    Because the shell selector groups whole packets, Lemma A.3 applies without cutting a BRS or
-6865: normalization packet. The entire selected derivative packet lies in the even-contact ideal. Equation (211)
-6866: assigns the exact whole-packet two-difference factor 2−2j before any contraction estimate is used. If
-6867: j ≤ k + C0 , multiply this by (208). Since
-6868: 
-6869:                                                2−2j = 2−2k 22(k−j) ,
-6870: 
-6871: the extra 22(k−j) is absorbed by a harmless weakening of the supergeometric support exponent. This
-6872: includes the hostile remote-side- decoration geometry: the side branch pays only the already established
-6873: whole-packet support row, while the two differences belong to the complete packet at v⊤ .
-6874:    If j > k + C0 , no connector is needed and 2−2j ≤ C2−2k 2−2(j−k−C0 ) . The two tails in (213) are
-6875: respectively supergeometric and geometric. A fixed defect changes only the finite root norm.
-6876: Lemma A.15 (Complete root-separating bridge cancellation). At any finite weak terminal logarithm,
-6877: after complete BRS/reflection, regular/irregular and normalization recombination, the complete sum of
-6878: a covariance class possessing a canonically selected root-separating bridge is zero before absolute values.
-6879: The identity remains true with zero, one or two already assigned g marks.
-6880: Proof. Contract the maximal two-edge-connected blocks and select the first bridge on the bridge-tree
-6881: path leaving the negative-time root. Deleting that bridge leaves two complete connected sides and gives
-6882: the exact coefficientwise factorization
-6883:                                   X             X
-6884:                                         w(G) =       Ccc′ (x, y)Lc (x)Rc′ (y).
-6885:                                G: E⋆ ={e}           x,y,c,c′
-6886: 
-6887: Packet completion precedes the bridge selection, so denominator derivatives, localization contacts, source-
-6888: motion contacts and off-path branches remain inside L and R. Each side contains one scalar curvature
-6889: root and one open adjoint leg. Global color invariance makes both one-leg packets vanish. The identity
-6890: holds for the whole C 2 family in g, hence also after any distribution of at most two g marks.
-6891:    For one crossing cell with first-crossing depth N , put
-6892:                                                                √
-6893:                              ΛN,m := Cm (N + 2)Pm eCm           N +1
-6894:                                                                        ,   m = 0, 1, 2.                  (214)
-6895: 
-6896: A.4     Pre-owner physical differentiation and compact entrance
-6897: Lemma A.16 (Pre-owner physical differentiation and fresh labelled collect). Fix finite volume, finite
-6898: weak depth and one compact first-crossing cell. Let Pg denote the exact unlabelled normalized compact-
-6899: entrance density before the large-field labels, bad components, canonical owners, history certificates, Fourier
-6900: transformation and network cutting are formed. For a finite original block set Q put
-6901:                                                                        Y σ
-6902:                            ΣQ = {in, curv, col, out}Q ,      χσ (g) =      χQQ (g).
-6903:                                                                            Q∈Q
-6904: 
-6905: For m = 0, 1, 2 define the freshly labelled physical mark by
-6906: 
-6907:                                             Pσ[m] (g) := χσ (g) ∂gm Pg .                                 (215)
-6908: 
-6909: Then                                          X
-6910:                                                     Pσ[m] (g) = ∂gm Pg                                   (216)
-6911:                                              σ∈ΣQ
-6912: 
-6913: pointwise. Bad blocks, connected bad cores, canonical owners and history certificates are formed only
-6914: after (215). Consequently no derivative of a splice cutoff occurs in the marked family, and no cancellation
-6915: is asserted inside a fixed owner or fixed core.
-6916:    Keep the ordinary exact unmarked factorization and its positive normalizations. In its differentiated
-6917:                                                                [m]
-6918: Leibniz, quotient and BKAR identities, insert the family {Pσ }σ only as distinguished marked vertices;
-6919: the signed marked terms are never normalized as separate measures. After owner and certificate labels are
-6920: forgotten, the resulting marked family sums exactly to the physical derivative of the complete compact
-6921: entrance functional through order 2sG . At m = 0 this is the original unmarked collect.
-6922: 
-6923: 
-6924:                                                         102
-6925: 
-6926: Proof. The pointwise partition identity gives σ χσ = Q∈Q λ χλQ = 1, proving (216). Notice the
-6927:                                                 P          Q       P
-6928: 
-6929: order: the derivative is already taken before the partition is inserted. Hence the terms ∂gj χλQ never arise,
-6930: and changing one fresh label is allowed to split, shrink, merge or erase a bad core without requiring any
-6931: coefficientwise pairing between different owner strata.
-6932:    At fixed volume and depth all subsequent operations are finite-dimensional integrals, finite sums,
-6933: products, positive normalizations and finite BKAR interpolations. Differentiate these exact identities
-6934: before taking absolute values. The first two normalized derivatives are represented by the usual finite
-6935: score list
-6936: 
-6937:                          ∂g ⟨F ⟩g = ⟨∂g F ⟩g + ⟨F ; S1 ⟩g ,                                                          (217)
-6938:                          ∂g2 ⟨F ⟩g = ⟨∂g2 F ⟩g + 2⟨∂g F ; S1 ⟩g + ⟨F ; S2 ⟩g + ⟨F ; S1 ; S1 ⟩g ,                     (218)
-6939: 
-6940: where Sj = ∂gj log Pg . Insert the fresh partition at each resulting physical density or score occurrence and
-6941: only then apply the deterministic core, owner and reporting rules, always inside the already normalized
-6942: unmarked identity. Fubini and the marked connected exponential formula show that forgetting the
-6943: auxiliary labels recovers the differentiated unlabelled functional. Lemmas 3.29 and 6.7 then guarantee
-6944: exact, nonduplicating transport of the newly formed certificates through later steps. They are not used
-6945: to claim owner-preserving cancellation. Every later marked network bound is linear in the distinguished
-6946: marked vertices before absolute values, so it needs this exact summed representation, not a coefficientwise
-6947: derivative of a fixed owner activity.
-6948:    For a finite live-pivot set I define the fixed-group real product Sobolev operator
-6949:                                               (G)
-6950:                                                      Y
-6951:                                            SI :=       (1 − ∆p )sG .                                                 (219)
-6952:                                                            p∈I
-6953: 
-6954: Lemma A.17 (Uniform hybrid ordered-multijet polydisc). Let X be one freshly formed core and let
-6955: IX be a set of live original-link pivots whose fixed buffers are pairwise disjoint. Increase the matching
-6956: separation once so that it is larger than four times the maximum diameter of a finite-atlas transition or
-6957: outer atom. Fix a subset K ⊂ IX . For each p ∈ K fix an ordered frame word
-6958: 
-6959:                                     ap = (ap,1 , . . . , ap,rp ),          1 ≤ rp ≤ 2sG ,
-6960: 
-6961: in the fixed left-invariant frame on the pth copy of G, with the convention Dp,a f (Up ) = dt
-6962:                                                                                            d
-6963:                                                                                               f (Up etXa ) t=0 .
-6964: Introduce one complex variable for every letter of the word and define the sequential flow
-6965:                                                            t      Xap,rp
-6966:                      Φp,tp (Up ) := Up etp,1 Xap,1 · · · e p,rp            ,     tp = (tp,1 , . . . , tp,rp ).       (220)
-6967: 
-6968: Repeated frame directions are allowed and retain distinct flow variables. Put R(a) := p∈K rp ≤ 2sG |K|.
-6969:                                                                                                                  P
-6970:    The unlabelled reference density is formed before the fresh partition. Its exact factor inventory contains
-6971: no splice cutoff: it consists of the reference, Wilson–Haar, coordinate, coarea, selected-anchor, determinant,
-6972: Gaussian-normalization, inherited regular and reported-inverse factors already included in the common
-6973: product tube of Lemma 6.22. Define its actual complexified ordered deformation by
-6974: 
-6975:                                             X,t := ρX (Φq,tq (Uq ))q∈K .
-6976:                                            ρref                                                          (221)
-6977:                                                     ref
-6978:                                                                       
-6979: 
-6980:                                                                                            [m]
-6981:    For each finite Leibniz term of the freshly labelled marked numerator λX,σ , factor out the same analytic
-6982: inventory. Every remaining real finite-atlas factor is a splice cutoff or a fixed-template transition/outer
-6983: atom. Put it in Rp when its support meets the buffer of p, and in R∅ otherwise. The enlarged matching
-6984: separation makes these sets disjoint: no real factor belongs to two Rp ’s.
-6985:    For c ∈ Rp , let cp (tp ) := c(Φp,tp (Up )) with all other variables fixed at zero, and use the square-free
-6986: ordered Taylor jet
-6987:                                                                          
-6988:                                              X         Y           Y
-6989:                         (G),ord
-6990:                       Jp,a  p
-6991:                                 c(tp ) :=                tp,j      ∂tp,j  cp (tp )   .               (222)
-6992:                                            S⊆{1,...,rp }   j∈S                 j∈S
-6993:                                                                                                     tp =0
-6994: 
-6995: The empty-set term is c. Because every occurrence in the ordered word has its own variable, this multiaffine
-6996: jet contains every subword coefficient needed by the Leibniz and quotient identities, including repeated
-6997: directions and noncommuting mixed directions.
-6998: 
-6999: 
-7000:                                                                103
-7001: 
-7002:    Define the hybrid marked numerator by evaluating every analytic factor on the actual sequential complex
-7003: flow and replacing each c ∈ Rp by (222); factors in R∅ are unchanged. Sum the resulting finite Leibniz
-7004: terms. The pre-owner physical mark is formed before this construction and before ownership. No logarithm
-7005: or complex extension of a splice cutoff is taken.
-7006:    There are numbers τhyb > 0 and Chyb < ∞, depending on the fixed group but independent of the words,
-7007: K, core geometry, cutoff, volume, exterior configuration and preceding weak depth, such that on the full
-7008: product polydisc |tp,j | < τhyb :
-7009:    (i) the finite-volume functions                     Z
-7010:                                                     GX (t) :=           ρref
-7011:                                                                          X,t dµX
-7012: 
-7013:        and the corresponding distinguished marked integrals are holomorphic;
-7014:   (ii) the connected BKAR logarithm based at t = 0 converges absolutely and
-7015:                                    GX (t) = GX (0)eLX (t) ,                   |LX (t)| ≤ Chyb |K|;                  (223)
-7016:         therefore GX (t) is zero-free on the whole ordered product polydisc;
-7017:   (iii) for m ≤ 2, r ≤ 3 and q ≤ Q,
-7018:                                                         [m],hyb
-7019:                     e−b1 qRX (η) GX (t)−1 Dζr DJq λX,σ               (t; η)         ≤ Cm,Q eChyb |K| bu (X)ΛN,m .   (224)
-7020:                                                                                TV
-7021: 
-7022:    If an ordered pivot jet differentiates any fresh cutoff, including χin
-7023:                                                                        Q , the differentiated block is placed in
-7024: the derivative-created defect set. Its connected components are recollected before ownership and reporting.
-7025: Every such component has the same action charge as an ordinary bad component, including in the all-in
-7026: history.
-7027: Proof. The reference inventory statement follows directly from the definition of ρref  X in the component
-7028: plateau: the fresh four-way labels occur only in the bad numerator, while every owned reference, coordinate,
-7029: coarea, anchor-return, determinant and inherited regular factor is part of the cutoff-free positive reference.
+2498: Theorem 4.30 (Local/nonlocal separation). Assume:
+2499: 1. the one-step rooted marked supplier bounds are finite:
+2500:                                           Km < ∞,             0 ≤ m ≤ 3,
+2501:    uniformly under the standing convention;
+2502: 2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+2503:    associated-graded diagonal is
+2504:                                                      L4−∆ ;
+2505: 3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+2506:    unmarked scalar degree is six;
+2507: 4. for
+2508:                                      Γ = log2 max{Km , 1} + ε,
+2509:                                                        m
+2510:    the nonlocal rows obey
+2511:                                 ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+2512:    where
+2513:                                                    Γ+3
+2514:                                                                        
+2515:                                             R(L) =     log L
+2516:                                                     κ
+2517:    and δD → ∞.
+2518:    Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+2519:                                            ∥DΦL (0)|stable ∥ < 1.
+2520: No upper bound of the form maxm Km < 4 is required.
+2521: Proof. Fix the finite number Γ. Choose D so that
+2522:                                                   δD > Γ + 2.
+2523: On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+2524: scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+2525: equivalent finite-dimensional norm with
+2526:                                       ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+2527: Choose ϵL = L−1 . Thus
+2528:                                                  ∥JL ∥ ≤ 2L−1 .
+2529:   The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+2530: depending only on the fixed D, L, never on volume or weak depth. Since
+2531:                                                   δD − Γ > 2,
+2532: the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+2533: one finite L such that
+2534:                              2L−1 + Clong
+2535:                                      ′
+2536:                                           L−3 + CD′
+2537:                                                     (1 + R(L))pD LΓ−δD < 1.
+2538: This gives the strict macrostep contraction.
