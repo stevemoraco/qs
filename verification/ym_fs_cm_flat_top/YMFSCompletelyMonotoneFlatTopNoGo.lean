@@ -97,10 +97,10 @@ theorem nonzero_spectral_multiplier_cancels
   have hweightSq : 0 < weight ^ 2 := sq_pos_of_ne_zero hweight
   by_contra hnot
   have hgt : C * sigma ^ 2 < lambda := lt_of_not_ge hnot
-  have hmul :
-      (C * sigma ^ 2) * weight ^ 2 < lambda * weight ^ 2 :=
-    (mul_lt_mul_right hweightSq).2 hgt
-  exact (not_lt_of_ge hbound) hmul
+  have hprod :
+      0 < (lambda - C * sigma ^ 2) * weight ^ 2 :=
+    mul_pos (sub_pos.mpr hgt) hweightSq
+  nlinarith
 
 /-- Thus a high eigenmode contradicts any claimed low-pass Rayleigh bound on
 the full range of a multiplier that is nonzero on that mode. -/
