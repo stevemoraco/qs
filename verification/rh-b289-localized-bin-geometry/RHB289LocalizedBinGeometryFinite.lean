@@ -3,11 +3,13 @@ import Mathlib
 /-!
 # RH B298 finite prime-gap curvature core
 
-This verifier file is intentionally placed at the inherited B289 workflow's
-hard-coded source path only to obtain a guarded AXLE Lean 4.30 replay of the
-B298 theorem source. It formalizes only the elementary real inequalities used
-in RH #1575 / B298. It does not formalize primes, Chebyshev theta, Stadlmann's
-mean-square prime-gap theorem, dyadic asymptotics, zeta, RH, or not-RH.
+This file formalizes only the elementary real inequalities used in RH #1575 / B298:
+for `δ ≥ 0`,
+
+`0 ≤ δ - log(1+δ) ≤ δ²/2`,
+
+and its nonnegative weighted form. It does not formalize primes, Chebyshev theta,
+Stadlmann's mean-square prime-gap theorem, dyadic asymptotics, zeta, RH, or not-RH.
 -/
 
 namespace RHB298GapCurvature
