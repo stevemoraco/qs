@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_fs_cm_flat_top/YMFSCompletelyMonotoneFlatTopNoGo.lean
-          test "$(git hash-object "$SRC")" = 36dd1b5b8108579a0d95e9ee7f368c24a69e1fa7
+          test "$(git hash-object "$SRC")" = 4b504a8f141392f551f48ea59f7e14928fa7cb49
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_fs_cm_flat_top/YMFSCompletelyMonotoneFlatTopNoGo.lean')
@@ -36,8 +36,8 @@ jobs:
           for token in ('Lean.ofReduceBool', 'native_decide'):
               if token in text:
                   raise SystemExit(f'forbidden source token: {token}')
-          if text.count('#print axioms') != 4:
-              raise SystemExit('expected exactly four staged axiom reports')
+          if text.count('#print axioms') != 6:
+              raise SystemExit('expected exactly six staged axiom reports')
           print('source trust preflight: clean')
           PY
 
