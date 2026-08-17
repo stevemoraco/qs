@@ -69,6 +69,16 @@ jobs:
             or 'sorryAx' in json.dumps(result)
           )
           if bad:
+            diag = {
+              'okay': result.get('okay'),
+              'failed_declarations': result.get('failed_declarations', []),
+              'lean_errors': lean.get('errors', []),
+              'lean_warnings': lean.get('warnings', []),
+              'tool_errors': tool.get('errors', []),
+              'tool_warnings': tool.get('warnings', []),
+            }
+            msg = json.dumps(diag, separators=(',', ':'))[:6000]
+            print(f'::error file={path}::{msg}')
             raise SystemExit(1)
           PY
       - uses: actions/upload-artifact@v4
