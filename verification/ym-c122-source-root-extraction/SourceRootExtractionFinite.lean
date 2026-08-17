@@ -107,6 +107,25 @@ theorem fixed_handoff_preserves_root_exponent
     _ ≤ K * (2 * envelope) := mul_le_mul_of_nonneg_left hinput hK
     _ = 2 * K * envelope := by ring
 
+/-- Directly compose two-source extraction with one fixed output handoff. -/
+theorem two_source_extraction_after_handoff
+    (sigma kappa d tau input output K envelope : ℝ)
+    (hkappa : 0 ≤ kappa)
+    (hdt : d ≤ tau)
+    (hinput_nonneg : 0 ≤ input)
+    (hK : 0 ≤ K)
+    (hmap : output ≤ K * input)
+    (hweighted :
+      Real.exp (kappa * tau) * ((sigma ^ 2 / 2) * input) ≤ envelope) :
+    sigma ^ 2 * Real.exp (kappa * d) * output ≤ 2 * K * envelope := by
+  have hextracted :=
+    two_source_root_path_extraction
+      sigma kappa d tau input envelope
+      hkappa hdt hinput_nonneg hweighted
+  exact
+    fixed_handoff_preserves_root_exponent
+      sigma kappa d input output K envelope hK hmap hextracted
+
 /-- Six uniformly bounded one-step maps produce one fixed composite root-row
 constant. -/
 theorem six_bounded_root_handoffs
@@ -147,6 +166,7 @@ theorem six_bounded_root_handoffs
 #print axioms one_source_root_path_extraction
 #print axioms two_source_root_path_extraction
 #print axioms fixed_handoff_preserves_root_exponent
+#print axioms two_source_extraction_after_handoff
 #print axioms six_bounded_root_handoffs
 
 end Millennium.YangMills.SourceRootExtractionFinite
