@@ -1,0 +1,163 @@
+name: YM Kirk v4 two-root permanent envelope audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-two-root-envelope-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact two-root supplier declarations
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          src = Path('latest.txt')
+          if not src.exists():
+              raise SystemExit('latest.txt missing after source probe')
+          lines = src.read_text(encoding='utf-8', errors='replace').splitlines()
+          out = Path('source_audit/kirk_v4/two_root_envelope')
+          out.mkdir(parents=True, exist_ok=True)
+
+          heading = re.compile(r'^\s*(Theorem|Lemma|Corollary|Proposition|Definition)\s+([A-Z]?\d+(?:\.\d+)*)\b', re.I)
+          heads = []
+          for i, line in enumerate(lines):
+              m = heading.search(line)
+              if m:
+                  heads.append((i, m.group(1).title(), m.group(2), line.strip()))
+
+          targets = [
+              ('Theorem', '4.4'),
+              ('Theorem', '4.6'),
+              ('Theorem', '4.22'),
+              ('Theorem', '4.29'),
+              ('Theorem', '4.30'),
+              ('Lemma', '4.31'),
+              ('Lemma', '5.20'),
+              ('Theorem', '5.27'),
+              ('Lemma', '8.3'),
+              ('Lemma', '8.6'),
+              ('Corollary', '8.7'),
+              ('Lemma', '8.8'),
+          ]
+
+          occurrences = {}
+          for i, kind, num, title in heads:
+              occurrences.setdefault((kind.lower(), num), []).append((i, title))
+
+          manifest = []
+          duplicates = []
+          for kind, num in targets:
+              key = (kind.lower(), num)
+              matches = occurrences.get(key, [])
+              if not matches:
+                  raise SystemExit(f'missing target {kind} {num}')
+              # The first exact declaration is the main-body theorem. Later lines such
+              # as “Theorem 4.30 and ...” in appendices are references, not replacements.
+              start, title = matches[0]
+              if len(matches) > 1:
+                  duplicates.append({
+                      'kind': kind,
+                      'number': num,
+                      'selected_line': start + 1,
+                      'all_lines': [i + 1 for i, _ in matches],
+                      'all_titles': [t for _, t in matches],
+                  })
+              later = [i for i, _, _, _ in heads if i > start]
+              end = min(later) if later else len(lines)
+              text = '\n'.join(f'{j+1}: {lines[j]}' for j in range(start, end)) + '\n'
+              name = f'{kind.lower()}_{num.replace(".", "_")}.txt'
+              (out / name).write_text(text, encoding='utf-8')
+              manifest.append({
+                  'kind': kind,
+                  'number': num,
+                  'start_line': start + 1,
+                  'end_line': end,
+                  'file': name,
+                  'title': title,
+                  'selection': 'first exact occurrence',
+              })
+
+          phrases = [
+              'passive exterior roots',
+              'one or two passive exterior roots',
+              'zero-, one-, and two-root',
+              'bi-graded marked theorem',
+              'rooted activity decomposition',
+              'same inventory',
+              'preceding weak depth',
+              'replica number',
+              'forest parameters',
+              'one-root',
+              'two-root',
+              'nonroot',
+          ]
+          counts = {p: sum(p.lower() in line.lower() for line in lines) for p in phrases}
+          contexts = []
+          for p in phrases:
+              for hit, i in enumerate([i for i, line in enumerate(lines) if p.lower() in line.lower()][:30], 1):
+                  lo = max(0, i - 18)
+                  hi = min(len(lines), i + 28)
+                  contexts.append(
+                      f'===== {p} HIT {hit} source line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          (out / 'MANIFEST.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          (out / 'DUPLICATE_HEADINGS.json').write_text(json.dumps(duplicates, indent=2) + '\n')
+          (out / 'COUNTS.json').write_text(json.dumps(counts, indent=2) + '\n')
+          (out / 'PHRASE_CONTEXTS.txt').write_text('\n\n'.join(contexts) + '\n', encoding='utf-8')
+          (out / 'QUESTION.md').write_text(
+              '# Two-passive-root permanent-envelope audit\n\n'
+              'Independently reconstruct whether Theorems 4.4, 4.6, 4.22, and 4.29 really prove the one/two-passive-root row later named U5 in Theorem 5.27, in one permanent rooted norm with constants uniform in volume, cutoff, replica number, forest parameters, exterior data, and preceding weak depth.\n\n'
+              'Do not cite U5 or the phrase “bi-graded marked theorem” as its own proof. Check root placement entropy, derivative ownership, collect/no-reuse, recertification, and the nonlinear-ball step.\n\n'
+              'Failed-first classifier note: the first workflow version used a dictionary comprehension and therefore selected the last duplicate theorem-number occurrence. This repaired version selects the first exact declaration and records all duplicates.\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(manifest, indent=2))
+          print(json.dumps(duplicates, indent=2))
+          print(json.dumps(counts, indent=2))
+          PY
+      - name: Preserve provenance and audit
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/two_root_envelope
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): repair exact declaration selection'
+          git push origin HEAD:verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-two-root-permanent-envelope-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/two_root_envelope/

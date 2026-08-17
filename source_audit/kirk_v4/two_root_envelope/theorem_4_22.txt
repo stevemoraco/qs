@@ -1,0 +1,47 @@
+2210: Theorem 4.22 (Exact Loc/collect dichotomy). For every 0 ≤ m ≤ 3, the nonlocal block NL splits exactly
+2211: into long and short rows:
+2212:                                       NL = NLlong + NLshort .
+2213:   The long row satisfies
+2214:                                              ∥NLlong ∥[m] ≤ Cm L−3 .
+2215: 
+2216:   The short row satisfies
+2217: 
+2218:                                   ∥NLshort ∥[m] ≤ CD,m (1 + R(L))pD LΓ−(D−3) .
+2219: 
+2220:   Equivalently,
+2221:                                               δD = D − 3 −→ ∞.
+2222:    The estimates are uniform in periodic volume and preceding weak depth. They remain valid with one
+2223: or two passive exterior roots and every fixed finite passive source order.
+2224: 
+2225: 
+2226:                                                         33
+2227: 
+2228: Proof. For the long sector,
+2229:                                               [m]                                               [m]
+2230:                                    X                                            X
+2231:                          sup                  cL (Y ) ≤ e−κR(L) sup                    eκτL (Y ) cL (Y )
+2232:                           b                                                b
+2233:                                     Y ∋b                                        Y ∋b
+2234:                                τL (Y )>R(L)
+2235: 
+2236:                                                         ≤ Cm LΓ e−κR(L) ≤ Cm L−3 .
+2237: 
+2238:    For the short sector, first apply exact collect and then the local projector. Linearity and absolute
+2239: convergence make this identical to localizing each history and collecting by its canonical hull. Every
+2240: stable remainder lies in the kernel of LocD , while every off-diagonal local/remainder block has the same
+2241: Taylor-remainder gain. Since
+2242:                                               τL (Y ) ≤ R(L),
+2243: the discrete covariant localization lemma gives
+2244: 
+2245:                                               CD,m (1 + R(L))pD L3−D
+2246: 
+2247: per collected activity. Summing the rooted envelope contributes LΓ , proving the short bound.
+2248:    The canonical root and history certificate are selected once, so neither hull reassignment nor collect
+2249: produces a volume factor. Uniformity follows from the rooted envelope and the finite local template
+2250: atlas.
+2251: 
+2252: Boundaries and aligned reflection. Use the corrected reflection schedule:
+2253: • block the two closed half-spaces separately;
+2254: • retain the reflection-plane link layer as fixed boundary data;
+2255: • use only path templates with longitudinal extent [0, 2] and transverse extent [−1, 1]3 relative to their
+2256:   anchor.

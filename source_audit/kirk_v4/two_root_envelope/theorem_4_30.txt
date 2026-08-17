@@ -1,0 +1,41 @@
+2498: Theorem 4.30 (Local/nonlocal separation). Assume:
+2499: 1. the one-step rooted marked supplier bounds are finite:
+2500:                                           Km < ∞,             0 ≤ m ≤ 3,
+2501:    uniformly under the standing convention;
+2502: 2. the local jet quotient through degree D is finite dimensional, triangular in engineering degree, and its
+2503:    associated-graded diagonal is
+2504:                                                      L4−∆ ;
+2505: 3. after removing vacuum and Yang–Mills, the smallest marked irrelevant degree is five and the smallest
+2506:    unmarked scalar degree is six;
+2507: 4. for
+2508:                                      Γ = log2 max{Km , 1} + ε,
+2509:                                                        m
+2510:    the nonlocal rows obey
+2511:                                 ∥NL ∥ ≤ Clong L−3 + CD (1 + R(L))pD LΓ−δD ,
+2512:    where
+2513:                                                    Γ+3
+2514:                                                                        
+2515:                                             R(L) =     log L
+2516:                                                     κ
+2517:    and δD → ∞.
+2518:    Then there are finite D, finite dyadic L, and an equivalent rooted marked norm such that
+2519:                                            ∥DΦL (0)|stable ∥ < 1.
+2520: No upper bound of the form maxm Km < 4 is required.
+2521: Proof. Fix the finite number Γ. Choose D so that
+2522:                                                   δD > Γ + 2.
+2523: On the finite local quotient, the diagonal eigenvalues have modulus at most L−1 , with the unmarked
+2524: scalar sector at most L−2 . Since JL is finite dimensional and triangular, for every ϵL > 0 there is an
+2525: equivalent finite-dimensional norm with
+2526:                                       ∥JL ∥ ≤ r(JL ) + ϵL ≤ L−1 + ϵL .
+2527: Choose ϵL = L−1 . Thus
+2528:                                                  ∥JL ∥ ≤ 2L−1 .
+2529:   The norm extension to the rooted space changes the displayed nonlocal constants by finite factors
+2530: depending only on the fixed D, L, never on volume or weak depth. Since
+2531:                                                   δD − Γ > 2,
+2532: the short row tends to zero as L → ∞, despite the logarithmic factor, and the long row is O(L−3 ). Choose
+2533: one finite L such that
+2534:                              2L−1 + Clong
+2535:                                      ′
+2536:                                           L−3 + CD′
+2537:                                                     (1 + R(L))pD LΓ−δD < 1.
+2538: This gives the strict macrostep contraction.
