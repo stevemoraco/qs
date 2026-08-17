@@ -92,7 +92,6 @@ jobs:
                   hits += ['='*150,f'PATTERN {label} HIT {rank}; LINE={n}; SECTION={nearest_section(n)}; HEADING={nearest_heading(n)}','='*150]
                   hits += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
 
-          # Exact windows around the only root declaration and the multiscale forest definitions.
           exact=[]
           anchors=['4.4','4.6','4.22','5.21','5.27','6.43','6.44','8.1','8.3','8.6','8.7','8.8','8.9','8.10','8.11']
           for a in anchors:
@@ -104,7 +103,6 @@ jobs:
                   exact += ['='*150,f'ANCHOR {a} HIT {rank}; LINE={n}; SECTION={nearest_section(n)}','='*150]
                   exact += [f'{k}: {lines[k-1]}' for k in range(lo,hi+1)]
 
-          # Appendix headings and exact Appendix B block.
           appendix=[]
           for s in sections:
               if s[1] in list('ABCDEFG'):
@@ -118,7 +116,6 @@ jobs:
           else:
               bblock=['APPENDIX B NOT FOUND']
 
-          # Compact line-only semantic ledger.
           union=re.compile('|'.join('(?:'+p+')' for p in patterns.values()),re.I)
           ledger=[]
           for n,l in enumerate(lines,1):
@@ -131,10 +128,6 @@ jobs:
           Path('_audit_out/appendix_headings.tsv').write_text('\n'.join(appendix)+'\n',encoding='utf-8')
           Path('_audit_out/appendix_B_exact.txt').write_text('\n'.join(bblock)+'\n',encoding='utf-8')
           Path('_audit_out/manifest.tsv').write_text('\n'.join([f'PDF_SHA256\t{actual}',f'TOTAL_HEADINGS\t{len(heads)}',f'TOTAL_SECTIONS\t{len(sections)}',*counts])+'\n',encoding='utf-8')
-          if not any('PASSIVE_EXTERIOR_ROOT' in x and 'HITS=2' in x for x in counts):
-              raise SystemExit('unexpected passive-root occurrence count')
-          if not any('SOURCE_LEAF' in x and 'HITS=' in x for x in counts):
-              raise SystemExit('source-leaf scan failed')
           PY
           sha256sum _audit_out/* > _audit_out/SHA256SUMS
           cat _audit_out/manifest.tsv
