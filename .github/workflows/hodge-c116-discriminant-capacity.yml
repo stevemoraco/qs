@@ -41,10 +41,13 @@ jobs:
           req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
           with urllib.request.urlopen(req,timeout=960) as response:
             result=json.load(response)
-          print(json.dumps(result,indent=2))
+          rendered=json.dumps(result,indent=2)
+          print(rendered)
+          summary=pathlib.Path(os.environ['GITHUB_STEP_SUMMARY'])
+          summary.write_text('## AXLE Lean receipt\n\n```json\n'+rendered+'\n```\n')
           lean=result.get('lean_messages',{})
           tool=result.get('tool_messages',{})
-          bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in json.dumps(result))
+          bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in rendered)
           if bad:
             raise SystemExit(1)
           PY
