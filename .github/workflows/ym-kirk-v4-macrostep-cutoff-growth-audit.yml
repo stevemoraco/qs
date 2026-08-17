@@ -1,0 +1,178 @@
+name: YM Kirk v4 macrostep cutoff-growth audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-macrostep-cutoff-growth-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-macrostep-cutoff-growth-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-macrostep-cutoff-growth-audit-20260817-gpt56pro
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract cutoff-dependent supplier chain
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import re
+          from pathlib import Path
+
+          src = Path('latest.txt')
+          if not src.exists():
+              raise SystemExit('latest.txt missing after source probe')
+          raw = src.read_text(encoding='utf-8', errors='replace')
+          lines = raw.splitlines()
+          norm_lines = [re.sub(r'\s+', ' ', line).strip() for line in lines]
+          out = Path('source_audit/kirk_v4/macrostep_cutoff_growth')
+          out.mkdir(parents=True, exist_ok=True)
+
+          headings = [
+              'Lemma 4.20',
+              'Lemma 4.21',
+              'Theorem 4.22',
+              'Lemma 4.24',
+              'Lemma 4.25',
+              'Proposition 4.26',
+              'Lemma 4.27',
+              'Lemma 4.28',
+              'Theorem 4.29',
+              'Theorem 4.30',
+              'Lemma 4.31',
+          ]
+          phrases = [
+              'Fix the finite number',
+              'Choose D so that',
+              'deltaD',
+              'δD',
+              'Gamma = log2',
+              'Γ = log2',
+              'independent of D',
+              'uniform in D',
+              'uniformly in D',
+              'as D tends to infinity',
+              'as D -> infinity',
+              'D - 3',
+              'D−3',
+              'C_D',
+              'CD,m',
+              'p_D',
+              'pD',
+              'K_m',
+              'Km',
+              'localization projector',
+              'finite local template',
+          ]
+
+          chunks = []
+          heading_hits = {}
+          for heading in headings:
+              hits = [i for i, line in enumerate(norm_lines) if heading.lower() in line.lower()]
+              heading_hits[heading] = [i + 1 for i in hits]
+              for k, i in enumerate(hits[:12], 1):
+                  lo = max(0, i - 45)
+                  hi = min(len(lines), i + 260)
+                  chunks.append(
+                      f'===== HEADING {heading} HIT {k} source line {i+1} =====\n'
+                      + '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          phrase_hits = {}
+          for phrase in phrases:
+              hits = [i for i, line in enumerate(norm_lines) if phrase.lower() in line.lower()]
+              phrase_hits[phrase] = [i + 1 for i in hits]
+              for k, i in enumerate(hits[:50], 1):
+                  lo = max(0, i - 25)
+                  hi = min(len(lines), i + 60)
+                  chunks.append(
+                      f'===== PHRASE {phrase} HIT {k} source line {i+1} =====\n'
+                      + '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          missing = [h for h in headings if not heading_hits[h]]
+          if missing:
+              raise SystemExit(f'missing required headings: {missing}')
+
+          normalized = '\n'.join(norm_lines)
+          exact_chain = {
+              'lemma_4_20_has_D_dependent_constants': bool(re.search(
+                  r'LocD,Y.*?CD.*?pD', normalized, re.I | re.S
+              )),
+              'theorem_4_22_has_D_dependent_short_row': bool(re.search(
+                  r'Theorem 4\.22.*?CD,m.*?pD.*?D.?3', normalized, re.I | re.S
+              )),
+              'theorem_4_29_composes_localization_constant': bool(re.search(
+                  r'Theorem 4\.29.*?loc', normalized, re.I | re.S
+              )),
+              'theorem_4_30_defines_Gamma_from_K': bool(re.search(
+                  r'Theorem 4\.30.*?(Gamma|Γ).*?log2.*?K', normalized, re.I | re.S
+              )),
+              'theorem_4_30_then_fixes_Gamma_and_chooses_D': bool(re.search(
+                  r'Fix the finite number (Gamma|Γ).*?Choose D so that', normalized, re.I | re.S
+              )),
+              'explicit_cross_D_growth_phrase_found': any(
+                  phrase_hits[p] for p in [
+                      'independent of D', 'uniform in D', 'uniformly in D',
+                      'as D tends to infinity', 'as D -> infinity'
+                  ]
+              ),
+          }
+
+          report = {
+              'pdf_sha256': hashlib.sha256(Path('kirk_latest.pdf').read_bytes()).hexdigest(),
+              'heading_hits': heading_hits,
+              'phrase_hits': phrase_hits,
+              'exact_chain': exact_chain,
+          }
+          (out / 'REPORT.json').write_text(json.dumps(report, indent=2) + '\n')
+          (out / 'TARGETED.txt').write_text('\n\n'.join(chunks) + '\n', encoding='utf-8')
+          (out / 'QUESTION.md').write_text(
+              '# Macrostep cutoff-growth quantifier audit\n\n'
+              'Theorem 4.30 defines a support exponent from the one-step supplier constants and then chooses the localization degree. '
+              'This audit asks whether those supplier constants are uniform in the localization degree, or whether the source proves a cross-degree growth bound strong enough to justify that order of choice.\n\n'
+              'The logical repair is one of:\n\n'
+              '1. a localization-degree-independent supplier bound;\n'
+              '2. an explicit estimate `log_2 K_*(D) <= a D + b` with `a < 1`; or\n'
+              '3. a direct choice of one degree `D` satisfying `D-3 > log_2 K_*(D) + 2 + epsilon`.\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(report, indent=2))
+          PY
+      - name: Preserve provenance and audit output
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/macrostep_cutoff_growth
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve macrostep cutoff-growth interfaces'
+          git push origin HEAD:verification/ym-kirk-v4-macrostep-cutoff-growth-audit-20260817-gpt56pro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-macrostep-cutoff-growth-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/macrostep_cutoff_growth/
