@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Query AXLE
         shell: bash
         run: |
           set -euo pipefail
@@ -41,10 +41,23 @@ jobs:
           req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
           with urllib.request.urlopen(req,timeout=960) as response:
             result=json.load(response)
+          pathlib.Path('axle-result.json').write_text(json.dumps(result,indent=2))
           print(json.dumps(result,indent=2))
+          PY
+      - name: Upload AXLE result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-c136-axle-result
+          path: axle-result.json
+      - name: Enforce clean verdict
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          result=json.load(open('axle-result.json'))
           lean=result.get('lean_messages',{})
           tool=result.get('tool_messages',{})
           bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in json.dumps(result))
-          if bad:
-            raise SystemExit(1)
+          raise SystemExit(1 if bad else 0)
           PY
