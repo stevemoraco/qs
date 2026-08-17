@@ -81,6 +81,14 @@ jobs:
               'localization projector',
               'finite local template',
           ]
+          phrase_patterns = {phrase: re.escape(phrase) for phrase in phrases}
+          phrase_patterns.update({
+              'independent of D': r'\bindependent of D\b',
+              'uniform in D': r'\buniform in D\b',
+              'uniformly in D': r'\buniformly in D\b',
+              'as D tends to infinity': r'\bas D tends to infinity\b',
+              'as D -> infinity': r'\bas D -> infinity\b',
+          })
 
           chunks = []
           heading_hits = {}
@@ -97,7 +105,8 @@ jobs:
 
           phrase_hits = {}
           for phrase in phrases:
-              hits = [i for i, line in enumerate(norm_lines) if phrase.lower() in line.lower()]
+              pattern = re.compile(phrase_patterns[phrase], re.I)
+              hits = [i for i, line in enumerate(norm_lines) if pattern.search(line)]
               phrase_hits[phrase] = [i + 1 for i in hits]
               for k, i in enumerate(hits[:50], 1):
                   lo = max(0, i - 25)
