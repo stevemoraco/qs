@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -23,6 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify flattened Lean theorem source
+        id: axle
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -71,6 +73,22 @@ jobs:
           if bad:
             raise SystemExit(1)
           PY
+      - name: Preserve AXLE receipt in branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f /tmp/ym-fs-stable-regulator-rate-axle-receipt.json ]; then
+            mkdir -p verification/ym-fs-stable-regulator-rate
+            cp /tmp/ym-fs-stable-regulator-rate-axle-receipt.json verification/ym-fs-stable-regulator-rate/LAST_AXLE_RECEIPT.json
+            git config user.name 'ym-fs-verifier'
+            git config user.email 'actions@users.noreply.github.com'
+            git add verification/ym-fs-stable-regulator-rate/LAST_AXLE_RECEIPT.json
+            if ! git diff --cached --quiet; then
+              git commit -m 'ci(ym): preserve stable-rate AXLE receipt'
+              git push origin HEAD:verification/ym-fs-stable-regulator-rate-20260817
+            fi
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,3 +96,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
           path: /tmp/ym-fs-stable-regulator-rate-axle-receipt.json
+      - name: Enforce clean verification
+        if: always()
+        shell: bash
+        run: |
+          test '${{ steps.axle.outcome }}' = 'success'
