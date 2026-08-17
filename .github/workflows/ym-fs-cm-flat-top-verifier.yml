@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_fs_cm_flat_top/YMFSCompletelyMonotoneFlatTopNoGo.lean
-          test "$(git hash-object "$SRC")" = a5d1227677583f9fe4a92d3c3b9f2f3b3194e069
+          test "$(git hash-object "$SRC")" = c4a919234c5a1bfbe257ec4b7e0ece7ad5b12665
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_fs_cm_flat_top/YMFSCompletelyMonotoneFlatTopNoGo.lean')
