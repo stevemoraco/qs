@@ -78,7 +78,8 @@ theorem sparse_threshold_charge (J : ℕ) (band : Fin J → ℚ)
   calc
     A ≤ tau * L + ∑ j, band j := hA
     _ ≤ tau * L + (J : ℚ) * rho * G := by
-      exact add_le_add_left (sum_band_charge J band rho G hband) (tau * L)
+      simpa [add_comm] using
+        add_le_add_left (sum_band_charge J band rho G hband) (tau * L)
 
 /-- The lowest threshold query is automatically bounded by total mass. -/
 theorem bottom_shift_vacuous (tau B L : ℚ) (htau : 0 ≤ tau) (hBL : B ≤ L) :
