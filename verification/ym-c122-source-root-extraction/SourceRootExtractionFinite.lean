@@ -3,21 +3,23 @@ import Mathlib
 /-!
 # Source-root extraction and fixed-handoff preservation
 
-Finite real-analysis core for a source-decorated connected expansion.
+Finite real-analysis core for a source-decorated connected expansion, together
+with a Banach-valued termwise-differentiation wrapper around Mathlib's smooth
+series theorem.
 
 The displayed source norm weights a first source derivative by `sigma` and a
-second source derivative by `sigma^2 / 2`.  If a connected support joining two
+second source derivative by `sigma^2 / 2`. If a connected support joining two
 source buffers has tree length at least their separation, the same weighted
-row pays the physical root-to-root exponential.  Fixed bounded handoffs then
+row pays the physical root-to-root exponential. Fixed bounded handoffs then
 change only the prefactor, not the exponent.
 
 The first theorem also records the typing firewall: an unrooted row cannot
 control a passive root coefficient unless a source/root insertion estimate is
 actually supplied.
 
-This file does not formalize Banach-valued holomorphy, replica--BKAR, Kirk's
-activity spaces, renormalization, continuum Yang--Mills theory, a mass gap, or
-an official prize theorem.
+This file does not formalize replica--BKAR, Kirk's activity estimates,
+renormalization, continuum Yang--Mills theory, a mass gap, or an official
+prize theorem.
 -/
 
 namespace Millennium.YangMills.SourceRootExtractionFinite
@@ -69,7 +71,7 @@ theorem one_source_root_path_extraction
         Real.exp (kappa * d) * (sigma * row) := by ring
     _ ≤ envelope := hpath
 
-/-- Second-source-order extraction.  The factor `2` is the exact `2!` cost
+/-- Second-source-order extraction. The factor `2` is the exact `2!` cost
 coming from the factorial source normalization. -/
 theorem two_source_root_path_extraction
     (sigma kappa d tau row envelope : ℝ)
@@ -161,6 +163,38 @@ theorem six_bounded_root_handoffs
           hK2)
     _ = (K6 * K5 * K4 * K3 * K2 * K1) * r0 := by ring
 
+section BanachValuedSeries
+
+variable {ι E F : Type*}
+variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+variable {u : ι → ℝ} {f : ι → E → F}
+variable {f' : ι → E → E →L[ℂ] F}
+variable {s : Set E} {x₀ x : E}
+
+/--
+Banach-valued Weierstrass differentiation for the connected source series.
+Once a summable uniform derivative majorant is supplied, the infinite sum may
+be differentiated term by term in arbitrary complex normed source and target
+spaces. This is a direct source-facing wrapper around Mathlib's smooth-series
+theorem; the hard Yang--Mills input is the summable permanent-row majorant.
+-/
+theorem banach_tsum_source_derivative
+    (hu : Summable u)
+    (hs : IsOpen s)
+    (hconn : IsPreconnected s)
+    (hf : ∀ i y, y ∈ s → HasFDerivAt (f i) (f' i y) y)
+    (hfb : ∀ i y, y ∈ s → ‖f' i y‖ ≤ u i)
+    (hx₀ : x₀ ∈ s)
+    (hsum₀ : Summable fun i => f i x₀)
+    (hx : x ∈ s) :
+    HasFDerivAt (fun y => ∑' i, f i y) (∑' i, f' i x) x := by
+  exact
+    hasFDerivAt_tsum_of_isPreconnected
+      hu hs hconn hf hfb hx₀ hsum₀ hx
+
+end BanachValuedSeries
+
 #print axioms hidden_root_row_not_controlled_by_unrooted_row
 #print axioms root_path_weight_transfer
 #print axioms one_source_root_path_extraction
@@ -168,5 +202,6 @@ theorem six_bounded_root_handoffs
 #print axioms fixed_handoff_preserves_root_exponent
 #print axioms two_source_extraction_after_handoff
 #print axioms six_bounded_root_handoffs
+#print axioms banach_tsum_source_derivative
 
 end Millennium.YangMills.SourceRootExtractionFinite
