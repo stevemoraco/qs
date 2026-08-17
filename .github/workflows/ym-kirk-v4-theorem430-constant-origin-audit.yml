@@ -1,0 +1,140 @@
+name: YM Kirk v4 Theorem 4.30 constant-origin audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-section7-extract-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-theorem430-constant-origin-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure PDF text extractor
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py > /tmp/probe.json
+      - name: Trace the K_m, Gamma, D, and delta_D dependency order
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audit_out
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re, unicodedata
+
+          pdf = Path('kirk_latest.pdf')
+          expected = 'c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa'
+          actual = hashlib.sha256(pdf.read_bytes()).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'PDF SHA mismatch: {actual}')
+
+          text = Path('latest.txt').read_text(encoding='utf-8', errors='replace')
+          lines = text.splitlines()
+          heading_re = re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary|Definition)\s+([0-9A-Z]+(?:\.[0-9A-Z]+)*)\s*(?:\(([^)]*)\))?', re.I)
+          headings=[]
+          for n,line in enumerate(lines,1):
+              m=heading_re.match(line)
+              if m:
+                  headings.append((n,m.group(1),m.group(2),m.group(3) or '',line.strip()))
+
+          def nearest(line_no):
+              prev=None
+              for h in headings:
+                  if h[0] > line_no:
+                      break
+                  prev=h
+              return prev
+
+          def theorem_window(number, pre=90, post=620):
+              hits=[]
+              rx=re.compile(r'^\s*(Theorem|Lemma|Proposition|Corollary)\s+'+re.escape(number)+r'\b',re.I)
+              for n,line in enumerate(lines,1):
+                  if rx.match(line):
+                      lo=max(1,n-pre); hi=min(len(lines),n+post)
+                      hits.append((n,lo,hi,'\n'.join(f'{k}: {lines[k-1]}' for k in range(lo,hi+1))))
+              return hits
+
+          anchors=['4.21','4.22','4.23','4.24','4.27','4.28','4.29','4.30','4.31','5.20','5.27']
+          windows=[]
+          manifest=[]
+          for a in anchors:
+              hits=theorem_window(a)
+              manifest.append(f'ANCHOR\t{a}\tHITS={len(hits)}')
+              for rank,(n,lo,hi,ctx) in enumerate(hits,1):
+                  windows.append('='*145)
+                  windows.append(f'ANCHOR {a} HIT {rank}; LINE={n}; WINDOW=[{lo},{hi}]')
+                  windows.append('='*145)
+                  windows.append(ctx)
+          if not theorem_window('4.30'):
+              raise SystemExit('Theorem 4.30 not found')
+
+          patterns = {
+              'Km': re.compile(r'\bK\s*m\b|\bKm\b'),
+              'Gamma': re.compile(r'Γ|Gamma', re.I),
+              'deltaD': re.compile(r'δ\s*D|delta\s*D|δD', re.I),
+              'CD': re.compile(r'\bC\s*D\b|\bCD\b'),
+              'pD': re.compile(r'\bp\s*D\b|\bpD\b'),
+              'degree_D': re.compile(r'(degree|jet|quotient|projection|projector|localization).{0,80}\bD\b|\bD\b.{0,80}(degree|jet|quotient|projection|projector|localization)', re.I),
+              'depend_D': re.compile(r'(depend|independent|uniform|fixed|choose|chosen|before|after).{0,100}\bD\b|\bD\b.{0,100}(depend|independent|uniform|fixed|choose|chosen|before|after)', re.I),
+              'support_radius': re.compile(r'support radius|R\s*\(\s*L\s*\)|localization projector|finite template norm', re.I),
+              'finite_order': re.compile(r'finite source order|prescribed finite|order three|through order three|0\s*[≤<].*3', re.I),
+              'quantifier': re.compile(r'for every\s+D|there (?:is|are) finite\s+D|choose\s+D|fix\s+D|after fixing\s+D|before\s+D', re.I),
+          }
+          phrase_out=[]
+          phrase_counts=[]
+          for label,rx in patterns.items():
+              hits=[]
+              for n,line in enumerate(lines,1):
+                  if rx.search(line):
+                      hits.append(n)
+              phrase_counts.append(f'PATTERN\t{label}\tHITS={len(hits)}')
+              for rank,n in enumerate(hits[:200],1):
+                  lo=max(1,n-28); hi=min(len(lines),n+70)
+                  phrase_out.append('='*145)
+                  phrase_out.append(f'PATTERN {label} HIT {rank}; LINE={n}; NEAREST={nearest(n)}')
+                  phrase_out.append('='*145)
+                  phrase_out.extend(f'{k}: {lines[k-1]}' for k in range(lo,hi+1))
+
+          # Isolate statements and proofs without huge overlapping windows.
+          h430=theorem_window('4.30',pre=10,post=220)
+          h429=theorem_window('4.29',pre=10,post=180)
+          exact=[]
+          for tag,hits in [('THEOREM_4_29',h429),('THEOREM_4_30',h430)]:
+              for rank,(n,lo,hi,ctx) in enumerate(hits,1):
+                  exact.append('='*145)
+                  exact.append(f'{tag} HIT {rank}; LINE={n}; WINDOW=[{lo},{hi}]')
+                  exact.append('='*145)
+                  exact.append(ctx)
+
+          Path('_audit_out/anchor_windows.txt').write_text('\n'.join(windows)+'\n',encoding='utf-8')
+          Path('_audit_out/phrase_windows.txt').write_text('\n'.join(phrase_out)+'\n',encoding='utf-8')
+          Path('_audit_out/theorem429_430_exact.txt').write_text('\n'.join(exact)+'\n',encoding='utf-8')
+          Path('_audit_out/manifest.tsv').write_text('\n'.join([
+              f'PDF_SHA256\t{actual}',
+              f'TOTAL_HEADINGS\t{len(headings)}',
+              *manifest,
+              *phrase_counts,
+          ])+'\n',encoding='utf-8')
+          PY
+          sha256sum _audit_out/* > _audit_out/SHA256SUMS
+          cat _audit_out/manifest.tsv
+          wc -l -c _audit_out/*
+      - name: Upload constant-origin audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-theorem430-constant-origin-audit
+          path: _audit_out/
+          if-no-files-found: error
+          retention-days: 30
