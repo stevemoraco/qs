@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-fs-physicaltime-identification-20260817
       - name: Verify flattened Lean theorem source
         shell: bash
         run: |
@@ -47,16 +49,6 @@ jobs:
           )
           with urllib.request.urlopen(req, timeout=960) as response:
             result = json.load(response)
-          receipt = {
-            'source_path': str(path),
-            'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
-            'axle_environment': 'lean-4.30.0',
-            'axle_result': result,
-          }
-          pathlib.Path('/tmp/ym-fs-physicaltime-identification-receipt.json').write_text(
-            json.dumps(receipt, indent=2)
-          )
-          print(json.dumps(receipt, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
           bad = (
@@ -68,8 +60,43 @@ jobs:
             or bool(tool.get('warnings', []))
             or 'sorryAx' in json.dumps(result)
           )
-          if bad:
-            raise SystemExit(1)
+          receipt = {
+            'source_path': str(path),
+            'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
+            'axle_environment': 'lean-4.30.0',
+            'bad': bad,
+            'axle_result': result,
+          }
+          out = pathlib.Path('verification/ym-fs-physicaltime-identification/AXLE_RECEIPT.json')
+          out.write_text(json.dumps(receipt, indent=2) + '\n')
+          pathlib.Path('/tmp/ym-fs-physicaltime-identification-receipt.json').write_text(
+            json.dumps(receipt, indent=2) + '\n'
+          )
+          print(json.dumps(receipt, indent=2))
+          PY
+      - name: Preserve receipt
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f verification/ym-fs-physicaltime-identification/AXLE_RECEIPT.json ]; then exit 0; fi
+          git config user.name 'ym-fs-axle-replay'
+          git config user.email 'actions@users.noreply.github.com'
+          git add verification/ym-fs-physicaltime-identification/AXLE_RECEIPT.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'verify(ym): preserve FS physical-time AXLE receipt'
+          git push origin HEAD:verification/ym-fs-physicaltime-identification-20260817
+      - name: Enforce clean verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/ym-fs-physicaltime-identification/AXLE_RECEIPT.json')
+          if not p.exists():
+              raise SystemExit(1)
+          receipt = json.loads(p.read_text())
+          raise SystemExit(1 if receipt.get('bad', True) else 0)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
