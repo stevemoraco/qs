@@ -16,7 +16,7 @@ This file kernelizes only the scalar majorant mechanism:
 
 * `exp x - 1 <= x exp x` for `x >= 0`;
 * adding a nonnegative tail to a bounded logarithm changes the exponential by
-  at most `tail * exp(local + tail)`;
+  at most `tail * exp(baseLog + tail)`;
 * if `tail <= C * decay`, with `0 <= decay <= 1`, then exponentiation preserves
   the same `decay` factor with the uniform prefactor `C * exp(M + C)`.
 
@@ -51,50 +51,50 @@ theorem exp_sub_one_le_mul_exp
     _ ≤ x * Real.exp x := hmul
 
 /-- A nonnegative additive logarithmic tail changes the scalar exponential by
-at most `tail * exp(local + tail)`. -/
+at most `tail * exp(baseLog + tail)`. -/
 theorem exponential_perturbation_majorant
-    (local tail : ℝ)
+    (baseLog tail : ℝ)
     (htail : 0 ≤ tail) :
-    Real.exp (local + tail) - Real.exp local ≤
-      tail * Real.exp (local + tail) := by
+    Real.exp (baseLog + tail) - Real.exp baseLog ≤
+      tail * Real.exp (baseLog + tail) := by
   have htail_exp := exp_sub_one_le_mul_exp tail htail
-  have hlocal_nonneg : 0 ≤ Real.exp local := le_of_lt (Real.exp_pos local)
+  have hbase_nonneg : 0 ≤ Real.exp baseLog := le_of_lt (Real.exp_pos baseLog)
   have hmul :
-      Real.exp local * (Real.exp tail - 1) ≤
-        Real.exp local * (tail * Real.exp tail) :=
-    mul_le_mul_of_nonneg_left htail_exp hlocal_nonneg
+      Real.exp baseLog * (Real.exp tail - 1) ≤
+        Real.exp baseLog * (tail * Real.exp tail) :=
+    mul_le_mul_of_nonneg_left htail_exp hbase_nonneg
   calc
-    Real.exp (local + tail) - Real.exp local =
-        Real.exp local * (Real.exp tail - 1) := by
+    Real.exp (baseLog + tail) - Real.exp baseLog =
+        Real.exp baseLog * (Real.exp tail - 1) := by
       rw [Real.exp_add]
       ring
-    _ ≤ Real.exp local * (tail * Real.exp tail) := hmul
-    _ = tail * Real.exp (local + tail) := by
+    _ ≤ Real.exp baseLog * (tail * Real.exp tail) := hmul
+    _ = tail * Real.exp (baseLog + tail) := by
       rw [Real.exp_add]
       ring
 
 /-- On a bounded logarithmic ball, replacing the tail by any larger
 nonnegative envelope changes only the exponential prefactor. -/
 theorem bounded_ball_exponential_tail
-    (local tail M envelope : ℝ)
-    (hlocal : local ≤ M)
+    (baseLog tail M envelope : ℝ)
+    (hbaseLog : baseLog ≤ M)
     (htail0 : 0 ≤ tail)
     (henvelope0 : 0 ≤ envelope)
     (htail : tail ≤ envelope) :
-    Real.exp (local + tail) - Real.exp local ≤
+    Real.exp (baseLog + tail) - Real.exp baseLog ≤
       envelope * Real.exp (M + envelope) := by
-  have hperturb := exponential_perturbation_majorant local tail htail0
-  have hsum : local + tail ≤ M + envelope := add_le_add hlocal htail
-  have hexp : Real.exp (local + tail) ≤ Real.exp (M + envelope) :=
+  have hperturb := exponential_perturbation_majorant baseLog tail htail0
+  have hsum : baseLog + tail ≤ M + envelope := add_le_add hbaseLog htail
+  have hexp : Real.exp (baseLog + tail) ≤ Real.exp (M + envelope) :=
     Real.exp_le_exp.mpr hsum
-  have htail_nonneg : 0 ≤ Real.exp (local + tail) :=
-    le_of_lt (Real.exp_pos (local + tail))
+  have htail_nonneg : 0 ≤ Real.exp (baseLog + tail) :=
+    le_of_lt (Real.exp_pos (baseLog + tail))
   have hfirst :
-      tail * Real.exp (local + tail) ≤
-        envelope * Real.exp (local + tail) :=
+      tail * Real.exp (baseLog + tail) ≤
+        envelope * Real.exp (baseLog + tail) :=
     mul_le_mul_of_nonneg_right htail htail_nonneg
   have hsecond :
-      envelope * Real.exp (local + tail) ≤
+      envelope * Real.exp (baseLog + tail) ≤
         envelope * Real.exp (M + envelope) :=
     mul_le_mul_of_nonneg_left hexp henvelope0
   exact hperturb.trans (hfirst.trans hsecond)
@@ -104,18 +104,18 @@ theorem bounded_ball_exponential_tail
 `decay` factor.  The only loss is the regulator-independent prefactor
 `C * exp(M + C)` once `M` and `C` are uniform. -/
 theorem exponential_tail_preserves_decay
-    (local tail M C decay : ℝ)
-    (hlocal : local ≤ M)
+    (baseLog tail M C decay : ℝ)
+    (hbaseLog : baseLog ≤ M)
     (htail0 : 0 ≤ tail)
     (hC : 0 ≤ C)
     (hdecay0 : 0 ≤ decay)
     (hdecay1 : decay ≤ 1)
     (htail : tail ≤ C * decay) :
-    Real.exp (local + tail) - Real.exp local ≤
+    Real.exp (baseLog + tail) - Real.exp baseLog ≤
       (C * Real.exp (M + C)) * decay := by
   have henvelope0 : 0 ≤ C * decay := mul_nonneg hC hdecay0
-  have hbase := bounded_ball_exponential_tail
-    local tail M (C * decay) hlocal htail0 henvelope0 htail
+  have hbound := bounded_ball_exponential_tail
+    baseLog tail M (C * decay) hbaseLog htail0 henvelope0 htail
   have hCdecay : C * decay ≤ C := by
     nlinarith
   have hexp : Real.exp (M + C * decay) ≤ Real.exp (M + C) :=
@@ -126,8 +126,8 @@ theorem exponential_tail_preserves_decay
         (C * decay) * Real.exp (M + C) :=
     mul_le_mul_of_nonneg_left hexp hleft_nonneg
   calc
-    Real.exp (local + tail) - Real.exp local ≤
-        (C * decay) * Real.exp (M + C * decay) := hbase
+    Real.exp (baseLog + tail) - Real.exp baseLog ≤
+        (C * decay) * Real.exp (M + C * decay) := hbound
     _ ≤ (C * decay) * Real.exp (M + C) := hmono
     _ = (C * Real.exp (M + C)) * decay := by ring
 
