@@ -5,15 +5,17 @@ import Mathlib
 
 Finite scalar algebra only.
 
-This file formalizes the load-bearing finite identities used by the B220 human
-proof after the analytic prime-gap interpolation estimate has been separated
-out:
+This file formalizes the load-bearing finite identities used by the B220/B220B
+human proof after the analytic prime-gap interpolation estimate has been
+separated out:
 
 * the three-point error split `L(M)=L(Mbar)+L(M-Mbar)`;
 * balance of one centered-gap three-event packet;
 * the balanced positive-microcell hostile model;
 * scalar exceedance/low-depth inequalities behind the weighted weak-tail
-  endpoint.
+  endpoint;
+* the exact single-hinge sandwich that compresses the shift continuum to one
+  critical shifted negative mass.
 
 It does **not** formalize prime sums, logarithmic cell integrals, Stadlmann's
 mean-square prime-gap theorem, B219's Pringsheim--Landau step, zeta, Xi,
@@ -94,6 +96,37 @@ theorem low_depth_charge
   rw [max_eq_left hx0]
   exact mul_le_mul_of_nonneg_left hx hw
 
+/-- The shifted hinge never exceeds the unshifted positive part. -/
+theorem hinge_lower
+    (x tau : ℝ) (htau : 0 ≤ tau) :
+    max (x - tau) 0 ≤ max x 0 := by
+  exact max_le_max (by linarith) le_rfl
+
+/-- The unshifted positive part exceeds one shifted hinge by at most `tau`.
+This is the scalar core of B220B's one-critical-shift compression. -/
+theorem hinge_upper
+    (x tau : ℝ) (htau : 0 ≤ tau) :
+    max x 0 ≤ max (x - tau) 0 + tau := by
+  by_cases hx : x ≤ 0
+  · rw [max_eq_right hx]
+    positivity
+  · have hx0 : 0 ≤ x := le_of_not_ge hx
+    rw [max_eq_left hx0]
+    by_cases hxt : x ≤ tau
+    · have hdiff : x - tau ≤ 0 := by linarith
+      rw [max_eq_right hdiff]
+      linarith
+    · have hdiff : 0 ≤ x - tau := by linarith
+      rw [max_eq_left hdiff]
+      ring_nf
+
+/-- Combined exact hinge sandwich. -/
+theorem hinge_sandwich
+    (x tau : ℝ) (htau : 0 ≤ tau) :
+    max (x - tau) 0 ≤ max x 0 ∧
+      max x 0 ≤ max (x - tau) 0 + tau := by
+  exact ⟨hinge_lower x tau htau, hinge_upper x tau htau⟩
+
 #print axioms threePoint_error_split
 #print axioms centered_packet_balanced
 #print axioms microcell_atom_masses_nonnegative
@@ -102,5 +135,8 @@ theorem low_depth_charge
 #print axioms microcell_absolute_mass
 #print axioms exceedance_charge
 #print axioms low_depth_charge
+#print axioms hinge_lower
+#print axioms hinge_upper
+#print axioms hinge_sandwich
 
 end RHB220CenteredLogGapFinite
