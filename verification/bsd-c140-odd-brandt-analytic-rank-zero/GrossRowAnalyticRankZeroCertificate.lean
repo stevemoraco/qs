@@ -9,7 +9,7 @@ theorem separatingFamilyFindsWitness
     (c : C) (hc : c ≠ 0) :
     ∃ j : J, detect c j ≠ 0 := by
   by_contra h
-  push_neg at h
+  push Not at h
   exact hc (hSeparates c h)
 
 theorem oddIntegerPairingNonzero
