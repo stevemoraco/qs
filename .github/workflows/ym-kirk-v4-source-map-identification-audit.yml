@@ -1,0 +1,78 @@
+name: YM Kirk v4 source-map identification audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-source-map-identification-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+
+      - name: Pin immutable Kirk v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+
+      - name: Verify and extract exact profile/coefficient source chain
+        run: |
+          set -euo pipefail
+          expected=c78a3ce6d273ce7e2d32ecd2cf796a81d1f16160aadc3231752c9dbf65a6befa
+          actual=$(sha256sum kirk_latest.pdf | awk '{print $1}')
+          test "$actual" = "$expected"
+          out=source_audit/kirk_v4/source_map_identification
+          mkdir -p "$out"
+          {
+            echo 'PINNED KIRK V4 SOURCE MAP IDENTIFICATION CHAIN'
+            echo "PDF SHA-256: $actual"
+            echo
+            for range in '3180 3330' '4788 4820' '5328 5415' '6176 6207'; do
+              set -- $range
+              echo "===== SOURCE LINES $1-$2 ====="
+              awk -v a="$1" -v b="$2" 'NR>=a && NR<=b {print NR ": " $0}' latest.txt
+              echo
+            done
+          } > "$out/SOURCE_MAP_IDENTIFICATION_CHAIN.txt"
+          cat > "$out/QUESTION.txt" <<'EOF'
+Does Kirk v4 identify the Section-8 local-source consumer with the exact Part-V normalized one-step source transport, rather than merely reusing the same carrier and norm?
+Does the source prove a genuine finite product bound in the terminally weighted coefficient/root norm, and is any running-log cost a fixed source-scale prefactor rather than a factor paid once per ultraviolet step?
+EOF
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+
+      - name: Preserve source audit
+        run: |
+          set -euo pipefail
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/source_map_identification
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve exact source-map identification chain'
+          git push origin HEAD:verification/ym-kirk-v4-final-spectral-window-audit-20260816-gpt56pro
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-source-map-identification-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            source_audit/kirk_v4/source_map_identification/
+            kirk_latest.pdf
