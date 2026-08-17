@@ -1,0 +1,103 @@
+name: YM Kirk v4 passive-root seminorm audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+    paths:
+      - .github/workflows/ym-kirk-v4-root-seminorm-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+      - name: Ensure PDF text tools
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract passive-root typing contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          lines = Path('latest.txt').read_text(encoding='utf-8', errors='replace').splitlines()
+          out = Path('source_audit/kirk_v4/two_root_envelope/root_typing')
+          out.mkdir(parents=True, exist_ok=True)
+
+          phrases = [
+              'passive exterior roots',
+              'passive exterior root',
+              'root seminorm',
+              'finite root seminorm',
+              'root norm',
+              'root atom',
+              'root vertex',
+              'declared root',
+              'bounded centered probe',
+              'bounded source buffer',
+              'retained probe-root',
+              'two-buffer connector',
+              'root constants',
+              'root constant',
+              'root locations',
+              'root placement',
+              'rooted marked norm',
+              'same active/source inventory',
+          ]
+          counts = {}
+          contexts = []
+          for phrase in phrases:
+              hits = [i for i, line in enumerate(lines) if phrase.lower() in line.lower()]
+              counts[phrase] = len(hits)
+              for hit_no, i in enumerate(hits[:50], 1):
+                  lo = max(0, i - 20)
+                  hi = min(len(lines), i + 34)
+                  contexts.append(
+                      f'===== {phrase} HIT {hit_no} source line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
+
+          (out / 'COUNTS.json').write_text(json.dumps(counts, indent=2) + '\n')
+          (out / 'CONTEXTS.txt').write_text('\n\n'.join(contexts) + '\n', encoding='utf-8')
+          (out / 'QUESTION.md').write_text(
+              '# Passive-root seminorm typing audit\n\n'
+              'Determine whether the manuscript actually defines and proves a regulator/depth-uniform seminorm for the one/two passive exterior root atoms used in Theorem 5.27(U5), or only asserts downstream that the weak triangular source theorem supplies a finite root seminorm.\n\n'
+              'The finite root-placement entropy is handled separately in RH-Lean C122. This audit targets only root-atom norm typing and uniformity. Phrase absence is search evidence, not proof of mathematical absence.\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(counts, indent=2))
+          PY
+      - name: Preserve provenance and audit
+        run: |
+          set -euo pipefail
+          out=source_audit/kirk_v4/two_root_envelope/root_typing
+          cp kirk_latest_record.json "$out/" || true
+          cp kirk_source_probe_report.json "$out/" || true
+          sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add "$out"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve passive-root seminorm typing scan'
+          git push origin HEAD:verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-passive-root-seminorm-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/two_root_envelope/root_typing/
