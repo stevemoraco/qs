@@ -64,19 +64,42 @@ jobs:
               ('Lemma', '8.8'),
           ]
 
-          index = {(kind.lower(), num): (i, title) for i, kind, num, title in heads}
+          occurrences = {}
+          for i, kind, num, title in heads:
+              occurrences.setdefault((kind.lower(), num), []).append((i, title))
+
           manifest = []
+          duplicates = []
           for kind, num in targets:
               key = (kind.lower(), num)
-              if key not in index:
+              matches = occurrences.get(key, [])
+              if not matches:
                   raise SystemExit(f'missing target {kind} {num}')
-              start, title = index[key]
+              # The first exact declaration is the main-body theorem. Later lines such
+              # as “Theorem 4.30 and ...” in appendices are references, not replacements.
+              start, title = matches[0]
+              if len(matches) > 1:
+                  duplicates.append({
+                      'kind': kind,
+                      'number': num,
+                      'selected_line': start + 1,
+                      'all_lines': [i + 1 for i, _ in matches],
+                      'all_titles': [t for _, t in matches],
+                  })
               later = [i for i, _, _, _ in heads if i > start]
               end = min(later) if later else len(lines)
               text = '\n'.join(f'{j+1}: {lines[j]}' for j in range(start, end)) + '\n'
               name = f'{kind.lower()}_{num.replace(".", "_")}.txt'
               (out / name).write_text(text, encoding='utf-8')
-              manifest.append({'kind': kind, 'number': num, 'start_line': start+1, 'end_line': end, 'file': name, 'title': title})
+              manifest.append({
+                  'kind': kind,
+                  'number': num,
+                  'start_line': start + 1,
+                  'end_line': end,
+                  'file': name,
+                  'title': title,
+                  'selection': 'first exact occurrence',
+              })
 
           phrases = [
               'passive exterior roots',
@@ -96,20 +119,26 @@ jobs:
           contexts = []
           for p in phrases:
               for hit, i in enumerate([i for i, line in enumerate(lines) if p.lower() in line.lower()][:30], 1):
-                  lo = max(0, i-18)
-                  hi = min(len(lines), i+28)
-                  contexts.append(f'===== {p} HIT {hit} source line {i+1} =====\n' + '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi)))
+                  lo = max(0, i - 18)
+                  hi = min(len(lines), i + 28)
+                  contexts.append(
+                      f'===== {p} HIT {hit} source line {i+1} =====\n' +
+                      '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
+                  )
 
           (out / 'MANIFEST.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          (out / 'DUPLICATE_HEADINGS.json').write_text(json.dumps(duplicates, indent=2) + '\n')
           (out / 'COUNTS.json').write_text(json.dumps(counts, indent=2) + '\n')
           (out / 'PHRASE_CONTEXTS.txt').write_text('\n\n'.join(contexts) + '\n', encoding='utf-8')
           (out / 'QUESTION.md').write_text(
               '# Two-passive-root permanent-envelope audit\n\n'
               'Independently reconstruct whether Theorems 4.4, 4.6, 4.22, and 4.29 really prove the one/two-passive-root row later named U5 in Theorem 5.27, in one permanent rooted norm with constants uniform in volume, cutoff, replica number, forest parameters, exterior data, and preceding weak depth.\n\n'
-              'Do not cite U5 or the phrase “bi-graded marked theorem” as its own proof. Check root placement entropy, derivative ownership, collect/no-reuse, recertification, and the nonlinear-ball step.\n',
+              'Do not cite U5 or the phrase “bi-graded marked theorem” as its own proof. Check root placement entropy, derivative ownership, collect/no-reuse, recertification, and the nonlinear-ball step.\n\n'
+              'Failed-first classifier note: the first workflow version used a dictionary comprehension and therefore selected the last duplicate theorem-number occurrence. This repaired version selects the first exact declaration and records all duplicates.\n',
               encoding='utf-8',
           )
           print(json.dumps(manifest, indent=2))
+          print(json.dumps(duplicates, indent=2))
           print(json.dumps(counts, indent=2))
           PY
       - name: Preserve provenance and audit
@@ -123,7 +152,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add "$out"
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'audit(ym): preserve two-root permanent envelope chain'
+          git commit -m 'audit(ym): repair exact declaration selection'
           git push origin HEAD:verification/ym-kirk-v4-two-root-envelope-audit-20260817-gpt56pro
       - uses: actions/upload-artifact@v4
         if: always()
