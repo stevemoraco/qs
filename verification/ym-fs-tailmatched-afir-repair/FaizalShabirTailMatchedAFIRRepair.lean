@@ -11,12 +11,9 @@ arXiv:2606.19362v1.
    coupling-interpolated Gram operator does not, by itself, prove that the
    interpolation derivative or integrated increment is positive.
 
-2. An additive AF/IR comparison can genuinely vanish when one has a *signed
-   equality* and fixes the initial/matching constant by the full future error
+2. An additive AF/IR comparison can genuinely vanish when one has a signed
+   equality and fixes the initial/matching constant by the full future error
    tail. Then the finite-scale discrepancy is exactly the remaining tail.
-   This is the algebraic content that the phrase "absorb the initial
-   difference into the summable error" would need; an absolute one-sided
-   inequality is insufficient.
 
 This file does not formalize Yang--Mills theory, RG maps, Schwinger functions,
 the two-loop beta function, Lambda_YM, OS reconstruction, or any Clay theorem.
@@ -24,19 +21,14 @@ the two-loop beta function, Lambda_YM, OS reconstruction, or any Clay theorem.
 
 namespace Millennium.YangMills.FaizalShabirTailMatchedAFIRRepair
 
-/-- Two positive Gram values can have a strictly negative increment. This is
-the finite firewall against inferring monotonicity of a Gram interpolation from
-positivity of its values alone. -/
+/-- Two positive Gram values can have a strictly negative increment. -/
 theorem positive_gram_values_do_not_force_positive_increment :
     0 ≤ (1 : ℝ) ^ 2 ∧
       0 ≤ ((1 : ℝ) / 2) ^ 2 ∧
       (((1 : ℝ) / 2) ^ 2 - (1 : ℝ) ^ 2) < 0 := by
-  constructor
-  · norm_num
-  constructor <;> norm_num
+  norm_num
 
-/-- If the matching constant cancels the complete prefix-plus-tail error, then
-the discrepancy after the prefix is exactly minus the remaining tail. -/
+/-- Exact signed matching turns a finite prefix into minus the remaining tail. -/
 theorem matched_total_error_turns_prefix_into_tail
     (d0 prefix tail dK : ℝ)
     (hmatch : d0 + prefix + tail = 0)
@@ -44,19 +36,17 @@ theorem matched_total_error_turns_prefix_into_tail
     dK = -tail := by
   linarith
 
-/-- Quantitative version: a tail bound becomes a vanishing discrepancy bound
-once the signed matching condition is imposed. -/
-theorem matched_tail_bound_controls_discrepancy
+/-- An interval bound on the remaining tail transfers to the matched discrepancy. -/
+theorem matched_tail_interval_controls_discrepancy
     (d0 prefix tail dK rho : ℝ)
     (hmatch : d0 + prefix + tail = 0)
     (hprefix : dK = d0 + prefix)
-    (htail : |tail| ≤ rho) :
-    |dK| ≤ rho := by
+    (htailLo : -rho ≤ tail)
+    (htailHi : tail ≤ rho) :
+    -rho ≤ dK ∧ dK ≤ rho := by
   have hd : dK = -tail :=
     matched_total_error_turns_prefix_into_tail d0 prefix tail dK hmatch hprefix
-  calc
-    |dK| = |tail| := by simpa [hd]
-    _ ≤ rho := htail
+  constructor <;> rw [hd] <;> linarith
 
 /-- Exact-zero tail gives exact AF/IR matching at the corresponding scale. -/
 theorem zero_remaining_tail_gives_exact_match
@@ -68,7 +58,7 @@ theorem zero_remaining_tail_gives_exact_match
 
 #print axioms positive_gram_values_do_not_force_positive_increment
 #print axioms matched_total_error_turns_prefix_into_tail
-#print axioms matched_tail_bound_controls_discrepancy
+#print axioms matched_tail_interval_controls_discrepancy
 #print axioms zero_remaining_tail_gives_exact_match
 
 end Millennium.YangMills.FaizalShabirTailMatchedAFIRRepair
