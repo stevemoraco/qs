@@ -32,10 +32,9 @@ theorem scaled_tail_completion
   simp [tailCost]
   ring
 
-/-- If the kernel coefficient is nonnegative, no graph choice can beat the
-Schur numerator after scaling by `a`. -/
+/-- No graph choice can beat the Schur numerator after scaling by `a`. -/
 theorem schur_numerator_lower_bound
-    (a b c r : ℝ) (ha : 0 ≤ a) :
+    (a b c r : ℝ) :
     a * c - b^2 ≤ a * tailCost a b c r := by
   rw [scaled_tail_completion]
   exact le_add_of_nonneg_right (sq_nonneg (a * r + b))
@@ -48,11 +47,11 @@ theorem failed_schur_reserve_is_unbeatable
     (hfail : a * d ≤ a * c - b^2) :
     ¬ tailCost a b c r < d := by
   intro hcost
-  have hscaled : a * tailCost a b c r < a * d :=
-    (mul_lt_mul_left ha).2 hcost
   have hlower : a * c - b^2 ≤ a * tailCost a b c r :=
-    schur_numerator_lower_bound a b c r (le_of_lt ha)
-  exact (not_lt_of_ge (le_trans hfail hlower)) hscaled
+    schur_numerator_lower_bound a b c r
+  have hprod : 0 < a * (d - tailCost a b c r) :=
+    mul_pos ha (sub_pos.mpr hcost)
+  nlinarith
 
 /-- On an optimal graph, characterized without division by `a*r+b=0`, the
 scaled tail cost is exactly the Schur numerator. -/
@@ -72,9 +71,13 @@ theorem optimal_graph_gives_reserve
     (hopt : a * r + b = 0)
     (hschur : a * c - b^2 < a * d) :
     tailCost a b c r < d := by
-  apply (mul_lt_mul_left ha).mp
-  rw [optimal_graph_hits_schur a b c r hopt]
-  exact hschur
+  have heq : a * tailCost a b c r = a * c - b^2 :=
+    optimal_graph_hits_schur a b c r hopt
+  by_contra hnot
+  have hge : d ≤ tailCost a b c r := le_of_not_gt hnot
+  have hprod : 0 ≤ a * (tailCost a b c r - d) :=
+    mul_nonneg (le_of_lt ha) (sub_nonneg.mpr hge)
+  nlinarith
 
 /-- Exact scalar sign on the selected negative block after the tail reserve. -/
 theorem reserve_makes_full_direction_negative
