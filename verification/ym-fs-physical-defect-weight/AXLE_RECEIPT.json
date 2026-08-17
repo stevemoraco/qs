@@ -1,0 +1,46 @@
+{
+  "source_path": "verification/ym-fs-physical-defect-weight/FaizalShabirPhysicalDefectWeightFirewall.lean",
+  "source_sha256": "63d1a6728e8b8f28164f6eaae42f9aaec9e52c27f9a350257929fe9fad5b7e74",
+  "axle_environment": "lean-4.30.0",
+  "bad": false,
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Faizal--Shabir physical defect-weight firewall\n\nFinite real-algebra facts used in a hostile audit of arXiv:2606.19362v1,\nespecially Theorem 11.1 equations (11.6)--(11.8).\n\nThe paper's displayed coefficient after converting a one-step transfer defect\nto a Hamiltonian-gap defect is\n\n  exp (a_k * Delta_k) / a_(k+1).\n\nOn a continuum refinement with a_(k+1) -> 0 this coefficient is not uniformly\nbounded merely from a_k >= 0 and Delta_k >= 0. A raw defect of order a_(k+1)\ncan therefore have order-one cost after physical normalization.\n\nThis file formalizes only that scalar unit/normalization firewall. It does not\nformalize transfer operators, Yang--Mills theory, Osterwalder--Schrader\nreconstruction, or any Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall\n\n/-- The one-step transfer spectral edge `1 - exp(-x)` is at most the\nphysical dimensionless energy `x`. In particular, when `x = a * Delta` tends\nto zero, a fixed positive Hamiltonian gap does not give a regulator-uniform\npositive one-step transfer edge. -/\ntheorem transfer_edge_gap_le_scaled_energy (x : \u211d) :\n    1 - Real.exp (-x) \u2264 x := by\n  have h := Real.add_one_le_exp (-x)\n  linarith\n\n/-- A small scaled energy immediately makes the one-step transfer edge small. -/\ntheorem transfer_edge_gap_le_of_scaled_energy_le\n    (x \u03b5 : \u211d)\n    (hscale : x \u2264 \u03b5) :\n    1 - Real.exp (-x) \u2264 \u03b5 := by\n  exact (transfer_edge_gap_le_scaled_energy x).trans hscale\n\n/-- The physical defect coefficient is at least `1 / aNext` whenever the\ncurrent spacing and Hamiltonian gap are nonnegative. -/\ntheorem physical_defect_weight_coeff_lower_bound\n    (aNext a gap : \u211d)\n    (haNext : 0 < aNext)\n    (ha : 0 \u2264 a)\n    (hgap : 0 \u2264 gap) :\n    1 / aNext \u2264 Real.exp (a * gap) / aNext := by\n  have hprod : 0 \u2264 a * gap := mul_nonneg ha hgap\n  have hexp0 : Real.exp 0 \u2264 Real.exp (a * gap) := Real.exp_le_exp.mpr hprod\n  have hone : 1 \u2264 Real.exp (a * gap) := by\n    simpa using hexp0\n  have hinv : 0 \u2264 (1 / aNext) := le_of_lt (one_div_pos.mpr haNext)\n  have hmul := mul_le_mul_of_nonneg_right hone hinv\n  simpa [div_eq_mul_inv] using hmul\n\n/-- The coefficient `1/aNext` can be arbitrarily large as the next spacing is\nallowed to shrink: every prescribed positive value occurs exactly. -/\ntheorem inverse_spacing_coefficient_realizes_any_positive_value\n    (M : \u211d)\n    (hM : 0 < M) :\n    \u2203 aNext : \u211d, 0 < aNext \u2227 1 / aNext = M := by\n  refine \u27e8M\u207b\u00b9, inv_pos.mpr hM, ?_\u27e9\n  simp\n\n/-- A raw one-step defect exactly of order the next lattice spacing has unit\ncost after multiplication by `1/aNext`. Thus `O(aNext)` is not a vanishing\nphysical defect budget; one needs `o(aNext)` or a stronger cancellation. -/\ntheorem spacing_sized_raw_defect_has_unit_physical_cost\n    (aNext : \u211d)\n    (haNext : 0 < aNext) :\n    (1 / aNext) * aNext = 1 := by\n  field_simp [haNext.ne']\n\n/-- Repeating a spacing-sized raw defect over `n` regulator steps gives exact\nnormalized debt `n`, even though each individual raw defect can be arbitrarily\nsmall. -/\ntheorem repeated_spacing_sized_defects_accumulate_linearly\n    (n : \u2115)\n    (aNext : \u211d)\n    (haNext : 0 < aNext) :\n    (Finset.range n).sum (fun _k => (1 / aNext) * aNext) = (n : \u211d) := by\n  calc\n    (Finset.range n).sum (fun _k => (1 / aNext) * aNext) =\n        (Finset.range n).sum (fun _k => (1 : \u211d)) := by\n          apply Finset.sum_congr rfl\n          intro k hk\n          exact spacing_sized_raw_defect_has_unit_physical_cost aNext haNext\n    _ = (n : \u211d) := by simp\n\n#print axioms transfer_edge_gap_le_scaled_energy\n#print axioms transfer_edge_gap_le_of_scaled_energy_le\n#print axioms physical_defect_weight_coeff_lower_bound\n#print axioms inverse_spacing_coefficient_realizes_any_positive_value\n#print axioms spacing_sized_raw_defect_has_unit_physical_cost\n#print axioms repeated_spacing_sized_defects_accumulate_linearly\n\nend Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:91:0-91:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.transfer_edge_gap_le_scaled_energy' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:92:0-92:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.transfer_edge_gap_le_of_scaled_energy_le' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:93:0-93:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.physical_defect_weight_coeff_lower_bound' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:94:0-94:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.inverse_spacing_coefficient_realizes_any_positive_value' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:95:0-95:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.spacing_sized_raw_defect_has_unit_physical_cost' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:96:0-96:6: info: 'Millennium.YangMills.FaizalShabirPhysicalDefectWeightFirewall.repeated_spacing_sized_defects_accumulate_linearly' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 280,
+      "total_ms": 281
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "4c3ee512-dc21-40fa-8a22-630960f7bf07",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 334,
+      "queue_time_ms": 1,
+      "execution_time_ms": 332,
+      "cached_response": true,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 10,
+      "environment_total_time_us": 329715,
+      "environment_pool_size": 64
+    }
+  }
+}
