@@ -28,7 +28,9 @@ theorem hidden_root_row_not_controlled_by_unrooted_row (C : ℝ) :
     ∃ root : ℝ, 0 < root ∧ C * 0 < root := by
   have hroot : 0 < max (C + 1) 1 :=
     lt_of_lt_of_le zero_lt_one (le_max_right (C + 1) 1)
-  exact ⟨max (C + 1) 1, hroot, by simpa using hroot⟩
+  refine ⟨max (C + 1) 1, hroot, ?_⟩
+  rw [mul_zero]
+  exact hroot
 
 /-- Moving from a support-tree length `tau` to a smaller root separation `d`
 preserves an exponentially weighted bound. -/
@@ -109,7 +111,7 @@ theorem fixed_handoff_preserves_root_exponent
 constant. -/
 theorem six_bounded_root_handoffs
     (K1 K2 K3 K4 K5 K6 r0 r1 r2 r3 r4 r5 r6 : ℝ)
-    (hK1 : 0 ≤ K1) (hK2 : 0 ≤ K2) (hK3 : 0 ≤ K3)
+    (hK2 : 0 ≤ K2) (hK3 : 0 ≤ K3)
     (hK4 : 0 ≤ K4) (hK5 : 0 ≤ K5) (hK6 : 0 ≤ K6)
     (h1 : r1 ≤ K1 * r0)
     (h2 : r2 ≤ K2 * r1)
