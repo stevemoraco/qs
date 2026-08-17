@@ -55,6 +55,10 @@ jobs:
               'retained roots',
               'retained as roots',
               'nonroot vertex',
+              'Theorem 4.29',
+              'Theorem 4.30',
+              'permanent marked',
+              'one-step rooted envelope',
           ]
 
           heading = re.compile(
@@ -76,8 +80,8 @@ jobs:
               counts[phrase] = len(hits)
               for k, i in enumerate(hits[:80], 1):
                   hit_lines.add(i)
-                  lo = max(0, i - 140)
-                  hi = min(len(lines), i + 220)
+                  lo = max(0, i - 160)
+                  hi = min(len(lines), i + 300)
                   chunks.append(
                       f'===== PHRASE {phrase} HIT {k} line {i+1} =====\n' +
                       '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
@@ -96,17 +100,32 @@ jobs:
           candidate_terms = (
               'bi-graded', 'bigraded', 'passive exterior root',
               'one-root', 'two-root', 'rooted activity', 'retained root',
+              'permanent marked', 'one-step rooted envelope',
           )
           for i, name in heading_lines:
-              window = '\n'.join(lines[i:min(len(lines), i + 180)]).lower()
+              window = '\n'.join(lines[i:min(len(lines), i + 220)]).lower()
               if any(term in window for term in candidate_terms):
                   candidates.append({'line': i + 1, 'heading': name})
-                  lo = max(0, i - 35)
-                  hi = min(len(lines), i + 240)
+                  lo = max(0, i - 45)
+                  hi = min(len(lines), i + 320)
                   chunks.append(
                       f'===== CANDIDATE {name} line {i+1} =====\n' +
                       '\n'.join(f'{j+1}: {lines[j]}' for j in range(lo, hi))
                   )
+
+          fixed_ranges = [
+              (1560, 1740, 'BKAR_TO_MARKED_DOMAIN'),
+              (2200, 2650, 'ROOTED_ENVELOPE_CLOSURE'),
+              (3130, 3440, 'SOURCE_TRANSPORT_TO_U5'),
+              (4860, 5060, 'SECTION8_ROOT_CONSUMER'),
+          ]
+          for lo1, hi1, label in fixed_ranges:
+              lo = max(1, lo1)
+              hi = min(len(lines), hi1)
+              chunks.append(
+                  f'===== FIXED RANGE {label} source lines {lo}-{hi} =====\n' +
+                  '\n'.join(f'{j}: {lines[j-1]}' for j in range(lo, hi + 1))
+              )
 
           (out / 'COUNTS.json').write_text(json.dumps(counts, indent=2) + '\n')
           (out / 'NEAREST_HEADINGS.json').write_text(json.dumps(nearest, indent=2) + '\n')
@@ -114,9 +133,9 @@ jobs:
           (out / 'TARGETED.txt').write_text('\n\n'.join(chunks) + '\n', encoding='utf-8')
           (out / 'QUESTION.md').write_text(
               '# Exact U5 supplier audit\n\n'
-              'Which earlier declaration is the “bi-graded marked theorem” cited in the proof of Theorem 5.27(U5)?\n\n'
-              'Does it directly prove zero/one/two passive-root rows in the same permanent rooted Banach domain, with constants independent of weak scale, finite volume, microscopic cutoff, exterior data, and preceding weak depth?\n\n'
-              'Separate source/dependency identification from independent proof of the infinite-dimensional estimate.\n',
+              'Which earlier declarations constitute the “bi-graded marked theorem” cited in the proof of Theorem 5.27(U5)?\n\n'
+              'Do they directly prove zero/one/two passive-root rows in the same permanent rooted Banach domain, with constants independent of weak scale, finite volume, microscopic cutoff, exterior data, and preceding weak depth?\n\n'
+              'Audit Theorems 4.4, 4.6, 4.29, and 4.30 together with the Section 4.6 rooted-envelope chain. Separate source/dependency identification from independent proof of the infinite-dimensional estimate.\n',
               encoding='utf-8',
           )
 
