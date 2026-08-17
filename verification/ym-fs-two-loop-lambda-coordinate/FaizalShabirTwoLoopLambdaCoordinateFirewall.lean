@@ -22,8 +22,12 @@ only if that prefactor is at most one. -/
 theorem dropped_prefactor_requires_le_one
     (c x : ℝ) (hx : 0 < x) (h : c * x ≤ x) :
     c ≤ 1 := by
-  have h' : c * x ≤ (1 : ℝ) * x := by simpa using h
-  exact (mul_le_mul_right hx).mp h'
+  by_contra hc
+  have hc' : 1 < c := lt_of_not_ge hc
+  have hstrict : x < c * x := by
+    have hm := mul_lt_mul_of_pos_right hc' hx
+    simpa using hm
+  linarith
 
 /-- Conversely, a prefactor bounded by one can safely be dropped against a
 nonnegative scale factor. -/
