@@ -43,7 +43,7 @@ theorem exp_sub_one_le_mul_exp
   have hinv : Real.exp (-x) * Real.exp x = 1 := by
     calc
       Real.exp (-x) * Real.exp x = Real.exp (-x + x) := by
-        rw [Real.exp_add]
+        rw [← Real.exp_add]
       _ = 1 := by simp
   calc
     Real.exp x - 1 = (1 - Real.exp (-x)) * Real.exp x := by
