@@ -49,10 +49,10 @@ jobs:
               echo
             done
           } > "$out/SOURCE_MAP_IDENTIFICATION_CHAIN.txt"
-          cat > "$out/QUESTION.txt" <<'EOF'
-Does Kirk v4 identify the Section-8 local-source consumer with the exact Part-V normalized one-step source transport, rather than merely reusing the same carrier and norm?
-Does the source prove a genuine finite product bound in the terminally weighted coefficient/root norm, and is any running-log cost a fixed source-scale prefactor rather than a factor paid once per ultraviolet step?
-EOF
+          printf '%s\n%s\n' \
+            'Does Kirk v4 identify the Section-8 local-source consumer with the exact Part-V normalized one-step source transport, rather than merely reusing the same carrier and norm?' \
+            'Does the source prove a genuine finite product bound in the terminally weighted coefficient/root norm, and is any running-log cost a fixed source-scale prefactor rather than a factor paid once per ultraviolet step?' \
+            > "$out/QUESTION.txt"
           cp kirk_latest_record.json "$out/" || true
           cp kirk_source_probe_report.json "$out/" || true
           sha256sum kirk_latest.pdf > "$out/PDF_SHA256.txt"
