@@ -1,0 +1,45 @@
+{
+  "source_path": "verification/ym-fs-stable-regulator-rate/FaizalShabirStableRegulatorRate.lean",
+  "source_sha256": "c790792f0992134254c7fb5623f2a7e01521d02033f259993ef43c3600a177fb",
+  "axle_environment": "lean-4.30.0",
+  "axle_result": {
+    "content": "import Mathlib\n\n/-!\n# Stable regulator contraction versus refining lattice spacing\n\nFinite real-algebra consumer for the repaired Faizal--Shabir regulator-identification route.\nAfter matching all relevant/marginal local coordinates, suppose a remaining stable regulator\nmismatch contracts by a factor `q` while the lattice spacing refines by a factor `b > 1`.\nThe dimensionless mismatch in physical-time units is `d / a`. One refinement step multiplies\nthat normalized mismatch by exactly `q * b`.\n\nThus `q * b < 1` is the strict rate regime compatible with vanishing normalized one-step debt;\n`q * b = 1` is critical and preserves the normalized debt rather than making it vanish.\n\nThis file is only finite real algebra. It does not construct the stable RG subspace, prove a\nYang--Mills regulator contraction, identify AF and IR limits, perform OS reconstruction, or\nprove a Clay theorem.\n-/\n\nnamespace Millennium.YangMills.FaizalShabirStableRegulatorRate\n\n/-- Exact one-step normalization identity. If the raw mismatch changes from `d` to `q*d`\nand the spacing from `a` to `a/b`, then mismatch divided by spacing is multiplied by `q*b`. -/\ntheorem normalized_refinement_ratio_exact\n    (d a q b : \u211d)\n    (ha : a \u2260 0)\n    (hb : b \u2260 0) :\n    (q * d) / (a / b) = (q * b) * (d / a) := by\n  field_simp [ha, hb]\n\n/-- At the critical rate `q*b = 1`, refinement leaves the normalized mismatch unchanged. -/\ntheorem critical_rate_preserves_normalized_debt\n    (d a q b : \u211d)\n    (ha : a \u2260 0)\n    (hb : b \u2260 0)\n    (hcrit : q * b = 1) :\n    (q * d) / (a / b) = d / a := by\n  rw [normalized_refinement_ratio_exact d a q b ha hb, hcrit]\n  ring\n\n/-- A strict factor bound on `q*b` transfers directly to the normalized mismatch. -/\ntheorem subcritical_rate_contracts_normalized_debt\n    (d a q b theta : \u211d)\n    (ha : a \u2260 0)\n    (hb : b \u2260 0)\n    (hnorm : 0 \u2264 d / a)\n    (hfactor : q * b \u2264 theta) :\n    (q * d) / (a / b) \u2264 theta * (d / a) := by\n  rw [normalized_refinement_ratio_exact d a q b ha hb]\n  exact mul_le_mul_of_nonneg_right hfactor hnorm\n\n/-- If the normalized factor is strictly below one and the current normalized mismatch is\npositive, the next normalized mismatch is strictly smaller. -/\ntheorem strict_subcritical_rate_strictly_contracts\n    (d a q b : \u211d)\n    (ha : a \u2260 0)\n    (hb : b \u2260 0)\n    (hnorm : 0 < d / a)\n    (hfactor : q * b < 1) :\n    (q * d) / (a / b) < d / a := by\n  rw [normalized_refinement_ratio_exact d a q b ha hb]\n  have hmul := mul_lt_mul_of_pos_right hfactor hnorm\n  simpa using hmul\n\n/-- Exact `k`-step ratio identity for geometric refinement. -/\ntheorem geometric_contraction_over_spacing\n    (C a0 q b : \u211d)\n    (k : \u2115)\n    (ha0 : a0 \u2260 0)\n    (hb : b \u2260 0) :\n    (C * q ^ k) / (a0 / b ^ k) = (C / a0) * (q * b) ^ k := by\n  have hbk : b ^ k \u2260 0 := pow_ne_zero k hb\n  field_simp [ha0, hbk]\n  ring\n\n/-- Critical geometric contraction `q*b=1` produces an `O(a_k)` raw mismatch whose\nnormalized mismatch is exactly constant. It therefore does not by itself give `o(a_k)`. -/\ntheorem critical_geometric_rate_is_not_vanishing_normalized\n    (C a0 q b : \u211d)\n    (k : \u2115)\n    (ha0 : a0 \u2260 0)\n    (hb : b \u2260 0)\n    (hcrit : q * b = 1) :\n    (C * q ^ k) / (a0 / b ^ k) = C / a0 := by\n  rw [geometric_contraction_over_spacing C a0 q b k ha0 hb, hcrit]\n  simp\n\n#print axioms normalized_refinement_ratio_exact\n#print axioms critical_rate_preserves_normalized_debt\n#print axioms subcritical_rate_contracts_normalized_debt\n#print axioms strict_subcritical_rate_strictly_contracts\n#print axioms geometric_contraction_over_spacing\n#print axioms critical_geometric_rate_is_not_vanishing_normalized\n\nend Millennium.YangMills.FaizalShabirStableRegulatorRate\n\n",
+    "failed_declarations": [],
+    "lean_messages": {
+      "errors": [],
+      "infos": [
+        "-:88:0-88:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.normalized_refinement_ratio_exact' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:89:0-89:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.critical_rate_preserves_normalized_debt' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:90:0-90:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.subcritical_rate_contracts_normalized_debt' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:91:0-91:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.strict_subcritical_rate_strictly_contracts' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:92:0-92:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.geometric_contraction_over_spacing' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n",
+        "-:93:0-93:6: info: 'Millennium.YangMills.FaizalShabirStableRegulatorRate.critical_geometric_rate_is_not_vanishing_normalized' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]\n"
+      ],
+      "warnings": []
+    },
+    "okay": true,
+    "timings": {
+      "parse_ms": 248,
+      "total_ms": 250
+    },
+    "tool_messages": {
+      "errors": [],
+      "infos": [],
+      "warnings": []
+    },
+    "info": {
+      "request_id": "1cb7662e-3482-4b64-a77b-690f1ee05e2d",
+      "environment": "lean-4.30.0",
+      "total_request_time_ms": 310,
+      "queue_time_ms": 9,
+      "execution_time_ms": 300,
+      "cached_response": false,
+      "_executor_commit_sha": "c7ff197",
+      "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+      "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+      "environment_wait_time_us": 11,
+      "environment_total_time_us": 297552,
+      "environment_pool_size": 64
+    }
+  }
+}
