@@ -14,7 +14,8 @@ noncomputable def cubicCharacteristicPhase (t x : ℝ) : ℂ :=
 
 theorem cubicCharacteristicExponent_re (t x : ℝ) :
     (Complex.I * ((t * x ^ 3 : ℝ) : ℂ)).re = 0 := by
-  norm_num [Complex.mul_re]
+  change 0 * (t * x ^ 3) - 1 * 0 = 0
+  ring
 
 theorem cubicCharacteristicPhase_norm (t x : ℝ) :
     ‖cubicCharacteristicPhase t x‖ = 1 := by
