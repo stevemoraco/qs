@@ -57,7 +57,7 @@ def orbit (step : SourceState → SourceState) : ℕ → SourceState
   induction n with
   | zero => rfl
   | succ n ih =>
-      simp [orbit, section8Step, ih, Nat.succ_eq_add_one, Nat.add_assoc]
+      simp [orbit, section8Step, ih]
 
 /-- The Part-V products are uniformly bounded in the common gauge. -/
 theorem partV_products_uniformly_bounded (n : ℕ) :
