@@ -274,7 +274,6 @@ theorem cumulant_partition_to_moment_factorial_growth
     (n p : ℕ)
     (connected partitionMass moment A B R S : ℝ)
     (hconnected0 : 0 ≤ connected)
-    (hpartition0 : 0 ≤ partitionMass)
     (hA : 0 ≤ A) (hB : 0 ≤ B) (hR : 0 ≤ R) (hS : 0 ≤ S)
     (hconnected :
       connected ≤ A * (n.factorial : ℝ) ^ p * R ^ n)
