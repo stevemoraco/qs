@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC=verification/ym_c120_source_map_identification/SourceMapIdentificationFirewall.lean
-          test "$(git hash-object "$SRC")" = 47953b8c0c7c30102d3967b4c9eabde2478fc84b
+          test "$(git hash-object "$SRC")" = 6da953adae4d01d0a5eb134cd89c5d91ee5975fe
           python3 - <<'PY'
           import pathlib, re
           p = pathlib.Path('verification/ym_c120_source_map_identification/SourceMapIdentificationFirewall.lean')
