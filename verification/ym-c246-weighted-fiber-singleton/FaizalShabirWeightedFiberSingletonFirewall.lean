@@ -41,7 +41,6 @@ theorem singleton_fiber_then_dim6
     (hb : b ≠ 0) :
     b ^ 4 / b ^ 2 = b ^ 2 := by
   field_simp [hb]
-  ring
 
 /-- Dyadic witness: sixteen fine singleton preimages followed by a quarter
 engineering factor gives four, not a contraction. -/
