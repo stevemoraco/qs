@@ -5,9 +5,9 @@ import Mathlib
 
 Finite scalar facts behind C230.  The audited source uses both an interaction
 analytic in `g` near zero and an effective-action coefficient proportional to
-`1 / g^2`.  These declarations do **not** formalize Yang–Mills or prove that no
-analytic weak coordinate exists.  They record why an explicit coupling-dependent
-field/coordinate rescaling is load-bearing.
+`1 / g^2`.  These declarations do **not** formalize Yang–Mills.  They record why
+an explicit coupling-dependent field/coordinate rescaling is load-bearing and
+show, at scalar level, how such a rescaling can remove the apparent singularity.
 -/
 
 namespace Millennium.YangMills.FaizalShabirWeakAnalyticCoordinateFirewall
@@ -34,8 +34,7 @@ theorem inverse_square_bound_forces_scaled_unit
   simpa [mul_comm] using this
 
 /-- A scalar field rescaling `A = g B` exactly cancels the inverse-square
-quadratic coefficient.  This is the finite algebraic shadow of the kind of
-coordinate theorem needed to reconcile the two source parameterizations. -/
+quadratic coefficient. -/
 theorem field_rescaling_cancels_inverse_square
     (g B : ℝ)
     (hg : g ≠ 0) :
@@ -49,9 +48,29 @@ theorem quarter_field_rescaling_cancels_inverse_square
     (1 / (4 * g ^ 2)) * (g * B) ^ 2 = B ^ 2 / 4 := by
   field_simp [hg]
 
+/-- Scalar shadow of the curvature identity
+`F(g B) = g X + g^2 Y = g (X + g Y)`: after the weak-field rescaling,
+the inverse-square quadratic normalization becomes polynomial in `g`. -/
+theorem nonlinear_field_rescaling_cancels_inverse_square
+    (g X Y : ℝ)
+    (hg : g ≠ 0) :
+    (1 / g ^ 2) * (g * X + g ^ 2 * Y) ^ 2 = (X + g * Y) ^ 2 := by
+  field_simp [hg]
+  ring
+
+/-- Conventional quarter-normalized version of the nonlinear rescaling. -/
+theorem quarter_nonlinear_field_rescaling_cancels_inverse_square
+    (g X Y : ℝ)
+    (hg : g ≠ 0) :
+    (1 / (4 * g ^ 2)) * (g * X + g ^ 2 * Y) ^ 2 = (X + g * Y) ^ 2 / 4 := by
+  field_simp [hg]
+  ring
+
 #print axioms inverse_square_exceeds_fixed_candidate
 #print axioms inverse_square_bound_forces_scaled_unit
 #print axioms field_rescaling_cancels_inverse_square
 #print axioms quarter_field_rescaling_cancels_inverse_square
+#print axioms nonlinear_field_rescaling_cancels_inverse_square
+#print axioms quarter_nonlinear_field_rescaling_cancels_inverse_square
 
 end Millennium.YangMills.FaizalShabirWeakAnalyticCoordinateFirewall
