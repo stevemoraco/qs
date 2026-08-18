@@ -121,10 +121,13 @@ quadratic irrelevant mode does obey the third-power bound. -/
 theorem engineering_factor_recovers_third_power
     (rho eta : ℝ) (heta : eta ≤ rho) :
     (jointEngineeringStep rho eta engineeringIrrelevantMode).2 ≤ rho ^ 3 := by
-  change rho ^ 2 * eta ≤ rho ^ 3
+  have hmul : rho ^ 2 * eta ≤ rho ^ 2 * rho :=
+    mul_le_mul_of_nonneg_left heta (sq_nonneg rho)
   calc
-    rho ^ 2 * eta ≤ rho ^ 2 * rho :=
-      mul_le_mul_of_nonneg_left heta (sq_nonneg rho)
+    (jointEngineeringStep rho eta engineeringIrrelevantMode).2 =
+        rho ^ 2 * eta := by
+      simp [jointEngineeringStep, engineeringIrrelevantMode]
+    _ ≤ rho ^ 2 * rho := hmul
     _ = rho ^ 3 := by ring
 
 #print axioms marginalProjection_idempotent
