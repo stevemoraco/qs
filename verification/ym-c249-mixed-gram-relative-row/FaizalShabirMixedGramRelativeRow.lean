@@ -13,6 +13,7 @@ It does not formalize the Yang--Mills transfer operators, Gram matrices,
 locality estimates, regulator uniformity, OS reconstruction, or a Clay theorem.
 -/
 
+-- Canonical C249 finite consumer; the interacting relative-row theorem is external.
 namespace Millennium.YangMills.FaizalShabirMixedGramRelativeRow
 
 /-- A lower relative bound on the signed mixed form controls the internal form
