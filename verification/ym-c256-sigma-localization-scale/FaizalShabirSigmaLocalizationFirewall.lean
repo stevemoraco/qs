@@ -34,7 +34,6 @@ theorem reciprocal_product_scale_ratio
     (hsigma : sigma ≠ 0) :
     (L / sigma) / (L * sigma) = 1 / sigma ^ 2 := by
   field_simp [hL, hsigma]
-  <;> ring
 
 /-- The two scales coincide at the unit normalization `sigma = 1`; this is the exceptional
 normalization at which the reciprocal/product typo is invisible. -/
