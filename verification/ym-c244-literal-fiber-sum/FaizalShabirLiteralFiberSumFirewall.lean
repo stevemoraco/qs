@@ -25,13 +25,13 @@ open scoped BigOperators
 This is the finite shadow of the total-fiber triangle inequality printed in
 Eq. (10.13), not a claim about the true optimal reblocking norm. -/
 theorem constant_fiber_sum_eq_card (n : ℕ) :
-    (∑ _i in Finset.range n, (1 : ℝ)) = n := by
+    (Finset.range n).sum (fun _ => (1 : ℝ)) = n := by
   simp
 
 /-- In four Euclidean dimensions, a literal unit-weight sum over `b^4`
 coherent singleton contributions carries the factor `b^4`. -/
 theorem four_dimensional_literal_singleton_sum (b : ℕ) :
-    (∑ _i in Finset.range (b ^ 4), (1 : ℝ)) = b ^ 4 := by
+    (Finset.range (b ^ 4)).sum (fun _ => (1 : ℝ)) = b ^ 4 := by
   simp
 
 /-- A finite `b`-dependent prefactor can exactly cancel the dimension-six
@@ -39,15 +39,13 @@ engineering gain `b^-2`; pointwise finiteness therefore does not imply that
 large `b` yields strict contraction. -/
 theorem finite_prefactor_can_cancel_dim6_gain (b : ℝ) (hb : b ≠ 0) :
     (b ^ 2) * (1 / (b ^ 2)) = 1 := by
-  have hb2 : b ^ 2 ≠ 0 := pow_ne_zero 2 hb
-  field_simp
+  field_simp [hb]
 
 /-- The literal four-volume factor followed by a separately charged
 engineering factor `b^-2` leaves `b^2`. -/
 theorem literal_four_volume_then_dim6_gain (b : ℝ) (hb : b ≠ 0) :
     (b ^ 4) * (1 / (b ^ 2)) = b ^ 2 := by
-  field_simp
-  ring
+  field_simp [hb]
 
 /-- Dyadic witness: `2^4 * 2^-2 = 4`, not a contraction. -/
 theorem dyadic_literal_ledger :
