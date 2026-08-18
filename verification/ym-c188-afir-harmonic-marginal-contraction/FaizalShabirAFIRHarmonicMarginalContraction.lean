@@ -31,6 +31,7 @@ theorem cubic_beta_abs_difference
       (1 - beta * (g ^ 2 + g * h + h ^ 2)) * |g - h| := by
   rw [cubic_beta_difference_factorization]
   rw [abs_mul, abs_of_nonneg hmul]
+  ring
 
 theorem harmonic_weighted_step
     (n q d dnext eps : ℝ)
@@ -39,8 +40,15 @@ theorem harmonic_weighted_step
     (hstep : dnext ≤ q * d + eps) :
     (n + 1) * dnext ≤ n * d + (n + 1) * eps := by
   have hnp1 : 0 ≤ n + 1 := by linarith
-  have hmul := mul_le_mul_of_nonneg_left hstep hnp1
-  nlinarith
+  have hmul : (n + 1) * dnext ≤ (n + 1) * (q * d + eps) :=
+    mul_le_mul_of_nonneg_left hstep hnp1
+  have hqd0 := congrArg (fun z : ℝ => z * d) hq
+  have hqd : (n + 1) * (q * d) = n * d := by
+    simpa [mul_assoc] using hqd0
+  calc
+    (n + 1) * dnext ≤ (n + 1) * (q * d + eps) := hmul
+    _ = (n + 1) * (q * d) + (n + 1) * eps := by ring
+    _ = n * d + (n + 1) * eps := by rw [hqd]
 
 theorem harmonic_factor_lt_one
     (n : ℝ)
