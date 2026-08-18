@@ -40,7 +40,6 @@ theorem raw_four_volume_times_dim6_factor
     (hb : b ≠ 0) :
     b ^ 4 * (b ^ 2)⁻¹ = b ^ 2 := by
   field_simp [hb]
-  ring
 
 /-- For a genuine block factor `b >= 2`, that raw associated-graded multiplier
 is strictly expansive. -/
@@ -65,7 +64,6 @@ theorem density_normalization_restores_dim6_factor
     (hb : b ≠ 0) :
     b ^ 4 * (b ^ 4)⁻¹ * (b ^ 2)⁻¹ = (b ^ 2)⁻¹ := by
   field_simp [hb]
-  ring
 
 /-- Dyadic normalized witness: `16 * (1/16) * (1/4) = 1/4`. -/
 theorem dyadic_density_normalized_dim6_multiplier :
