@@ -22,12 +22,12 @@ namespace Millennium.YangMills.CommonModeCaptureFirewall
 
 /-- Squared scalar canonical correlation for one selected coordinate and the
 normalized block average in the shared-plus-private Gaussian model. -/
-def rhoSq (N sharedVar privateVar : ℝ) : ℝ :=
+noncomputable def rhoSq (N sharedVar privateVar : ℝ) : ℝ :=
   (N * sharedVar + privateVar) / (N * (sharedVar + privateVar))
 
 /-- The normalized covariance capture is the complement of squared
 correlation. -/
-def capture (N sharedVar privateVar : ℝ) : ℝ :=
+noncomputable def capture (N sharedVar privateVar : ℝ) : ℝ :=
   1 - rhoSq N sharedVar privateVar
 
 /-- Exact capture formula. -/
@@ -91,6 +91,7 @@ theorem privateOnly_rhoSq
     rhoSq N 0 privateVar = 1 / N := by
   unfold rhoSq
   field_simp [hN, hprivate]
+  ring
 
 /-- Exact dyadic common-mode witness: equal shared and private variances give
 squared correlation `17/32`, far above the matched target `1/4`. -/
