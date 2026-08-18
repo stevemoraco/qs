@@ -24,18 +24,24 @@ theorem run10bma_crossing_forces_first_split
         4 * alpha ^ 2 * rB ^ 2) :
     (201 / 20000 : ℝ) < alpha := by
   rw [run10bma_cap_square_excess] at hdet
+  have hq : (101 / 100 : ℝ) ^ 2 = 10201 / 10000 := by
+    norm_num
   have hcapbeta :
       (201 / 10000 : ℝ) ≤ (101 / 100 : ℝ) ^ 2 - beta ^ 2 := by
-    norm_num at *
-    nlinarith
+    rw [hq]
+    nlinarith [hbeta]
   have hlower :
       (201 / 10000 : ℝ) ^ 2 ≤
         (201 / 10000 : ℝ) *
           ((101 / 100 : ℝ) ^ 2 - beta ^ 2) := by
     exact mul_le_mul_of_nonneg_left hcapbeta (by norm_num)
-  have ha2 : 0 ≤ 4 * alpha ^ 2 := by positivity
+  have ha2 : 0 ≤ 4 * alpha ^ 2 := by
+    positivity
   have hupper : 4 * alpha ^ 2 * rB ^ 2 ≤ 4 * alpha ^ 2 := by
-    simpa [mul_assoc] using mul_le_mul_of_nonneg_left hrB ha2
+    calc
+      4 * alpha ^ 2 * rB ^ 2 ≤ 4 * alpha ^ 2 * 1 :=
+        mul_le_mul_of_nonneg_left hrB ha2
+      _ = 4 * alpha ^ 2 := by ring
   have hsquare :
       (201 / 10000 : ℝ) ^ 2 < 4 * alpha ^ 2 := by
     linarith
