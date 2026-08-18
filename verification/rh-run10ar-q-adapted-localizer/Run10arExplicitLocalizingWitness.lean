@@ -23,7 +23,7 @@ theorem run10ar_pointwise_identity (q y : ℝ) :
 /-- The q=1 specialization is the signed fourth/fifth moment combination. -/
 theorem run10ar_at_one (mu2 mu4 mu5 : ℝ) :
     run10arMomentWitness 1 mu2 mu4 mu5 = 4 * mu2 - 3 * mu4 - mu5 := by
-  ring
+  simp [run10arMomentWitness]
 
 /--
 A completely explicit finite shell at q=101/100.  The analytic/probabilistic
