@@ -99,6 +99,11 @@ theorem dyadicBoundary_rhoSq :
     rhoSq 16 1 4 = 1 / 4 := by
   norm_num [rhoSq]
 
+/-- The same exact boundary has covariance capture `3/4`. -/
+theorem dyadicBoundary_capture :
+    capture 16 1 4 = 3 / 4 := by
+  norm_num [capture, rhoSq]
+
 /-- Exact dyadic common-mode witness: equal shared and private variances give
 squared correlation `17/32`, far above the matched target `1/4`. -/
 theorem dyadicEqualSharedPrivate_rhoSq
@@ -132,6 +137,7 @@ theorem dyadicEqualSharedPrivate_noFourFactorMargin
 #print axioms dyadicFourDimensionalMatched_iff
 #print axioms privateOnly_rhoSq
 #print axioms dyadicBoundary_rhoSq
+#print axioms dyadicBoundary_capture
 #print axioms dyadicEqualSharedPrivate_rhoSq
 #print axioms dyadicEqualSharedPrivate_fourFactor
 #print axioms dyadicEqualSharedPrivate_noFourFactorMargin
