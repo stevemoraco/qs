@@ -11,10 +11,10 @@ The external analytic input has the spectral-multiplier shape
 
   (1 + t^2 * lambda) * W_t(lambda) <= C
 
-with nonnegative spectral parameter and multiplier.  The first theorem records
-that the energy-normalized multiplier `t^2 * lambda * W_t(lambda)` is then
-bounded by the same constant.  The second theorem records the exact cancellation
-of lattice-spacing powers when a dimensionless covariance piece is rescaled to
+with nonnegative multiplier. The first theorem records that the
+energy-normalized multiplier `t^2 * lambda * W_t(lambda)` is then bounded by the
+same constant. The second theorem records the exact cancellation of
+lattice-spacing powers when a dimensionless covariance piece is rescaled to
 physical units.
 
 This file does not formalize Bauerschmidt's theorem, connection Laplacians,
@@ -29,12 +29,11 @@ namespace Millennium.YangMills.BauerschmidtConnectionFRDEnergyFormFirewall
 energy-normalized multiplier with no heat-kernel hypothesis. -/
 theorem energy_multiplier_le_of_resolvent_multiplier_le
     (t lam W C : ℝ)
-    (hlam : 0 ≤ lam)
     (hW : 0 ≤ W)
     (hbound : (1 + t ^ 2 * lam) * W ≤ C) :
     t ^ 2 * lam * W ≤ C := by
   have hfactor : t ^ 2 * lam ≤ 1 + t ^ 2 * lam := by
-    nlinarith [sq_nonneg t, hlam]
+    linarith
   have hmul : t ^ 2 * lam * W ≤ (1 + t ^ 2 * lam) * W :=
     mul_le_mul_of_nonneg_right hfactor hW
   exact hmul.trans hbound
