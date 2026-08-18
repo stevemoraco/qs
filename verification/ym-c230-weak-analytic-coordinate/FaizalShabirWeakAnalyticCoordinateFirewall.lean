@@ -56,7 +56,6 @@ theorem nonlinear_field_rescaling_cancels_inverse_square
     (hg : g ≠ 0) :
     (1 / g ^ 2) * (g * X + g ^ 2 * Y) ^ 2 = (X + g * Y) ^ 2 := by
   field_simp [hg]
-  ring
 
 /-- Conventional quarter-normalized version of the nonlinear rescaling. -/
 theorem quarter_nonlinear_field_rescaling_cancels_inverse_square
@@ -64,7 +63,6 @@ theorem quarter_nonlinear_field_rescaling_cancels_inverse_square
     (hg : g ≠ 0) :
     (1 / (4 * g ^ 2)) * (g * X + g ^ 2 * Y) ^ 2 = (X + g * Y) ^ 2 / 4 := by
   field_simp [hg]
-  ring
 
 #print axioms inverse_square_exceeds_fixed_candidate
 #print axioms inverse_square_bound_forces_scaled_unit
