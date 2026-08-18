@@ -50,4 +50,5 @@ theorem no_uniform_raw_cardinality_bound (C : ℕ) :
 #print axioms succ_le_two_pow
 #print axioms no_uniform_raw_cardinality_bound
 
+-- Canonical C245 source; the public verifier mirrors this file byte-for-byte.
 end Millennium.YangMills.FaizalShabirFiberMultiplicityFirewall
