@@ -27,6 +27,7 @@ theorem scalar_window_decomp
     (a y s : ℝ) (hs : s ≠ 0) :
     a * y / s = a * y + ((1 - s) / s) * a * y := by
   field_simp [hs]
+  ring
 
 /-- If the lag average has modulus at most the positive autocorrelation `s`,
 then normalization by `1/s` costs at most `(1-s)|a|`. -/
