@@ -29,14 +29,12 @@ namespace Millennium.YangMills.BauerschmidtConnectionFRDEnergyFormFirewall
 energy-normalized multiplier with no heat-kernel hypothesis. -/
 theorem energy_multiplier_le_of_resolvent_multiplier_le
     (t lam W C : ℝ)
-    (ht : 0 ≤ t)
     (hlam : 0 ≤ lam)
     (hW : 0 ≤ W)
     (hbound : (1 + t ^ 2 * lam) * W ≤ C) :
     t ^ 2 * lam * W ≤ C := by
-  have ht2lam : 0 ≤ t ^ 2 * lam := mul_nonneg (sq_nonneg t) hlam
   have hfactor : t ^ 2 * lam ≤ 1 + t ^ 2 * lam := by
-    linarith
+    nlinarith [sq_nonneg t, hlam]
   have hmul : t ^ 2 * lam * W ≤ (1 + t ^ 2 * lam) * W :=
     mul_le_mul_of_nonneg_right hfactor hW
   exact hmul.trans hbound
