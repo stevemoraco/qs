@@ -84,7 +84,9 @@ theorem run10bl_cap_mean_negative
   rw [run10bl_cap_mean_exact]
   have hm : 0 < 4 * r ^ 2 * s ^ 2 := by
     positivity
-  exact mul_neg_of_neg_of_pos (sub_neg.mpr hq) hm
+  have hneg : q - r - s < 0 := by
+    linarith
+  exact mul_neg_of_neg_of_pos hneg hm
 
 /-- Under the shrinking-split ordering, only the `(+,+)` atom lies above one,
 so the equal-weight mean squared positive excess is exactly one quarter of the
