@@ -95,8 +95,13 @@ theorem debt_nonpositive_of_submatched
       b2 * (r * rho2 * (p - 1)) =
           (r * (p - 1)) * (rho2 * b2) := by ring
       _ ≤ b2 * (p - r) := hmul2
-  have hcore : r * rho2 * (p - 1) ≤ p - r :=
-    (mul_le_mul_left hb2).mp hscaled
+  have hcore : r * rho2 * (p - 1) ≤ p - r := by
+    by_contra hnot
+    have hrev : p - r < r * rho2 * (p - 1) := lt_of_not_ge hnot
+    have hstrict :
+        b2 * (p - r) < b2 * (r * rho2 * (p - 1)) :=
+      mul_lt_mul_of_pos_left hrev hb2
+    linarith
   unfold blockProductDebt
   linarith
 
@@ -155,10 +160,11 @@ theorem boundary_debt_positive_of_capacity_failure
       0 < b2 * blockProductDebt r p rho2 := by
     rw [matchedDebt_scaled_identity b2 r p rho2 hmatch]
     exact hnum
-  have hscaled' :
-      b2 * 0 < b2 * blockProductDebt r p rho2 := by
-    simpa using hscaled
-  exact (mul_lt_mul_left hb20).mp hscaled'
+  by_contra hnot
+  have hdebt : blockProductDebt r p rho2 ≤ 0 := le_of_not_gt hnot
+  have hprod : b2 * blockProductDebt r p rho2 ≤ 0 :=
+    mul_nonpos_of_nonneg_of_nonpos (le_of_lt hb20) hdebt
+  linarith
 
 /-- Concrete factor-two/two-factor shell.  A matched or stronger
 `rho^2 ≤ 1/4` gives strictly negative `L^6` debt. -/
@@ -258,11 +264,10 @@ theorem eta_le_quarter_of_matched_engineering
     mul_le_mul_of_nonneg_left hb2 heta0
   nlinarith
 
-/-- On the unit interval the cubic multiplier is no larger than the
+/-- On the interval `rho ≤ 1`, the cubic multiplier is no larger than the
 quadratic multiplier. -/
 theorem cubic_le_quadratic
     (rho eta : ℝ)
-    (hrho0 : 0 ≤ rho)
     (hrho1 : rho ≤ 1)
     (heta0 : 0 ≤ eta) :
     cubicMultiplier rho eta ≤
@@ -300,11 +305,14 @@ theorem matched_dimension_six_block_le_sixteenth
     have hmul :
         rho ^ 2 * eta ≤ (1 / 4 : ℝ) * (1 / 4 : ℝ) :=
       mul_le_mul hrho2 hetaquarter heta0 (by norm_num)
-    simpa [derivativeQuadraticMultiplier] using hmul
+    unfold derivativeQuadraticMultiplier
+    calc
+      rho ^ 2 * eta ≤ (1 / 4 : ℝ) * (1 / 4 : ℝ) := hmul
+      _ = (1 / 16 : ℝ) := by norm_num
   have hrho1 : rho ≤ 1 := by linarith
   have hcubic :
       cubicMultiplier rho eta ≤ (1 / 16 : ℝ) :=
-    (cubic_le_quadratic rho eta hrho0 hrho1 heta0).trans hquad
+    (cubic_le_quadratic rho eta hrho1 heta0).trans hquad
   exact max_le hquad hcubic
 
 /-- A sixteenth ideal block leaves a fifteen-sixteenths additive defect
@@ -347,12 +355,15 @@ theorem factorTwo_matched_bundle
     mul_nonneg hrho0 (sub_nonneg.mpr hrhohalf)
   have hrho2 : 4 * rho ^ 2 ≤ 1 := by
     nlinarith
+  have heta' : eta * (2 : ℝ) ^ 2 ≤ 1 := by
+    norm_num at heta ⊢
+    exact heta
   constructor
   · exact factorTwo_twoFactorL6_strict (rho ^ 2) hrho2
   constructor
   · exact factorTwo_threeFactorL12_strict (rho ^ 2) hrho2
   · exact matched_dimension_six_block_le_sixteenth
-      2 rho eta (by norm_num) hrho0 hrho heta0 (by simpa using heta)
+      2 rho eta (by norm_num) hrho0 hrho heta0 heta'
 
 #print axioms matchedDebt_scaled_identity
 #print axioms matchedDebtNumerator_factor
