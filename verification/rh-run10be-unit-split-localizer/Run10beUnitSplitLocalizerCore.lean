@@ -8,7 +8,7 @@ The Run10be unit-shift split localizer.
 For the intended source split `Y = A + B`, a pointwise cap
 `Y <= 101/100` makes this witness nonnegative.
 -/
-def run10beWitness (A B : ℝ) : ℝ :=
+noncomputable def run10beWitness (A B : ℝ) : ℝ :=
   (A + 1) ^ 2 *
     ((101 / 100 : ℝ) - (A + B)) *
       (B + 1) ^ 2
