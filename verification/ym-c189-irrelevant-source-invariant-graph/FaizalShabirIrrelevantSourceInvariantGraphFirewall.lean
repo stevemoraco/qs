@@ -42,8 +42,7 @@ theorem cubic_to_fifth_ratio
     (g c : ℝ)
     (hg : g ≠ 0) :
     (c * g ^ 3) / g ^ 5 = c / g ^ 2 := by
-  field_simp
-  ring
+  field_simp [hg]
 
 /-- In particular, for `0 < g < 1` and positive coefficient, the cubic mixed
 term is strictly larger than the same-coefficient fifth-order term. -/
@@ -54,12 +53,11 @@ theorem cubic_strictly_dominates_fifth_near_zero
     (hc : 0 < c) :
     c * g ^ 5 < c * g ^ 3 := by
   have hg2 : g ^ 2 < 1 := by nlinarith [sq_nonneg g]
-  have hg3 : 0 < g ^ 3 := pow_pos hg0 3
-  have hmul : g ^ 3 * g ^ 2 < g ^ 3 * 1 :=
-    mul_lt_mul_of_pos_left hg2 hg3
-  have hcpos : 0 < c := hc
-  have := mul_lt_mul_of_pos_left hmul hcpos
-  simpa [pow_succ, pow_two] using this
+  have hcg3 : 0 < c * g ^ 3 := mul_pos hc (pow_pos hg0 3)
+  calc
+    c * g ^ 5 = (c * g ^ 3) * g ^ 2 := by ring
+    _ < (c * g ^ 3) * 1 := mul_lt_mul_of_pos_left hg2 hcg3
+    _ = c * g ^ 3 := by ring
 
 /-- If the additive source actually realizes `K = c*g^2`, a subsequent
 `g*K` term changes the cubic coefficient by `c`. -/
