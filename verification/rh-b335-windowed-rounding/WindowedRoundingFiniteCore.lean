@@ -27,7 +27,6 @@ theorem scalar_window_decomp
     (a y s : ℝ) (hs : s ≠ 0) :
     a * y / s = a * y + ((1 - s) / s) * a * y := by
   field_simp [hs]
-  ring
 
 /-- If the lag average has modulus at most the positive autocorrelation `s`,
 then normalization by `1/s` costs at most `(1-s)|a|`. -/
@@ -42,7 +41,6 @@ theorem scalar_window_charge
   have hsne : s ≠ 0 := ne_of_gt hs
   have hdecomp : a * y / s - a * y = ((1 - s) / s) * a * y := by
     field_simp [hsne]
-    ring
   rw [hdecomp, abs_mul, abs_mul, abs_of_nonneg (div_nonneg h1s hs0)]
   calc
     ((1 - s) / s) * |a| * |y|
@@ -51,7 +49,6 @@ theorem scalar_window_charge
             (mul_nonneg (div_nonneg h1s hs0) (abs_nonneg a))
     _ = (1 - s) * |a| := by
       field_simp [hsne]
-      ring
 
 /-- Finite summation of the scalar windowed rounding charge. -/
 theorem finite_window_charge
@@ -61,8 +58,8 @@ theorem finite_window_charge
     (hs : ∀ i ∈ I, 0 < s i)
     (hs1 : ∀ i ∈ I, s i ≤ 1)
     (hy : ∀ i ∈ I, |y i| ≤ s i) :
-    (∑ i in I, |a i * y i / s i - a i * y i|)
-      ≤ ∑ i in I, (1 - s i) * |a i| := by
+    (∑ i ∈ I, |a i * y i / s i - a i * y i|)
+      ≤ ∑ i ∈ I, (1 - s i) * |a i| := by
   apply Finset.sum_le_sum
   intro i hi
   exact scalar_window_charge (a i) (y i) (s i)
