@@ -73,10 +73,74 @@ theorem cubic_budget_adds
   have hg3 : 0 ≤ g ^ 3 := by positivity
   nlinarith
 
+/-- Positive repaired consumer: once the source-specific analysis has supplied
+one cubic remainder budget and enough finite-epsilon stable slack, a parabolic
+cone is propagated by one weak-RG step.
+
+The theorem deliberately starts after the analytic work that converts the
+Faizal--Shabir remainder estimate to `|R| <= (beta/2) g^3`; that conversion is
+the model-specific gate. -/
+theorem parabolic_cone_step_from_cubic_budget
+    (beta theta A c1 eps g R gnext Knext : ℝ)
+    (hbeta : 0 < beta)
+    (hA : 0 ≤ A)
+    (heps : 0 ≤ eps)
+    (hg : 0 < g)
+    (hgeps : g ≤ eps)
+    (hR : |R| ≤ (beta / 2) * g ^ 3)
+    (hgnext : gnext = g - beta * g ^ 3 + R)
+    (hKnext : Knext ≤ (theta * A + c1) * g ^ 2)
+    (hstable :
+      theta * A + c1 ≤ A * (1 - (3 * beta / 2) * eps ^ 2) ^ 2)
+    (hpositive : (3 * beta / 2) * eps ^ 2 < 1) :
+    0 < gnext ∧
+      gnext ≤ g * (1 - (beta / 2) * g ^ 2) ∧
+      Knext ≤ A * gnext ^ 2 := by
+  have hg0 : 0 ≤ g := le_of_lt hg
+  have hgeps_sq : g ^ 2 ≤ eps ^ 2 := by nlinarith
+  have hRpm := (abs_le.mp hR)
+  have hRlo : -(beta / 2) * g ^ 3 ≤ R := by
+    nlinarith [hRpm.1]
+  have hRhi : R ≤ (beta / 2) * g ^ 3 := hRpm.2
+  have hlower : g * (1 - (3 * beta / 2) * g ^ 2) ≤ gnext := by
+    rw [hgnext]
+    nlinarith
+  have hupper : gnext ≤ g * (1 - (beta / 2) * g ^ 2) := by
+    rw [hgnext]
+    nlinarith
+  have hfactor_pos : 0 < 1 - (3 * beta / 2) * g ^ 2 := by
+    nlinarith
+  have hgnext_pos : 0 < gnext := lt_of_lt_of_le (mul_pos hg hfactor_pos) hlower
+  have heps_factor_nonneg : 0 ≤ 1 - (3 * beta / 2) * eps ^ 2 := by
+    nlinarith
+  have hfactor_cmp :
+      1 - (3 * beta / 2) * eps ^ 2 ≤
+        1 - (3 * beta / 2) * g ^ 2 := by
+    nlinarith
+  have hsquares :
+      (1 - (3 * beta / 2) * eps ^ 2) ^ 2 ≤
+        (1 - (3 * beta / 2) * g ^ 2) ^ 2 := by
+    nlinarith
+  have hstable_g :
+      theta * A + c1 ≤
+        A * (1 - (3 * beta / 2) * g ^ 2) ^ 2 := by
+    nlinarith
+  have hKbound :
+      Knext ≤ A * g ^ 2 * (1 - (3 * beta / 2) * g ^ 2) ^ 2 := by
+    nlinarith
+  have hlower0 : 0 ≤ g * (1 - (3 * beta / 2) * g ^ 2) := by positivity
+  have hsquare_lower :
+      (g * (1 - (3 * beta / 2) * g ^ 2)) ^ 2 ≤ gnext ^ 2 := by
+    nlinarith
+  have hKfinal : Knext ≤ A * gnext ^ 2 := by
+    nlinarith
+  exact ⟨hgnext_pos, hupper, hKfinal⟩
+
 #print axioms mixed_feedback_is_cubic
 #print axioms square_feedback_is_quartic
 #print axioms parabolic_margin_necessary
 #print axioms small_rectangle_bound_does_not_force_cubic_contraction
 #print axioms cubic_budget_adds
+#print axioms parabolic_cone_step_from_cubic_budget
 
 end Millennium.YangMills.FaizalShabirParabolicAFConeFirewall
