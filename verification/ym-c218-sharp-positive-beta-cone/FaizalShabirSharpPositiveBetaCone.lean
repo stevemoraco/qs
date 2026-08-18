@@ -7,7 +7,7 @@ Finite real-algebra consumers for the hostile repair of arXiv:2606.19362v1,
 Theorem 10.4 / Eqs. (10.34)--(10.42).
 
 On the source-native parabolic cone `K <= A g^2`, the leading mixed marginal
-channel costs `c3 A g^3`.  To obtain *some* strictly positive cubic decrement,
+channel costs `c3 A g^3`. To obtain *some* strictly positive cubic decrement,
 one only needs `c3 A < beta`; the older half-beta budget `2 c3 A < beta` is a
 stronger normalization choice, not the sharp leading compatibility condition.
 
@@ -17,10 +17,11 @@ Combining stable-cone slack `c1 < (1-theta) A` with positive marginal slack
   c1*c3 < beta*(1-theta).
 
 The second theorem verifies the positive one-step consumer for an arbitrary
-remainder coefficient `rho < beta`.  The model-specific analytic work must
-still produce that cubic remainder budget and the finite-epsilon stable slack.
+remainder coefficient `rho < beta`, and records explicitly that the surviving
+decrement `beta-rho` is positive. The model-specific analytic work must still
+produce that cubic remainder budget and the finite-epsilon stable slack.
 
-This file proves only finite scalar algebra.  It does not formalize the
+This file proves only finite scalar algebra. It does not formalize the
 Faizal--Shabir Banach RG map, Yang--Mills, AF/IR identification, OS
 reconstruction, a mass gap, or any Clay theorem.
 -/
@@ -56,32 +57,31 @@ theorem parabolic_cone_step_from_positive_beta_budget
     (hstable :
       theta * A + c1 ≤ A * (1 - (beta + rho) * eps ^ 2) ^ 2)
     (hpositive : (beta + rho) * eps ^ 2 < 1) :
-    0 < gnext ∧
+    0 < beta - rho ∧
+      0 < gnext ∧
       gnext ≤ g * (1 - (beta - rho) * g ^ 2) ∧
       Knext ≤ A * gnext ^ 2 := by
-  have hg0 : 0 ≤ g := le_of_lt hg
-  have hbrho : 0 < beta + rho := by nlinarith
-  have hgeps_sq : g ^ 2 ≤ eps ^ 2 := by nlinarith
+  have hdecay : 0 < beta - rho := sub_pos.mpr hrhobeta
   have hRpm := abs_le.mp hR
-  have hRlo : -rho * g ^ 3 ≤ R := by
-    nlinarith [hRpm.1]
-  have hRhi : R ≤ rho * g ^ 3 := hRpm.2
   have hlower : g * (1 - (beta + rho) * g ^ 2) ≤ gnext := by
     rw [hgnext]
-    nlinarith
+    nlinarith [hRpm.1]
   have hupper : gnext ≤ g * (1 - (beta - rho) * g ^ 2) := by
     rw [hgnext]
+    nlinarith [hRpm.2]
+  have hfactor_pos : 0 < 1 - (beta + rho) * g ^ 2 := by
+    have hgeps_sq : g ^ 2 ≤ eps ^ 2 := by nlinarith
     nlinarith
+  have hgnext_pos : 0 < gnext :=
+    lt_of_lt_of_le (mul_pos hg hfactor_pos) hlower
   have heps_factor_nonneg : 0 ≤ 1 - (beta + rho) * eps ^ 2 := by
     nlinarith
   have hfactor_cmp :
       1 - (beta + rho) * eps ^ 2 ≤
         1 - (beta + rho) * g ^ 2 := by
+    have hgeps_sq : g ^ 2 ≤ eps ^ 2 := by nlinarith
+    have hbrho : 0 ≤ beta + rho := by nlinarith
     nlinarith
-  have hfactor_pos : 0 < 1 - (beta + rho) * g ^ 2 := by
-    nlinarith
-  have hgnext_pos : 0 < gnext :=
-    lt_of_lt_of_le (mul_pos hg hfactor_pos) hlower
   have hsquares :
       (1 - (beta + rho) * eps ^ 2) ^ 2 ≤
         (1 - (beta + rho) * g ^ 2) ^ 2 := by
@@ -107,7 +107,7 @@ theorem parabolic_cone_step_from_positive_beta_budget
       Knext ≤ A * g ^ 2 * (1 - (beta + rho) * g ^ 2) ^ 2 := hKbound
       _ = A * (g * (1 - (beta + rho) * g ^ 2)) ^ 2 := by ring
       _ ≤ A * gnext ^ 2 := hscaled_square
-  exact ⟨hgnext_pos, hupper, hKfinal⟩
+  exact ⟨hdecay, hgnext_pos, hupper, hKfinal⟩
 
 #print axioms sharp_leading_margin_necessary
 #print axioms parabolic_cone_step_from_positive_beta_budget
