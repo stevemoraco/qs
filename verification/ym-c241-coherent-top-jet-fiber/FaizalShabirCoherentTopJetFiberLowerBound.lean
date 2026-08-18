@@ -25,7 +25,6 @@ theorem four_volume_then_dim6
     (b : ℝ) (hb : b ≠ 0) :
     b ^ 4 * (b ^ 2)⁻¹ = b ^ 2 := by
   field_simp
-  ring
 
 /-- If a fixed positive coherent fraction `c` survives, then any block factor
 whose square exceeds `1/c` makes the resulting lower-bound multiplier exceed
@@ -35,13 +34,15 @@ theorem coherent_fraction_eventually_breaks_contraction
     (hc : 0 < c)
     (hscale : c⁻¹ < b ^ 2) :
     1 < c * b ^ 2 := by
-  have h := (mul_lt_mul_of_pos_left hscale hc)
-  simpa [inv_mul_cancel₀ (ne_of_gt hc)] using h
+  have hcne : c ≠ 0 := ne_of_gt hc
+  calc
+    1 = c * c⁻¹ := (mul_inv_cancel₀ hcne).symm
+    _ < c * b ^ 2 := mul_lt_mul_of_pos_left hscale hc
 
-/-- Equivalent threshold form without division. -/
+/-- Once the coherent lower-bound multiplier exceeds one, strict contraction
+below one is impossible. -/
 theorem coherent_fraction_threshold
     (b c : ℝ)
-    (hc : 0 < c)
     (h : 1 < c * b ^ 2) :
     ¬ c * b ^ 2 < 1 := by
   linarith
