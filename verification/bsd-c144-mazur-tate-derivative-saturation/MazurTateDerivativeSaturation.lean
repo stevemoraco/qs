@@ -32,9 +32,7 @@ theorem rankZeroDerivativeCertificate
     (hBudget :
       upper ≤ splitCount + 2 * correction + splitCount % 2) :
     rp = 0 ∧ mwRank = 0 ∧ divSha = 0 := by
-  have h := derivativeSaturation
-    q rp mwRank divSha 0 splitCount correction upper
-    hLower hParity hKummer (Nat.zero_le mwRank) hObserved hBudget
+  have hSharp := parityCorrectedBudget q rp splitCount correction hLower hParity
   omega
 
 #print axioms parityCorrectedBudget
