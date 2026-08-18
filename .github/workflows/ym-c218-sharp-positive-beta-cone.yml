@@ -22,13 +22,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Verify flattened Lean theorem source
+      - name: Verify flattened Lean theorem sources
         shell: bash
         run: |
           set -euo pipefail
-          SRC=verification/ym-c218-sharp-positive-beta-cone/FaizalShabirSharpPositiveBetaCone.lean
-          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
-          SRC="$SRC" python3 - <<'PY'
+          for SRC in verification/ym-c218-sharp-positive-beta-cone/*.lean; do
+            if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+            SRC="$SRC" python3 - <<'PY'
           import hashlib, json, os, pathlib, urllib.request
           path = pathlib.Path(os.environ['SRC'])
           source = path.read_text()
@@ -53,7 +53,8 @@ jobs:
             'axle_environment': 'lean-4.30.0',
             'axle_result': result,
           }
-          pathlib.Path('/tmp/ym-c218-axle-receipt.json').write_text(json.dumps(receipt, indent=2))
+          out = pathlib.Path('/tmp') / (path.stem + '-axle-receipt.json')
+          out.write_text(json.dumps(receipt, indent=2))
           print(json.dumps(receipt, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
@@ -69,10 +70,11 @@ jobs:
           if bad:
             raise SystemExit(1)
           PY
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ym-c218-sharp-positive-beta-cone-axle-receipt
+          name: ym-c218-axle-receipts
           if-no-files-found: warn
           retention-days: 30
-          path: /tmp/ym-c218-axle-receipt.json
+          path: /tmp/*-axle-receipt.json
