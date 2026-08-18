@@ -30,11 +30,14 @@ theorem run10bma_crossing_forces_first_split
       (201 / 10000 : ℝ) ≤ (101 / 100 : ℝ) ^ 2 - beta ^ 2 := by
     rw [hq]
     nlinarith [hbeta]
+  have hcpos : (0 : ℝ) ≤ 201 / 10000 := by
+    norm_num
   have hlower :
       (201 / 10000 : ℝ) ^ 2 ≤
         (201 / 10000 : ℝ) *
           ((101 / 100 : ℝ) ^ 2 - beta ^ 2) := by
-    exact mul_le_mul_of_nonneg_left hcapbeta (by norm_num)
+    rw [pow_two]
+    exact mul_le_mul_of_nonneg_left hcapbeta hcpos
   have ha2 : 0 ≤ 4 * alpha ^ 2 := by
     positivity
   have hupper : 4 * alpha ^ 2 * rB ^ 2 ≤ 4 * alpha ^ 2 := by
