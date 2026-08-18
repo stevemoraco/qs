@@ -1,0 +1,78 @@
+name: YM C217 parabolic AF cone firewall
+
+on:
+  push:
+    branches:
+      - verification/ym-c217-parabolic-af-cone-20260818
+    paths:
+      - verification/ym-c217-parabolic-af-cone/*.lean
+      - .github/workflows/ym-c217-parabolic-af-cone.yml
+  pull_request:
+    paths:
+      - verification/ym-c217-parabolic-af-cone/*.lean
+      - .github/workflows/ym-c217-parabolic-af-cone.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify flattened Lean theorem source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-c217-parabolic-af-cone/FaizalShabirParabolicAFConeFirewall.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+          SRC="$SRC" python3 - <<'PY'
+          import hashlib, json, os, pathlib, urllib.request
+          path = pathlib.Path(os.environ['SRC'])
+          source = path.read_text()
+          payload = json.dumps({
+            'content': source,
+            'environment': 'lean-4.30.0',
+            'ignore_imports': True,
+            'mathlib_options': False,
+            'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+            'https://axle.axiommath.ai/api/v1/check',
+            data=payload,
+            headers={'Content-Type': 'application/json'},
+            method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=960) as response:
+            result = json.load(response)
+          receipt = {
+            'source_path': str(path),
+            'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
+            'axle_environment': 'lean-4.30.0',
+            'axle_result': result,
+          }
+          pathlib.Path('/tmp/ym-c217-axle-receipt.json').write_text(json.dumps(receipt, indent=2))
+          print(json.dumps(receipt, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+            not result.get('okay')
+            or bool(result.get('failed_declarations', []))
+            or bool(lean.get('errors', []))
+            or bool(lean.get('warnings', []))
+            or bool(tool.get('errors', []))
+            or bool(tool.get('warnings', []))
+            or 'sorryAx' in json.dumps(result)
+          )
+          if bad:
+            raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-c217-parabolic-af-cone-axle-receipt
+          if-no-files-found: warn
+          retention-days: 30
+          path: /tmp/ym-c217-axle-receipt.json
