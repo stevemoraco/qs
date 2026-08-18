@@ -1,9 +1,9 @@
-name: YM C238 reblock engineering normalization
+name: YM C239 singleton fiber multiplicity
 
 on:
   push:
     branches:
-      - verification/ym-c238-reblock-engineering-normalization-20260818
+      - verification/ym-c239-singleton-fiber-multiplicity-20260818
     paths:
       - verification/ym-c238-reblock-engineering-normalization/*.lean
       - .github/workflows/ym-c238-reblock-engineering-normalization.yml
@@ -53,7 +53,7 @@ jobs:
             'axle_environment': 'lean-4.30.0',
             'axle_result': result,
           }
-          pathlib.Path('/tmp/ym-c238-axle-receipt.json').write_text(json.dumps(receipt, indent=2))
+          pathlib.Path('/tmp/ym-c239-axle-receipt.json').write_text(json.dumps(receipt, indent=2))
           print(json.dumps(receipt, indent=2))
           lean = result.get('lean_messages', {})
           tool = result.get('tool_messages', {})
@@ -72,7 +72,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ym-c238-reblock-engineering-normalization-axle-receipt
+          name: ym-c239-singleton-fiber-multiplicity-axle-receipt
           if-no-files-found: warn
           retention-days: 30
-          path: /tmp/ym-c238-axle-receipt.json
+          path: /tmp/ym-c239-axle-receipt.json
