@@ -38,15 +38,19 @@ theorem square_feedback_is_quartic (c3 A g : ℝ) :
 
 theorem parabolic_margin_necessary
     (beta c1 c3 theta A : ℝ)
-    (hc1 : 0 ≤ c1)
     (hc3 : 0 ≤ c3)
     (hone : 0 < 1 - theta)
     (hstable : c1 < (1 - theta) * A)
     (hmarginal : 2 * c3 * A < beta) :
     2 * c1 * c3 < beta * (1 - theta) := by
-  have hleft : 2 * c1 * c3 < 2 * ((1 - theta) * A) * c3 := by
-    nlinarith
-  nlinarith
+  have hnonneg : 0 ≤ 2 * c3 := by positivity
+  have h1 := mul_le_mul_of_nonneg_right (le_of_lt hstable) hnonneg
+  have h2 := mul_lt_mul_of_pos_right hmarginal hone
+  calc
+    2 * c1 * c3 = c1 * (2 * c3) := by ring
+    _ ≤ ((1 - theta) * A) * (2 * c3) := h1
+    _ = (2 * c3 * A) * (1 - theta) := by ring
+    _ < beta * (1 - theta) := h2
 
 theorem small_rectangle_bound_does_not_force_cubic_contraction :
     let g : ℝ := (1 : ℝ) / 10000
