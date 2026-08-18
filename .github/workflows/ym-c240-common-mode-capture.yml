@@ -1,12 +1,6 @@
 name: YM C240 common-mode capture finite core
 
 on:
-  push:
-    branches:
-      - verification/ym-c240-common-mode-capture-20260818-gpt56pro
-    paths:
-      - verification/ym-c240-common-mode-capture/*.lean
-      - .github/workflows/ym-c240-common-mode-capture.yml
   pull_request:
     paths:
       - verification/ym-c240-common-mode-capture/*.lean
