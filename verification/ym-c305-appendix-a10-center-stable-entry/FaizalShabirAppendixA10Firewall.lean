@@ -52,7 +52,7 @@ theorem one_step_contraction_inside_ball
   have hlin : (rho + C * r) * x <= q * x :=
     mul_le_mul_of_nonneg_right hmargin hx0
   calc
-    rho * x + C * x ^ 2 <= rho * x + C * r * x := add_le_add_left hquad (rho * x)
+    rho * x + C * x ^ 2 <= rho * x + C * r * x := by linarith
     _ = (rho + C * r) * x := by ring
     _ <= q * x := hlin
 
