@@ -44,7 +44,8 @@ theorem naive_reconstruction_two_witness :
     naiveReconstruction 1 2 = 16 := by
   norm_num [naiveReconstruction, matrixElement]
 
-def dualReconstruction (op v : ℝ) : ℝ := matrixElement op v / (v * v)
+noncomputable def dualReconstruction (op v : ℝ) : ℝ :=
+  matrixElement op v / (v * v)
 
 theorem dual_reconstruction_exact (op v : ℝ) (hv : v ≠ 0) :
     dualReconstruction op v = op := by
