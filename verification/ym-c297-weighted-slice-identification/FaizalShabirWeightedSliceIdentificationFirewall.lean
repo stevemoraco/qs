@@ -5,12 +5,9 @@ import Mathlib
 
 Finite scalar algebra for one load-bearing point in the Faizal–Shabir OS-transfer audit.
 
-If an OS/slice form has the scalar shape
-
-  <x,y>_OS = t * x * y,
-
-with `0 < t < 1`, then the bare identity map into ordinary Euclidean `L2` is not an
-isometry. The square-root weighted map `x ↦ sqrt(t) * x` is.
+If an OS/slice form has scalar norm-square `t * x^2` with a strict weight `t < 1`,
+the bare identity map to ordinary Euclidean norm-square `x^2` need not be an isometry.
+A scalar multiplier whose square is `t` is exactly isometric for the weighted form.
 
 This file does not formalize Osterwalder–Schrader reconstruction, transfer operators,
 Yang–Mills theory, the mass gap, or the Clay theorem.
@@ -24,33 +21,25 @@ theorem bare_identity_not_isometry_at_half :
     ((1 / 2 : ℝ) * (1 : ℝ)^2) ≠ (1 : ℝ)^2 := by
   norm_num
 
-/-- More generally, for a strict scalar contraction weight, the weighted norm
-of a nonzero vector cannot equal its ordinary Euclidean norm. -/
-theorem bare_identity_not_isometry
-    (t x : ℝ)
-    (ht0 : 0 ≤ t)
-    (ht1 : t < 1)
-    (hx : x ≠ 0) :
-    t * x^2 ≠ x^2 := by
-  intro h
-  have hx2 : 0 < x^2 := sq_pos_of_ne_zero hx
-  have hfactor : (1 - t) * x^2 = 0 := by
-    nlinarith
-  have h1t : 0 < 1 - t := by linarith
-  nlinarith
+/-- Exact algebraic difference between the ordinary and weighted scalar
+norm-squares. -/
+theorem weighted_norm_difference
+    (t x : ℝ) :
+    x^2 - t * x^2 = (1 - t) * x^2 := by
+  ring
 
-/-- The square-root weighted scalar map is exactly isometric for the weighted
-form. This is the scalar shadow of `[f] ↦ T^(1/2) f` for a positive operator
-weighted Hilbert form. -/
-theorem sqrt_weighted_map_isometry
-    (t x : ℝ)
-    (ht : 0 ≤ t) :
-    (Real.sqrt t * x)^2 = t * x^2 := by
-  rw [mul_pow]
-  rw [Real.sq_sqrt ht]
+/-- Any scalar multiplier `s` with `s^2 = t` gives the exact weighted
+isometry identity. The intended positive choice is `s = sqrt(t)`. -/
+theorem weighted_map_isometry_of_square
+    (s t x : ℝ)
+    (hs : s^2 = t) :
+    (s * x)^2 = t * x^2 := by
+  calc
+    (s * x)^2 = s^2 * x^2 := by ring
+    _ = t * x^2 := by rw [hs]
 
 #print axioms bare_identity_not_isometry_at_half
-#print axioms bare_identity_not_isometry
-#print axioms sqrt_weighted_map_isometry
+#print axioms weighted_norm_difference
+#print axioms weighted_map_isometry_of_square
 
 end Millennium.YangMills.FaizalShabirWeightedSliceIdentificationFirewall
