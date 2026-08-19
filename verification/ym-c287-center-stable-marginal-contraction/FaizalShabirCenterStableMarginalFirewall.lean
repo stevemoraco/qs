@@ -59,7 +59,11 @@ theorem strict_q_on_cubic_requires_nonzero_scale
     1 - q ≤ beta * g ^ 2 := by
   have hmul : (1 - q) * g ≤ (beta * g ^ 2) * g := by
     nlinarith [hbound]
-  exact (mul_le_mul_right hg).mp hmul
+  by_contra h
+  have hlt : beta * g ^ 2 < 1 - q := lt_of_not_ge h
+  have hm2 : (beta * g ^ 2) * g < (1 - q) * g :=
+    mul_lt_mul_of_pos_right hlt hg
+  exact (not_lt_of_ge hmul) hm2
 
 #print axioms stable_quadratic_step_contracts
 #print axioms cubic_marginal_exceeds_strict_q
