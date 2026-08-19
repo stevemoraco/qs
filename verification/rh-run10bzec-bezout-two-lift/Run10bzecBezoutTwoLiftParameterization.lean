@@ -33,24 +33,24 @@ theorem bezout_two_lift_parameterization
   let u : ℤ := y * B + x * l₂
   have hA : A = h * y + a * t := by
     calc
-      A = A * (x * a + y * b) := by rw [hbez]
+      A = A * (x * a + y * b) := by rw [hbez]; ring
       _ = (A * b - l₁ * a) * y + a * (x * A + y * l₁) := by ring
-      _ = h * y + a * t := by rw [h₁]; rfl
+      _ = h * y + a * t := by rw [h₁]
   have hl₁ : l₁ = b * t - h * x := by
     calc
-      l₁ = l₁ * (x * a + y * b) := by rw [hbez]
+      l₁ = l₁ * (x * a + y * b) := by rw [hbez]; ring
       _ = b * (x * A + y * l₁) - (A * b - l₁ * a) * x := by ring
-      _ = b * t - h * x := by rw [h₁]; rfl
+      _ = b * t - h * x := by rw [h₁]
   have hB : B = h * x + b * u := by
     calc
-      B = B * (x * a + y * b) := by rw [hbez]
+      B = B * (x * a + y * b) := by rw [hbez]; ring
       _ = (B * a - l₂ * b) * x + b * (y * B + x * l₂) := by ring
-      _ = h * x + b * u := by rw [h₂]; rfl
+      _ = h * x + b * u := by rw [h₂]
   have hl₂ : l₂ = a * u - h * y := by
     calc
-      l₂ = l₂ * (x * a + y * b) := by rw [hbez]
+      l₂ = l₂ * (x * a + y * b) := by rw [hbez]; ring
       _ = a * (y * B + x * l₂) - (B * a - l₂ * b) * y := by ring
-      _ = a * u - h * y := by rw [h₂]; rfl
+      _ = a * u - h * y := by rw [h₂]
   have hD : A * B - l₁ * l₂ = h * (t + u) := by
     calc
       A * B - l₁ * l₂ =
