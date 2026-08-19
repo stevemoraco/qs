@@ -75,8 +75,7 @@ theorem two_state_doob_row_zero
     (hh0 : h0 ≠ 0)
     (heigen : k00 * h0 + k01 * h1 = r * h0) :
     k00 * h0 / (r * h0) + k01 * h1 / (r * h0) = 1 := by
-  field_simp [hr, hh0]
-  linarith
+  field_simp [hr, hh0] <;> linarith [heigen]
 
 /-- For a symmetric two-state off-diagonal kernel, the Doob transition obeys
 detailed balance with stationary weights proportional to `h^2`. -/
@@ -87,8 +86,7 @@ theorem two_state_doob_detailed_balance
     (hh1 : h1 ≠ 0) :
     h0 ^ 2 * (k01 * h1 / (r * h0)) =
       h1 ^ 2 * (k01 * h0 / (r * h1)) := by
-  field_simp [hr, hh0, hh1]
-  ring
+  field_simp [hr, hh0, hh1] <;> ring
 
 #print axioms fixed_boundary_constant_forces_inverse_weight
 #print axioms fixed_boundary_and_source_eigenrelation_force_square_one
