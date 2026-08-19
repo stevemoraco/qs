@@ -111,11 +111,11 @@ theorem run10bo_crossing_forces_threepercent_signed_overflow
   have halpha : (83 / 5000 : ℝ) < alpha :=
     run10bo_crossing_forces_first_split
       alpha beta rB ha hb hnatural hrB hdet
-  by_cases hbig : (166 / 5000 : ℝ) ≤ alpha
+  by_cases hbig : (166 / 5000 : ℝ) < alpha
   · left
     linarith
   · right
-    have halphaUpper : alpha < (166 / 5000 : ℝ) := lt_of_not_ge hbig
+    have halphaUpper : alpha ≤ (166 / 5000 : ℝ) := le_of_not_gt hbig
     constructor
     · linarith
     · by_contra hbetaNot
