@@ -1,5 +1,7 @@
 import Mathlib
 
+open scoped BigOperators
+
 /-!
 # Faizal–Shabir Theorem 5.4 center-transversality firewall
 
@@ -25,7 +27,10 @@ def frozenCenter (_beta : ℝ) : ℝ := 1
 
 theorem frozen_center_deriv_zero (beta : ℝ) :
     deriv frozenCenter beta = 0 := by
-  simp [frozenCenter]
+  have h : HasDerivAt frozenCenter 0 beta := by
+    simpa [frozenCenter] using
+      (hasDerivAt_const (x := beta) (c := (1 : ℝ)))
+  exact h.deriv
 
 theorem frozen_center_has_no_positive_transversality
     (beta c0 : ℝ)
@@ -46,7 +51,7 @@ def additiveCenter (g0 : ℝ) (q : ℕ → ℝ) : ℕ → ℝ
 
 theorem additive_center_eq_initial_plus_forcing
     (g0 : ℝ) (q : ℕ → ℝ) (n : ℕ) :
-    additiveCenter g0 q n = g0 + ∑ j in Finset.range n, q j := by
+    additiveCenter g0 q n = g0 + (∑ j in Finset.range n, q j) := by
   induction n with
   | zero => simp [additiveCenter]
   | succ n ih =>
@@ -54,7 +59,8 @@ theorem additive_center_eq_initial_plus_forcing
 
 theorem zero_forcing_does_not_create_center_decay (n : ℕ) :
     additiveCenter 1 (fun _ => 0) n = 1 := by
-  simp [additive_center_eq_initial_plus_forcing]
+  rw [additive_center_eq_initial_plus_forcing]
+  simp
 
 #print axioms frozen_center_deriv_zero
 #print axioms frozen_center_has_no_positive_transversality
