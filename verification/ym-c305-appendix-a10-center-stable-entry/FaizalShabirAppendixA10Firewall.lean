@@ -60,7 +60,6 @@ theorem invariant_ball_under_quadratic_stable_map
     (rho C r : ℝ)
     (x : ℕ → ℝ)
     (hC : 0 <= C)
-    (hr : 0 <= r)
     (hmargin : rho + C * r <= 1)
     (hx_nonneg : ∀ n, 0 <= x n)
     (hx0 : x 0 <= r)
