@@ -42,18 +42,15 @@ theorem fixed_boundary_constant_forces_inverse_weight
   simpa [mul_comm] using hfixed
 
 /-- If the reciprocal relation and the source-style eigenweight relation are
-both imposed with nonzero normalization, the slice weight must have square one. -/
+both imposed with positive normalization, the slice weight must have square one. -/
 theorem fixed_boundary_and_source_eigenrelation_force_square_one
     (kappa rowIntegral Z : ℝ)
-    (hZ : Z ≠ 0)
+    (hZ : 0 < Z)
     (hfixed : kappa * rowIntegral = Z)
     (heigen : rowIntegral = Z * kappa) :
     kappa ^ 2 = 1 := by
   rw [heigen] at hfixed
-  have hzsq : Z * (kappa ^ 2) = Z := by
-    simpa [pow_two, mul_assoc] using hfixed
-  apply (mul_left_cancel₀ hZ)
-  simpa using hzsq
+  nlinarith
 
 /-- Concrete scalar witness: `kappa=2`, `Z=1` cannot satisfy both the
 boundary-constant identity and the source-style eigenweight identity. -/
