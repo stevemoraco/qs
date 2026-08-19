@@ -51,7 +51,8 @@ theorem affine_contraction_iterate
       calc
         d (n + 1) ≤ q * d n + eps := hstep n
         _ ≤ q * (q ^ n * D + eps * geomEnvelope q n) + eps := by
-          exact add_le_add_right (mul_le_mul_of_nonneg_left ih hq) eps
+          have hmul := mul_le_mul_of_nonneg_left ih hq
+          nlinarith
         _ = q ^ (n + 1) * D + eps * geomEnvelope q (n + 1) := by
           rw [geomEnvelope, pow_succ]
           ring
@@ -70,7 +71,9 @@ theorem affine_contraction_hits_budget
   have hiter := affine_contraction_iterate q D eps d hq h0 hstep m
   have hforce : eps * geomEnvelope q m ≤ eps * G :=
     mul_le_mul_of_nonneg_left hgeom heps
-  exact hiter.trans ((add_le_add_left hforce (q ^ m * D)).trans hbudget)
+  have hmid : q ^ m * D + eps * geomEnvelope q m ≤ q ^ m * D + eps * G := by
+    nlinarith
+  exact hiter.trans (hmid.trans hbudget)
 
 #print axioms homogeneous_contraction_iterate
 #print axioms homogeneous_contraction_hits_budget
