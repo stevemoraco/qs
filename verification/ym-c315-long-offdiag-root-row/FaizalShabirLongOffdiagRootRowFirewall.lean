@@ -120,7 +120,6 @@ theorem row_col_budget_controls_quadratic_form
       _ = ((∑ i, ∑ j, |B i j| * x i ^ 2) +
            (∑ i, ∑ j, |B i j| * x j ^ 2)) / 2 := by
                 simp only [add_div, Finset.sum_add_distrib, ← Finset.sum_div]
-                ring
   rw [hsplit] at hpair
   calc
     |∑ i, ∑ j, B i j * x i * x j|
