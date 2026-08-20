@@ -43,7 +43,6 @@ theorem naive_diagonal_ratio_under_rescaling
     (r t : ℝ) (ht : t ≠ 0) :
     (t * r) / (t ^ 2) = r / t := by
   field_simp
-  ring
 
 /-- The naive diagonal ratio can therefore exceed any prescribed nonnegative
 bound by choosing a sufficiently small positive rescaling. -/
@@ -69,7 +68,6 @@ theorem squared_normalized_correlation_is_rescaling_invariant
         (((ti ^ 2) * cii) * ((tj ^ 2) * cjj)) =
       (cij ^ 2) / (cii * cjj) := by
   field_simp
-  ring
 
 /-- If a physical Gram form provides a positive lower Riesz/coercivity margin
 `kappa * diagonal ≤ gram`, then a diagonal-relative harmful debt can be
@@ -90,7 +88,6 @@ theorem diagonal_debt_to_physical_gram
       mul_le_mul_of_nonneg_left hdiag heps
     _ = (eps / kappa) * gram := by
       field_simp
-      ring
 
 #print axioms rank_one_gram_difference_is_zero
 #print axioms diagonal_weight_survives_gram_null_direction
