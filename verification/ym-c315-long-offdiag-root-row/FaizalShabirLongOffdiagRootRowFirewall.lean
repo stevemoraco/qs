@@ -35,7 +35,10 @@ theorem abs_bilinear_term_le_half_sq_sum (b x y : ℝ) :
     rw [← sq_abs x, ← sq_abs y]
     nlinarith
   have hb := mul_le_mul_of_nonneg_left hxy (abs_nonneg b)
-  simpa [abs_mul, mul_assoc] using hb
+  calc
+    |b * x * y| = |b| * (|x| * |y|) := by simp [abs_mul, mul_assoc]
+    _ <= |b| * ((x ^ 2 + y ^ 2) / 2) := hb
+    _ = |b| * (x ^ 2 + y ^ 2) / 2 := by ring
 
 /-- A two-sided rooted absolute row budget controls the entire relation-selected
 quadratic form. In the symmetric source application the column budget follows
@@ -73,7 +76,7 @@ theorem row_col_budget_controls_quadratic_form
           = ∑ i, x i ^ 2 * (∑ j, |B i j|) := by
               apply Finset.sum_congr rfl
               intro i hi
-              simp [Finset.mul_sum, mul_comm, mul_left_comm, mul_assoc]
+              simp [Finset.mul_sum, mul_comm]
       _ <= ∑ i, x i ^ 2 * (eps * d i) := by
               exact Finset.sum_le_sum fun i _ =>
                 mul_le_mul_of_nonneg_left (hrow i) (sq_nonneg (x i))
@@ -92,7 +95,7 @@ theorem row_col_budget_controls_quadratic_form
       _ = ∑ j, x j ^ 2 * (∑ i, |B i j|) := by
               apply Finset.sum_congr rfl
               intro j hj
-              simp [Finset.mul_sum, mul_comm, mul_left_comm, mul_assoc]
+              simp [Finset.mul_sum, mul_comm]
       _ <= ∑ j, x j ^ 2 * (eps * d j) := by
               exact Finset.sum_le_sum fun j _ =>
                 mul_le_mul_of_nonneg_left (hcol j) (sq_nonneg (x j))
@@ -105,8 +108,19 @@ theorem row_col_budget_controls_quadratic_form
       (∑ i, ∑ j, |B i j| * (x i ^ 2 + x j ^ 2) / 2) =
         ((∑ i, ∑ j, |B i j| * x i ^ 2) +
          (∑ i, ∑ j, |B i j| * x j ^ 2)) / 2 := by
-    simp [Finset.sum_add_distrib]
-    ring
+    calc
+      (∑ i, ∑ j, |B i j| * (x i ^ 2 + x j ^ 2) / 2)
+          = ∑ i, ∑ j,
+              (|B i j| * x i ^ 2 + |B i j| * x j ^ 2) / 2 := by
+                apply Finset.sum_congr rfl
+                intro i hi
+                apply Finset.sum_congr rfl
+                intro j hj
+                ring
+      _ = ((∑ i, ∑ j, |B i j| * x i ^ 2) +
+           (∑ i, ∑ j, |B i j| * x j ^ 2)) / 2 := by
+                simp only [add_div, Finset.sum_add_distrib, ← Finset.sum_div]
+                ring
   rw [hsplit] at hpair
   calc
     |∑ i, ∑ j, B i j * x i * x j|
