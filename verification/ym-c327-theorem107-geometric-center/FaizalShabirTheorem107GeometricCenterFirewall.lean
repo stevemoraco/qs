@@ -57,7 +57,10 @@ theorem source_shaped_bound_allows_quarter_center_step
   have hleft : |g / 4 - g + a * g ^ 3| ≤ g := by
     rw [center_remainder_factorization, abs_mul, abs_of_nonneg hg,
       abs_of_nonpos hfactor_nonpos]
-    exact mul_le_mul_of_nonneg_left hfactor_le_one hg
+    have heq : -(a * g ^ 2 - (3 : ℝ) / 4) = (3 : ℝ) / 4 - a * g ^ 2 := by
+      ring
+    rw [heq]
+    simpa using mul_le_mul_of_nonneg_left hfactor_le_one hg
   have hpow : 0 ≤ g ^ 5 := pow_nonneg hg 5
   have hmul : 0 ≤ g * K := mul_nonneg hg hK
   have hrhs : g ≤ g ^ 5 + g * K + K ^ 2 := by
