@@ -11,7 +11,7 @@ If a scalar center coordinate satisfies
   h_(n+1) = h_n + A + c_n + r_n,
 
 then subtracting the one-loop drift `A*n` and the explicit accumulated correction
-`sum c_j` leaves an invariant whose one-step change is exactly `r_n`.  In the
+`sum c_j` leaves an invariant whose one-step change is exactly `r_n`. In the
 two-loop application one takes `c_n = B / h_n`.
 
 This file does not prove the Yang–Mills recurrence, identify the two-loop coefficient,
@@ -21,12 +21,10 @@ IR, prove a mass gap, or formalize continuum OS reconstruction.
 
 namespace Millennium.YangMills.FaizalShabirDiscreteTwoLoopInvariant
 
-open scoped BigOperators
-
 /-- The exact finite counterterm-subtracted coordinate. -/
 def subtractedInvariant
     (h correction : ℕ → ℝ) (A : ℝ) (N : ℕ) : ℝ :=
-  h N - A * (N : ℝ) - ∑ j in Finset.range N, correction j
+  h N - A * (N : ℝ) - Finset.sum (Finset.range N) correction
 
 /-- If the recurrence is `h_(n+1) = h_n + A + correction_n + residual_n`,
 then the subtracted invariant changes by exactly the residual. -/
@@ -36,7 +34,9 @@ theorem subtractedInvariant_step
     (hrec : h (n + 1) = h n + A + correction n + residual n) :
     subtractedInvariant h correction A (n + 1) -
         subtractedInvariant h correction A n = residual n := by
-  simp [subtractedInvariant, Finset.sum_range_succ, hrec]
+  unfold subtractedInvariant
+  rw [Finset.sum_range_succ, hrec]
+  push_cast
   ring
 
 /-- Finite telescope: after subtracting the declared one-loop drift and correction
@@ -47,7 +47,7 @@ theorem subtractedInvariant_finite_telescope
     (hrec : ∀ n, h (n + 1) = h n + A + correction n + residual n) :
     subtractedInvariant h correction A N =
       subtractedInvariant h correction A 0 +
-        ∑ j in Finset.range N, residual j := by
+        Finset.sum (Finset.range N) residual := by
   induction N with
   | zero => simp [subtractedInvariant]
   | succ n ih =>
@@ -57,10 +57,10 @@ theorem subtractedInvariant_finite_telescope
             subtractedInvariant h correction A n + residual n := by
               linarith
         _ = (subtractedInvariant h correction A 0 +
-              ∑ j in Finset.range n, residual j) + residual n := by
+              Finset.sum (Finset.range n) residual) + residual n := by
               rw [ih]
         _ = subtractedInvariant h correction A 0 +
-              ∑ j in Finset.range (n + 1), residual j := by
+              Finset.sum (Finset.range (n + 1)) residual := by
               rw [Finset.sum_range_succ]
               ring
 
