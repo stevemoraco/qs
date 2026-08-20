@@ -46,8 +46,6 @@ from the same row estimate. -/
 theorem row_col_budget_controls_quadratic_form
     {ι : Type*} [Fintype ι]
     (B : ι -> ι -> ℝ) (d x : ι -> ℝ) (eps : ℝ)
-    (heps : 0 <= eps)
-    (hd : forall i, 0 <= d i)
     (hrow : forall i, (∑ j, |B i j|) <= eps * d i)
     (hcol : forall j, (∑ i, |B i j|) <= eps * d j) :
     |∑ i, ∑ j, B i j * x i * x j| <=
