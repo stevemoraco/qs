@@ -20,7 +20,6 @@ theorem scalar_feasible_iff (B : ℝ) :
     nlinarith
 
 theorem endpoint_ratio_unique {r : ℝ}
-    (hr : 0 ≤ r)
     (hineq : r ^ 2 + (1 / 4 : ℝ) ≤ r) :
     r = 1 / 2 := by
   nlinarith [sq_nonneg (r - (1 / 2 : ℝ))]
