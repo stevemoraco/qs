@@ -122,7 +122,7 @@ theorem qualitative_cutoff_exists_but_predetermined_schedule_misses
   · intro j
     exact ⟨schedule j + 1, le_rfl⟩
   · intro j
-    omega
+    exact not_le_of_gt (Nat.lt_succ_self (schedule j))
 
 /-- Adaptive cutoff selection pays any specified threshold exactly. -/
 theorem adaptive_cutoff_selection (threshold : ℕ → ℕ) :
