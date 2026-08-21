@@ -15,8 +15,8 @@ Yang--Mills.
 namespace Millennium.YangMills.FaizalShabirQuadraticSlowMapComparison
 
 variable {V W : Type*}
-variable [NormedAddCommGroup V] [NormedSpace ℝ V]
-variable [NormedAddCommGroup W] [NormedSpace ℝ W]
+variable [NormedAddCommGroup V]
+variable [NormedAddCommGroup W]
 
 /-- Two maps that are quadratically close to one common approximation are
 quadratically close to each other. -/
@@ -53,8 +53,9 @@ theorem quadraticRadiusBudget
     (hc : 0 ≤ c) (hdelta : 0 ≤ delta) (hrow : delta ≤ radius) :
     c * delta ^ 2 ≤ c * radius ^ 2 := by
   have hradius : 0 ≤ radius := le_trans hdelta hrow
-  exact mul_le_mul_of_nonneg_left
-    (sq_le_sq₀ hdelta hradius hrow) hc
+  have hsq : delta ^ 2 ≤ radius ^ 2 :=
+    (sq_le_sq₀ hdelta hradius).2 hrow
+  exact mul_le_mul_of_nonneg_left hsq hc
 
 #print axioms quadraticDifferenceFromCommonApproximation
 #print axioms lipschitzTransportQuadraticMismatch
