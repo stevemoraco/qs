@@ -28,6 +28,11 @@ theorem transfer_centered :
     transfer centered = ((1 / 2 : ℚ), (-1 / 2 : ℚ)) := by
   norm_num [transfer, centered]
 
+/-- Two positive-time steps contract the centered mode by exactly one quarter. -/
+theorem transfer_twice_centered :
+    transfer (transfer centered) = ((1 / 4 : ℚ), (-1 / 4 : ℚ)) := by
+  norm_num [transfer, centered]
+
 /-- The shifted centered norm is exactly one quarter of the original norm. -/
 theorem shifted_norm_ratio :
     dot (transfer centered) (transfer centered) =
@@ -50,6 +55,7 @@ theorem vacuum_not_in_open_zero_interval :
   simp
 
 #print axioms transfer_centered
+#print axioms transfer_twice_centered
 #print axioms shifted_norm_ratio
 #print axioms positive_time_shift_not_isometry
 #print axioms vacuum_belongs_to_closed_left_interval
