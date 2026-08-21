@@ -89,12 +89,12 @@ theorem half_hostile_vector_repaired :
 hidden gap. -/
 theorem diagonalGapQ_observed (epsilon x : ℝ) :
     diagonalGapQ epsilon x 0 = x ^ 2 := by
-  ring
+  simp [diagonalGapQ]
 
 /-- The hidden unit vector sees exactly the hidden gap. -/
 theorem diagonalGapQ_hidden (epsilon : ℝ) :
     diagonalGapQ epsilon 0 1 = epsilon := by
-  ring
+  simp [diagonalGapQ]
 
 /-- Identical observed scalar data coexist with arbitrarily small positive
 hidden Schur gaps.  This is the finite firewall against inferring a full gap
