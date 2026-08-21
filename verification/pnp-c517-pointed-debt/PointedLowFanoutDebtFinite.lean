@@ -58,7 +58,6 @@ theorem aggregate_debt_identity (n4p n4m n5p n5m : ℕ) :
       (3 / 5 : ℚ) * n5p - (7 / 5 : ℚ) * n5m := by
   norm_num [weightedProgress, eventTotal, case4High, case4Low,
     case5Nonexception, case5Exception, alphaI, alphaPhi, delta]
-  ring
 
 theorem aggregate_progress_ge_target_minus_debt
     (n4p n4m n5p n5m : ℕ) :
