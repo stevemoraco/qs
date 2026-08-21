@@ -19,13 +19,13 @@ namespace C529
 def pos (x : ℝ) : ℝ := max x 0
 
 /-- Convex one-sided quadratic energy `1/2 [x]_+^2`. -/
-def energy (x : ℝ) : ℝ := (pos x) ^ 2 / 2
+noncomputable def energy (x : ℝ) : ℝ := (pos x) ^ 2 / 2
 
 /-- Energy injected by a positive jump of size `a`. -/
-def jumpEnergy (r a : ℝ) : ℝ := energy (r + a) - energy r
+noncomputable def jumpEnergy (r a : ℝ) : ℝ := energy (r + a) - energy r
 
 /-- Algebraic energy lost during a downward drift of length `g`. -/
-def driftEnergy (r g : ℝ) : ℝ := energy r - energy (r - g)
+noncomputable def driftEnergy (r g : ℝ) : ℝ := energy r - energy (r - g)
 
 theorem pos_nonneg (x : ℝ) : 0 ≤ pos x := by
   exact le_max_right x 0
