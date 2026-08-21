@@ -91,12 +91,12 @@ theorem queueArea_eq_trapezoid {e g : ℝ} (hge : g ≤ e) :
 /-- The exact queue cell is comparable, with constants `1/2` and `1`, to
 `e * min e g`. -/
 theorem queueArea_product_bounds
-    {e g : ℝ} (he : 0 ≤ e) (hg : 0 ≤ g) :
+    {e g : ℝ} (hg : 0 ≤ g) :
     (1 / 2 : ℝ) * (e * min e g) ≤ queueArea e g ∧
       queueArea e g ≤ e * min e g := by
   rcases le_total e g with heg | hge
   · rw [queueArea_eq_triangle heg, min_eq_left heg]
-    constructor <;> nlinarith [mul_nonneg he he]
+    constructor <;> nlinarith [sq_nonneg e]
   · rw [queueArea_eq_trapezoid hge, min_eq_right hge]
     have hsq : g * g ≤ e * g := mul_le_mul_of_nonneg_right hge hg
     constructor
@@ -114,7 +114,7 @@ theorem cellArea_translate_to_queue
     exact max_eq_left he
   have hright :
       positivePart ((a + e) - (a + g)) = positivePart (e - g) := by
-    congr 1 <;> ring
+    rw [show (a + e) - (a + g) = e - g by ring]
   rw [hleft, hright]
 
 #print axioms positivePart_nonneg
