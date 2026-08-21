@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           file=RHOddSectorSelectorFinite.lean
-          test "$(git hash-object "$file")" = "953257eb8dca577b4bc0f40f90dc30035998c10f"
+          test "$(git hash-object "$file")" = "66625357d631fc63b12756f0fe1ea81c945194f0"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
