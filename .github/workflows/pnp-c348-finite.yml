@@ -7,6 +7,11 @@ on:
     paths:
       - 'verification/pnp-c348-finite/**'
       - '.github/workflows/pnp-c348-finite.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-c348-finite/**'
+      - '.github/workflows/pnp-c348-finite.yml'
   workflow_dispatch:
 
 permissions:
