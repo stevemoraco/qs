@@ -1,0 +1,67 @@
+name: NS C462 active-frame marginal equivariance firewall
+
+on:
+  push:
+    branches:
+      - agent/ns-c462-frame-marginal-equivariance-firewall-20260821-gpt56
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-c462-frame-marginal/**'
+      - '.github/workflows/ns-c462-frame-marginal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-c462-frame-marginal/NSActiveFrameMarginalEquivarianceFirewall.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden proof token found'
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ns-c462-frame-marginal
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom audit
+        shell: bash
+        working-directory: verification/ns-c462-frame-marginal
+        run: |
+          set -euo pipefail
+          lake env lean NSActiveFrameMarginalEquivarianceFirewall.lean 2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.' lean-replay.log; then
+            exit 1
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-c462-frame-marginal-lean-evidence
+          path: |
+            verification/ns-c462-frame-marginal/NSActiveFrameMarginalEquivarianceFirewall.lean
+            verification/ns-c462-frame-marginal/lean-replay.log
+          if-no-files-found: warn
