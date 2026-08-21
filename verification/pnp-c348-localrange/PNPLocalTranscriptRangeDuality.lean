@@ -12,11 +12,11 @@ structure Point (k : ℕ) where
 
 /-- The private constant-zero fiber produced by the local restriction transcript. -/
 def LocalFiber {k : ℕ} (b : Address k) (x : Point k) : Prop :=
-  x.z = false ∧ ∀ i, x.left i = !(b i)
+  x.z = false ∧ ∀ i, x.left i = Bool.not (b i)
 
 /-- The address-independent complementary flat on which every gadget accepts. -/
 def CommonFlat {k : ℕ} (x : Point k) : Prop :=
-  x.z = true ∧ ∀ i, x.right i = !(x.left i)
+  x.z = true ∧ ∀ i, x.right i = Bool.not (x.left i)
 
 /-- Acceptance relation for
 `z ∧ ∧ᵢ ((leftᵢ xor bᵢ) ∨ (rightᵢ xor bᵢ))`. -/
@@ -24,13 +24,13 @@ def Accepts {k : ℕ} (b : Address k) (x : Point k) : Prop :=
   x.z = true ∧ ∀ i, x.left i ≠ b i ∨ x.right i ≠ b i
 
 def localPoint {k : ℕ} (b free : Address k) : Point k where
-  left := fun i => !(b i)
+  left := fun i => Bool.not (b i)
   right := free
   z := false
 
 def commonPoint {k : ℕ} (free : Address k) : Point k where
   left := free
-  right := fun i => !(free i)
+  right := fun i => Bool.not (free i)
   z := true
 
 theorem localPoint_mem {k : ℕ} (b free : Address k) :
@@ -42,15 +42,14 @@ theorem commonPoint_mem {k : ℕ} (free : Address k) :
   simp [CommonFlat, commonPoint]
 
 theorem bool_complement_clause (a b : Bool) :
-    a ≠ b ∨ !a ≠ b := by
+    a ≠ b ∨ Bool.not a ≠ b := by
   cases a <;> cases b <;> simp
 
 /-- Every local transcript fiber is a rejection fiber for its gadget. -/
 theorem localFiber_rejected {k : ℕ} {b : Address k} {x : Point k}
     (hx : LocalFiber b x) : ¬ Accepts b x := by
   intro hacc
-  have hz := hacc.1
-  simpa [hx.1] using hz
+  simpa [hx.1] using hacc.1
 
 /-- Every gadget accepts every point of the same common complementary flat. -/
 theorem commonFlat_accepted {k : ℕ} {x : Point k}
@@ -58,11 +57,8 @@ theorem commonFlat_accepted {k : ℕ} {x : Point k}
   intro b
   refine ⟨hx.1, ?_⟩
   intro i
-  rcases bool_complement_clause (x.left i) (b i) with h | h
-  · exact Or.inl h
-  · right
-    rw [hx.2 i]
-    exact h
+  have hr := hx.2 i
+  cases hxi : x.left i <;> cases hbi : b i <;> simp_all
 
 /-- Any choice of one point from every private local transcript fiber is injective
 in the address. Hence its range contains all `2^k` addresses. -/
@@ -76,13 +72,9 @@ theorem local_selector_injective {k : ℕ}
   have hc := (hchoose c).2 i
   have hleft : (choose b).left i = (choose c).left i :=
     congrArg (fun x : Point k => x.left i) hbc
-  have hnot : !(b i) = !(c i) := by
-    calc
-      !(b i) = (choose b).left i := hb.symm
-      _ = (choose c).left i := hleft
-      _ = !(c i) := hc
-  have h := congrArg Bool.not hnot
-  simpa using h
+  have hnot : Bool.not (b i) = Bool.not (c i) :=
+    hb.symm.trans (hleft.trans hc)
+  cases hbi : b i <;> cases hci : c i <;> simp_all
 
 theorem exact_address_card (k : ℕ) :
     Fintype.card (Address k) = 2 ^ k := by
