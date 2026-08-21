@@ -12,14 +12,13 @@ namespace RHOddSectorSelectorFinite
 
 open Finset
 
-variable {ι : Type*} [Fintype ι]
-
 /-- The selector that keeps exactly the positive entries. -/
-def positiveSelector (F : ι → ℝ) (i : ι) : ℝ :=
+noncomputable def positiveSelector {ι : Type*} (F : ι → ℝ) (i : ι) : ℝ :=
   if 0 < F i then 1 else 0
 
 /-- Every selector in `[0,1]` is bounded termwise by positive excess. -/
 theorem selector_term_le_positivePart
+    {ι : Type*}
     (F θ : ι → ℝ)
     (hθ0 : ∀ i, 0 ≤ θ i)
     (hθ1 : ∀ i, θ i ≤ 1)
@@ -34,6 +33,7 @@ theorem selector_term_le_positivePart
 
 /-- Finite positive-excess upper bound for every `[0,1]` selector. -/
 theorem selector_sum_le_positiveExcess
+    {ι : Type*} [Fintype ι]
     (F θ : ι → ℝ)
     (hθ0 : ∀ i, 0 ≤ θ i)
     (hθ1 : ∀ i, θ i ≤ 1) :
@@ -43,6 +43,7 @@ theorem selector_sum_le_positiveExcess
 
 /-- The positive selector attains the positive-excess upper bound. -/
 theorem positiveSelector_term
+    {ι : Type*}
     (F : ι → ℝ) (i : ι) :
     positiveSelector F i * F i = max (F i) 0 := by
   by_cases hF : 0 < F i
@@ -52,6 +53,7 @@ theorem positiveSelector_term
 
 /-- Exact finite selector duality. -/
 theorem positiveSelector_attains
+    {ι : Type*} [Fintype ι]
     (F : ι → ℝ) :
     (∑ i, positiveSelector F i * F i) =
       ∑ i, max (F i) 0 := by
@@ -87,13 +89,13 @@ theorem total_mass_does_not_control_positive_excess :
 known to have the intermediate-value property, opposite signs force a zero.
 The analytic proof of that property is external to this finite file. -/
 theorem zero_crossing_of_interval_property
-    (λ : ℝ → ℝ) {a b : ℝ}
-    (ha : 0 < λ a)
-    (hb : λ b < 0)
-    (hiv : ∀ y, y ∈ Set.Icc (λ b) (λ a) →
-      ∃ c ∈ Set.uIcc a b, λ c = y) :
-    ∃ c ∈ Set.uIcc a b, λ c = 0 := by
-  have hzero : (0 : ℝ) ∈ Set.Icc (λ b) (λ a) := by
+    (f : ℝ → ℝ) {a b : ℝ}
+    (ha : 0 < f a)
+    (hb : f b < 0)
+    (hiv : ∀ y, y ∈ Set.Icc (f b) (f a) →
+      ∃ c ∈ Set.uIcc a b, f c = y) :
+    ∃ c ∈ Set.uIcc a b, f c = 0 := by
+  have hzero : (0 : ℝ) ∈ Set.Icc (f b) (f a) := by
     constructor <;> linarith
   exact hiv 0 hzero
 
