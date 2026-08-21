@@ -86,6 +86,16 @@ theorem residualReadout_not_residualBlind :
   have h1 : residualReadout (residual 1) = 0 := h 1
   norm_num [residualReadout, residual] at h1
 
+/-- Residual blindness cannot be omitted: one explicit linear readout changes
+when its argument is replaced by the canonical representative. -/
+theorem quotient_preservation_fails_without_blindness :
+    ∃ L : X →ₗ[ℝ] ℝ,
+      (∃ x : X, L (canonical x) ≠ L x) ∧
+      ¬ ResidualBlind L := by
+  refine ⟨residualReadout, ?_, residualReadout_not_residualBlind⟩
+  refine ⟨residual 1, ?_⟩
+  norm_num [canonical, residual, residualReadout]
+
 /-- Same quotient class does not determine a general scalar readout. -/
 theorem same_quotient_readout_counterexample :
     ∃ x y : X,
@@ -109,6 +119,7 @@ theorem canonical_quotient_counterexample :
 #print axioms preserves_canonical_iff_residualBlind
 #print axioms preservation_requires_residual_annihilation
 #print axioms residualReadout_not_residualBlind
+#print axioms quotient_preservation_fails_without_blindness
 #print axioms same_quotient_readout_counterexample
 #print axioms canonical_quotient_counterexample
 
