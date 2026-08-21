@@ -1,0 +1,70 @@
+name: YM C483 compression residual finite Lean replay
+
+on:
+  push:
+    branches:
+      - agent/ym-c483-compression-residual-public-replay-20260821
+    paths:
+      - 'verification/ym-c483-compression-residual/**'
+      - '.github/workflows/ym-c483-compression-residual.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and conclusion-carrying escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-c483-compression-residual/YMC483CompressionResidualFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ym-c483-compression-residual
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/ym-c483-compression-residual
+        run: |
+          set -euo pipefail
+          lake env lean YMC483CompressionResidualFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Placeholder dependency found'
+            exit 1
+          fi
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-c483-compression-residual-lean-evidence
+          path: verification/ym-c483-compression-residual/lean-output.log
+          if-no-files-found: warn
