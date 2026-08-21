@@ -7,6 +7,10 @@ on:
     paths:
       - verification/rh_shimizu_residual_quotient/ShimizuResidualQuotientFirewall.lean
       - .github/workflows/rh-shimizu-residual-quotient-verifier.yml
+  pull_request:
+    paths:
+      - verification/rh_shimizu_residual_quotient/ShimizuResidualQuotientFirewall.lean
+      - .github/workflows/rh-shimizu-residual-quotient-verifier.yml
   workflow_dispatch:
 
 permissions:
