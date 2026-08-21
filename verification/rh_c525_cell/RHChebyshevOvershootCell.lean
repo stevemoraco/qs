@@ -108,7 +108,14 @@ translation `c=a+e`, `b=a+g`. -/
 theorem cellArea_translate_to_queue
     {a e g : ℝ} (he : 0 ≤ e) :
     cellArea (a + e) a (a + g) = queueArea e g := by
-  simp [cellArea, queueArea, positivePart, max_eq_left he]
+  unfold cellArea queueArea
+  have hleft : positivePart ((a + e) - a) = e := by
+    rw [show (a + e) - a = e by ring]
+    exact max_eq_left he
+  have hright :
+      positivePart ((a + e) - (a + g)) = positivePart (e - g) := by
+    congr 1 <;> ring
+  rw [hleft, hright]
 
 #print axioms positivePart_nonneg
 #print axioms positivePart_mono
@@ -121,5 +128,7 @@ theorem cellArea_translate_to_queue
 #print axioms queueArea_eq_trapezoid
 #print axioms queueArea_product_bounds
 #print axioms cellArea_translate_to_queue
+
+end
 
 end RHChebyshevOvershootCell
