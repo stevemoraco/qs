@@ -8,6 +8,7 @@ RANGES=[
     (23,52,'weak-rg-invariant-graph-and-coefficient'),
     (52,72,'directed-handoff-and-haar-optical-matching'),
     (72,95,'ward-o4-os-gap-and-nontriviality'),
+    (95,111,'appendix-a-endpoint-noncollapse-and-supporting-appendices'),
     (112,115,'bibliography'),
 ]
 
