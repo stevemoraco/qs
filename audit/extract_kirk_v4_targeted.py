@@ -6,6 +6,7 @@ from pathlib import Path
 RANGES=[
     (3,5,'theorem-boundary-and-external-inputs'),
     (5,10,'karcher-block-folded-symbol-and-normal-chart'),
+    (10,23,'charged-weak-partition-irregular-flatness-and-optical-split'),
     (23,52,'weak-rg-invariant-graph-and-coefficient'),
     (52,72,'directed-handoff-and-haar-optical-matching'),
     (72,95,'ward-o4-os-gap-and-nontriviality'),
