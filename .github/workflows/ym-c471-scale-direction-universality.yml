@@ -1,0 +1,81 @@
+name: YM C471 scale direction and universality firewalls
+
+on:
+  push:
+    branches:
+      - verification/ym-c471-scale-direction-universality-20260821-gpt56pro
+    paths:
+      - .github/workflows/ym-c471-scale-direction-universality.yml
+      - verification/ym-c471-scale-direction-universality/ScaleDirectionUniversalityFirewalls.lean
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-c471-scale-direction-universality/ScaleDirectionUniversalityFirewalls.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'Forbidden proof escape found.' >&2
+            exit 1
+          fi
+          sha256sum "$SRC" | tee /tmp/source.sha256
+
+      - name: AXLE Lean 4.30 replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym-c471-scale-direction-universality/ScaleDirectionUniversalityFirewalls.lean
+          SRC="$SRC" python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          source = pathlib.Path(os.environ['SRC'])
+          payload = json.dumps({
+              'content': source.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST')
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('/tmp/axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+              not result.get('okay')
+              or bool(result.get('failed_declarations', []))
+              or bool(lean.get('errors', []))
+              or bool(lean.get('warnings', []))
+              or bool(tool.get('errors', []))
+              or bool(tool.get('warnings', []))
+              or 'sorryAx' in json.dumps(result)
+          )
+          if bad:
+              raise SystemExit(1)
+          PY
+
+      - name: Preserve exact replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-c471-scale-direction-universality-replay
+          path: |
+            verification/ym-c471-scale-direction-universality/ScaleDirectionUniversalityFirewalls.lean
+            /tmp/source.sha256
+            /tmp/axle-response.json
+          if-no-files-found: error
