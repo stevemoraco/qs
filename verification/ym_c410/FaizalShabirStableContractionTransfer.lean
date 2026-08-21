@@ -32,20 +32,20 @@ theorem contractionPlusAdditiveDefect
 
 /-- If a reference contraction has spare margin `kappa` and the transferred
 defect is strictly smaller than that margin, the transferred constant is still
-strictly below one. -/
+strictly below one. The positivity of `kappa` follows from the two displayed
+inequalities and is therefore not needed as a separate premise. -/
 theorem strictMarginSurvives
     (q eta kappa : ℝ)
     (hq : q ≤ 1 - kappa)
-    (hkappa : 0 < kappa)
     (heta : eta < kappa) :
     q + eta < 1 := by
   linarith
 
-/-- A half-margin defect leaves at least half of the original strict margin. -/
+/-- A half-margin defect leaves at least half of the original strict margin.
+No separate nonnegativity premise is required for the algebraic implication. -/
 theorem halfMarginSurvives
     (q eta kappa : ℝ)
     (hq : q ≤ 1 - kappa)
-    (hkappa : 0 ≤ kappa)
     (heta : eta ≤ kappa / 2) :
     q + eta ≤ 1 - kappa / 2 := by
   linarith
