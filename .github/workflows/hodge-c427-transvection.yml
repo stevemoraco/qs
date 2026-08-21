@@ -1,0 +1,67 @@
+name: Hodge C427 universal transvection finite core
+
+on:
+  push:
+    branches:
+      - agent/hodge-c427-universal-transvection-equivalence-20260821-gpt56
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/hodge-c427-transvection/**'
+      - '.github/workflows/hodge-c427-transvection.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/hodge-c427-transvection/HodgeUniversalTransvectionFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden proof token found'
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/hodge-c427-transvection
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom audit
+        shell: bash
+        working-directory: verification/hodge-c427-transvection
+        run: |
+          set -euo pipefail
+          lake env lean HodgeUniversalTransvectionFinite.lean 2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.' lean-replay.log; then
+            exit 1
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-c427-transvection-lean-evidence
+          path: |
+            verification/hodge-c427-transvection/HodgeUniversalTransvectionFinite.lean
+            verification/hodge-c427-transvection/lean-replay.log
+          if-no-files-found: warn
