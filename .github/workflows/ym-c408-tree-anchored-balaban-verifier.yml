@@ -1,0 +1,122 @@
+name: Verify YM C408 tree-anchored Balaban compatibility
+
+on:
+  push:
+    branches:
+      - verification/ym-c408-tree-anchored-balaban-20260821-gpt56pro
+    paths:
+      - verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean
+      - .github/workflows/ym-c408-tree-anchored-balaban-verifier.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean
+      - .github/workflows/ym-c408-tree-anchored-balaban-verifier.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source and trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean')
+          text = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(text)
+          if m:
+              raise SystemExit(f'{p}: forbidden source token: {m.group(2)}')
+          for token in ('Lean.ofReduceBool', 'native_decide'):
+              if token in text:
+                  raise SystemExit(f'{p}: forbidden source token: {token}')
+          if text.count('#print axioms') != 4:
+              raise SystemExit(f'{p}: expected exactly four axiom reports')
+          print(f'{p}: source trust preflight clean')
+          PY
+          git hash-object verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean
+          sha256sum verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean
+
+      - name: Compile exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/ym_c408
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean')
+          payload = json.dumps({
+              'content': p.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check', data=payload,
+              headers={'Content-Type': 'application/json'}, method='POST')
+          try:
+              with urllib.request.urlopen(req, timeout=960) as response:
+                  result = json.load(response)
+          except Exception as exc:
+              result = {
+                  'okay': False,
+                  'request_exception': repr(exc),
+                  'lean_messages': {'errors': [], 'warnings': []},
+                  'tool_messages': {'errors': [], 'warnings': []},
+                  'failed_declarations': [],
+              }
+          errors = result.get('lean_messages', {}).get('errors', [])
+          warnings = result.get('lean_messages', {}).get('warnings', [])
+          tool_errors = result.get('tool_messages', {}).get('errors', [])
+          tool_warnings = result.get('tool_messages', {}).get('warnings', [])
+          failed = result.get('failed_declarations', [])
+          pathlib.Path('evidence/ym_c408/axle-response.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not result.get('okay') or errors or warnings or tool_errors or tool_warnings or failed:
+              raise SystemExit('verification failed or emitted warnings')
+          rendered = json.dumps(result)
+          for token in ('sorryAx', 'Lean.ofReduceBool'):
+              if token in rendered:
+                  raise SystemExit(f'postcompile forbidden dependency: {token}')
+          print('VERIFIED: YM C408 tree-anchored Balaban compatibility core')
+          PY
+
+      - name: Record replay metadata
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ym_c408/FaizalShabirTreeAnchoredBalabanCompatibility.lean
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "environment=lean-4.30.0"
+            echo "source=$SRC"
+            echo "source_blob=$(git hash-object "$SRC")"
+            echo "source_sha256=$(sha256sum "$SRC" | awk '{print $1}')"
+          } > evidence/ym_c408/replay-metadata.txt
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-c408-tree-anchored-balaban-evidence
+          path: evidence/ym_c408/
+          if-no-files-found: error
