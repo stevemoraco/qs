@@ -46,7 +46,7 @@ theorem pushforward_pair_identity [DecidableEq Y]
       intro y hy
       apply Finset.sum_congr rfl
       intro x hx
-      simpa [x.property]
+      simp [x.property]
     _ = ∑ x : X, mu x * f (thetaY (B x)) * g (B x) := by
       simpa using
         (Fintype.sum_fiberwise B
@@ -90,7 +90,7 @@ theorem reflectionPositive_pushforward [DecidableEq Y]
 `[[1/4-e,1/4+e],[1/4+e,1/4-e]]`
 
 on the vector `(x,y)`. -/
-def perturbedBitForm (e x y : ℝ) : ℝ :=
+noncomputable def perturbedBitForm (e x y : ℝ) : ℝ :=
   (1 / 4 - e) * x * x + (1 / 4 + e) * x * y +
     (1 / 4 + e) * y * x + (1 / 4 - e) * y * y
 
