@@ -8,6 +8,13 @@ on:
       - verification/c428_giftshop/SliceLocalRegulatorReflectionPositivityRepair.lean
       - verification/c428_giftshop/CountableWeilGramCertificateCore.lean
       - .github/workflows/c428-giftshop-verifier.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - verification/c428_giftshop/SliceLocalRegulatorReflectionPositivityRepair.lean
+      - verification/c428_giftshop/CountableWeilGramCertificateCore.lean
+      - .github/workflows/c428-giftshop-verifier.yml
   workflow_dispatch:
 
 permissions:
