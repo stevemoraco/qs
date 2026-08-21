@@ -43,8 +43,7 @@ theorem raw_negative_at_shifted_null_of_negative_ground
     (hε : ε < 0)
     (hnorm : 0 < normSq) :
     rawFromShift 0 ε normSq < 0 := by
-  dsimp [rawFromShift]
-  exact mul_neg_of_neg_of_pos hε hnorm
+  simpa [rawFromShift] using mul_neg_of_neg_of_pos hε hnorm
 
 /-- The source-shaped eigenvector statement: `q = ε * ||v||²` with negative
 `ε` and nonzero `v` is a strict negative direction of the original form. -/
@@ -111,8 +110,12 @@ theorem original_nonnegative_forces_ground_nonnegative
     (hnorm : 0 < normSq)
     (hraw : 0 ≤ rawFromShift 0 ε normSq) :
     0 ≤ ε := by
-  dsimp [rawFromShift] at hraw
-  exact nonneg_of_mul_nonneg_left hraw (le_of_lt hnorm)
+  by_contra hε
+  have hεneg : ε < 0 := lt_of_not_ge hε
+  have hprod : ε * normSq < 0 := mul_neg_of_neg_of_pos hεneg hnorm
+  have hraw' : 0 ≤ ε * normSq := by
+    simpa [rawFromShift] using hraw
+  linarith
 
 #print axioms raw_nonnegative_of_shifted_and_ground_nonnegative
 #print axioms raw_negative_at_shifted_null_of_negative_ground
