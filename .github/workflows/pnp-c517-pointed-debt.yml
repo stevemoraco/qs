@@ -1,0 +1,69 @@
+name: PNP C517 pointed debt Lean replay
+
+on:
+  push:
+    branches:
+      - agent/pnp-c517-pointed-debt-public-20260821-gpt56pro
+    paths:
+      - 'verification/pnp-c517-pointed-debt/**'
+      - '.github/workflows/pnp-c517-pointed-debt.yml'
+  pull_request:
+    paths:
+      - 'verification/pnp-c517-pointed-debt/**'
+      - '.github/workflows/pnp-c517-pointed-debt.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=verification/pnp-c517-pointed-debt/PointedLowFanoutDebtFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$f"; then
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib
+        working-directory: verification/pnp-c517-pointed-debt
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom audit
+        working-directory: verification/pnp-c517-pointed-debt
+        run: |
+          set -euo pipefail
+          lake env lean PointedLowFanoutDebtFinite.lean 2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.' lean-replay.log; then
+            exit 1
+          fi
+          echo 'VERIFIED PNP C517 finite debt core.'
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-c517-pointed-debt
+          path: |
+            verification/pnp-c517-pointed-debt/PointedLowFanoutDebtFinite.lean
+            verification/pnp-c517-pointed-debt/lean-replay.log
+          if-no-files-found: warn
