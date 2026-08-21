@@ -23,6 +23,12 @@ def centered : State := (1, -1)
 /-- Rational dot-product shadow of the slice `L²` inner product. -/
 def dot (x y : State) : ℚ := x.1 * y.1 + x.2 * y.2
 
+/-- The transfer preserves the vacuum/constant coordinate. -/
+theorem transfer_preserves_total (x : State) :
+    (transfer x).1 + (transfer x).2 = x.1 + x.2 := by
+  dsimp [transfer]
+  ring
+
 /-- One positive-time step contracts the centered mode by exactly one half. -/
 theorem transfer_centered :
     transfer centered = ((1 / 2 : ℚ), (-1 / 2 : ℚ)) := by
@@ -54,6 +60,7 @@ theorem vacuum_not_in_open_zero_interval :
     (0 : ℚ) ∉ Set.Ioo 0 1 := by
   simp
 
+#print axioms transfer_preserves_total
 #print axioms transfer_centered
 #print axioms transfer_twice_centered
 #print axioms shifted_norm_ratio
