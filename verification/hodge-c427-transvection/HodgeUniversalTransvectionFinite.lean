@@ -30,12 +30,14 @@ theorem transvection_isometry (q : ℚ) (x y : V) :
 theorem inverse_left (q : ℚ) (x : V) :
     inverseTransvection q (transvection q x) = x := by
   funext i
-  fin_cases i <;> simp [transvection, inverseTransvection] <;> ring
+  fin_cases i
+  all_goals simp [transvection, inverseTransvection] <;> ring
 
 theorem inverse_right (q : ℚ) (x : V) :
     transvection q (inverseTransvection q x) = x := by
   funext i
-  fin_cases i <;> simp [transvection, inverseTransvection] <;> ring
+  fin_cases i
+  all_goals simp [transvection, inverseTransvection] <;> ring
 
 theorem fixes_e (q : ℚ) : transvection q e = e := by
   funext i
@@ -44,7 +46,8 @@ theorem fixes_e (q : ℚ) : transvection q e = e := by
 theorem image_f (q : ℚ) :
     transvection q f = f + v - (q / 2) • e := by
   funext i
-  fin_cases i <;> simp [transvection, e, f, v] <;> ring
+  fin_cases i
+  all_goals simp [transvection, e, f, v]
 
 theorem rank_two_coordinate (q : ℚ) (x : V) :
     (transvection q x - x) 1 = 0 := by
@@ -52,9 +55,9 @@ theorem rank_two_coordinate (q : ℚ) (x : V) :
 
 theorem extract_v_from_image
     (Alg : V → Prop)
-    (hsub : ∀ {x y}, Alg x → Alg y → Alg (x - y))
-    (hadd : ∀ {x y}, Alg x → Alg y → Alg (x + y))
-    (hsmul : ∀ c {x}, Alg x → Alg (c • x))
+    (hsub : ∀ {x y : V}, Alg x → Alg y → Alg (x - y))
+    (hadd : ∀ {x y : V}, Alg x → Alg y → Alg (x + y))
+    (hsmul : ∀ (c : ℚ) {x : V}, Alg x → Alg (c • x))
     (q : ℚ)
     (hTf : Alg (transvection q f))
     (hf : Alg f)
@@ -64,8 +67,10 @@ theorem extract_v_from_image
     hadd (hsub hTf hf) (hsmul (q / 2) he)
   have hid : (transvection q f - f) + (q / 2) • e = v := by
     funext i
-    fin_cases i <;> simp [transvection, e, f, v] <;> ring
-  simpa [hid] using hcomb
+    fin_cases i
+    all_goals simp [transvection, e, f, v]
+  rw [hid] at hcomb
+  exact hcomb
 
 theorem stabilized_middle_codimension {d p : ℕ} (hp : p ≤ d) :
     p + (d - p) = d := Nat.add_sub_of_le hp
