@@ -36,8 +36,8 @@ independent factors are tensored. -/
 theorem mixture_product_le_mixture_product
     (c p r : ℝ)
     (hc0 : 0 ≤ c) (hc1 : c ≤ 1)
-    (hp0 : 0 ≤ p) (hp1 : p ≤ 1)
-    (hr0 : 0 ≤ r) (hr1 : r ≤ 1) :
+    (hp1 : p ≤ 1)
+    (hr1 : r ≤ 1) :
     ((1 - c) + c * p) * ((1 - c) + c * r)
       ≤ (1 - c) + c * (p * r) := by
   have hnonneg : 0 ≤ c * (1 - c) * (1 - p) * (1 - r) := by
@@ -51,8 +51,8 @@ theorem binary_product_tensorization
     (c p r q s : ℝ)
     (hc0 : 0 ≤ c) (hc1 : c ≤ 1)
     (hp0 : 0 ≤ p) (hp1 : p ≤ 1)
-    (hr0 : 0 ≤ r) (hr1 : r ≤ 1)
-    (hq0 : 0 ≤ q) (hs0 : 0 ≤ s)
+    (hr1 : r ≤ 1)
+    (hs0 : 0 ≤ s)
     (hq : q ≤ (1 - c) + c * p)
     (hs : s ≤ (1 - c) + c * r) :
     q * s ≤ (1 - c) + c * (p * r) := by
@@ -60,7 +60,7 @@ theorem binary_product_tensorization
   have hprod : q * s ≤ ((1 - c) + c * p) * ((1 - c) + c * r) := by
     exact mul_le_mul hq hs hs0 hb0
   exact hprod.trans
-    (mixture_product_le_mixture_product c p r hc0 hc1 hp0 hp1 hr0 hr1)
+    (mixture_product_le_mixture_product c p r hc0 hc1 hp1 hr1)
 
 /-- Rewriting the previous result in spectral-gap form: the product gap retains
 at least the same fraction `c` of the ideal product gap. -/
@@ -68,13 +68,13 @@ theorem binary_gap_fraction_preserved
     (c p r q s : ℝ)
     (hc0 : 0 ≤ c) (hc1 : c ≤ 1)
     (hp0 : 0 ≤ p) (hp1 : p ≤ 1)
-    (hr0 : 0 ≤ r) (hr1 : r ≤ 1)
-    (hq0 : 0 ≤ q) (hs0 : 0 ≤ s)
+    (hr1 : r ≤ 1)
+    (hs0 : 0 ≤ s)
     (hq : q ≤ (1 - c) + c * p)
     (hs : s ≤ (1 - c) + c * r) :
     c * (1 - p * r) ≤ 1 - q * s := by
   have h := binary_product_tensorization c p r q s
-    hc0 hc1 hp0 hp1 hr0 hr1 hq0 hs0 hq hs
+    hc0 hc1 hp0 hp1 hr1 hs0 hq hs
   nlinarith
 
 /-- Scalar shadow of the common OS sandwich theorem.  If `q` is no larger than
@@ -82,9 +82,8 @@ the retained-gap mixture of `p`, then multiplying both transfer factors by the
 same `m^2` with `0<=m<=1` preserves the same gap fraction `c`. -/
 theorem common_sandwich_preserves_gap_fraction
     (c m p q : ℝ)
-    (hc0 : 0 ≤ c) (hc1 : c ≤ 1)
+    (hc1 : c ≤ 1)
     (hm0 : 0 ≤ m) (hm1 : m ≤ 1)
-    (hp0 : 0 ≤ p) (hp1 : p ≤ 1)
     (hq : q ≤ (1 - c) + c * p) :
     c * (1 - m ^ 2 * p) ≤ 1 - m ^ 2 * q := by
   have hm2 : m ^ 2 ≤ 1 := by nlinarith [sq_nonneg m]
