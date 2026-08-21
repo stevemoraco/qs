@@ -3,24 +3,21 @@ import Mathlib
 namespace NS
 namespace C482EndpointTowerFinite
 
-open Finset
-open scoped BigOperators
-
 def enstrophyPartial (n : ℕ) : ℚ :=
-  ∑ j in range n, (1 / 4 : ℚ) ^ j
+  (Finset.range n).sum (fun j => (1 / 4 : ℚ) ^ j)
 
 def palinstrophyPartial (n : ℕ) : ℚ :=
-  ∑ j in range n, (1 / 64 : ℚ) ^ j
+  (Finset.range n).sum (fun j => (1 / 64 : ℚ) ^ j)
 
 theorem enstrophyPartial_succ (n : ℕ) :
     enstrophyPartial (n + 1) =
       enstrophyPartial n + (1 / 4 : ℚ) ^ n := by
-  simp [enstrophyPartial, sum_range_succ]
+  simp [enstrophyPartial, Finset.sum_range_succ]
 
 theorem palinstrophyPartial_succ (n : ℕ) :
     palinstrophyPartial (n + 1) =
       palinstrophyPartial n + (1 / 64 : ℚ) ^ n := by
-  simp [palinstrophyPartial, sum_range_succ]
+  simp [palinstrophyPartial, Finset.sum_range_succ]
 
 theorem enstrophyPartial_closed (n : ℕ) :
     enstrophyPartial n =
@@ -53,7 +50,7 @@ theorem palinstrophyPartial_lt (n : ℕ) :
   nlinarith
 
 theorem constant_cubic_mass (n : ℕ) :
-    (∑ _j in range n, (1 : ℕ)) = n := by
+    (Finset.range n).sum (fun _j => (1 : ℕ)) = n := by
   simp
 
 theorem projected_midband_floor
