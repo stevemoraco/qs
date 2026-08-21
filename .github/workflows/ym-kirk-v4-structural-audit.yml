@@ -1,0 +1,89 @@
+name: YM Kirk v4 public structural audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-structural-audit-20260821-gpt56pro
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PDF text tools
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Download immutable public PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://zenodo.org/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence%2C%20Mass%20Gap%2C%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf?download=1'
+          curl --fail --location --retry 5 --retry-all-errors "$url" -o /tmp/kirk-v4.pdf
+          test "$(head -c 4 /tmp/kirk-v4.pdf)" = '%PDF'
+          sha256sum /tmp/kirk-v4.pdf | tee /tmp/kirk-v4.sha256
+          pdfinfo /tmp/kirk-v4.pdf | tee /tmp/kirk-v4.pdfinfo
+
+      - name: Build bounded structural and named-span reports
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            verification/ym-kirk-v4-structural-audit/extract_kirk_v4.py \
+            verification/ym-kirk-v4-structural-audit/extract_named_spans.py
+          python verification/ym-kirk-v4-structural-audit/extract_kirk_v4.py \
+            --pdf /tmp/kirk-v4.pdf \
+            --out /tmp/kirk-v4-structural-report.md \
+            | tee /tmp/kirk-v4-extract.log
+          python verification/ym-kirk-v4-structural-audit/extract_named_spans.py \
+            --pdf /tmp/kirk-v4.pdf \
+            --out /tmp/kirk-v4-named-spans.md \
+            | tee /tmp/kirk-v4-named-spans.log
+          wc -c /tmp/kirk-v4-structural-report.md /tmp/kirk-v4-named-spans.md
+          sed -n '1,300p' /tmp/kirk-v4-named-spans.md
+
+      - name: Post compact audit index to pull request
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = """# Kirk v4 audit refresh
+
+The immutable PDF was re-fetched and hashed.  The workflow now also extracts complete declaration-to-next-declaration spans for the finite load-bearing list:
+
+`4.22, 4.30, 5.4, 5.5, 5.16, 5.17, 6.10, 6.11, 6.24, 6.43, 8.12, 8.43, 8.45, 8.46, 9.1, 9.2, 9.3, 10.2, 10.5`.
+
+The complete bounded structural report and named spans are attached as the workflow artifact.  This is an audit input, not a theorem verdict.
+"""
+          logs = Path('/tmp/kirk-v4-named-spans.log').read_text(encoding='utf-8').strip()
+          body = index + "\n```text\n" + logs + "\n```\n"
+          Path('/tmp/comment.json').write_text(json.dumps({'body': body}), encoding='utf-8')
+          PY
+          gh api "repos/$REPO/issues/$PR_NUMBER/comments" --method POST --input /tmp/comment.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-structural-audit
+          path: |
+            /tmp/kirk-v4.sha256
+            /tmp/kirk-v4.pdfinfo
+            /tmp/kirk-v4-extract.log
+            /tmp/kirk-v4-structural-report.md
+            /tmp/kirk-v4-named-spans.log
+            /tmp/kirk-v4-named-spans.md
+          if-no-files-found: warn
