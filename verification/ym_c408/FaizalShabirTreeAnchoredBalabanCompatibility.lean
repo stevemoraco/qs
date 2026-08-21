@@ -22,7 +22,7 @@ open scoped BigOperators
 
 section Group
 
-variable {ι G : Type*} [Fintype ι] [Group G]
+variable {ι G : Type*} [Group G]
 
 /-- Identity-valued tree connectors make every anchored group path equal to
 its straight middle path. -/
@@ -48,16 +48,9 @@ theorem arbitraryAverage_anchored_eq_straight
 
 end Group
 
-section Additive
+section AdditivePointwise
 
-variable {ι V : Type*} [Fintype ι]
-variable [AddCommGroup V] [Module ℝ V]
-
-/-- Arithmetic mean of a finite vector-valued family. The definition is useful
-as the additive first-order shadow of both the FS path average and Balaban's
-linear averaging operator. -/
-noncomputable def arithmeticMean (f : ι → V) : V :=
-  ((Fintype.card ι : ℝ)⁻¹) • ∑ i, f i
+variable {ι V : Type*} [AddCommGroup V]
 
 /-- Zero additive tree connectors make every anchored additive path equal to
 its straight middle path. -/
@@ -69,6 +62,19 @@ theorem anchoredAdditiveFamily_eq_straight
   funext i
   simp [hleft i, hright i]
 
+end AdditivePointwise
+
+section AdditiveMean
+
+variable {ι V : Type*} [Fintype ι]
+variable [AddCommGroup V] [Module ℝ V]
+
+/-- Arithmetic mean of a finite vector-valued family. The definition is useful
+as the additive first-order shadow of both the FS path average and Balaban's
+linear averaging operator. -/
+noncomputable def arithmeticMean (f : ι → V) : V :=
+  ((Fintype.card ι : ℝ)⁻¹) • ∑ i, f i
+
 /-- The anchored arithmetic mean equals the straight arithmetic mean whenever
 the additive connector contributions vanish. -/
 theorem arithmeticMean_anchored_eq_straight
@@ -79,7 +85,7 @@ theorem arithmeticMean_anchored_eq_straight
       arithmeticMean straight := by
   rw [anchoredAdditiveFamily_eq_straight left straight right hleft hright]
 
-end Additive
+end AdditiveMean
 
 #print axioms anchoredFamily_eq_straight
 #print axioms arbitraryAverage_anchored_eq_straight
