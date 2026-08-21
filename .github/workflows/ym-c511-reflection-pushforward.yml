@@ -1,0 +1,78 @@
+name: YM C511 reflection-equivariant pushforward Lean replay
+
+on:
+  push:
+    branches:
+      - agent/ym-c511-reflection-pushforward-public-20260821-gpt56pro
+    paths:
+      - 'verification/ym-c511-reflection-pushforward/**'
+      - '.github/workflows/ym-c511-reflection-pushforward.yml'
+  pull_request:
+    paths:
+      - 'verification/ym-c511-reflection-pushforward/**'
+      - '.github/workflows/ym-c511-reflection-pushforward.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-c511-reflection-pushforward/ReflectionEquivariantPushforwardFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden trust escape found'
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ym-c511-reflection-pushforward
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom audit
+        shell: bash
+        working-directory: verification/ym-c511-reflection-pushforward
+        run: |
+          set -euo pipefail
+          lake env lean ReflectionEquivariantPushforwardFinite.lean \
+            2>&1 | tee lean-replay.log
+          if grep -Eq 'sorryAx|declaration uses .sorry.' lean-replay.log; then
+            echo 'Forbidden placeholder axiom reached an exported declaration'
+            exit 1
+          fi
+          echo 'VERIFIED finite reflection-equivariant pushforward core.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-c511-reflection-pushforward
+          path: |
+            verification/ym-c511-reflection-pushforward/ReflectionEquivariantPushforwardFinite.lean
+            verification/ym-c511-reflection-pushforward/lean-replay.log
+          if-no-files-found: warn
