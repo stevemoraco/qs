@@ -26,7 +26,7 @@ theorem finite_menu_has_deeper_layer
     ∃ m : ℕ, ∀ n ∈ depths, n < m := by
   refine ⟨depths.sup id + 1, ?_⟩
   intro n hn
-  exact Nat.lt_succ_of_le (Finset.le_sup hn)
+  exact Nat.lt_succ_of_le (Finset.le_sup (f := id) hn)
 
 theorem one_finite_primary_excludes_everywhere_divisible
     {P : Type*}
