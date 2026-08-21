@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=RHChebyshevOvershootCell.lean
-          test "$(git hash-object "$file")" = "5beedd2b6b33f06ca94dc9d2a0cd65b598b917a9"
+          test "$(git hash-object "$file")" = "f6055e48330eee94340b76c77789c2a3d3b69394"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
