@@ -15,7 +15,7 @@ The kernel-checked consequences are:
 
 * cut analysis after row synthesis is the identity;
 * row synthesis is injective, hence no nontrivial row relation exists;
-* duplicate rows cannot admit a cut dual;
+* duplicate rows cannot possess a cut dual;
 * any norm bound on a left inverse yields the corresponding singular-floor
   inequality.
 
