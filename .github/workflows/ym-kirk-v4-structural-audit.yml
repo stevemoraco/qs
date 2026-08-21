@@ -1,0 +1,101 @@
+name: YM Kirk v4 public structural audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-structural-audit-20260821-gpt56pro
+      - verification/ym-kirk-v4-named-spans-20260821-gpt56pro
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PDF text tools
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Download immutable public PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://zenodo.org/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence%2C%20Mass%20Gap%2C%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf?download=1'
+          curl --fail --location --retry 5 --retry-all-errors "$url" -o /tmp/kirk-v4.pdf
+          test "$(head -c 4 /tmp/kirk-v4.pdf)" = '%PDF'
+          sha256sum /tmp/kirk-v4.pdf | tee /tmp/kirk-v4.sha256
+          pdfinfo /tmp/kirk-v4.pdf | tee /tmp/kirk-v4.pdfinfo
+
+      - name: Build bounded structural and named-span reports
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            verification/ym-kirk-v4-structural-audit/extract_kirk_v4.py \
+            verification/ym-kirk-v4-structural-audit/extract_named_spans.py
+          python verification/ym-kirk-v4-structural-audit/extract_kirk_v4.py \
+            --pdf /tmp/kirk-v4.pdf \
+            --out /tmp/kirk-v4-structural-report.md \
+            | tee /tmp/kirk-v4-extract.log
+          python verification/ym-kirk-v4-structural-audit/extract_named_spans.py \
+            --pdf /tmp/kirk-v4.pdf \
+            --out /tmp/kirk-v4-named-spans.md \
+            | tee /tmp/kirk-v4-named-spans.log
+          wc -c /tmp/kirk-v4-structural-report.md /tmp/kirk-v4-named-spans.md
+          cat /tmp/kirk-v4-named-spans.log
+
+      - name: Post named spans to the audit pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            pr='${{ github.event.pull_request.number }}'
+          else
+            pr="$(gh pr list --repo "$REPO" --head "$GITHUB_REF_NAME" --state open --json number --jq '.[0].number // empty')"
+          fi
+          test -n "$pr"
+          PR_NUMBER="$pr" REPO="$REPO" python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          text=Path('/tmp/kirk-v4-named-spans.md').read_text(encoding='utf-8')
+          sections=re.split(r'(?m)(?=^## )', text)
+          chunks=[]
+          cur='# Kirk v4 named-span audit\n\n'
+          for section in sections:
+              if not section.strip():
+                  continue
+              if len(cur)+len(section)>52000 and len(cur)>40:
+                  chunks.append(cur)
+                  cur='# Kirk v4 named-span audit — continued\n\n'
+              cur+=section
+          if len(cur)>40:
+              chunks.append(cur)
+          for i,body in enumerate(chunks,1):
+              payload={'body': body + f'\n\n_Part {i} of {len(chunks)}. Audit input only; no theorem verdict._\n'}
+              p=Path(f'/tmp/comment-{i}.json')
+              p.write_text(json.dumps(payload),encoding='utf-8')
+              subprocess.run(['gh','api',f"repos/{os.environ['REPO']}/issues/{os.environ['PR_NUMBER']}/comments",'--method','POST','--input',str(p)],check=True)
+          print(f'POSTED_NAMED_SPANS parts={len(chunks)}')
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ym-kirk-v4-structural-audit
+          path: |
+            /tmp/kirk-v4.sha256
+            /tmp/kirk-v4.pdfinfo
+            /tmp/kirk-v4-extract.log
+            /tmp/kirk-v4-structural-report.md
+            /tmp/kirk-v4-named-spans.log
+            /tmp/kirk-v4-named-spans.md
+          if-no-files-found: warn
