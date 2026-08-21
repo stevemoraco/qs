@@ -22,7 +22,9 @@ def zeroDoubleCoefficient (m lambda : ℝ) : ℝ :=
   m * (m - lambda)
 
 theorem zeroDoubleCoefficient_identity (m lambda : ℝ) :
-    zeroDoubleCoefficient m lambda = m ^ 2 - lambda * m := by ring
+    zeroDoubleCoefficient m lambda = m ^ 2 - lambda * m := by
+  unfold zeroDoubleCoefficient
+  ring
 
 theorem zeroDoubleCoefficient_nonneg
     {m lambda : ℝ}
