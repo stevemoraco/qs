@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/hodge-c398-exact-rationalization-verifier-20260821-gpt56pro
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
