@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - verification/ym-kirk-v4-public-pdf-20260821
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
