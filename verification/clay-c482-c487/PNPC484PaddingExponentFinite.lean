@@ -21,7 +21,6 @@ theorem exponent_conservation
   calc
     a * r / p = (a / b) * (b * r / p) := by
       field_simp [ne_of_gt hb, ne_of_gt hp]
-      ring
     _ ≤ (a / b) * M := hscaled
 
 theorem hard_excess_forces_simulation_excess
