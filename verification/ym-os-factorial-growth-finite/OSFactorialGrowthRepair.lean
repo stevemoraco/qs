@@ -21,7 +21,7 @@ theorem factorialPowerGrowth_add
   refine ⟨A + C, add_nonneg hA hC, ?_⟩
   intro n
   calc
-    |a n + b n| ≤ |a n| + |b n| := abs_add _ _
+    |a n + b n| ≤ |a n| + |b n| := abs_add_le _ _
     _ ≤ A * (Nat.factorial n : ℝ) ^ B +
           C * (Nat.factorial n : ℝ) ^ B := add_le_add (ha n) (hb n)
     _ = (A + C) * (Nat.factorial n : ℝ) ^ B := by ring
