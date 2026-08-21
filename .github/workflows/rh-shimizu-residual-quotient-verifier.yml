@@ -43,8 +43,8 @@ jobs:
           for token in ('Lean.ofReduceBool', 'native_decide'):
               if token in text:
                   raise SystemExit(f'forbidden source token: {token}')
-          if text.count('#print axioms') != 7:
-              raise SystemExit('expected exactly seven axiom reports')
+          if text.count('#print axioms') != 8:
+              raise SystemExit('expected exactly eight axiom reports')
           print('source trust preflight: clean')
           PY
           git hash-object "$SRC"
