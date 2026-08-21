@@ -54,8 +54,13 @@ theorem left_cross_triangle
     {a b q : ℝ}
     (hzero : (1 - q) * a + q * b = 0) :
     chordObjective a b q (q ^ 2 / 2) = (-a) * q / 2 := by
-  unfold chordObjective
-  nlinarith
+  have hdiff :
+      chordObjective a b q (q ^ 2 / 2) - ((-a) * q / 2) =
+        -(q / 2) * ((1 - q) * a + q * b) := by
+    unfold chordObjective
+    ring
+  rw [hzero] at hdiff
+  linarith
 
 /-- If the affine chord is negative on a right fraction `q`, then the
 right-anchored selector objective is exactly the triangular negative area per
@@ -64,8 +69,13 @@ theorem right_cross_triangle
     {a b q : ℝ}
     (hzero : q * a + (1 - q) * b = 0) :
     chordObjective a b q (q - q ^ 2 / 2) = (-b) * q / 2 := by
-  unfold chordObjective
-  nlinarith
+  have hdiff :
+      chordObjective a b q (q - q ^ 2 / 2) - ((-b) * q / 2) =
+        -(q / 2) * (q * a + (1 - q) * b) := by
+    unfold chordObjective
+    ring
+  rw [hzero] at hdiff
+  linarith
 
 /-- Selecting the whole cell gives the trapezoid area of two negative
 endpoints. -/
