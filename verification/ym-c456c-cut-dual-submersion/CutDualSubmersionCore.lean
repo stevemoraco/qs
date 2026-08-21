@@ -63,7 +63,7 @@ theorem cutDual_leftInverse
 theorem synth_injective
     (row : E → V) (cut : E → (V →ₗ[𝕜] 𝕜))
     (hdual : ∀ e f, cut e (row f) = if e = f then 1 else 0) :
-    Function.Injective (synth row) :=
+    Function.Injective (synth (𝕜 := 𝕜) row) :=
   (cutDual_leftInverse row cut hdual).injective
 
 /-- Equivalently, every finite coefficient relation is trivial. -/
@@ -73,10 +73,11 @@ theorem coefficients_eq_zero
     (x : E → 𝕜)
     (hzero : synth row x = 0) :
     x = 0 := by
-  apply synth_injective row cut hdual
+  apply synth_injective (𝕜 := 𝕜) row cut hdual
   simpa [synth] using hzero
 
 /-- Distinct indices with identical rows cannot possess a Kronecker cut dual. -/
+omit [Fintype E] in
 theorem duplicate_rows_forbid_cutDual
     (row : E → V) (cut : E → (V →ₗ[𝕜] 𝕜))
     (hdual : ∀ e f, cut e (row f) = if e = f then 1 else 0)
@@ -116,6 +117,7 @@ theorem norm_lower_bound_of_leftInverse
   calc
     ‖x‖ = ‖C (A x)‖ := by rw [hleft x]
     _ ≤ K * ‖A x‖ := hbound (A x)
+    _ = ‖A x‖ * K := mul_comm _ _
 
 /-- Square-root specialization matching the interface-size bound. -/
 theorem norm_lower_bound_of_sqrt_leftInverse
