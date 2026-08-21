@@ -57,6 +57,7 @@ theorem localMean_cubic_remainder (c s x y z : ℚ) :
 theorem localMean_witness (c : ℚ) :
     localMean c 1 1 (-2) = -6 * c := by
   norm_num [localMean, mean3, centralThird]
+  ring
 
 theorem distinct_parameters_give_distinct_means
     (c d : ℚ) (hcd : c ≠ d) :
