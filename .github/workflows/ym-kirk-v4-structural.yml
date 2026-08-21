@@ -1,0 +1,57 @@
+name: YM Kirk v4 bounded structural extraction
+on:
+  pull_request:
+    paths:
+      - 'audit/extract_kirk_v4.py'
+      - '.github/workflows/ym-kirk-v4-structural.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Download exact public PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://zenodo.org/records/21765806/files/Kirk_2026_Yang%E2%80%93Mills%20Existence%2C%20Mass%20Gap%2C%20and%20Nontriviality%20for%20Fixed%20Compact%20Simple%20Gauge%20Groups%20via%20Karcher%20Blocking%20and%20Exact%20Haar%E2%80%93Pivot%20Matching.pdf?download=1'
+          curl --fail --location --retry 4 --retry-all-errors "$url" -o /tmp/kirk-v4.pdf
+          test "$(head -c 4 /tmp/kirk-v4.pdf)" = '%PDF'
+          sha256sum /tmp/kirk-v4.pdf | tee /tmp/kirk.sha256
+          pdfinfo /tmp/kirk-v4.pdf | tee /tmp/kirk.pdfinfo
+      - name: Extract
+        run: |
+          python -m py_compile audit/extract_kirk_v4.py
+          python audit/extract_kirk_v4.py --pdf /tmp/kirk-v4.pdf --out /tmp/report.md | tee /tmp/extract.log
+      - name: Comment report
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          t=Path('/tmp/report.md').read_text();cap=58000
+          if len(t)>cap:t=t[:cap]+'\n\n_Truncated in comment; full bounded report is attached._\n'
+          Path('/tmp/body.json').write_text(json.dumps({'body':t}))
+          PY
+          gh api "repos/$REPO/issues/$PR_NUMBER/comments" --method POST --input /tmp/body.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-bounded-structural-report
+          path: |
+            /tmp/kirk.sha256
+            /tmp/kirk.pdfinfo
+            /tmp/extract.log
+            /tmp/report.md
+          if-no-files-found: warn
