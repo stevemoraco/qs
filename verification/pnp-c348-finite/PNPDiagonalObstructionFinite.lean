@@ -60,14 +60,14 @@ theorem perfectCompleteness_forces_negative_error
   obtain ⟨i, hi⟩ := hdisagree h
   have hbfalse : b i = false := by
     cases hb : b i with
-    | false => exact hb
+    | false => rfl
     | true =>
         have he : eval h (points i) = true := hperfect i hb
         exact False.elim (hi (he.trans hb.symm))
   have hetrue : eval h (points i) = true := by
     cases he : eval h (points i) with
     | false => exact False.elim (hi (he.trans hbfalse.symm))
-    | true => exact he
+    | true => rfl
   exact ⟨i, hbfalse, hetrue⟩
 
 theorem finite_labeled_obstruction
