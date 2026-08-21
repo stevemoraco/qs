@@ -20,12 +20,16 @@ namespace Millennium
 namespace RH
 namespace C484B
 
+/-- The symmetric five-point coefficient row, with arguments ordered from
+`t-2h` through `t+2h`. -/
 def fivePoint
     (c jm2 jm1 j0 jp1 jp2 : ℝ) : ℝ :=
   -c * jp2 + (1 + c) ^ 2 * jp1
     - 2 * (1 + c + c ^ 2) * j0
     + (1 + c) ^ 2 * jm1 - c * jm2
 
+/-- The five-point row is exactly the three-point curvature of the centered
+second difference. -/
 theorem fivePoint_tent_curvature
     (c jm2 jm1 j0 jp1 jp2 : ℝ) :
     fivePoint c jm2 jm1 j0 jp1 jp2 =
@@ -34,6 +38,8 @@ theorem fivePoint_tent_curvature
   unfold fivePoint
   ring
 
+/-- Exact polynomial form of
+`z^2 D(z)=-(z-c)(z-1)^2(cz-1)`. -/
 theorem stencil_factorization (c z : ℝ) :
     -c * z ^ 4 + (1 + c) ^ 2 * z ^ 3
         - 2 * (1 + c + c ^ 2) * z ^ 2
@@ -41,16 +47,21 @@ theorem stencil_factorization (c z : ℝ) :
       -(z - c) * (z - 1) ^ 2 * (c * z - 1) := by
   ring
 
+/-- The geometric mode with shift ratio `c` is annihilated exactly. -/
 theorem geometric_mode_c_annihilated (a c : ℝ) :
     fivePoint c a (a * c) (a * c ^ 2) (a * c ^ 3) (a * c ^ 4) = 0 := by
   unfold fivePoint
   ring
 
+/-- By symmetry the reciprocal geometric mode is also annihilated, written
+without division by reversing the same finite geometric string. -/
 theorem geometric_mode_reciprocal_annihilated (a c : ℝ) :
     fivePoint c (a * c ^ 4) (a * c ^ 3) (a * c ^ 2) (a * c) a = 0 := by
   unfold fivePoint
   ring
 
+/-- The one-sided floor is exactly the cleared three-scale curvature bound.
+No sign assumption on `c` is needed in this cleared form. -/
 theorem floor_iff_cleared_curvature
     (c jm2 jm1 j0 jp1 jp2 H Csq : ℝ) :
     0 ≤ fivePoint c jm2 jm1 j0 jp1 jp2 + H + Csq ↔
