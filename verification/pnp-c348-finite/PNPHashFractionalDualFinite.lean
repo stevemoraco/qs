@@ -87,7 +87,9 @@ theorem fractional_transversal_lower
 theorem equality_dnf_gate_identity
     {K ell : ℕ} (hK : 1 ≤ K) (hell : 1 ≤ ell) :
     K * (ell - 1) + (K - 1) = K * ell - 1 := by
-  omega
+  obtain ⟨K', rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : K ≠ 0)
+  obtain ⟨ell', rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : ell ≠ 0)
+  simp [Nat.mul_succ]
 
 #print axioms weighted_error_fubini
 #print axioms fractional_transversal_lower
