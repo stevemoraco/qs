@@ -76,8 +76,8 @@ theorem coefficients_eq_zero
   apply synth_injective (𝕜 := 𝕜) row cut hdual
   simpa [synth] using hzero
 
-/-- Distinct indices with identical rows cannot possess a Kronecker cut dual. -/
 omit [Fintype E] in
+/-- Distinct indices with identical rows cannot possess a Kronecker cut dual. -/
 theorem duplicate_rows_forbid_cutDual
     (row : E → V) (cut : E → (V →ₗ[𝕜] 𝕜))
     (hdual : ∀ e f, cut e (row f) = if e = f then 1 else 0)
