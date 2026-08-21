@@ -19,7 +19,6 @@ theorem prefixPSD_iff_no_negative_certificate
 
 theorem interval_negative_certificate
     (q qApprox η err : ℝ)
-    (hη : 0 < η)
     (hq : q ≤ -η)
     (herr : |qApprox - q| ≤ err)
     (hbudget : err < η) :
@@ -30,13 +29,12 @@ theorem interval_negative_certificate
 
 theorem entrywise_budget_negative_certificate
     (q qApprox η entryError l1Squared : ℝ)
-    (hη : 0 < η)
     (hq : q ≤ -η)
     (herr : |qApprox - q| ≤ entryError * l1Squared)
     (hbudget : entryError * l1Squared < η) :
     qApprox < 0 := by
   exact interval_negative_certificate q qApprox η
-    (entryError * l1Squared) hη hq herr hbudget
+    (entryError * l1Squared) hq herr hbudget
 
 theorem negative_certificate_refutes_prefixPSD
     (Q : (n : ℕ) → (Fin n → ℝ) → ℝ)
