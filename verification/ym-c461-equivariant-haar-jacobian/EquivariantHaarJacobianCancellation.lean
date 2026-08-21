@@ -47,7 +47,10 @@ theorem l1_to_totalVariation_bound
     (l1 Delta zmin : ℝ)
     (hl1 : l1 ≤ 2 * Delta / zmin) :
     l1 / 2 ≤ Delta / zmin := by
-  linarith
+  calc
+    l1 / 2 ≤ (2 * Delta / zmin) / 2 := by
+      exact div_le_div_of_nonneg_right hl1 (by norm_num)
+    _ = Delta / zmin := by ring
 
 theorem cubic_debt_preserved
     (C g : ℝ) (hC : 0 ≤ C) (hg : 0 ≤ g) :
