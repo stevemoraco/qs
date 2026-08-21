@@ -1,12 +1,6 @@
 name: YM FS C456 OS time-translation firewall
 
 on:
-  push:
-    branches:
-      - verification/ym-fs-c456-os-time-translation-firewall-20260821
-    paths:
-      - .github/workflows/ym-fs-c456-os-time-translation-firewall.yml
-      - verification/ym-fs-c456-os-time-translation-firewall/FSDirectClusteringOSFirewall.lean
   pull_request:
     branches:
       - main
