@@ -1,0 +1,70 @@
+name: NS C482 endpoint tower finite Lean replay
+
+on:
+  push:
+    branches:
+      - agent/ns-c482-endpoint-tower-public-replay-20260821
+    paths:
+      - 'verification/ns-c482-endpoint-tower/**'
+      - '.github/workflows/ns-c482-endpoint-tower.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and conclusion-carrying escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-c482-endpoint-tower/NSC482EndpointTowerFinite.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/ns-c482-endpoint-tower
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/ns-c482-endpoint-tower
+        run: |
+          set -euo pipefail
+          lake env lean NSC482EndpointTowerFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Placeholder dependency found'
+            exit 1
+          fi
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-c482-endpoint-tower-lean-evidence
+          path: verification/ns-c482-endpoint-tower/lean-output.log
+          if-no-files-found: warn
