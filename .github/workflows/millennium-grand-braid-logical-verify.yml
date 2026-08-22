@@ -1,0 +1,214 @@
+name: Millennium grand braid logical verification
+
+on:
+  push:
+    branches:
+      - automation/millennium-grand-braid-logical-verifier-20260813
+    paths:
+      - 'verification/millennium-grand-braid/**'
+      - '.github/workflows/millennium-grand-braid-logical-verify.yml'
+  pull_request:
+    paths:
+      - 'verification/millennium-grand-braid/**'
+      - '.github/workflows/millennium-grand-braid-logical-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: millennium-grand-braid-logical-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Record exact replay identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/millennium-grand-braid'
+          SRC="$ROOT/MillenniumGrandBraid.lean"
+          EXPECTED_BLOB='3062a69435b0bb92c413b3e1be5bbfea60996c25'
+          HEAD="$(git rev-parse HEAD)"
+          test "$HEAD" = "$GITHUB_SHA"
+          ACTUAL_BLOB="$(git hash-object "$SRC")"
+          test "$ACTUAL_BLOB" = "$EXPECTED_BLOB"
+          {
+            printf 'event=%s\n' "$GITHUB_EVENT_NAME"
+            printf 'ref=%s\n' "$GITHUB_REF"
+            printf 'github_sha=%s\n' "$GITHUB_SHA"
+            printf 'checkout_head=%s\n' "$HEAD"
+            printf 'expected_source_blob=%s\n' "$EXPECTED_BLOB"
+            printf 'actual_source_blob=%s\n' "$ACTUAL_BLOB"
+          } | tee "$ROOT/replay-identity.txt"
+          sha256sum "$SRC" | tee "$ROOT/source-sha256.txt"
+
+      - name: Enforce source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('verification/millennium-grand-braid/MillenniumGrandBraid.lean')
+          source = path.read_text()
+          stripped = re.sub(r'/-.*?-/', '', source, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'\bsorryAx\b',
+              r'^\s*(axiom|opaque)\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for pattern in forbidden:
+              match = re.search(pattern, stripped, flags=re.M)
+              if match:
+                  raise SystemExit(f'forbidden declaration: {match.group(0)!r}')
+
+          expected = [
+              'SeventhObject.all_scales',
+              'PrizeRoute.solve',
+              'nonempty_prizeRoute_iff',
+              'PersistentFlow.all_stages',
+              'CompletionRoute.solve',
+              'nonempty_completionRoute_iff',
+              'RouteBundle.solve',
+              'nonempty_routeBundle_iff_allGoals',
+              'CompletionBundle.solve',
+              'nonempty_completionBundle_iff_allGoals',
+              'no_complete_route_braid_without_all_goals',
+              'no_complete_perelman_braid_without_all_goals',
+              'grand_braid',
+          ]
+          for name in expected:
+              if f'#print axioms {name}' not in source:
+                  raise SystemExit(f'missing #print axioms command: {name}')
+          PY
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee verification/millennium-grand-braid/lean-version.txt
+
+      - name: Compile exact executable theorem file
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/millennium-grand-braid'
+          "$HOME/.elan/bin/lean" "$ROOT/MillenniumGrandBraid.lean" \
+            > "$ROOT/lean-output.log" 2>&1
+          cat "$ROOT/lean-output.log"
+          if grep -Eq \
+            'error:|declaration uses .sorry.|declaration has metavariables|sorryAx|admit|Lean\.ofReduceBool|native_decide' \
+            "$ROOT/lean-output.log"; then
+            echo 'Lean compiler or trust-boundary failure.' >&2
+            exit 1
+          fi
+
+      - name: Audit complete named axiom reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('verification/millennium-grand-braid')
+          text = (root / 'lean-output.log').read_text()
+          namespace = 'MillenniumGrandBraidPublic.'
+          expected = {
+              namespace + 'SeventhObject.all_scales',
+              namespace + 'PrizeRoute.solve',
+              namespace + 'nonempty_prizeRoute_iff',
+              namespace + 'PersistentFlow.all_stages',
+              namespace + 'CompletionRoute.solve',
+              namespace + 'nonempty_completionRoute_iff',
+              namespace + 'RouteBundle.solve',
+              namespace + 'nonempty_routeBundle_iff_allGoals',
+              namespace + 'CompletionBundle.solve',
+              namespace + 'nonempty_completionBundle_iff_allGoals',
+              namespace + 'no_complete_route_braid_without_all_goals',
+              namespace + 'no_complete_perelman_braid_without_all_goals',
+              namespace + 'grand_braid',
+          }
+
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          found = {name for name, _ in with_axioms} | set(without_axioms)
+          if found != expected:
+              raise SystemExit(
+                  f'axiom report mismatch: missing={sorted(expected-found)}, '
+                  f'extra={sorted(found-expected)}'
+              )
+
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(
+                      f'{theorem} has forbidden axiom dependencies: {sorted(extra)}'
+                  )
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+          report = '\n'.join(sorted(rows)) + '\n'
+          (root / 'axiom-report.txt').write_text(report)
+          print(report, end='')
+          PY
+
+      - name: Record theorem inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/millennium-grand-braid'
+          grep -E '^[[:space:]]*(theorem|lemma)[[:space:]]' \
+            "$ROOT/MillenniumGrandBraid.lean" \
+            | tee "$ROOT/theorem-inventory.txt"
+          printf 'theorem_count=' \
+            | tee "$ROOT/theorem-count.txt"
+          grep -Ec '^[[:space:]]*(theorem|lemma)[[:space:]]' \
+            "$ROOT/MillenniumGrandBraid.lean" \
+            | tee -a "$ROOT/theorem-count.txt"
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-grand-braid-logical-${{ github.sha }}
+          path: |
+            verification/millennium-grand-braid/replay-identity.txt
+            verification/millennium-grand-braid/source-sha256.txt
+            verification/millennium-grand-braid/lean-version.txt
+            verification/millennium-grand-braid/lean-output.log
+            verification/millennium-grand-braid/axiom-report.txt
+            verification/millennium-grand-braid/theorem-inventory.txt
+            verification/millennium-grand-braid/theorem-count.txt
+          if-no-files-found: error
+          retention-days: 90
