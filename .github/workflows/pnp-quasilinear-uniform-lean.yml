@@ -1,0 +1,79 @@
+name: PNP Quasilinear Uniform Finite Lean
+
+on:
+  push:
+    branches:
+      - agent/pnp-quasilinear-uniform-public-verify-20260812
+    paths:
+      - 'verification/pnp-quasilinear-uniform/**'
+      - '.github/workflows/pnp-quasilinear-uniform-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/pnp-quasilinear-uniform/**'
+      - '.github/workflows/pnp-quasilinear-uniform-lean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/pnp-quasilinear-uniform/'
+              'PNPQuasilinearUniformFinite.lean'
+          )
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          for pattern in [r'^\s*(sorry|admit)\b', r'^\s*axiom\b']:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/pnp-quasilinear-uniform
+          lake update
+          lake exe cache get
+          lake env lean PNPQuasilinearUniformFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite PNP quasilinear uniform core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-quasilinear-uniform-lean-evidence
+          path: |
+            verification/pnp-quasilinear-uniform/lean-output.log
+            lean-version.log
+            lake-version.log
+          if-no-files-found: warn
