@@ -1,0 +1,69 @@
+name: Navier-Stokes finite packing foundation replay
+
+on:
+  push:
+    branches:
+      - automation/ns-packing-foundation-replay-20260813
+    paths:
+      - 'formal/ns-packing-audit/**'
+      - '.github/workflows/ns-packing-foundation-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/ns-packing-audit/**'
+      - '.github/workflows/ns-packing-foundation-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-packing-audit/NavierStokesPackingAudit.lean'
+          if grep -nE '\b(sorry|admit|axiom)\b' "$file"; then
+            echo 'Rejected: explicit proof hole or custom axiom declaration found.'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/ns-packing-audit/toolchain.txt
+
+      - name: Fresh Lean kernel replay with axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-packing-audit/NavierStokesPackingAudit.lean'
+          output='formal/ns-packing-audit/lean-kernel-output.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-packing-foundation-replay-${{ github.sha }}
+          path: |
+            formal/ns-packing-audit/NavierStokesPackingAudit.lean
+            formal/ns-packing-audit/lean-toolchain
+            formal/ns-packing-audit/toolchain.txt
+            formal/ns-packing-audit/lean-kernel-output.txt
+          if-no-files-found: warn
