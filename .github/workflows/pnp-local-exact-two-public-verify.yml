@@ -1,0 +1,98 @@
+name: PNP Local EXACT-2 Zero-Excess Public Verifier
+
+on:
+  push:
+    branches:
+      - agent/pnp-local-exact-two-public-verifier-20260812
+    paths:
+      - 'verification/pnp-local-exact-two/**'
+      - '.github/workflows/pnp-local-exact-two-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-local-exact-two/**'
+      - '.github/workflows/pnp-local-exact-two-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-certificate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile and replay exact Python certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/pnp-local-exact-two
+          python3 -m py_compile pnp_exact_two_zero_excess_certificate.py
+          python3 pnp_exact_two_zero_excess_certificate.py 2>&1 | tee python-certificate.log
+          grep -F 'EXACT CERTIFICATE: PASS' python-certificate.log
+          git hash-object pnp_exact_two_zero_excess_certificate.py | tee python-git-blob-sha.txt
+          test "$(cat python-git-blob-sha.txt)" = '2a2ca2e7144253e4305eef4d9f27976b4cf23209'
+
+      - name: Upload exact-certificate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-local-exact-two-python-evidence
+          path: |
+            verification/pnp-local-exact-two/python-certificate.log
+            verification/pnp-local-exact-two/python-git-blob-sha.txt
+          if-no-files-found: warn
+
+  lean-firewall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-local-exact-two/PNPExactTwoLocalObstruction.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/pnp-local-exact-two/lean-git-blob-sha.txt
+          test "$(cat verification/pnp-local-exact-two/lean-git-blob-sha.txt)" = '273aefcfeacd91cb180dd9c3ec299fd25e6991b6'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/pnp-local-exact-two/lean-version.txt
+          lake --version | tee verification/pnp-local-exact-two/lake-version.txt
+          cd verification/pnp-local-exact-two
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          lake env lean PNPExactTwoLocalObstruction.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED PNP local EXACT-2 finite core: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-local-exact-two-lean-evidence
+          path: |
+            verification/pnp-local-exact-two/lean-output.log
+            verification/pnp-local-exact-two/lean-git-blob-sha.txt
+            verification/pnp-local-exact-two/lean-version.txt
+            verification/pnp-local-exact-two/lake-version.txt
+            verification/pnp-local-exact-two/mathlib-commit.txt
+          if-no-files-found: warn

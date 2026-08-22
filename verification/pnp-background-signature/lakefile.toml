@@ -1,0 +1,11 @@
+name = "pnp_background_signature_capacity"
+version = "0.1.0"
+defaultTargets = ["PNPBackgroundSignatureCapacity"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.31.0"
+
+[[lean_lib]]
+name = "PNPBackgroundSignatureCapacity"
