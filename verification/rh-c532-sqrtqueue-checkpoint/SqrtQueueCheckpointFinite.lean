@@ -51,7 +51,9 @@ theorem clipped_jump
     positivePart (pre + jump - threshold) - positivePart (pre - threshold) =
       min jump (positivePart (pre + jump - threshold)) := by
   have h := clipped_drop (pre + jump - threshold) jump hjump
-  convert h using 1 <;> ring
+  have heq : pre + jump - threshold - jump = pre - threshold := by ring
+  rw [heq] at h
+  exact h
 
 /-- Exact superlevel length of one unit-speed downward drift segment. -/
 theorem drift_superlevel_length
@@ -59,8 +61,9 @@ theorem drift_superlevel_length
     min ell (positivePart (w - threshold)) =
       positivePart (w - threshold) - positivePart (w - ell - threshold) := by
   have h := clipped_drop (w - threshold) ell hell
-  symm
-  convert h using 1 <;> ring
+  have heq : w - threshold - ell = w - ell - threshold := by ring
+  rw [heq] at h
+  exact h.symm
 
 /--
 One-jump queue balance: the total superlevel length of two unit-speed drift
