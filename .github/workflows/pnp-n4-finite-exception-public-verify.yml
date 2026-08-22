@@ -1,0 +1,73 @@
+name: PNP N4 and Finite-Exception Lean
+
+on:
+  push:
+    branches:
+      - agent/pnp-n4-finite-exception-public-verify-20260811
+    paths:
+      - 'verification/pnp-n4-finite-exception/**'
+      - '.github/workflows/pnp-n4-finite-exception-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-n4-finite-exception/**'
+      - '.github/workflows/pnp-n4-finite-exception-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          files = sorted(pathlib.Path('verification/pnp-n4-finite-exception').glob('*.lean'))
+          if not files:
+              raise SystemExit('no Lean files found')
+          for p in files:
+              text = p.read_text()
+              text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              text = re.sub(r'--.*$', '', text, flags=re.M)
+              for pattern in [r'^\s*(sorry|admit)\b', r'^\s*axiom\b']:
+                  m = re.search(pattern, text, flags=re.M)
+                  if m:
+                      raise SystemExit(f'{p}: forbidden declaration {m.group(0)!r}')
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/pnp-n4-finite-exception
+          lake update
+          lake exe cache get
+          : > lean-output.log
+          for file in PNPN4SevenGateUpperFinite.lean PNPCyclicWindowChargingFinite.lean PNPFiniteExceptionDecoderFinite.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite PNP N4/charging/exception cores.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-n4-finite-exception-lean-evidence
+          path: verification/pnp-n4-finite-exception/lean-output.log
+          if-no-files-found: warn
