@@ -1,0 +1,113 @@
+name: PNP finite-cutoff Lean firewall
+
+on:
+  push:
+    branches:
+      - agent/pnp-finite-cutoff-firewall-20260813
+    paths:
+      - 'verification/pnp-finite-cutoff/**'
+      - '.github/workflows/pnp-finite-cutoff-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-finite-cutoff/**'
+      - '.github/workflows/pnp-finite-cutoff-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/pnp-finite-cutoff/PNPFiniteCutoffFirewall.lean')
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+          ]
+          for pattern in patterns:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden declaration: {m.group(0)!r}')
+          PY
+
+      - name: Install exact Lean and Mathlib pins, compile, and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/pnp-finite-cutoff/toolchain.log
+          lake --version | tee -a verification/pnp-finite-cutoff/toolchain.log
+          cd verification/pnp-finite-cutoff
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.log
+          sha256sum PNPFiniteCutoffFirewall.lean | tee source-sha256.log
+          lake env lean PNPFiniteCutoffFirewall.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          for theorem in \
+            beats_degree_through_cutoff \
+            vanishes_after_cutoff \
+            eventually_constant_zero \
+            finite_lower_bound_does_not_force_asymptotic_growth
+          do
+            grep -F "Millennium.PNPFiniteCutoff.${theorem}' depends on axioms:" lean-output.log
+          done
+          python3 - <<'PY'
+          import pathlib, re
+          out = pathlib.Path('lean-output.log').read_text()
+          expected = [
+              'beats_degree_through_cutoff',
+              'vanishes_after_cutoff',
+              'eventually_constant_zero',
+              'finite_lower_bound_does_not_force_asymptotic_growth',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for name in expected:
+              pattern = rf"Millennium\.PNPFiniteCutoff\.{name}' depends on axioms: \[([^\]]*)\]"
+              m = re.search(pattern, out)
+              if not m:
+                  raise SystemExit(f'missing axiom report for {name}')
+              actual = {x.strip() for x in m.group(1).split(',') if x.strip()}
+              unexpected = actual - allowed
+              if unexpected:
+                  raise SystemExit(f'unexpected axioms for {name}: {sorted(unexpected)}')
+              print(f'{name}: accepted axioms {sorted(actual)}')
+          PY
+          test -s source-sha256.log
+          test -s mathlib-commit.log
+          echo 'VERIFIED PNP finite-cutoff firewall.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-finite-cutoff-public-verification-evidence
+          path: |
+            verification/pnp-finite-cutoff/lean-output.log
+            verification/pnp-finite-cutoff/source-sha256.log
+            verification/pnp-finite-cutoff/toolchain.log
+            verification/pnp-finite-cutoff/mathlib-commit.log
+          if-no-files-found: warn
