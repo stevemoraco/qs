@@ -1,0 +1,65 @@
+name: NS donor-tree spacetime finite firewall Lean
+
+on:
+  push:
+    branches:
+      - agent/ns-donor-tree-spacetime-public-verifier-20260813
+    paths:
+      - 'verification/ns-donor-tree-spacetime/**'
+      - '.github/workflows/ns-donor-tree-spacetime-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-donor-tree-spacetime/**'
+      - '.github/workflows/ns-donor-tree-spacetime-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and result carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-donor-tree-spacetime/NSDonorTreeSpacetimeFirewall.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe|native_decide)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or result carrier found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/ns-donor-tree-spacetime
+          lake update
+          lake exe cache get
+          sha256sum NSDonorTreeSpacetimeFirewall.lean | tee source-sha256.log
+          lake env lean NSDonorTreeSpacetimeFirewall.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder axiom or reduction carrier found in compiler output.' >&2
+            exit 1
+          fi
+          test -s lean-output.log
+          test -s source-sha256.log
+          echo 'VERIFIED finite NS donor-tree spacetime firewall.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-donor-tree-spacetime-public-verification-evidence
+          path: |
+            verification/ns-donor-tree-spacetime/lean-output.log
+            verification/ns-donor-tree-spacetime/source-sha256.log
+          if-no-files-found: error
