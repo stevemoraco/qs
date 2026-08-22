@@ -1,0 +1,138 @@
+name: NS single-mode finite-spectrum public verifier v2
+
+on:
+  push:
+    branches:
+      - agent/ns-single-mode-finite-spectrum-public-verifier-20260813-gpt56
+  pull_request:
+    paths:
+      - 'verification/ns-single-mode-finite-spectrum-public/**'
+      - '.github/workflows/ns-single-mode-finite-spectrum-public-verify-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Verify repaired source against workflow-parent blob
+        shell: bash
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          dir='verification/ns-single-mode-finite-spectrum-public'
+          file="$dir/NSSingleModeFiniteSpectrumFinite.lean"
+          if [ -n "${PR_HEAD_SHA:-}" ]; then
+            head_sha="$PR_HEAD_SHA"
+          else
+            head_sha="$GITHUB_SHA"
+          fi
+          git fetch --no-tags --depth=2 origin "$head_sha" || true
+          parent_sha="$(git rev-parse "$head_sha^")"
+          expected_blob="$(git ls-tree "$parent_sha" -- "$file" | awk '{print $3}')"
+          actual_blob="$(git hash-object "$file")"
+          test -n "$expected_blob"
+          printf 'head_sha=%s\nparent_sha=%s\nexpected_parent_blob=%s\nactual_blob=%s\n' \
+            "$head_sha" "$parent_sha" "$expected_blob" "$actual_blob" \
+            | tee "$dir/source-blob.txt"
+          test "$actual_blob" = "$expected_blob"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-single-mode-finite-spectrum-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean NSSingleModeFiniteSpectrumFinite.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+
+      - name: Enforce foundation-only axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ns-single-mode-finite-spectrum-public'
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path('verification/ns-single-mode-finite-spectrum-public/lean-output.log')
+          text = path.read_text()
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          expected = 10
+          found = len(with_axioms) + len(without_axioms)
+          if found != expected:
+              raise SystemExit(f'expected {expected} staged axiom reports, found {found}')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(f'{theorem} has non-foundation axioms: {sorted(extra)}')
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+          report = '\n'.join(sorted(rows)) + '\n'
+          pathlib.Path('verification/ns-single-mode-finite-spectrum-public/axiom-report.txt').write_text(report)
+          print(report, end='')
+          PY
+          echo 'VERIFIED NS single-mode finite-spectrum finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-single-mode-finite-spectrum-public-v2-evidence
+          path: |
+            verification/ns-single-mode-finite-spectrum-public/source-blob.txt
+            verification/ns-single-mode-finite-spectrum-public/source-sha256.txt
+            verification/ns-single-mode-finite-spectrum-public/lean-version.txt
+            verification/ns-single-mode-finite-spectrum-public/lean-output.log
+            verification/ns-single-mode-finite-spectrum-public/axiom-report.txt
