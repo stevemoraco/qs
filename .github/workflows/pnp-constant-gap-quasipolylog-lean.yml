@@ -1,0 +1,76 @@
+name: PNP Constant Gap Quasipolylog Finite Lean
+
+on:
+  push:
+    branches:
+      - agent/pnp-constant-gap-quasipolylog-public-verify-20260812
+    paths:
+      - 'verification/pnp-constant-gap-quasipolylog/**'
+      - '.github/workflows/pnp-constant-gap-quasipolylog-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/pnp-constant-gap-quasipolylog/**'
+      - '.github/workflows/pnp-constant-gap-quasipolylog-lean.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/pnp-constant-gap-quasipolylog/'
+              'PNPConstantGapQuasipolylogFinite.lean'
+          )
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          for pattern in [r'^\s*(sorry|admit)\b', r'^\s*axiom\b']:
+              match = re.search(pattern, text, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/pnp-constant-gap-quasipolylog
+          lake update
+          lake exe cache get
+          lake env lean PNPConstantGapQuasipolylogFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite PNP constant-gap quasipolylog core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-constant-gap-quasipolylog-lean-evidence
+          path: |
+            verification/pnp-constant-gap-quasipolylog/lean-output.log
+            lean-version.log
+            lake-version.log
+          if-no-files-found: warn
