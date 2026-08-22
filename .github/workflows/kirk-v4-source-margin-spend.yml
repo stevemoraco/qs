@@ -1,0 +1,76 @@
+name: Kirk v4 source-margin spending Lean replay
+
+on:
+  push:
+    branches:
+      - agent/kirk-v4-source-audit-20260814-gpt56pro
+    paths:
+      - KirkV4SourceMarginSpend.lean
+      - .github/workflows/kirk-v4-source-margin-spend.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify theorem source
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=KirkV4SourceMarginSpend.lean
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            exit 1
+          fi
+          SRC="$SRC" python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import urllib.request
+
+          path = pathlib.Path(os.environ['SRC'])
+          payload = json.dumps({
+              'content': path.read_text(),
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 900,
+          }).encode()
+          request = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST')
+          with urllib.request.urlopen(request, timeout=960) as response:
+              result = json.load(response)
+          pathlib.Path('kirk-v4-source-margin-spend-axle.json').write_text(
+              json.dumps(result, indent=2) + '\n')
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+              not result.get('okay')
+              or bool(result.get('failed_declarations', []))
+              or bool(lean.get('errors', []))
+              or bool(lean.get('warnings', []))
+              or bool(tool.get('errors', []))
+              or bool(tool.get('warnings', []))
+              or 'sorryAx' in json.dumps(result)
+          )
+          if bad:
+              raise SystemExit(1)
+          PY
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-source-margin-spend
+          path: |
+            KirkV4SourceMarginSpend.lean
+            kirk-v4-source-margin-spend-axle.json
+          if-no-files-found: warn
+          retention-days: 90
