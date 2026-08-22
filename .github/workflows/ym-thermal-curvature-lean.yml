@@ -1,0 +1,68 @@
+name: YM Thermal Curvature Finite Lean
+
+on:
+  push:
+    branches:
+      - agent/ym-thermal-curvature-finite-verify-20260812
+  pull_request:
+    paths:
+      - verification/ym-thermal-curvature/**
+      - .github/workflows/ym-thermal-curvature-lean.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/ym-thermal-curvature/YMThermalCurvatureFinite.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|opaque)\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+          ]
+          for pattern in forbidden:
+              m = re.search(pattern, stripped, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden declaration: {m.group(0)!r}')
+          PY
+
+      - name: Install pinned Lean and compile
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/ym-thermal-curvature
+          lake update
+          lake exe cache get
+          lake env lean YMThermalCurvatureFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean\.ofReduceBool|native_decide' lean-output.log; then
+            echo 'Forbidden placeholder or native decision artifact found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Yang-Mills thermal-curvature scalar core.'
+
+      - name: Upload compiler and axiom evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-thermal-curvature-lean-evidence
+          path: verification/ym-thermal-curvature/lean-output.log
+          if-no-files-found: warn
