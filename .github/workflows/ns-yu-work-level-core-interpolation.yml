@@ -1,0 +1,109 @@
+name: Verify NS Yu work-level core absorption
+
+on:
+  push:
+    branches:
+      - agent/ns-yu-work-level-core-interpolation-20260814-run15
+    paths:
+      - 'verification/ns-yu-work-level-core-interpolation/**'
+      - '.github/workflows/ns-yu-work-level-core-interpolation.yml'
+  pull_request:
+    paths:
+      - 'verification/ns-yu-work-level-core-interpolation/**'
+      - '.github/workflows/ns-yu-work-level-core-interpolation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/ns-yu-work-level-core-interpolation/NSYuWorkLevelCoreAbsorption.lean
+          test -s "$SRC"
+          if grep -nE '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then
+            echo 'forbidden trust carrier found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 3
+          sha256sum "$SRC" | tee work-level-source.sha256
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/ns-yu-work-level-core-interpolation/NSYuWorkLevelCoreAbsorption.lean').read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 1200,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type': 'application/json'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=1260) as response:
+              result = json.load(response)
+          pathlib.Path('work-level-axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Enforce clean compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('work-level-axle-response.json')
+          if not p.exists():
+              print('::error::missing AXLE response')
+              raise SystemExit(1)
+          r = json.loads(p.read_text())
+          bad = False
+          buckets = [
+              ('Lean error', r.get('lean_messages', {}).get('errors', [])),
+              ('Lean warning', r.get('lean_messages', {}).get('warnings', [])),
+              ('Tool error', r.get('tool_messages', {}).get('errors', [])),
+              ('Tool warning', r.get('tool_messages', {}).get('warnings', [])),
+              ('Failed declaration', r.get('failed_declarations', [])),
+          ]
+          for label, messages in buckets:
+              for message in messages:
+                  bad = True
+                  text = json.dumps(message, sort_keys=True).replace('\n', '%0A').replace('\r', '%0D')
+                  print(f'::error title={label}::{text}')
+          if not r.get('okay'):
+              bad = True
+              print('::error title=AXLE verdict::okay=false')
+          rendered = json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              bad = True
+              print('::error title=Trust gate::forbidden postcompile dependency')
+          if bad:
+              raise SystemExit(1)
+          print('VERIFIED CLEAN')
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-yu-work-level-core-interpolation-evidence
+          path: |
+            verification/ns-yu-work-level-core-interpolation/NSYuWorkLevelCoreAbsorption.lean
+            work-level-source.sha256
+            work-level-axle-response.json
