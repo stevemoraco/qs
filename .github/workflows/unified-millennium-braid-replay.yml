@@ -1,0 +1,121 @@
+name: Unified Millennium braid pinned Lean replay
+
+on:
+  push:
+    branches:
+      - agent/unified-millennium-braid-replay-20260813-gpt56
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch exact RH-Lean unified source and verify Git blob
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          url='https://raw.githubusercontent.com/stevemoraco/RH-Lean/c0bf248649895d0329b8c104140548d69e2d5ec9/lean-worker/UnifiedMillenniumBraidExecutable.lean'
+          curl --fail --location --retry 5 --retry-delay 2 "$url" \
+            --output UnifiedMillenniumBraidExecutable.lean
+          expected='33862ea6467771f2521fd2359d1cfa5a29af1ee4'
+          actual="$(git hash-object UnifiedMillenniumBraidExecutable.lean)"
+          printf 'expected blob: %s\nactual blob:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Reject executable proof holes and result-carrying declarations
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          source = pathlib.Path('UnifiedMillenniumBraidExecutable.lean').read_text()
+          code = []
+          depth = 0
+          i = 0
+          while i < len(source):
+              if depth == 0 and source.startswith('/-', i):
+                  depth = 1
+                  i += 2
+              elif depth and source.startswith('/-', i):
+                  depth += 1
+                  i += 2
+              elif depth and source.startswith('-/', i):
+                  depth -= 1
+                  i += 2
+              elif depth:
+                  i += 1
+              elif source.startswith('--', i):
+                  j = source.find('\n', i)
+                  if j < 0:
+                      break
+                  code.append('\n')
+                  i = j + 1
+              else:
+                  code.append(source[i])
+                  i += 1
+          code = ''.join(code)
+          patterns = [
+              r'\bsorry\b',
+              r'\badmit\b',
+              r'\bsorryAx\b',
+              r'^\s*axiom\s',
+              r'^\s*opaque\s',
+              r'^\s*unsafe\s',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          hits = []
+          for pattern in patterns:
+              for match in re.finditer(pattern, code, flags=re.MULTILINE):
+                  line = code.count('\n', 0, match.start()) + 1
+                  hits.append((pattern, line))
+          if hits:
+              for pattern, line in hits:
+                  print(f'forbidden executable token {pattern!r} at line {line}')
+              raise SystemExit(1)
+          print('executable source audit passed')
+          PY
+
+      - name: Install pinned Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lean --version | tee lean-version.log
+          lake env lean UnifiedMillenniumBraidExecutable.lean 2>&1 | tee lean-replay.log
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
+          grep -F 'MillenniumBraidUnified.unified_millennium_braid_executable' lean-replay.log
+          grep -F 'MillenniumBraidUnified.conditional_all_six_official_targets' lean-replay.log

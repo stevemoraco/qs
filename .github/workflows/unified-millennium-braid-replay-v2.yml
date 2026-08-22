@@ -1,0 +1,51 @@
+name: Unified Millennium braid pinned Lean replay v2
+
+on:
+  push:
+    branches:
+      - agent/unified-millennium-braid-replay-20260813-gpt56
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch exact source blob
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          expected=33862ea6467771f2521fd2359d1cfa5a29af1ee4
+          curl --fail --location --retry 5 \
+            "https://api.github.com/repos/stevemoraco/RH-Lean/git/blobs/$expected" \
+            | jq -r .content | base64 -d > UnifiedMillenniumBraidExecutable.lean
+          test "$(git hash-object UnifiedMillenniumBraidExecutable.lean)" = "$expected"
+
+      - name: Install Lean
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay
+        working-directory: verification/unified-millennium-braid
+        run: |
+          set -euo pipefail
+          lean --version
+          lake env lean UnifiedMillenniumBraidExecutable.lean 2>&1 | tee lean-replay.log
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
+          grep -F 'unified_millennium_braid_executable' lean-replay.log
