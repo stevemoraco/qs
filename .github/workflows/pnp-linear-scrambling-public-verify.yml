@@ -1,0 +1,100 @@
+name: PNP Linear Scrambling Finite Core
+
+on:
+  push:
+    branches:
+      - research/pnp-linear-scrambling-public-verifier-20260813
+    paths:
+      - 'verification/pnp-linear-scrambling/**'
+      - '.github/workflows/pnp-linear-scrambling-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-linear-scrambling/**'
+      - '.github/workflows/pnp-linear-scrambling-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/pnp-linear-scrambling
+          sha256sum "$root/PNPLinearScramblingFinite.lean" \
+                    "$root/verify_pnp_linear_scrambling_bounds.py" \
+            | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              "$root/PNPLinearScramblingFinite.lean"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay deterministic arithmetic audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/pnp-linear-scrambling
+          python3 --version | tee "$root/python-version.txt"
+          python3 "$root/verify_pnp_linear_scrambling_bounds.py" \
+            --min-log2-N 5 \
+            --max-log2-N 20 \
+            --output "$root/arithmetic-certificate.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/pnp-linear-scrambling/arithmetic-certificate.json')
+          data = json.loads(path.read_text())
+          assert data['all_separator_description_bounds_below_N2_over_4'] is True
+          assert data['all_union_bounds_strictly_below_one'] is True
+          assert len(data['rows']) == 16
+          print('verified_log2_N_cases=16')
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/pnp-linear-scrambling
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean PNPLinearScramblingFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite PNP linear-scrambling logical and arithmetic firewalls.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-linear-scrambling-finite-evidence
+          path: |
+            verification/pnp-linear-scrambling/source-sha256.txt
+            verification/pnp-linear-scrambling/python-version.txt
+            verification/pnp-linear-scrambling/arithmetic-certificate.json
+            verification/pnp-linear-scrambling/lean-version.txt
+            verification/pnp-linear-scrambling/lean-output.log
+          if-no-files-found: warn
