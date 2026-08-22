@@ -1,0 +1,58 @@
+name: NS Critical Morrey Spike Exponents Lean
+
+on:
+  push:
+    branches:
+      - agent/ns-critical-morrey-public-verifier-20260811
+    paths:
+      - 'verification/ns-critical-morrey/**'
+      - '.github/workflows/ns-critical-morrey-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-critical-morrey/**'
+      - '.github/workflows/ns-critical-morrey-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-critical-morrey/NSCriticalMorreySpikeExponents.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden placeholder or custom axiom found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/ns-critical-morrey
+          lake update
+          lake exe cache get
+          lake env lean NSCriticalMorreySpikeExponents.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite NS critical-Morrey exponent core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-critical-morrey-spike-exponents-lean-evidence
+          path: verification/ns-critical-morrey/lean-output.log
+          if-no-files-found: warn
