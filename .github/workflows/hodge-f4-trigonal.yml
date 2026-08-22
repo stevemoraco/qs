@@ -1,0 +1,71 @@
+name: Hodge F4 trigonal finite verifier
+
+on:
+  push:
+    branches:
+      - agent/hodge-f4-trigonal-public-verifier-20260813-gpt56pro
+  pull_request:
+    paths:
+      - 'verification/hodge-f4-trigonal/**'
+      - '.github/workflows/hodge-f4-trigonal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and custom result carriers
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/hodge-f4-trigonal/HodgeF4TrigonalBranchFinite.lean')
+          text = p.read_text()
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          for pattern in [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|opaque)\b',
+              r'\bsorryAx\b',
+              r'\bunsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]:
+              m = re.search(pattern, stripped, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden proof device: {m.group(0)!r}')
+          PY
+
+      - name: Build exact finite source
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          cd verification/hodge-f4-trigonal
+          lake update
+          lake exe cache get
+          lake build HodgeF4Trigonal 2>&1 | tee lean-output.log
+          lake env lean HodgeF4TrigonalBranchFinite.lean 2>&1 | tee -a lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'forbidden placeholder axiom found in compiler output' >&2
+            exit 1
+          fi
+          sha256sum HodgeF4TrigonalBranchFinite.lean | tee source.sha256
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-f4-trigonal-lean-evidence
+          path: |
+            verification/hodge-f4-trigonal/lean-output.log
+            verification/hodge-f4-trigonal/source.sha256
+          if-no-files-found: warn
