@@ -1,0 +1,97 @@
+name: Hodge q1 a7 multi-root finite-core replay
+
+on:
+  push:
+    branches:
+      - verification/hodge-q1a7-multiroot-20260814-run14
+  pull_request:
+    paths:
+      - 'verification/hodge-q1a7-multiroot/R3Q1A7MultiRootFiniteCore.lean'
+      - '.github/workflows/hodge-q1a7-multiroot-run14.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=verification/hodge-q1a7-multiroot/R3Q1A7MultiRootFiniteCore.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$SRC"; then
+            echo 'Explicit proof hole found' >&2
+            exit 1
+          fi
+          if grep -nE '^[[:space:]]*(axiom|opaque|unsafe)\b|\bnative_decide\b|Lean\.ofReduceBool' "$SRC"; then
+            echo 'Forbidden trust escape found' >&2
+            exit 1
+          fi
+          test "$(grep -c '^#print axioms ' "$SRC")" = 12
+
+      - name: Execute exact source with AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/hodge-q1a7-multiroot/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          srcp = pathlib.Path('verification/hodge-q1a7-multiroot/R3Q1A7MultiRootFiniteCore.lean')
+          out = pathlib.Path('verification/hodge-q1a7-multiroot/evidence')
+          src = srcp.read_text()
+          payload = json.dumps({
+              'content': src,
+              'environment': 'lean-4.30.0',
+              'ignore_imports': True,
+              'mathlib_options': False,
+              'timeout_seconds': 600,
+          }).encode()
+          req = urllib.request.Request(
+              'https://axle.axiommath.ai/api/v1/check',
+              data=payload,
+              headers={'Content-Type':'application/json'},
+              method='POST')
+          with urllib.request.urlopen(req, timeout=660) as response:
+              result = json.load(response)
+          (out/'axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          lean = result.get('lean_messages', {})
+          tool = result.get('tool_messages', {})
+          bad = (
+              not result.get('okay')
+              or bool(result.get('failed_declarations', []))
+              or bool(lean.get('errors', []))
+              or bool(lean.get('warnings', []))
+              or bool(tool.get('errors', []))
+              or bool(tool.get('warnings', []))
+              or 'sorryAx' in json.dumps(result)
+              or 'Lean.ofReduceBool' in json.dumps(result)
+          )
+          if bad:
+              raise SystemExit('AXLE/Lean failed, warned, or used forbidden trust')
+          PY
+
+      - name: Record exact source identity
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p verification/hodge-q1a7-multiroot/evidence
+          sha256sum verification/hodge-q1a7-multiroot/R3Q1A7MultiRootFiniteCore.lean \
+            | tee verification/hodge-q1a7-multiroot/evidence/source-sha256.txt
+          echo "commit=${GITHUB_SHA}" \
+            | tee verification/hodge-q1a7-multiroot/evidence/commit.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-q1a7-multiroot-evidence
+          path: verification/hodge-q1a7-multiroot/evidence/
+          if-no-files-found: error
