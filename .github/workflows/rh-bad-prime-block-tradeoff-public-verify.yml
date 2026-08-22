@@ -1,0 +1,256 @@
+name: RH bad-prime block public Lean replay
+
+on:
+  push:
+    branches:
+      - verification/rh-bad-prime-block-tradeoff-public-replay-20260813
+    paths:
+      - 'verification/rh-bad-prime-block-tradeoff/**'
+      - '.github/workflows/rh-bad-prime-block-tradeoff-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-bad-prime-block-tradeoff/**'
+      - '.github/workflows/rh-bad-prime-block-tradeoff-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify byte-identical canonical source blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='verification/rh-bad-prime-block-tradeoff'
+          while read -r file expected; do
+            actual=$(git hash-object "$root/$file")
+            echo "$file canonical RH-Lean blob: $expected"
+            echo "$file public verifier blob:   $actual"
+            test "$actual" = "$expected"
+          done <<'EOF'
+          RHBadPrimeBlockTradeoff.lean f49f3ad9e02a8390ab10d2e765471d45b04506fe
+          RHBadPrimeMomentTradeoff.lean 301c90b3b52dd2a7840205c70acf01bb2a58f3b9
+          RHRootPrefixBlockTransfer.lean 9f8b2f0c075505b788165e46d84ba71a8006983e
+          RHRootPrefixHilbertEnergyFinite.lean 00494a772aa37c2bba5054da3a03a62192d3338f
+          RHDyadicRootHilbertTransferFinite.lean 33d099731a6c0cfd6b30b1df26eada0a3596213b
+          RHSingleDampedCriterionFinite.lean a9a9e112bc93c30b4e19f6c53bf5d507e061b497
+          RHConcavePhaseCriterionFinite.lean cb26e2c2963b8d9eadcbcd4152901e958291337a
+          EOF
+
+      - name: Reject placeholders and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root = pathlib.Path('verification/rh-bad-prime-block-tradeoff')
+          files = [
+              root / 'RHBadPrimeBlockTradeoff.lean',
+              root / 'RHBadPrimeMomentTradeoff.lean',
+              root / 'RHRootPrefixBlockTransfer.lean',
+              root / 'RHRootPrefixHilbertEnergyFinite.lean',
+              root / 'RHDyadicRootHilbertTransferFinite.lean',
+              root / 'RHSingleDampedCriterionFinite.lean',
+              root / 'RHConcavePhaseCriterionFinite.lean',
+          ]
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for path in files:
+              text = path.read_text()
+              stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+              for pattern in patterns:
+                  match = re.search(pattern, stripped, flags=re.M)
+                  if match:
+                      raise SystemExit(
+                          f'{path}: forbidden declaration: {match.group(0)!r}'
+                      )
+          PY
+
+      - name: Install exact Lean and Mathlib pins, compile, and audit axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root='verification/rh-bad-prime-block-tradeoff'
+          lean --version | tee "$root/toolchain.log"
+          lake --version | tee -a "$root/toolchain.log"
+          cd "$root"
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.log
+          sha256sum \
+            RHBadPrimeBlockTradeoff.lean \
+            RHBadPrimeMomentTradeoff.lean \
+            RHRootPrefixBlockTransfer.lean \
+            RHRootPrefixHilbertEnergyFinite.lean \
+            RHDyadicRootHilbertTransferFinite.lean \
+            RHSingleDampedCriterionFinite.lean \
+            RHConcavePhaseCriterionFinite.lean \
+            | tee source-sha256.log
+          : > lean-output.log
+          for file in \
+            RHBadPrimeBlockTradeoff.lean \
+            RHBadPrimeMomentTradeoff.lean \
+            RHRootPrefixBlockTransfer.lean \
+            RHRootPrefixHilbertEnergyFinite.lean \
+            RHDyadicRootHilbertTransferFinite.lean \
+            RHSingleDampedCriterionFinite.lean \
+            RHConcavePhaseCriterionFinite.lean
+          do
+            echo "=== $file ===" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import pathlib, re
+          out = pathlib.Path('lean-output.log').read_text()
+          namespaces = {
+              'RHBadPrimeBlockTradeoff': [
+                  'persistence_exponent_identity',
+                  'guth_maynard_improves_huxley',
+                  'guth_maynard_window_admissible',
+                  'dirichlet_block_exponent_identity',
+                  'dirichlet_block_exponent_positive',
+                  'symmetric_window_identity',
+                  'symmetric_window_guth_maynard',
+                  'symmetric_depth_stronger',
+                  'symmetric_dirichlet_exponent_identity',
+                  'symmetric_positive_choice',
+                  'exact_subwindow_fits',
+                  'exact_subwindow_guth_maynard',
+                  'exact_subwindow_depth_stronger',
+                  'exact_subwindow_dirichlet_exponent',
+                  'escape_depth_dominates',
+                  'counting_dimension_positive',
+              ],
+              'RHBadPrimeMomentTradeoff': [
+                  'moment_block_exponent_identity',
+                  'moment_block_exponent_positive',
+                  'moment_upper_margin_positive',
+                  'unit_block_moment_exponent_identity',
+                  'unit_block_moment_positive',
+                  'local_moment_exponent_identity',
+                  'quadratic_block_exponent_identity',
+                  'quadratic_unit_block_exponent_identity',
+                  'moment_frontier_strict',
+                  'moment_depth_positive',
+              ],
+              'RHRootPrefixBlockTransfer': [
+                  'root_negPart_dominates_clamp',
+                  'positive_factor_sign',
+                  'factorized_negative_depth',
+                  'rightmost_exponent_shift',
+                  'bad_depth_blocks_escape',
+                  'one_third_loss_contains_exact_window',
+                  'one_third_loss_retains_depth',
+                  'square_root_factor_exponent',
+              ],
+              'RHRootPrefixHilbertEnergyFinite': [
+                  'hilbert_block_exponent_identity',
+                  'hilbert_block_exponent_positive',
+                  'hilbert_upper_margin_positive',
+                  'factor_square_lower',
+                  'factor_square_upper',
+                  'factorized_denominator_exponent',
+                  'quadratic_frontier_scale',
+                  'hilbert_line_gap_positive',
+                  'rh_all_positive_lines',
+              ],
+              'RHDyadicRootHilbertTransferFinite': [
+                  'contraction_inverse_bound',
+                  'finite_geometric_transfer',
+                  'hardy_complete_square',
+                  'unit_trace_pointwise',
+                  'unit_trace_constant',
+                  'sample_square_split',
+                  'square_gap_energy_domination',
+                  'prime_power_tail_exponent',
+                  'dyadic_norm_exponent_identity',
+                  'dyadic_norm_exponent_negative',
+              ],
+              'RHSingleDampedCriterionFinite': [
+                  'fixed_damped_block_margin',
+                  'fixed_damped_block_exponent_identity',
+                  'factorized_fixed_weight_lower',
+                  'factorized_fixed_weight_upper',
+                  'hardy_weight_product',
+                  'dyadic_fixed_weight_margin',
+                  'single_series_criterion',
+                  'logarithmic_hardy_denominator_shift',
+                  'choose_fixed_damped_loss',
+              ],
+              'RHConcavePhaseCriterionFinite': [
+                  'phase_hardy_product_le_one',
+                  'power_phase_compensation_exponent',
+                  'square_root_phase_compensation',
+                  'near_linear_power_compensation',
+                  'near_power_derivative_algebra',
+                  'phase_block_margin',
+                  'power_phase_denominator_identity',
+                  'phase_derivative_square_positive',
+                  'bounded_transfer_forward',
+                  'transferred_single_series_criterion',
+              ],
+          }
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          for namespace, names in namespaces.items():
+              for name in names:
+                  pattern = (
+                      rf"{namespace}\.{name}' depends on axioms: "
+                      rf"\[([^\]]*)\]"
+                  )
+                  match = re.search(pattern, out)
+                  if not match:
+                      raise SystemExit(
+                          f'missing axiom report for {namespace}.{name}'
+                      )
+                  actual = {
+                      item.strip()
+                      for item in match.group(1).split(',')
+                      if item.strip()
+                  }
+                  unexpected = actual - allowed
+                  if unexpected:
+                      raise SystemExit(
+                          f'unexpected axioms for {namespace}.{name}: '
+                          f'{sorted(unexpected)}'
+                      )
+                  print(
+                      f'{namespace}.{name}: accepted axioms {sorted(actual)}'
+                  )
+          PY
+          test -s source-sha256.log
+          test -s mathlib-commit.log
+          echo 'VERIFIED RH block, moment, root, Hilbert, transfer, fixed-damping, and concave-phase finite cores.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-bad-prime-block-public-verification-evidence
+          path: |
+            verification/rh-bad-prime-block-tradeoff/lean-output.log
+            verification/rh-bad-prime-block-tradeoff/source-sha256.log
+            verification/rh-bad-prime-block-tradeoff/toolchain.log
+            verification/rh-bad-prime-block-tradeoff/mathlib-commit.log
+          if-no-files-found: warn
