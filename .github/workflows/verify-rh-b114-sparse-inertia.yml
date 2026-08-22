@@ -1,0 +1,46 @@
+name: Verify RH B114 sparse inertia core
+
+on:
+  push:
+    branches:
+      - verification/rh-b114-sparse-inertia-grid-20260814-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='verification/rh-b114/RHB114SparseInertiaGridFinite.lean'
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            exit 1
+          fi
+      - name: AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, time, urllib.request
+          api='https://lean-compile-farm.replit.app/api'
+          src=pathlib.Path('verification/rh-b114/RHB114SparseInertiaGridFinite.lean').read_text()
+          req=urllib.request.Request(api+'/compile',data=json.dumps({'name':'rh-b114-sparse-inertia-grid','lean_source':src}).encode(),headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=120) as r: job=json.load(r)
+          jid=job['id']; print('job',jid,flush=True)
+          for i in range(150):
+              time.sleep(8)
+              with urllib.request.urlopen(api+'/jobs/'+jid,timeout=120) as r: job=json.load(r)
+              print(i,job.get('status'),job.get('verdict'),flush=True)
+              if job.get('status') in ('done','failed'):
+                  print(json.dumps(job,indent=2),flush=True)
+                  ok=(job.get('status')=='done' and job.get('verdict')=='VERIFIED' and job.get('sorry_count')==0)
+                  raise SystemExit(0 if ok else 1)
+          raise SystemExit('timeout')
+          PY
