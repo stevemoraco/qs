@@ -1,0 +1,67 @@
+name: NS first-hitting log-tail finite firewall Lean
+
+on:
+  push:
+    branches:
+      - agent/ns-first-hitting-log-tail-public-verifier-20260812
+    paths:
+      - 'verification/ns-first-hitting-log-tail/**'
+      - '.github/workflows/ns-first-hitting-log-tail-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ns-first-hitting-log-tail/**'
+      - '.github/workflows/ns-first-hitting-log-tail-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ns-first-hitting-log-tail/NSFirstHittingLogTail.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ns-first-hitting-log-tail/toolchain.log
+          lake --version | tee -a verification/ns-first-hitting-log-tail/toolchain.log
+          cd verification/ns-first-hitting-log-tail
+          lake update
+          lake exe cache get
+          lake env lean NSFirstHittingLogTail.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          test -s lean-output.log
+          sha256sum NSFirstHittingLogTail.lean lean-output.log toolchain.log \
+            | tee evidence-sha256.txt
+          echo 'VERIFIED finite NS first-hitting/log-tail scalar firewall.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-first-hitting-log-tail-lean-evidence
+          path: |
+            verification/ns-first-hitting-log-tail/NSFirstHittingLogTail.lean
+            verification/ns-first-hitting-log-tail/lean-output.log
+            verification/ns-first-hitting-log-tail/toolchain.log
+            verification/ns-first-hitting-log-tail/evidence-sha256.txt
+          if-no-files-found: error
