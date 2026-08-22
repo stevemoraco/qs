@@ -1,0 +1,40 @@
+{
+  "content": "import Mathlib\n\n/-!\nFinite real-algebra firewall for RH #953 / C70B Theorem B3.\n\nThe parent local Cauchy bound carries a zero-order factor `M` at every vertex.\nThis file checks an exact scalar instance where the printed profile gate\n`m * lambda < 1` passes but the actual ratio after an unpaid zero-order factor,\n`m * M * lambda`, is bigger than one.\n\nIt does not formalize Kirk's rooted norm, source trees, convergence of the full\nconstructive expansion, OS reconstruction, Yang--Mills mass gap, or any Clay\nstatement.\n-/\n\nnamespace YMC70ZeroOrderEnvelopeFirewall\n\n/-- The local holomorphy cap is satisfied for sigma=1/2 and a=1. -/\ntheorem localHolomorphyGate :\n    (1 / 2 : \u211d) * 1 < 1 := by\n  norm_num\n\n/-- C70B/B3's displayed geometric profile gate passes strictly for m=1/4,\nlambda=2. -/\ntheorem printedProfileGate :\n    (1 / 4 : \u211d) * (1 / (1 - (1 / 2 : \u211d) * 1)) < 1 := by\n  norm_num\n\n/-- The displayed profile ratio is exactly one half. -/\ntheorem printedRatio_eq_half :\n    (1 / 4 : \u211d) * (1 / (1 - (1 / 2 : \u211d) * 1)) = 1 / 2 := by\n  norm_num\n\n/-- B1's unpaid zero-order envelope M=3 reverses the geometric conclusion. -/\ntheorem unpaidZeroOrderRatio :\n    1 < (1 / 4 : \u211d) * 3 * (1 / (1 - (1 / 2 : \u211d) * 1)) := by\n  norm_num\n\n/-- The actual size-layer ratio is exactly three halves. -/\ntheorem actualRatio_eq_threeHalves :\n    (1 / 4 : \u211d) * 3 * (1 / (1 - (1 / 2 : \u211d) * 1)) = 3 / 2 := by\n  norm_num\n\n/-- If the zero-order envelope has already been normalized below one,\nthen multiplying by it cannot make a nonnegative geometric ratio worse. -/\ntheorem normalizedZeroOrder_safe\n    {m0 M0 lam0 : \u211d}\n    (hm0 : 0 \u2264 m0)\n    (hM1 : M0 \u2264 1)\n    (hlam0 : 0 \u2264 lam0)\n    (hgate : m0 * lam0 < 1) :\n    m0 * M0 * lam0 < 1 := by\n  have hmul : m0 * M0 \u2264 m0 * 1 :=\n    mul_le_mul_of_nonneg_left hM1 hm0\n  have hle : m0 * M0 * lam0 \u2264 (m0 * 1) * lam0 :=\n    mul_le_mul_of_nonneg_right hmul hlam0\n  have hle' : m0 * M0 * lam0 \u2264 m0 * lam0 := by\n    simpa using hle\n  exact lt_of_le_of_lt hle' hgate\n\n#print axioms localHolomorphyGate\n#print axioms printedProfileGate\n#print axioms printedRatio_eq_half\n#print axioms unpaidZeroOrderRatio\n#print axioms actualRatio_eq_threeHalves\n#print axioms normalizedZeroOrder_safe\n\nend YMC70ZeroOrderEnvelopeFirewall\n\n",
+  "failed_declarations": [],
+  "info": {
+    "_executor_artifact_sha256": "3a1615adeeb17493066f17e7dc475862f9312e793060b296dfd1fb8b72faae92",
+    "_executor_commit_sha": "c7ff197",
+    "_executor_docker_image_id": "sha256:8c1dafc5e514f26944925383401c14fd48333d1dd9a2c77336e820c1b1e239b7",
+    "cached_response": false,
+    "environment": "lean-4.30.0",
+    "environment_pool_size": 64,
+    "environment_total_time_us": 215242,
+    "environment_wait_time_us": 10,
+    "execution_time_ms": 218,
+    "queue_time_ms": 4,
+    "request_id": "c341151a-17f3-4721-9e84-23cb552e4b20",
+    "total_request_time_ms": 223
+  },
+  "lean_messages": {
+    "errors": [],
+    "infos": [
+      "-:61:0-61:6: info: 'YMC70ZeroOrderEnvelopeFirewall.localHolomorphyGate' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "-:62:0-62:6: info: 'YMC70ZeroOrderEnvelopeFirewall.printedProfileGate' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "-:63:0-63:6: info: 'YMC70ZeroOrderEnvelopeFirewall.printedRatio_eq_half' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "-:64:0-64:6: info: 'YMC70ZeroOrderEnvelopeFirewall.unpaidZeroOrderRatio' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "-:65:0-65:6: info: 'YMC70ZeroOrderEnvelopeFirewall.actualRatio_eq_threeHalves' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "-:66:0-66:6: info: 'YMC70ZeroOrderEnvelopeFirewall.normalizedZeroOrder_safe' depends on axioms: [propext, Classical.choice, Quot.sound]\n"
+    ],
+    "warnings": []
+  },
+  "okay": true,
+  "timings": {
+    "parse_ms": 171,
+    "total_ms": 172
+  },
+  "tool_messages": {
+    "errors": [],
+    "infos": [],
+    "warnings": []
+  }
+}
