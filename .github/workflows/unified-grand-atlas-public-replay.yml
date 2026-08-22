@@ -1,0 +1,77 @@
+name: Unified grand atlas public replay
+
+on:
+  push:
+    branches:
+      - agent/unified-grand-executable-atlas-v3-20260813
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-grand-atlas-public-replay.yml'
+  pull_request:
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-grand-atlas-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit source text
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=verification/unified-millennium-braid
+          for file in \
+            "$dir/UnifiedMillenniumBraidStandalone.lean" \
+            "$dir/MillenniumGrandExecutableAtlasStandalone.lean"; do
+            if grep -En '^[[:space:]]*(s[o]rry|a[d]mit|a[x]iom|o[p]aque|u[n]safe)([^[:alnum:]_]|$)' "$file"; then
+              echo "Rejected trust escape in $file" >&2
+              exit 1
+            fi
+            git hash-object "$file"
+          done
+
+      - name: Install pinned Lean and compile both roots
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          dir=verification/unified-millennium-braid
+          lean --version | tee "$dir/atlas-lean-version.txt"
+          lake --version | tee "$dir/atlas-lake-version.txt"
+          cd "$dir"
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee atlas-mathlib-commit.txt
+          lake exe cache get
+          lake env lean UnifiedMillenniumBraidStandalone.lean 2>&1 | tee atlas-base-output.log
+          lake env lean MillenniumGrandExecutableAtlasStandalone.lean 2>&1 | tee atlas-output.log
+          if grep -Eq 's[o]rryAx|a[d]mit|Lean\.ofReduceBool' atlas-base-output.log atlas-output.log; then
+            echo 'Rejected dependency in compiler output' >&2
+            exit 1
+          fi
+          grep -F 'MILLENNIUM_GRAND_ATLAS_PUBLIC_EXECUTABLE: replay' atlas-output.log
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-grand-atlas-public-evidence
+          path: |
+            verification/unified-millennium-braid/atlas-lean-version.txt
+            verification/unified-millennium-braid/atlas-lake-version.txt
+            verification/unified-millennium-braid/atlas-mathlib-commit.txt
+            verification/unified-millennium-braid/atlas-base-output.log
+            verification/unified-millennium-braid/atlas-output.log
+            verification/unified-millennium-braid/UnifiedMillenniumBraidStandalone.lean
+            verification/unified-millennium-braid/MillenniumGrandExecutableAtlasStandalone.lean
+          if-no-files-found: warn
