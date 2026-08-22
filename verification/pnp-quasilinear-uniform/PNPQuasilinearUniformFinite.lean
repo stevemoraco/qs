@@ -1,0 +1,9 @@
+import UnifiedMillenniumBraid
+
+#check Millennium.UnifiedExecutableBraid.exactBank
+#check Millennium.UnifiedExecutableBraid.nativePackage_nonempty_iff_allSix
+#check Millennium.UnifiedExecutableBraid.unifiedMillenniumBraidExecutable
+
+#print axioms Millennium.UnifiedExecutableBraid.exactBank
+#print axioms Millennium.UnifiedExecutableBraid.nativePackage_nonempty_iff_allSix
+#print axioms Millennium.UnifiedExecutableBraid.unifiedMillenniumBraidExecutable
