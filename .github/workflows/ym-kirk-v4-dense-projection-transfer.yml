@@ -1,0 +1,86 @@
+name: Yang-Mills Kirk v4 dense projection transfer
+
+on:
+  push:
+    branches:
+      - ym-kirk-v4-source-access-20260814
+    paths:
+      - 'verification/ym-kirk-v4-density-transfer/**'
+      - '.github/workflows/ym-kirk-v4-dense-projection-transfer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('verification/ym-kirk-v4-density-transfer/DenseProjectionTransfer.lean')
+          s = p.read_text()
+          s = re.sub(r'/-.*?-/', '', s, flags=re.S)
+          s = re.sub(r'--.*$', '', s, flags=re.M)
+          forbidden = [
+              r'\bsorry\b', r'\badmit\b', r'\bsorryAx\b',
+              r'(?m)^\s*(?:axiom|constant|opaque|unsafe)\b',
+              r'\bnative_decide\b', r'Lean\.ofReduceBool'
+          ]
+          for pattern in forbidden:
+              if re.search(pattern, s):
+                  raise SystemExit(f'forbidden token: {pattern}')
+          print('trust scan passed')
+          PY
+          sha256sum verification/ym-kirk-v4-density-transfer/DenseProjectionTransfer.lean \
+            | tee source.sha256
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        working-directory: verification/ym-kirk-v4-density-transfer
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.txt
+          lake update
+          lake exe cache get
+
+      - name: Fresh kernel replay and axiom audit
+        shell: bash
+        working-directory: verification/ym-kirk-v4-density-transfer
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake env lean -DwarningAsError=true DenseProjectionTransfer.lean \
+            2>&1 | tee lean-output.txt
+          ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' lean-output.txt
+          test "$(grep -c 'continuousLinearMap_eq_zero_of_dense' lean-output.txt)" -eq 1
+          grep -Eq "depends on axioms: \[(propext, )?(Classical.choice, )?Quot.sound\]|does not depend on any axioms" lean-output.txt
+
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-kirk-v4-dense-projection-transfer-replay
+          path: |
+            verification/ym-kirk-v4-density-transfer/DenseProjectionTransfer.lean
+            verification/ym-kirk-v4-density-transfer/lakefile.toml
+            verification/ym-kirk-v4-density-transfer/lean-toolchain
+            verification/ym-kirk-v4-density-transfer/lean-version.txt
+            verification/ym-kirk-v4-density-transfer/lean-output.txt
+            source.sha256
+          if-no-files-found: warn
