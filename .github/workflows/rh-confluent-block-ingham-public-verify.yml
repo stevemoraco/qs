@@ -1,0 +1,84 @@
+name: RH Confluent Block Ingham Finite Core
+
+on:
+  push:
+    branches:
+      - research/rh-confluent-block-ingham-public-verifier-20260812
+    paths:
+      - 'verification/rh-confluent-block-ingham/**'
+      - '.github/workflows/rh-confluent-block-ingham-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-confluent-block-ingham/**'
+      - '.github/workflows/rh-confluent-block-ingham-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject Lean placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum \
+            verification/rh-confluent-block-ingham/RHConfluentBlockInghamFinite.lean \
+            verification/rh-confluent-block-ingham/verify_confluent_block_ingham.py \
+            | tee verification/rh-confluent-block-ingham/source-sha256.txt
+          file=verification/rh-confluent-block-ingham/RHConfluentBlockInghamFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay exact finite confluent spectra
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 --version | tee verification/rh-confluent-block-ingham/python-version.txt
+          python3 -m pip install --disable-pip-version-check --no-input 'numpy==2.3.2'
+          python3 verification/rh-confluent-block-ingham/verify_confluent_block_ingham.py \
+            | tee verification/rh-confluent-block-ingham/spectral-replay.json
+          grep -q '"all_checks_pass": true' \
+            verification/rh-confluent-block-ingham/spectral-replay.json
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/rh-confluent-block-ingham/lean-version.txt
+          lake --version | tee -a verification/rh-confluent-block-ingham/lean-version.txt
+          cd verification/rh-confluent-block-ingham
+          lake update
+          lake exe cache get
+          lake env lean RHConfluentBlockInghamFinite.lean > lean-output.log 2>&1
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite RH confluent block firewalls and spectral replay.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-confluent-block-ingham-finite-evidence
+          path: |
+            verification/rh-confluent-block-ingham/source-sha256.txt
+            verification/rh-confluent-block-ingham/python-version.txt
+            verification/rh-confluent-block-ingham/spectral-replay.json
+            verification/rh-confluent-block-ingham/lean-version.txt
+            verification/rh-confluent-block-ingham/lean-output.log
+          if-no-files-found: warn
