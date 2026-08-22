@@ -1,0 +1,57 @@
+name: Kirk v4 load-bearing spine audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/kirk-v4-load-bearing-spine-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: read
+
+jobs:
+  spine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin and extract immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact load-bearing spine contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          targets=[
+            'Theorem 6.39','Theorem 6.43','Theorem 6.44',
+            'Proposition 8.21','Theorem 8.24','Theorem 8.26','Lemma 8.41',
+            'Theorem 10.2','Theorem 10.4','Theorem 10.5','Lemma 10.6','Corollary 10.7',
+            'Appendix F','dependency map','SI–6','SI–6B','SI–7M','SI-6','SI-6B','SI-7M',
+            'finite interval','first crossing','matching length','m_E','m⋆','m_star'
+          ]
+          out=[]; low=text.lower()
+          for target in targets:
+            start=0
+            for hit in range(12):
+              i=low.find(target.lower(),start)
+              if i<0: break
+              s=' '.join(text[max(0,i-1800):min(len(text),i+4800)].split())
+              out.append(f'=== {target} hit {hit+1} ===\n{s}\n')
+              start=i+len(target)
+          Path('kirk_v4_load_bearing_spine.txt').write_text('\n'.join(out),encoding='utf-8')
+          print('\n'.join(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-load-bearing-spine
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_load_bearing_spine.txt
