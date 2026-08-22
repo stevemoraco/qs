@@ -1,0 +1,60 @@
+name: YM Scale Core Replay
+
+on:
+  push:
+    branches:
+      - verification/ym-scale-core-20260813
+  pull_request:
+    paths:
+      - 'verification/ym-scale-core/**'
+      - '.github/workflows/ym-scale-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/ym-scale-core'
+          file="$dir/YMScaleCore.lean"
+          git hash-object "$file" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then exit 1; fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then exit 1; fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then exit 1; fi
+      - name: Compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$GITHUB_WORKSPACE/verification/ym-scale-core"
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.30.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd formal/millennium_audit
+          lake update
+          lake exe cache get
+          lake env lean ../../verification/ym-scale-core/YMScaleCore.lean \
+            2>&1 | tee "$dir/lean-output.log"
+          for theorem in quotient_exceeds_target linear_rate_quotient exists_small_scale; do
+            grep -q "$theorem" "$dir/lean-output.log"
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' "$dir/lean-output.log"; then exit 1; fi
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-scale-core-evidence
+          path: |
+            verification/ym-scale-core/source-blob.txt
+            verification/ym-scale-core/source-sha256.txt
+            verification/ym-scale-core/lean-version.txt
+            verification/ym-scale-core/lean-output.log
