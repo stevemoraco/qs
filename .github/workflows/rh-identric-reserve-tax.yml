@@ -1,0 +1,78 @@
+name: RH identric reserve-tax public replay
+
+on:
+  push:
+    branches:
+      - agent/rh-identric-reserve-tax-public-verify-20260813
+    paths:
+      - 'verification/rh-identric-reserve-tax/**'
+      - '.github/workflows/rh-identric-reserve-tax.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-identric-reserve-tax/**'
+      - '.github/workflows/rh-identric-reserve-tax.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='verification/rh-identric-reserve-tax/RHIdentricReserveTax.lean'
+          python3 - <<'PY'
+          import pathlib, re
+          path = pathlib.Path('verification/rh-identric-reserve-tax/RHIdentricReserveTax.lean')
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b', r'\bsorryAx\b',
+              r'^\s*(axiom|opaque|unsafe)\b',
+              r'\bnative_decide\b', r'Lean\.ofReduceBool'
+          ]
+          for pattern in patterns:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden trust token: {m.group(0)!r}')
+          PY
+          sha256sum "$file"
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/rh-identric-reserve-tax
+          lake update
+          lake exe cache get
+          lake env lean RHIdentricReserveTax.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool|error:' lean-output.log; then
+            echo 'Compiler or trust failure found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED RH identric reserve-tax finite core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-identric-reserve-tax-public-evidence
+          path: |
+            verification/rh-identric-reserve-tax/lean-output.log
+            lean-version.log
+            lake-version.log
+          if-no-files-found: warn
