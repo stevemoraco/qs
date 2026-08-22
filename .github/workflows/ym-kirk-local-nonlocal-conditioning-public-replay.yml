@@ -1,0 +1,101 @@
+name: YM Kirk local/nonlocal conditioning public replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-kirk-local-nonlocal-conditioning/**'
+      - '.github/workflows/ym-kirk-local-nonlocal-conditioning-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            verification/ym-kirk-local-nonlocal-conditioning/KirkV4LocalNonlocalConditioningFirewall.lean
+            verification/ym-kirk-local-nonlocal-conditioning/KirkV4FixedLocalNormRepair.lean
+          )
+          for file in "${files[@]}"; do
+            if grep -nE '\b(sorry|admit|sorryAx|native_decide|Lean\.ofReduceBool)\b|^[[:space:]]*(axiom|opaque|unsafe)\b' "$file"; then
+              echo "Forbidden proof escape found in $file"
+              exit 1
+            fi
+            sha256sum "$file"
+          done
+
+      - name: Submit both sources to Lean compile farm
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          files = [
+              pathlib.Path('verification/ym-kirk-local-nonlocal-conditioning/KirkV4LocalNonlocalConditioningFirewall.lean'),
+              pathlib.Path('verification/ym-kirk-local-nonlocal-conditioning/KirkV4FixedLocalNormRepair.lean'),
+          ]
+
+          def read_json(request_or_url, attempts=12, timeout=120):
+              last = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=timeout) as response:
+                          return json.load(response)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as error:
+                      last = error
+                      time.sleep(min(5 * attempt, 60))
+              raise RuntimeError(f'compile-farm retry budget exhausted: {last}')
+
+          for path in files:
+              request = urllib.request.Request(
+                  f'{API}/compile',
+                  data=json.dumps({
+                      'name': path.stem,
+                      'lean_source': path.read_text(),
+                  }).encode(),
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              job = read_json(request)
+              job_id = job['id']
+              print(path.name, 'job', job_id, flush=True)
+
+              for poll in range(180):
+                  time.sleep(20)
+                  try:
+                      job = read_json(f'{API}/jobs/{job_id}', attempts=4, timeout=120)
+                  except RuntimeError as error:
+                      print(f'{path.name} poll {poll}: transient failure: {error}', flush=True)
+                      continue
+                  print(
+                      f"{path.name} poll {poll}: {job.get('status')} {job.get('verdict')}",
+                      flush=True,
+                  )
+                  if job.get('status') in ('done', 'failed'):
+                      print(json.dumps(job, indent=2), flush=True)
+                      if job.get('verdict') != 'VERIFIED':
+                          raise SystemExit(1)
+                      if job.get('sorry_count') != 0:
+                          raise SystemExit(1)
+                      if job.get('failed_declarations') not in (None, []):
+                          raise SystemExit(1)
+                      break
+              else:
+                  raise SystemExit(f'{path.name}: compile farm timed out')
+          PY
