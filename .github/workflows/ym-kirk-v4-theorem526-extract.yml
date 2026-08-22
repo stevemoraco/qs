@@ -1,0 +1,45 @@
+name: YM Kirk v4 theorem 5.26 extract
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then sudo apt-get update && sudo apt-get install -y poppler-utils; fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract theorem 5.26
+        run: |
+          pdftotext -raw kirk_latest.pdf latest_raw.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('latest_raw.txt').read_text(encoding='utf-8',errors='replace')
+          marker='Theorem 5.26 ('
+          i=text.find(marker)
+          if i<0: raise SystemExit('Theorem 5.26 not found')
+          j=text.find('Theorem 5.27 (',i+1)
+          if j<0: j=min(len(text),i+16000)
+          Path('source_audit/kirk_v4/local_root_source_radius/THEOREM_5_26.txt').write_text(text[i:j],encoding='utf-8')
+          print(text[i:min(j,i+6000)])
+          PY
+      - name: Commit extraction
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/local_root_source_radius/THEOREM_5_26.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve theorem 5.26 source transport context'
+          git push origin HEAD:verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
