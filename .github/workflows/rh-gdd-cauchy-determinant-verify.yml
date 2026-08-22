@@ -1,0 +1,108 @@
+name: RH GDD Cauchy Determinant Finite Core
+
+on:
+  push:
+    branches:
+      - research/rh-gdd-cauchy-determinant-public-verifier-20260812
+    paths:
+      - 'verification/rh-gdd-cauchy-determinant/**'
+      - '.github/workflows/rh-gdd-cauchy-determinant-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-gdd-cauchy-determinant/**'
+      - '.github/workflows/rh-gdd-cauchy-determinant-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-gdd-cauchy-determinant
+          sha256sum "$root/RHGDDCauchyDeterminantFinite.lean" \
+                    "$root/verify_gdd_cauchy_determinant.py" \
+            | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              "$root/RHGDDCauchyDeterminantFinite.lean"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay high-precision finite falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-gdd-cauchy-determinant
+          python3 --version | tee "$root/python-version.txt"
+          python3 -m pip install --disable-pip-version-check --no-input 'mpmath==1.3.0'
+          python3 "$root/verify_gdd_cauchy_determinant.py" \
+            --seed 260812 \
+            --precision 180 \
+            --tolerance-exponent 45 \
+            --output "$root/finite-certificate.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/rh-gdd-cauchy-determinant/finite-certificate.json')
+          data = json.loads(path.read_text())
+          assert data['case_count'] == 245
+          assert data['coalescent_case_count'] == 20
+          assert data['all_cases_verified'] is True
+          assert data['all_coalescent_cases_verified'] is True
+          print('verified_cluster_cases=', data['case_count'])
+          print('verified_coalescent_cases=', data['coalescent_case_count'])
+          print('maximum_transform_relative_error=', data['maximum_transform_relative_error'])
+          print('maximum_raw_cauchy_relative_error=', data['maximum_raw_cauchy_relative_error'])
+          print('maximum_gdd_determinant_relative_error=', data['maximum_gdd_determinant_relative_error'])
+          print('minimum_margin_over_spectral_floor=', data['minimum_margin_over_spectral_floor'])
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/rh-gdd-cauchy-determinant
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHGDDCauchyDeterminantFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite RH GDD determinant scalar and scope firewalls.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-gdd-cauchy-determinant-finite-evidence
+          path: |
+            verification/rh-gdd-cauchy-determinant/source-sha256.txt
+            verification/rh-gdd-cauchy-determinant/python-version.txt
+            verification/rh-gdd-cauchy-determinant/finite-certificate.json
+            verification/rh-gdd-cauchy-determinant/lean-version.txt
+            verification/rh-gdd-cauchy-determinant/lean-output.log
+          if-no-files-found: warn
