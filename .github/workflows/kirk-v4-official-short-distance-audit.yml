@@ -1,0 +1,76 @@
+name: Kirk v4 official short-distance audit
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/kirk-v4-official-short-distance-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: read
+
+jobs:
+  official-short-distance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable v4 source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Scan full text for official short-distance / operator interface
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          terms=[
+            'operator product expansion','operator product','OPE','stress tensor','stress-energy',
+            'energy-momentum','short-distance','short distance','asymptotic freedom','asymptotically free',
+            'perturbative renormalization','local singularities','prescribed local singularities',
+            'Wilson coefficient','Callan-Symanzik','beta function','two-loop','one-loop',
+            'background-field','renormalized local source','curvature-jet','local quantum field',
+            'Wightman','Osterwalder-Schrader','Theorem 8.46','Theorem 1.1'
+          ]
+          report={}; contexts=[]
+          low=text.lower()
+          for term in terms:
+            positions=[]; pos=0
+            while True:
+              i=low.find(term.lower(),pos)
+              if i<0: break
+              positions.append(i); pos=i+len(term)
+            report[term]={'count':len(positions),'positions':positions[:100]}
+            for n,i in enumerate(positions[:20],1):
+              contexts.append(f'=== {term} hit {n} @ {i} ===\n' +
+                ' '.join(text[max(0,i-1800):min(len(text),i+5000)].split())+'\n')
+          Path('kirk_v4_official_short_distance_counts.json').write_text(json.dumps(report,indent=2,sort_keys=True),encoding='utf-8')
+          Path('kirk_v4_official_short_distance_contexts.txt').write_text('\n'.join(contexts),encoding='utf-8')
+          print(json.dumps({k:v['count'] for k,v in report.items()},indent=2,sort_keys=True))
+          # Inventory theorem headings whose surrounding text contains the key interfaces.
+          heading_re=re.compile(r'(?m)^\s*(Lemma|Proposition|Theorem|Corollary|Definition)\s+(\d+\.\d+)\b.*$')
+          heads=list(heading_re.finditer(text))
+          selected=[]
+          keys=('short-distance','short distance','asymptotic','perturbative','stress','operator product','background-field','renormalized local')
+          for m in heads:
+            s=max(0,m.start()-1000); e=min(len(text),m.start()+8000); chunk=text[s:e]
+            if any(k in chunk.lower() for k in keys):
+              selected.append('=== '+' '.join(m.group(0).split())+' ===\n'+chunk)
+          Path('kirk_v4_short_distance_theorem_contexts.txt').write_text('\n\n'.join(selected),encoding='utf-8')
+          PY
+      - name: Preserve source-audit certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-official-short-distance-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            kirk_v4_official_short_distance_counts.json
+            kirk_v4_official_short_distance_contexts.txt
+            kirk_v4_short_distance_theorem_contexts.txt
