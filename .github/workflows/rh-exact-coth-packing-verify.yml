@@ -1,0 +1,121 @@
+name: RH Exact Coth Packing Finite Core
+
+on:
+  push:
+    branches:
+      - research/rh-exact-coth-packing-public-verifier-20260812
+    paths:
+      - 'verification/rh-exact-coth-packing/**'
+      - '.github/workflows/rh-exact-coth-packing-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-exact-coth-packing/**'
+      - '.github/workflows/rh-exact-coth-packing-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record source hashes and reject placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-exact-coth-packing
+          sha256sum "$root/RHExactCothPackingFinite.lean" \
+                    "$root/verify_exact_coth_packing.py" \
+            | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' \
+              "$root/RHExactCothPackingFinite.lean"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Replay deterministic coth-packing and selector falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-exact-coth-packing
+          python3 --version | tee "$root/python-version.txt"
+          python3 -m pip install --disable-pip-version-check --no-input \
+            'numpy==2.3.2' 'mpmath==1.3.0'
+          python3 "$root/verify_exact_coth_packing.py" \
+            --seed 260812 \
+            --tolerance 1e-9 \
+            --precision 80 \
+            --output "$root/finite-certificate.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('verification/rh-exact-coth-packing/finite-certificate.json')
+          data = json.loads(path.read_text())
+          assert data['packing_case_count'] == 480
+          assert data['lattice_identity_case_count'] == 16
+          assert data['extremal_case_count'] == 12
+          assert data['slab_case_count'] == 2000
+          assert data['cluster_gram_case_count'] == 72
+          assert data['external_product_case_count'] == 7488
+          required = [
+              'all_packing_cases_verified',
+              'all_sharp_bounds_below_parent',
+              'all_lattice_identities_verified',
+              'all_extremal_cases_verified',
+              'all_slab_cases_verified',
+              'all_cluster_gram_cases_verified',
+              'all_external_product_cases_verified',
+          ]
+          assert all(data[key] is True for key in required)
+          print('packing_cases=', data['packing_case_count'])
+          print('external_product_cases=', data['external_product_case_count'])
+          print('minimum_packing_margin=', data['minimum_packing_margin'])
+          print('maximum_lattice_identity_error=', data['maximum_lattice_identity_error'])
+          print('minimum_extremal_relative_gap=', data['minimum_extremal_relative_gap'])
+          print('minimum_cluster_eigenvalue=', data['minimum_cluster_eigenvalue'])
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/rh-exact-coth-packing
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHExactCothPackingFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          echo 'VERIFIED finite RH exact coth-packing scalar and type firewalls.'
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-exact-coth-packing-finite-evidence
+          path: |
+            verification/rh-exact-coth-packing/source-sha256.txt
+            verification/rh-exact-coth-packing/python-version.txt
+            verification/rh-exact-coth-packing/finite-certificate.json
+            verification/rh-exact-coth-packing/lean-version.txt
+            verification/rh-exact-coth-packing/lean-output.log
+          if-no-files-found: warn
