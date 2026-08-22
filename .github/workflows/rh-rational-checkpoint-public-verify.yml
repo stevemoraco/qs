@@ -1,0 +1,88 @@
+name: RH rational-checkpoint topology Lean firewall
+
+on:
+  push:
+    branches:
+      - agent/rh-rational-checkpoint-public-verifier-20260813
+    paths:
+      - 'verification/rh-rational-checkpoint/**'
+      - '.github/workflows/rh-rational-checkpoint-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-rational-checkpoint/**'
+      - '.github/workflows/rh-rational-checkpoint-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/rh-rational-checkpoint/RHRationalCheckpointFirewall.lean')
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+          ]
+          for pattern in patterns:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden declaration: {m.group(0)!r}')
+          PY
+
+      - name: Install exact Lean and Mathlib pins, then compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/rh-rational-checkpoint/toolchain.log
+          lake --version | tee -a verification/rh-rational-checkpoint/toolchain.log
+          cd verification/rh-rational-checkpoint
+          lake update
+          lake exe cache get
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.log
+          sha256sum RHRationalCheckpointFirewall.lean | tee source-sha256.log
+          lake env lean RHRationalCheckpointFirewall.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden trust escape found in compiler output.' >&2
+            exit 1
+          fi
+          grep -F "continuous_nonnegative_of_dense' depends on axioms:" lean-output.log
+          grep -F "continuous_nonnegative_iff_rational' depends on axioms:" lean-output.log
+          grep -F "strict_on_dense_does_not_force_strict_everywhere' depends on axioms:" lean-output.log
+          grep -F "bounded_window_does_not_force_global' depends on axioms:" lean-output.log
+          test -s source-sha256.log
+          test -s mathlib-commit.log
+          echo 'VERIFIED RH rational-checkpoint topology firewall.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-rational-checkpoint-public-verification-evidence
+          path: |
+            verification/rh-rational-checkpoint/lean-output.log
+            verification/rh-rational-checkpoint/source-sha256.log
+            verification/rh-rational-checkpoint/toolchain.log
+            verification/rh-rational-checkpoint/mathlib-commit.log
+          if-no-files-found: warn
