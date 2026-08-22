@@ -1,0 +1,77 @@
+name: RH Fayed dependent-auxiliary Lean firewall
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'verification/rh-fayed-dependent-auxiliary/**'
+      - 'research/rh-fayed-dependent-auxiliary-firewall-20260813.md'
+      - '.github/workflows/rh-fayed-dependent-auxiliary.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-fayed-dependent-auxiliary/**'
+      - 'research/rh-fayed-dependent-auxiliary-firewall-20260813.md'
+      - '.github/workflows/rh-fayed-dependent-auxiliary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and escape hatches
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-fayed-dependent-auxiliary/RHFayedDependentAuxiliary.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden escape hatch found'
+            exit 1
+          fi
+          sha256sum "$file" | tee source.sha256
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/rh-fayed-dependent-auxiliary
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/rh-fayed-dependent-auxiliary
+        run: |
+          set -euo pipefail
+          lake env lean RHFayedDependentAuxiliary.lean 2>&1 | tee lean-replay.log
+          if grep -nE 'sorryAx|declaration uses.*(RHFayed|sorry)' lean-replay.log; then
+            echo 'Unexpected axiom or proof hole'
+            exit 1
+          fi
+          test "$(grep -c 'depends on axioms' lean-replay.log)" -eq 5
+
+      - name: Preserve replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-fayed-dependent-auxiliary-evidence
+          path: |
+            source.sha256
+            verification/rh-fayed-dependent-auxiliary/lean-replay.log
+            verification/rh-fayed-dependent-auxiliary/lake-manifest.json
+            verification/rh-fayed-dependent-auxiliary/lean-toolchain
