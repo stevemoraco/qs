@@ -1,0 +1,162 @@
+name: Hodge r3 index-form public replay
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'verification/hodge-r3-indexform/*.lean'
+      - '.github/workflows/hodge-r3-indexform-public-replay.yml'
+  push:
+    branches:
+      - automation/hodge-r3-indexform-replay-20260813
+    paths:
+      - 'verification/hodge-r3-indexform/*.lean'
+      - '.github/workflows/hodge-r3-indexform-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact replay branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Source trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root = pathlib.Path('verification/hodge-r3-indexform')
+          files = sorted(root.glob('*.lean'))
+          expected = {
+              'HodgeR3BinaryCubicIndexForm.lean': 8,
+              'HodgeR3MuElimination.lean': 4,
+          }
+          if {p.name for p in files} != set(expected):
+              raise SystemExit(f'unexpected verifier file set: {[p.name for p in files]}')
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          axiom_decl = re.compile(r'(?m)^\s*axiom\s+[A-Za-z_]')
+          for p in files:
+              text = p.read_text()
+              m = forbidden.search(text)
+              if m:
+                  raise SystemExit(f'{p}: forbidden token {m.group(2)}')
+              if axiom_decl.search(text):
+                  raise SystemExit(f'{p}: custom axiom declaration')
+              if 'Lean.ofReduceBool' in text or 'native_decide' in text:
+                  raise SystemExit(f'{p}: forbidden proof shortcut')
+              if text.count('#print axioms') != expected[p.name]:
+                  raise SystemExit(f'{p}: unexpected axiom-report count')
+              print(f'{p}: trust preflight clean')
+          PY
+
+      - name: Execute AXLE Lean 4.30 on exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          root = pathlib.Path('verification/hodge-r3-indexform')
+          out = root / 'evidence'
+          out.mkdir(exist_ok=True)
+          summary = {}
+          for p in sorted(root.glob('*.lean')):
+              payload = json.dumps({
+                  'content': p.read_text(),
+                  'environment': 'lean-4.30.0',
+                  'ignore_imports': True,
+                  'mathlib_options': False,
+                  'timeout_seconds': 900,
+              }).encode()
+              request = urllib.request.Request(
+                  'https://axle.axiommath.ai/api/v1/check',
+                  data=payload,
+                  headers={'Content-Type': 'application/json'},
+                  method='POST',
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=960) as response:
+                      result = json.load(response)
+              except Exception as exc:
+                  result = {
+                      'okay': False,
+                      'request_exception': repr(exc),
+                      'lean_messages': {'errors': [], 'warnings': []},
+                      'tool_messages': {'errors': [], 'warnings': []},
+                      'failed_declarations': [],
+                  }
+              (out / f'{p.stem}-axle-response.json').write_text(
+                  json.dumps(result, indent=2, sort_keys=True)
+              )
+              summary[p.name] = {
+                  'okay': result.get('okay'),
+                  'failed_declarations': result.get('failed_declarations', []),
+                  'lean_errors': result.get('lean_messages', {}).get('errors', []),
+                  'lean_warnings': result.get('lean_messages', {}).get('warnings', []),
+                  'tool_errors': result.get('tool_messages', {}).get('errors', []),
+                  'tool_warnings': result.get('tool_messages', {}).get('warnings', []),
+                  'request_exception': result.get('request_exception'),
+              }
+              print(p.name, json.dumps(summary[p.name], indent=2))
+          (out / 'summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+
+      - name: Record replay metadata
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=verification/hodge-r3-indexform/evidence
+          mkdir -p "$OUT"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "ref=${GITHUB_REF}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner_name=${RUNNER_NAME}"
+            echo "runner_os=${RUNNER_OS}"
+            echo "environment=lean-4.30.0"
+            sha256sum verification/hodge-r3-indexform/*.lean
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload compiler evidence before verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-r3-indexform-evidence
+          path: verification/hodge-r3-indexform/evidence/
+          if-no-files-found: error
+
+      - name: Enforce compiler verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/hodge-r3-indexform/evidence/summary.json')
+          if not p.exists():
+              raise SystemExit('missing AXLE summary evidence')
+          summary = json.loads(p.read_text())
+          if len(summary) != 2:
+              raise SystemExit('expected two compiler responses')
+          for name, result in summary.items():
+              if not result.get('okay'):
+                  raise SystemExit(f'{name}: AXLE did not return okay=true')
+              if result.get('failed_declarations'):
+                  raise SystemExit(f'{name}: failed declarations')
+              if result.get('lean_errors') or result.get('lean_warnings'):
+                  raise SystemExit(f'{name}: Lean errors or warnings')
+              if result.get('tool_errors') or result.get('tool_warnings'):
+                  raise SystemExit(f'{name}: tool errors or warnings')
+              if result.get('request_exception'):
+                  raise SystemExit(f'{name}: request exception')
+          print('HODGE R3 INDEXFORM: BOTH EXACT SOURCES VERIFIED WARNING-FREE')
+          PY
