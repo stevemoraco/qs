@@ -1,0 +1,29 @@
+name: B5 Uniform Margin Replay
+
+on:
+  push:
+    branches:
+      - agent/b5-synthesis-uniform-margin-firewall-20260813
+  pull_request:
+    paths:
+      - 'formal/millennium_audit/SixLaneAudit/UniformMarginFirewall.lean'
+      - 'formal/millennium_audit/SixLaneAudit/UniformErrorBudget.lean'
+      - 'formal/millennium_audit/lean-toolchain'
+      - 'formal/millennium_audit/lakefile.lean'
+  workflow_dispatch:
+
+jobs:
+  lean-replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Replay B5 sources
+        run: |
+          cd formal/millennium_audit
+          lake update
+          lake env lean SixLaneAudit/UniformMarginFirewall.lean
+          lake env lean SixLaneAudit/UniformErrorBudget.lean
