@@ -1,0 +1,71 @@
+name: YM Countable OS-Core Public Verifier
+
+on:
+  push:
+    branches:
+      - agent/ym-countable-os-core-public-verifier-20260812
+    paths:
+      - 'verification/ym-countable-os-core/**'
+      - '.github/workflows/ym-countable-os-core-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-countable-os-core/**'
+      - '.github/workflows/ym-countable-os-core-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lean-firewall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and verify canonical source blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-countable-os-core/YMCountableOSCore.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/ym-countable-os-core/lean-git-blob-sha.txt
+          test "$(cat verification/ym-countable-os-core/lean-git-blob-sha.txt)" = 'b5be92ef6754315b421c573622c30fb675d110dd'
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/ym-countable-os-core/lean-version.txt
+          lake --version | tee verification/ym-countable-os-core/lake-version.txt
+          cd verification/ym-countable-os-core
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          lake env lean YMCountableOSCore.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted computational axiom found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED YM countable OS-core finite firewall: clean pinned build.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-countable-os-core-lean-evidence
+          path: |
+            verification/ym-countable-os-core/lean-output.log
+            verification/ym-countable-os-core/lean-git-blob-sha.txt
+            verification/ym-countable-os-core/lean-version.txt
+            verification/ym-countable-os-core/lake-version.txt
+            verification/ym-countable-os-core/mathlib-commit.txt
+          if-no-files-found: warn
