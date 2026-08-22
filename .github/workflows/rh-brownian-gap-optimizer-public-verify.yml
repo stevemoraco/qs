@@ -1,0 +1,124 @@
+name: RH Brownian gap optimizer public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-brownian-gap-optimizer-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-brownian-gap-optimizer-public/**'
+      - '.github/workflows/rh-brownian-gap-optimizer-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact source trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-brownian-gap-optimizer-public'
+          file="$dir/RHBrownianGapOptimizer.lean"
+          actual_blob="$(git hash-object "$file")"
+          expected_blob='1b359b7d9f215342a5c5d2d3e0c1bcd986618d66'
+          test "$actual_blob" = "$expected_blob"
+          printf 'canonical_private_blob=%s\n' "$actual_blob" | tee "$dir/source-blob.txt"
+          sha256sum "$file" | tee "$dir/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden proof placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+            echo 'Forbidden trust declaration found.' >&2
+            exit 1
+          fi
+          if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+            echo 'Forbidden computational trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-brownian-gap-optimizer-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHBrownianGapOptimizer.lean > lean-output.log 2>&1
+          status=$?
+          set -e
+          cat lean-output.log
+          if [ "$status" -ne 0 ]; then
+            echo "Lean compilation failed with status $status" >&2
+            exit "$status"
+          fi
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+
+      - name: Enforce foundation-only axiom report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path('verification/rh-brownian-gap-optimizer-public/lean-output.log')
+          text = path.read_text()
+          with_axioms = re.findall(
+              r"'([^']+)' depends on axioms:\s*\[(.*?)\]",
+              text,
+              flags=re.S,
+          )
+          without_axioms = re.findall(
+              r"'([^']+)' does not depend on any axioms",
+              text,
+          )
+          expected = 14
+          found = len(with_axioms) + len(without_axioms)
+          if found != expected:
+              raise SystemExit(f'expected {expected} staged axiom reports, found {found}')
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          rows = []
+          for theorem, payload in with_axioms:
+              deps = {part.strip() for part in payload.split(',') if part.strip()}
+              extra = deps - allowed
+              if extra:
+                  raise SystemExit(f'{theorem} has non-foundation axioms: {sorted(extra)}')
+              rows.append(f'{theorem}: {sorted(deps)}')
+          for theorem in without_axioms:
+              rows.append(f'{theorem}: []')
+          report = '\n'.join(sorted(rows)) + '\n'
+          out = pathlib.Path('verification/rh-brownian-gap-optimizer-public/axiom-report.txt')
+          out.write_text(report)
+          print(report, end='')
+          PY
+          echo 'VERIFIED RH Brownian gap optimizer finite core.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-brownian-gap-optimizer-public-evidence
+          path: |
+            verification/rh-brownian-gap-optimizer-public/source-blob.txt
+            verification/rh-brownian-gap-optimizer-public/source-sha256.txt
+            verification/rh-brownian-gap-optimizer-public/lean-version.txt
+            verification/rh-brownian-gap-optimizer-public/lean-output.log
+            verification/rh-brownian-gap-optimizer-public/axiom-report.txt
