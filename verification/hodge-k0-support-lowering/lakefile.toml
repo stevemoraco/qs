@@ -1,0 +1,11 @@
+name = "hodge-k0-support-lowering"
+version = "0.1.0"
+defaultTargets = ["HodgeK0SupportLoweringFiniteCore"]
+
+[[lean_lib]]
+name = "HodgeK0SupportLoweringFiniteCore"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.32.1"

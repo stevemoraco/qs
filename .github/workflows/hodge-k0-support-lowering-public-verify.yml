@@ -1,0 +1,60 @@
+name: Hodge K0 Support Lowering Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/hodge-k0-support-lowering-public-verifier-20260811
+    paths:
+      - 'verification/hodge-k0-support-lowering/**'
+      - '.github/workflows/hodge-k0-support-lowering-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/hodge-k0-support-lowering/**'
+      - '.github/workflows/hodge-k0-support-lowering-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/hodge-k0-support-lowering/HodgeK0SupportLoweringFiniteCore.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom axiom found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/hodge-k0-support-lowering
+          lake update
+          lake exe cache get
+          lake env lean HodgeK0SupportLoweringFiniteCore.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED Hodge K0 support-lowering finite core: clean pinned build, zero reported proof holes.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-k0-support-lowering-finite-core-lean-evidence
+          path: verification/hodge-k0-support-lowering/lean-output.log
+          if-no-files-found: warn
