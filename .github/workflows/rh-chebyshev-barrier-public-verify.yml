@@ -1,0 +1,89 @@
+name: RH Chebyshev barrier and debt public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-chebyshev-barrier-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-chebyshev-barrier-public/**'
+      - '.github/workflows/rh-chebyshev-barrier-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-barrier-public'
+          declare -A expected
+          expected[RHPrimePrefixChebyshevBarrier.lean]='1cf5728e6c48407e5df0ea462b17dbe2945efd82'
+          expected[RHPrimePrefixBadArrivalDebt.lean]='0f227304c1f3f6d4613fa8a8c16080ab194d0d7a'
+          : > "$dir/source-blobs.txt"
+          : > "$dir/source-sha256.txt"
+          for name in RHPrimePrefixChebyshevBarrier.lean RHPrimePrefixBadArrivalDebt.lean; do
+            file="$dir/$name"
+            actual_blob="$(git hash-object "$file")"
+            test "$actual_blob" = "${expected[$name]}"
+            printf '%s=%s\n' "$name" "$actual_blob" | tee -a "$dir/source-blobs.txt"
+            sha256sum "$file" | tee -a "$dir/source-sha256.txt"
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+              exit 1
+            fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              exit 1
+            fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean and compile exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-chebyshev-barrier-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          : > lean-output.log
+          for file in RHPrimePrefixChebyshevBarrier.lean RHPrimePrefixBadArrivalDebt.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            set +e
+            lake env lean "$file" >> lean-output.log 2>&1
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              cat lean-output.log
+              exit "$status"
+            fi
+          done
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            exit 1
+          fi
+          echo 'VERIFIED RH Chebyshev barrier and bad-arrival debt finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-chebyshev-barrier-public-evidence
+          path: |
+            verification/rh-chebyshev-barrier-public/source-blobs.txt
+            verification/rh-chebyshev-barrier-public/source-sha256.txt
+            verification/rh-chebyshev-barrier-public/lean-version.txt
+            verification/rh-chebyshev-barrier-public/lean-output.log
