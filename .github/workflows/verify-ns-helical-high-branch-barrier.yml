@@ -1,0 +1,126 @@
+name: Verify NS helical high-branch barrier
+
+on:
+  push:
+    branches:
+      - agent/b2-ns-helical-high-branch-public-verifier-20260813-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Materialize repaired canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-helical-high-branch/evidence
+          python3 - <<'PY'
+          import hashlib, pathlib, re
+          p = pathlib.Path('formal/millennium_audit/SixLaneAudit/NSHelicalHighBranchBarrier.lean')
+          text = p.read_text()
+          old_sha = hashlib.sha256(text.encode()).hexdigest()
+          if old_sha != '82a28d21a2e96ab161d73a90217411ee6fd820fdf0f58069e0ace94b2e36edaa':
+              raise SystemExit(f'unexpected preserved-source hash: {old_sha}')
+
+          old_sig = '''    (hell : 0 < ell) (helm : ell < m) (hmh : m < h)\n    (hpair : 0 < y ^ 2 + z ^ 2)\n'''
+          new_sig = '''    (helm : ell < m) (hmh : m < h)\n    (hpair : 0 < y ^ 2 + z ^ 2)\n'''
+          if text.count(old_sig) != 1:
+              raise SystemExit('unexpected exact-fraction signature count')
+          text = text.replace(old_sig, new_sig, 1)
+
+          old_body = '''  have hh : 0 < h := by linarith\n  have hfrac := helical_high_child_fraction_lt_inverse_gain ell m h hell helm hmh\n  have hscaled : ((m - ell) / (h - ell)) * h < m := by\n    calc\n      ((m - ell) / (h - ell)) * h < (m / h) * h :=\n        (mul_lt_mul_right hh).2 hfrac\n      _ = m := by\n        field_simp [ne_of_gt hh]\n  have hR2 : 0 < Rold ^ 2 := sq_pos_of_pos hR\n'''
+          new_body = '''  have hhe : 0 < h - ell := by linarith\n  have hscaled : ((m - ell) / (h - ell)) * h < m := by\n    calc\n      ((m - ell) / (h - ell)) * h = ((m - ell) * h) / (h - ell) := by ring\n      _ < m := by\n        apply (div_lt_iff₀ hhe).2\n        nlinarith\n  have hR2 : 0 < Rold ^ 2 := sq_pos_of_pos hR\n'''
+          if text.count(old_body) != 1:
+              raise SystemExit('unexpected weighted-descent body count')
+          text = text.replace(old_body, new_body, 1)
+          text = text.replace(
+              '    _ < m * Rold ^ 2 := (mul_lt_mul_right hR2).2 hscaled\n',
+              '    _ < m * Rold ^ 2 := mul_lt_mul_of_pos_right hscaled hR2\n',
+              1,
+          )
+
+          new_sha = hashlib.sha256(text.encode()).hexdigest()
+          if new_sha != '5e9653d46bc3d4fd49593113856154994f2ca2aa3f2d6bae6aa66e9ec4f85964':
+              raise SystemExit(f'repaired source hash mismatch: {new_sha}')
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(text)
+          if m or 'Lean.ofReduceBool' in text or 'native_decide' in text:
+              raise SystemExit('repaired source contains forbidden trust token')
+          if text.count('#print axioms') != 5:
+              raise SystemExit('expected five axiom reports')
+          out = pathlib.Path('verification/ns-helical-high-branch/evidence/canonical-source.lean')
+          out.write_text(text)
+          print('materialized canonical SHA-256', new_sha)
+          PY
+
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          src = pathlib.Path('verification/ns-helical-high-branch/evidence/canonical-source.lean').read_text()
+          payload = json.dumps({'content': src, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type':'application/json'}, method='POST')
+          try:
+              with urllib.request.urlopen(req, timeout=960) as r:
+                  result = json.load(r)
+          except Exception as exc:
+              result = {'okay': False, 'request_exception': repr(exc), 'lean_messages': {'errors': [], 'warnings': []}, 'tool_messages': {'errors': []}, 'failed_declarations': []}
+          pathlib.Path('verification/ns-helical-high-branch/evidence/axle-response.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+          print(json.dumps(result, indent=2))
+          PY
+
+      - name: Record metadata
+        if: always()
+        shell: bash
+        run: |
+          OUT=verification/ns-helical-high-branch/evidence
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "runner=${RUNNER_NAME}"
+            echo "canonical_private_commit=6a86d1cae0f0365a38772ee73552ee2f0d64f7b7"
+            echo "canonical_git_blob=4afd0e8157723cb2b6eb00cd5d7023967df5ef01"
+            echo "canonical_sha256=5e9653d46bc3d4fd49593113856154994f2ca2aa3f2d6bae6aa66e9ec4f85964"
+            echo "environment=lean-4.30.0"
+          } > "$OUT/replay-metadata.txt"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-helical-high-branch-evidence
+          path: verification/ns-helical-high-branch/evidence/
+          if-no-files-found: error
+
+      - name: Enforce verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('verification/ns-helical-high-branch/evidence/axle-response.json')
+          if not p.exists(): raise SystemExit('missing compiler evidence')
+          r = json.loads(p.read_text())
+          errs = r.get('lean_messages', {}).get('errors', [])
+          warns = r.get('lean_messages', {}).get('warnings', [])
+          terrs = r.get('tool_messages', {}).get('errors', [])
+          twarns = r.get('tool_messages', {}).get('warnings', [])
+          failed = r.get('failed_declarations', [])
+          if not r.get('okay') or errs or warns or terrs or twarns or failed:
+              raise SystemExit('Lean/AXLE failed or warned')
+          rendered = json.dumps(r)
+          if 'sorryAx' in rendered or 'Lean.ofReduceBool' in rendered:
+              raise SystemExit('forbidden postcompile dependency')
+          print('VERIFIED WARNING-FREE')
+          PY
