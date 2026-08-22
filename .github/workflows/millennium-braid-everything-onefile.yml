@@ -1,0 +1,127 @@
+name: Millennium braid everything one-file replay
+
+on:
+  push:
+    branches:
+      - verification/millennium-braid-everything-onefile-20260813
+    paths:
+      - 'verification/millennium-braid-everything/**'
+      - '.github/workflows/millennium-braid-everything-onefile.yml'
+  pull_request:
+    paths:
+      - 'verification/millennium-braid-everything/**'
+      - '.github/workflows/millennium-braid-everything-onefile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: millennium-braid-everything-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact source head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Record clean checkout and exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain=v1 | tee "$RUNNER_TEMP/checkout-status.txt"
+          test ! -s "$RUNNER_TEMP/checkout-status.txt"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/checked-out-commit.txt"
+          git show -s --format=fuller HEAD | tee "$RUNNER_TEMP/commit-metadata.txt"
+
+      - name: Reconstruct and hash-check exact one-file source
+        shell: bash
+        working-directory: verification/millennium-braid-everything
+        run: |
+          set -euo pipefail
+          bash assemble_source.sh 2>&1 | tee source-reconstruction.log
+
+      - name: Audit executable Lean trust surface
+        shell: bash
+        working-directory: verification/millennium-braid-everything
+        run: |
+          set -euo pipefail
+          python3 audit_source.py MillenniumBraidEverything.lean 2>&1 | tee source-audit.log
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.32.1
+          "$HOME/.elan/bin/elan" default leanprover/lean4:v4.32.1
+          "$HOME/.elan/bin/lean" --version | tee "$RUNNER_TEMP/lean-version.txt"
+          "$HOME/.elan/bin/lake" --version | tee "$RUNNER_TEMP/lake-version.txt"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/millennium-braid-everything
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile the complete materialized source in one kernel invocation
+        shell: bash
+        working-directory: verification/millennium-braid-everything
+        run: |
+          set -euo pipefail
+          set -o pipefail
+          lake env lean MillenniumBraidEverything.lean 2>&1 | tee lean-output.log
+
+      - name: Audit all 832 axiom reports and final braid declarations
+        shell: bash
+        working-directory: verification/millennium-braid-everything
+        run: |
+          set -euo pipefail
+          python3 audit_axioms.py lean-output.log 2>&1 | tee axiom-audit.log
+
+      - name: Collect replay receipt
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          ROOT='verification/millennium-braid-everything'
+          RECEIPT='replay-receipt'
+          mkdir -p "$RECEIPT"
+          cp "$RUNNER_TEMP/checkout-status.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/checked-out-commit.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/commit-metadata.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/lean-version.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$RUNNER_TEMP/lake-version.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/source-reconstruction.log" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/source-audit.log" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/source-audit.json" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/lean-output.log" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/axiom-audit.log" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/axiom-audit.json" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/axiom-union.txt" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/lake-manifest.json" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/MillenniumBraidEverything.lean.xz" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/MillenniumBraidEverything.lean" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/README.md" "$RECEIPT/" 2>/dev/null || true
+          cp "$ROOT/source-xz-b64/SHA256SUMS" "$RECEIPT/source-shards.SHA256SUMS" 2>/dev/null || true
+          git rev-parse HEAD | tee "$RECEIPT/workflow-checkout-head.txt"
+          git status --porcelain=v1 | tee "$RECEIPT/post-run-git-status.txt"
+          find "$RECEIPT" -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum | tee "$RECEIPT/receipt-files.SHA256SUMS"
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: millennium-braid-everything-onefile-${{ github.run_id }}
+          path: replay-receipt
+          if-no-files-found: error
+          retention-days: 90

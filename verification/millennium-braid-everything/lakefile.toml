@@ -1,0 +1,12 @@
+name = "millennium_braid_everything_onefile"
+version = "0.1.0"
+defaultTargets = ["MillenniumBraidEverything"]
+
+[[lean_lib]]
+name = "MillenniumBraidEverything"
+roots = ["MillenniumBraidEverything"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.32.1"
