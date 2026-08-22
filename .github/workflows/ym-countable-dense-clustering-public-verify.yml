@@ -1,0 +1,60 @@
+name: YM Countable Dense Clustering Finite Core Lean
+
+on:
+  push:
+    branches:
+      - agent/ym-countable-dense-clustering-public-verifier-20260811
+    paths:
+      - 'verification/ym-countable-dense-clustering/**'
+      - '.github/workflows/ym-countable-dense-clustering-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/ym-countable-dense-clustering/**'
+      - '.github/workflows/ym-countable-dense-clustering-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/ym-countable-dense-clustering/YMCountableDenseClusteringFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom axiom found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/ym-countable-dense-clustering
+          lake update
+          lake exe cache get
+          lake env lean YMCountableDenseClusteringFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED YM countable-dense clustering finite core: clean pinned build, zero reported proof holes.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ym-countable-dense-clustering-finite-core-lean-evidence
+          path: verification/ym-countable-dense-clustering/lean-output.log
+          if-no-files-found: warn
