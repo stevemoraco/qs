@@ -1,0 +1,73 @@
+ matching-scale local atoms; they
+are not counted as independent long-distance connectors.
+(R3) At the matching scale, Theorem 6.43 gives the exact joint Haar–optical two-buffer connector, and
+Theorem 6.44 permits each buffer to contain an arbitrary fixed finite local source cluster, with
+common spacetime exponent mE > 0. Corollary 7.8 excludes an additional unreported massless
+acoustic reference channel beyond the exact owner-map inventory.
+(R4) One or two bounded or normalized source buffers may remain as declared roots with row and
+column bounds uniform in all exterior variables.
+Define the quantitative rates
+mw := ℓ−1
+jw
+min{c0| log σ|, mopt},
+mmatch := mE, m∗ :=
+1
+2
+min{mw, mmatch} > 0.
+(111)
+where c0 is the fixed rooted-geometric constant in the weak connector and mE > 0 is the exact joint
+matching exponent of Theorem 6.43. Both quantities are fixed after the first-crossing section and the
+finite macrobridge are fixed; neither depends on microscopic spacing or ultraviolet depth.
+Lemma 8.2 (Depth-uniform physical rate floor). Let M be any microscopic ultraviolet depth in the
+directed sequence. The finite-depth two-source connector obtained by composing all weak scales jw ≤ j ≤ M
+with the fixed matching bridge has exponential rate at least
+m(M)
+:=
+1
+2
+min
+
+inf
+jw≤j≤M
+min{c0| log σ|, mopt}
+ℓj
+, mE
+
+≥ m∗ > 0.
+The lower bound is independent of M, microscopic spacing, volume, and boundary condition. Passing to
+M → ∞ cannot decrease the exponent.
+73
+Proof. The first-crossing value, the weak threshold, and the finite macrobridge parameters are fixed
+in physical units before the microscopic depth is sent to infinity. Hence σ, mopt, mE, ℓjw
+, and ℓ0 are
+independent of M. For finer weak scales, ℓ−1
+j ≥ ℓ−1
+jw
+, so the weak rate is minimized at the coarsest weak
+scale. The finitely many intermediate scales alter only the prefactor, while the joint Haar–optical theorem
+supplies the same matching exponent mE at every cutoff. Taking the minimum gives exactly m∗ in
+(111).
+Lemma 8.3 (Uniform weak rooted margin). There are a weak threshold uw > 0, a scale jw, and σ ∈ (0, 1)
+such that, for every j ≥ jw, the exact source-free scale-j interaction and irregular remainder satisfy
+sup
+v
+X
+X∋v
+ea|X|
+∥Vj,X∥ + ∥V irr
+j,X∥
+
+≤ ηw, Ctreeηw ≤ σ < 1. (112)
+After one or two fixed source buffers are retained, every additional nonroot vertex in the rooted connected
+expansion is bounded by the same factor σ.
+Proof. The Gate–G1 invariant graph gives a uniform support-summed interaction bound ∥Vj∥a ≤ Cuj
+on the weak corridor, while the regular/irregular split gives a rooted remainder bounded by Cu−p
+j e−cu−α
+j .
+Corollary 4.14 gives a volume- and depth-uniform Schur row for every Gaussian bond. Since uj → 0
+toward the ultraviolet, choose uw so that the sum of the interaction and irregular rows, multiplied by the
+fixed tree, incidence, and covariance-bond constants, is below one. Choose jw so that uj ≤ uw for every
+j ≥ jw. The Banach-valued one/two-root estimate leaves the source buffers outside the nonroot activity
+row; hence it changes only the root constant and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
