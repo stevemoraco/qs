@@ -1,0 +1,57 @@
+name: RH Selberg diagonal finite replay
+
+on:
+  push:
+    branches:
+      - 'agent/rh-selberg-diagonal-fixed-moment-verifier-20260813'
+    paths:
+      - 'verification/rh-selberg-diagonal-trace/**'
+      - '.github/workflows/rh-selberg-diagonal-trace.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and result-carrying declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-selberg-diagonal-trace/RHSelbergDiagonalTrace.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then
+            echo 'Explicit proof hole found'
+            exit 1
+          fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then
+            echo 'Forbidden declaration found'
+            exit 1
+          fi
+
+      - name: Install Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        working-directory: verification/rh-selberg-diagonal-trace
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay and axiom report
+        shell: bash
+        working-directory: verification/rh-selberg-diagonal-trace
+        run: |
+          set -euo pipefail
+          lake env lean RHSelbergDiagonalTrace.lean | tee lean-replay.log
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
