@@ -1,0 +1,49 @@
+name: Verify NS AO b core
+on:
+  push:
+    branches: [agent/ns-ao-b-coefficient-verifier-20260813]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Preflight
+        run: |
+          set -euo pipefail
+          S=formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean
+          test "$(sha256sum "$S" | cut -d' ' -f1)" = 096f259fe8a308482227f3957abf126dfc5b354106a6f365d091f5d105ae3c43
+          ! grep -En '(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)' "$S"
+          test "$(grep -c '#print axioms' "$S")" = 5
+      - name: Lean replay
+        run: |
+          set -euo pipefail
+          mkdir -p verification/ns-ao-b-core/evidence
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          s=pathlib.Path('formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean').read_text()
+          p=json.dumps({'content':s,'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          q=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=p,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(q,timeout=960) as r: z=json.load(r)
+          pathlib.Path('verification/ns-ao-b-core/evidence/axle-response.json').write_text(json.dumps(z,indent=2,sort_keys=True))
+          assert z.get('okay') is True and z.get('failed_declarations',[])==[]
+          assert z.get('lean_messages',{}).get('errors',[])==[] and z.get('lean_messages',{}).get('warnings',[])==[]
+          assert z.get('tool_messages',{}).get('errors',[])==[] and z.get('tool_messages',{}).get('warnings',[])==[]
+          t=json.dumps(z); assert 'sorryAx' not in t and 'Lean.ofReduceBool' not in t
+          print(json.dumps(z,indent=2))
+          PY
+      - name: Metadata
+        if: always()
+        run: |
+          mkdir -p verification/ns-ao-b-core/evidence
+          printf 'commit=%s\nsource_sha256=%s\nenvironment=lean-4.30.0\n' "$GITHUB_SHA" "$(sha256sum formal/millennium_audit/SixLaneAudit/NSAoBCoefficient.lean | cut -d' ' -f1)" > verification/ns-ao-b-core/evidence/replay-metadata.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ns-ao-b-core-evidence
+          path: verification/ns-ao-b-core/evidence/
+          if-no-files-found: error
