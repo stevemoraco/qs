@@ -1,0 +1,60 @@
+name: Hodge Support Depth Null Generation Lean
+
+on:
+  push:
+    branches:
+      - agent/hodge-support-depth-public-verifier-20260812
+    paths:
+      - 'verification/hodge-support-depth/**'
+      - '.github/workflows/hodge-support-depth-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/hodge-support-depth/**'
+      - '.github/workflows/hodge-support-depth-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/hodge-support-depth/HodgeSupportDepthNullGeneration.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/hodge-support-depth
+          lake update
+          lake exe cache get
+          lake env lean HodgeSupportDepthNullGeneration.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden placeholder or unaccepted trust dependency found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED Hodge support-depth null-generation finite core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-support-depth-null-generation-lean-evidence
+          path: verification/hodge-support-depth/lean-output.log
+          if-no-files-found: warn
