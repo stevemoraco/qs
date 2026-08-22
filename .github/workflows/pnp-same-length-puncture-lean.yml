@@ -1,0 +1,62 @@
+name: PNP Same-Length Puncture Finite Lean
+
+on:
+  push:
+    branches:
+      - agent/pnp-same-length-puncture-public-verify-20260812
+  pull_request:
+    paths:
+      - verification/pnp-same-length-puncture/**
+      - .github/workflows/pnp-same-length-puncture-lean.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit placeholders and custom axioms
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/pnp-same-length-puncture/PNPSameLengthPunctureFinite.lean')
+          text = p.read_text()
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          for pattern in [r'^\s*(sorry|admit)\b', r'^\s*axiom\b']:
+              m = re.search(pattern, text, flags=re.M)
+              if m:
+                  raise SystemExit(f'forbidden declaration: {m.group(0)!r}')
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/pnp-same-length-puncture
+          lake update
+          lake exe cache get
+          lake env lean PNPSameLengthPunctureFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite PNP same-length puncture core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-same-length-puncture-lean-evidence
+          path: verification/pnp-same-length-puncture/lean-output.log
+          if-no-files-found: warn
