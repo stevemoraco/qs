@@ -1,0 +1,179 @@
+name: RH logarithmic-kernel secants verification
+
+on:
+  push:
+    branches:
+      - agent/rh-log-kernel-secants-public-20260813
+    paths:
+      - 'verification/rh-antitone-oriented-secants/**'
+      - '.github/workflows/rh-log-kernel-secants-verify.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-antitone-oriented-secants/**'
+      - '.github/workflows/rh-log-kernel-secants-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rh-log-kernel-secants-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Audit exact source blobs and forbidden trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='verification/rh-antitone-oriented-secants'
+          GENERIC="$ROOT/RHAntitoneOrientedSecants.lean"
+          LOGSRC="$ROOT/RHLogKernelSecants.lean"
+          EXPECTED_GENERIC='24158c38bcadc9761947feeabb278b9fc8ddf950'
+          EXPECTED_LOG='2fad33d14cd80321c78f7b712c6fe3b0aa72ab04'
+
+          CHECKOUT_STATUS="$(git status --porcelain=v1)"
+          printf '%s\n' "$CHECKOUT_STATUS" > "$RUNNER_TEMP/checkout-status.txt"
+          test -z "$CHECKOUT_STATUS"
+
+          ACTUAL_GENERIC="$(git hash-object "$GENERIC")"
+          ACTUAL_LOG="$(git hash-object "$LOGSRC")"
+          printf 'expected_generic_git_blob=%s\nactual_generic_git_blob=%s\nexpected_log_git_blob=%s\nactual_log_git_blob=%s\n' \
+            "$EXPECTED_GENERIC" "$ACTUAL_GENERIC" "$EXPECTED_LOG" "$ACTUAL_LOG" \
+            | tee source-blob-report.txt
+          test "$ACTUAL_GENERIC" = "$EXPECTED_GENERIC"
+          test "$ACTUAL_LOG" = "$EXPECTED_LOG"
+          sha256sum "$GENERIC" "$LOGSRC" | tee source-sha256.txt
+
+          if grep -RInE '\b(sorry|admit|sorryAx)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden proof hole detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden custom trust declaration detected.' >&2
+            exit 1
+          fi
+          if grep -RInE '\b(native_decide|Lean\.ofReduceBool)\b' "$ROOT" --include='*.lean'; then
+            echo 'Forbidden native/oracle shortcut detected.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/elan" default leanprover/lean4:v4.33.0
+          "$HOME/.elan/bin/lean" --version | tee lean-version.txt
+
+      - name: Fetch pinned Mathlib cache
+        shell: bash
+        working-directory: verification/rh-antitone-oriented-secants
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Compile generic dependency to an exact module
+        shell: bash
+        working-directory: verification/rh-antitone-oriented-secants
+        run: |
+          set -euo pipefail
+          lake env lean -o RHAntitoneOrientedSecants.olean RHAntitoneOrientedSecants.lean \
+            2>&1 | tee lean-generic-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-generic-output.log; then
+            echo 'Generic source compilation or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+          test -s RHAntitoneOrientedSecants.olean
+
+      - name: Compile exact logarithmic source and emit axiom reports
+        shell: bash
+        working-directory: verification/rh-antitone-oriented-secants
+        run: |
+          set -euo pipefail
+          lake env lean RHLogKernelSecants.lean 2>&1 | tee lean-log-output.log
+          if grep -nE 'error:|declaration uses .sorry|declaration has metavariables|sorryAx' lean-log-output.log; then
+            echo 'Logarithmic source compilation or trust-boundary failure detected.' >&2
+            exit 1
+          fi
+
+      - name: Audit every printed logarithmic axiom dependency
+        shell: bash
+        working-directory: verification/rh-antitone-oriented-secants
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          text = Path('lean-log-output.log').read_text()
+          names = [
+              'RHLogKernelSecants.logKernel_antitoneOn_Ioi_one',
+              'RHLogKernelSecants.logKernel_antitoneOn_uIcc',
+              'RHLogKernelSecants.hasDerivAt_neg_inv_log_of_one_lt',
+              'RHLogKernelSecants.integral_logKernel',
+              'RHLogKernelSecants.logarithmic_signed_secant',
+              'RHLogKernelSecants.logarithmic_cell_signed_secant',
+          ]
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          starts = {}
+          for name in names:
+              quoted = f"'{name}'"
+              pos = text.find(quoted)
+              if pos < 0:
+                  raise SystemExit(f'missing #print axioms report for {name}')
+              starts[name] = pos
+          ordered = sorted((pos, name) for name, pos in starts.items())
+          report = []
+          for index, (start, name) in enumerate(ordered):
+              end = ordered[index + 1][0] if index + 1 < len(ordered) else len(text)
+              block = text[start:end]
+              if 'does not depend on any axioms' in block:
+                  deps = set()
+              else:
+                  match = re.search(r'depends on axioms:\s*\[(.*?)\]', block, re.S)
+                  if not match:
+                      raise SystemExit(f'unparseable #print axioms report for {name}: {block!r}')
+                  deps = set(re.findall(r'[A-Za-z_][A-Za-z0-9_.]*', match.group(1)))
+              forbidden = deps - allowed
+              if forbidden:
+                  raise SystemExit(f'forbidden axiom(s) for {name}: {sorted(forbidden)}')
+              report.append(f'{name}: {sorted(deps)}')
+          Path('axiom-report.txt').write_text('\n'.join(report) + '\n')
+          print('\n'.join(report))
+          PY
+
+      - name: Collect replay receipt
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          mkdir -p replay-receipt
+          cp source-blob-report.txt replay-receipt/ 2>/dev/null || true
+          cp source-sha256.txt replay-receipt/ 2>/dev/null || true
+          cp "$RUNNER_TEMP/checkout-status.txt" replay-receipt/ 2>/dev/null || true
+          cp lean-version.txt replay-receipt/ 2>/dev/null || true
+          cp verification/rh-antitone-oriented-secants/lake-manifest.json replay-receipt/ 2>/dev/null || true
+          cp verification/rh-antitone-oriented-secants/lean-generic-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/rh-antitone-oriented-secants/lean-log-output.log replay-receipt/ 2>/dev/null || true
+          cp verification/rh-antitone-oriented-secants/axiom-report.txt replay-receipt/ 2>/dev/null || true
+          git rev-parse HEAD | tee replay-receipt/commit.txt
+          git status --porcelain=v1 | tee replay-receipt/post-run-git-status.txt
+
+      - name: Upload replay receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-log-kernel-secants-replay-${{ github.sha }}
+          path: replay-receipt
+          if-no-files-found: error
+          retention-days: 90
