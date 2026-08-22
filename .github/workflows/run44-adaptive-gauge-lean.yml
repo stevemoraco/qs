@@ -1,0 +1,87 @@
+name: Run44 Adaptive Gauge Finite Lean
+
+on:
+  push:
+    branches:
+      - verification/run44-adaptive-gauge-20260813
+    paths:
+      - 'verification/run44-adaptive-gauge/**'
+      - '.github/workflows/run44-adaptive-gauge-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/run44-adaptive-gauge/**'
+      - '.github/workflows/run44-adaptive-gauge-lean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          path = pathlib.Path(
+              'verification/run44-adaptive-gauge/'
+              'AdaptiveGaugeCompositionFinite.lean'
+          )
+          text = path.read_text(encoding='utf-8')
+          stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'Lean\.ofReduceBool',
+          ]
+          for pattern in patterns:
+              match = re.search(pattern, stripped, flags=re.M)
+              if match:
+                  raise SystemExit(
+                      f'forbidden declaration/token: {match.group(0)!r}'
+                  )
+          PY
+
+      - name: Install pinned Lean and compile exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/run44-adaptive-gauge
+          lake update
+          lake exe cache get
+          lake env lean AdaptiveGaugeCompositionFinite.lean \
+            2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
+            echo 'Forbidden placeholder axiom or compiler error found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Run44 adaptive-gauge core.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run44-adaptive-gauge-lean-evidence
+          path: |
+            verification/run44-adaptive-gauge/lean-output.log
+            lean-version.log
+            lake-version.log
+          if-no-files-found: warn
