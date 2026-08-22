@@ -1,0 +1,66 @@
+name: Round 214 RH Riesz-Kernel Finite Cores
+
+on:
+  push:
+    branches:
+      - agent/round214-rh-riesz-kernel-verify-20260812
+    paths:
+      - 'verification/round214-rh-riesz-kernel/**'
+      - '.github/workflows/round214-rh-riesz-kernel-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/round214-rh-riesz-kernel/**'
+      - '.github/workflows/round214-rh-riesz-kernel-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/round214-rh-riesz-kernel/RHRieszKernelFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+      - name: Run exact rational falsifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 verification/round214-rh-riesz-kernel/rh_round214_riesz_kernel_audit.py \
+            | tee verification/round214-rh-riesz-kernel/python-output.log
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/round214-rh-riesz-kernel
+          lake update
+          lake exe cache get
+          lake env lean RHRieszKernelFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Round 214 RH Riesz-kernel cores.'
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round214-rh-riesz-kernel-evidence
+          path: |
+            verification/round214-rh-riesz-kernel/lean-output.log
+            verification/round214-rh-riesz-kernel/python-output.log
+          if-no-files-found: warn
