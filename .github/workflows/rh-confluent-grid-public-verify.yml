@@ -1,0 +1,104 @@
+name: RH Confluent Grid Exact Replay
+
+on:
+  push:
+    branches:
+      - agent/rh-confluent-grid-public-verifier-20260812
+    paths:
+      - 'verification/rh-confluent-grid/**'
+      - '.github/workflows/rh-confluent-grid-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-confluent-grid/**'
+      - '.github/workflows/rh-confluent-grid-public-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact canonical script blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-confluent-grid/verify_rh_confluent_grid.py
+          git hash-object "$file" | tee verification/rh-confluent-grid/script-git-blob-sha.txt
+          test "$(cat verification/rh-confluent-grid/script-git-blob-sha.txt)" = '99fe1c045c28ae713c63921624ba89ed4030f9d9'
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Unexpected proof-trust token in finite replay script.' >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: verification/rh-confluent-grid/requirements.txt
+
+      - name: Install pinned dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python --version | tee verification/rh-confluent-grid/python-version.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r verification/rh-confluent-grid/requirements.txt
+          python - <<'PY' | tee verification/rh-confluent-grid/dependency-versions.txt
+          import mpmath, numpy, sympy
+          print('mpmath', mpmath.__version__)
+          print('numpy', numpy.__version__)
+          print('sympy', sympy.__version__)
+          PY
+
+      - name: Run exact symbolic and high-precision finite replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python verification/rh-confluent-grid/verify_rh_confluent_grid.py \
+            --max-exact-m 5 \
+            --multiplicities 1,2,3,4 \
+            --ratios 0.05,0.15,0.4 \
+            --thetas 0,1.2,3.5,6.1 \
+            --section-lengths 1,2,5,10 \
+            --dps 70 \
+            --tail-tolerance 1e-60 \
+            --output verification/rh-confluent-grid/certificate.json \
+            > verification/rh-confluent-grid/stdout.json
+          cmp verification/rh-confluent-grid/certificate.json \
+              verification/rh-confluent-grid/stdout.json
+          python - <<'PY'
+          import json
+          path = 'verification/rh-confluent-grid/certificate.json'
+          data = json.load(open(path, encoding='utf-8'))
+          assert data['verified'] is True
+          assert len(data['exact_moment_checks']) == 5
+          assert len(data['numeric']['symbol_cases']) == 48
+          assert len(data['numeric']['finite_section_cases']) == 48
+          print('VERIFIED finite confluent-grid replay')
+          print('maximum relative determinant error:',
+                data['numeric']['maximum_relative_symbol_determinant_error'])
+          PY
+          sha256sum \
+            verification/rh-confluent-grid/verify_rh_confluent_grid.py \
+            verification/rh-confluent-grid/certificate.json \
+            | tee verification/rh-confluent-grid/sha256sums.txt
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-confluent-grid-exact-replay-evidence
+          path: |
+            verification/rh-confluent-grid/certificate.json
+            verification/rh-confluent-grid/stdout.json
+            verification/rh-confluent-grid/script-git-blob-sha.txt
+            verification/rh-confluent-grid/python-version.txt
+            verification/rh-confluent-grid/dependency-versions.txt
+            verification/rh-confluent-grid/sha256sums.txt
+          if-no-files-found: warn
