@@ -1,0 +1,73 @@
+name: RH Shrinking-Window Depth-UV Finite Firewall
+
+on:
+  push:
+    branches:
+      - agent/rh-shrinking-window-depth-uv-public-verify-20260812
+    paths:
+      - 'verification/rh-shrinking-window-depth-uv/**'
+      - '.github/workflows/rh-shrinking-window-depth-uv-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/rh-shrinking-window-depth-uv/**'
+      - '.github/workflows/rh-shrinking-window-depth-uv-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject placeholders and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/rh-shrinking-window-depth-uv/RHShrinkingWindowFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+          if grep -En '^[[:space:]]*(axiom|opaque)[[:space:]]|\bunsafe\b|native_decide|Lean\.ofReduceBool' "$file"; then
+            echo 'Forbidden trust escape found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/rh-shrinking-window-depth-uv
+          lean --version | tee toolchain.log
+          lake update
+          lake exe cache get
+          lake env lean RHShrinkingWindowFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          if ! grep -q 'RHShrinkingWindowFinite.exponential_window_depth_identity' lean-output.log; then
+            echo 'Expected axiom report missing.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite RH shrinking-window depth-UV ledger.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-shrinking-window-depth-uv-lean-evidence
+          path: |
+            verification/rh-shrinking-window-depth-uv/lean-output.log
+            verification/rh-shrinking-window-depth-uv/toolchain.log
+            verification/rh-shrinking-window-depth-uv/lake-manifest.json
+          if-no-files-found: warn
