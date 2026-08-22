@@ -1,0 +1,109 @@
+name: B4 Run31 verified-bank Lean replay
+
+on:
+  push:
+    branches: [agent/run31-verified-bank-20260813]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Materialize audited sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, json, re, shutil
+          root = Path('verification/b4-run31-hostile-audit-replay')
+          out = root / 'materialized'
+          evidence = root / 'evidence'
+          out.mkdir(parents=True, exist_ok=True)
+          evidence.mkdir(parents=True, exist_ok=True)
+          for name in ['BSDAgyemangCoefficientSpecialization.lean', 'PNPVegaForcedCutFalsifier.lean']:
+              shutil.copyfile(root / name, out / name)
+          for name in ['HodgeLocalAtiyahFerrand.lean', 'NSSourceAmplitudeNoUniformBound.lean', 'RHWuFloorFiberFalsifier.lean', 'YMLiuHarmonicTail.lean']:
+              encoded = (root / f'{name}.b64').read_text().strip()
+              (out / name).write_bytes(base64.b64decode(encoded))
+          (out / 'RHWuSubsequenceFalsifier.lean').write_bytes(bytes.fromhex((root / 'source6.hex').read_text().strip()))
+          expected = {
+              'BSDAgyemangCoefficientSpecialization.lean': '5b95e48334388958493bbc8ef0315fb78720e43efbbe3dbdc751b60006145ae8',
+              'HodgeLocalAtiyahFerrand.lean': '6a16f25593ae8eab9421d3b99cf9e45406e1f647afee079fa48f31798d7dc594',
+              'NSSourceAmplitudeNoUniformBound.lean': '84a2f9d6040f2da9af6b02fadbde74cb426ea9ca3bc06d5cc448b8a5675a9f84',
+              'PNPVegaForcedCutFalsifier.lean': '4109421bf3b3e4fa81b60c4fd06a964e4cbbc80ed9250fd414d119776259fdae',
+              'RHWuFloorFiberFalsifier.lean': '8ce1f6da5149524fa2aab122e8252d29ac71ebf5e787daed8fa4ef90abc4152c',
+              'RHWuSubsequenceFalsifier.lean': 'f12621b3532ba257430cae713bca6c1817c08edf3c4adba659bcd6ba58b98704',
+              'YMLiuHarmonicTail.lean': '5de6d138ae046fb7bc0e1229faaecd9c835efdada2af4e120f4e144c2ac5c082',
+          }
+          forbidden = re.compile(r'(?<![A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide)(?![A-Za-z0-9_])|Lean\.ofReduceBool')
+          manifest = []
+          theorem_total = 0
+          print_total = 0
+          for name, digest in expected.items():
+              raw = (out / name).read_bytes()
+              assert hashlib.sha256(raw).hexdigest() == digest
+              text = raw.decode()
+              assert forbidden.search(text) is None
+              theorems = len(re.findall(r'(?m)^theorem\s+', text))
+              prints = text.count('#print axioms')
+              theorem_total += theorems
+              print_total += prints
+              shutil.copyfile(out / name, evidence / name)
+              manifest.append({'name': name, 'sha256': digest, 'theorems': theorems, 'axiom_prints': prints})
+          assert theorem_total == 26
+          assert print_total == 26
+          (evidence / 'source-manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True))
+          PY
+      - name: Fresh uncached AXLE Lean kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, urllib.request
+          root = Path('verification/b4-run31-hostile-audit-replay')
+          evidence = root / 'evidence'
+          summary = []
+          nonce = 'run31-20260813-1605-4d6d8e3c'
+          for source in sorted((root / 'materialized').glob('*.lean')):
+              submitted = source.read_text() + f"\n-- fresh-replay nonce: {nonce}:{source.name}\n"
+              submitted_sha256 = hashlib.sha256(submitted.encode()).hexdigest()
+              payload = json.dumps({'content': submitted, 'environment': 'lean-4.30.0', 'ignore_imports': True, 'mathlib_options': False, 'timeout_seconds': 900}).encode()
+              req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check', data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+              with urllib.request.urlopen(req, timeout=960) as response:
+                  result = json.load(response)
+              (evidence / f'{source.stem}.axle.json').write_text(json.dumps(result, indent=2, sort_keys=True))
+              assert result.get('okay') is True
+              assert result.get('failed_declarations', []) == []
+              assert result.get('lean_messages', {}).get('errors', []) == []
+              assert result.get('lean_messages', {}).get('warnings', []) == []
+              assert result.get('tool_messages', {}).get('errors', []) == []
+              assert result.get('tool_messages', {}).get('warnings', []) == []
+              assert result.get('info', {}).get('cached_response') is False
+              summary.append({'source': source.name, 'okay': True, 'cached_response': False, 'submitted_sha256': submitted_sha256})
+              print(f'FRESH VERIFIED {source.name}')
+          assert len(summary) == 7
+          (evidence / 'replay-summary.json').write_text(json.dumps(summary, indent=2, sort_keys=True))
+          PY
+      - name: Preserve replay metadata
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p verification/b4-run31-hostile-audit-replay/evidence
+          printf 'github_sha=%s\nrun_id=%s\nrun_attempt=%s\nrunner=%s\nenvironment=lean-4.30.0\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$RUNNER_NAME" > verification/b4-run31-hostile-audit-replay/evidence/replay-metadata.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b4-run31-verified-bank-lean-evidence
+          path: verification/b4-run31-hostile-audit-replay/evidence/
+          if-no-files-found: error
