@@ -1,0 +1,73 @@
+name: Verify BSD rank-one finite certificate core
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_one_layer_exactification/BSDRankOneFiniteCertificate.lean"
+      - ".github/workflows/verify-bsd-rank-one-finite-certificate.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_one_layer_exactification/BSDRankOneFiniteCertificate.lean"
+      - ".github/workflows/verify-bsd-rank-one-finite-certificate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_one_layer_exactification
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify exact source and reject trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=BSDRankOneFiniteCertificate.lean
+          test "$(git hash-object "$file")" = "81d1fcfb9236c5ed48f51e70649c850613a3da6c"
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean BSDRankOneFiniteCertificate.lean 2>&1 | tee rank-one-output.txt
+          if grep -q 'sorryAx' rank-one-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-rank-one-finite-certificate-replay
+          path: |
+            verification/bsd_one_layer_exactification/BSDRankOneFiniteCertificate.lean
+            verification/bsd_one_layer_exactification/rank-one-output.txt
+          if-no-files-found: warn
