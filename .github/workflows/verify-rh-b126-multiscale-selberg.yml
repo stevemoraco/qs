@@ -1,0 +1,81 @@
+name: Verify RH B126 multiscale Selberg finite core
+
+on:
+  push:
+    branches:
+      - verification/rh-b126-multiscale-selberg-finite-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='verification/rh-b126-multiscale-selberg/RHB126MultiscaleSelbergFinite.lean'
+          if grep -En '\b(sorry|admit|sorryAx|axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$FILE"; then
+            echo 'Forbidden proof hole or trust escape found'
+            exit 1
+          fi
+
+      - name: Verify exact Lean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import time
+          import urllib.error
+          import urllib.request
+
+          API = 'https://lean-compile-farm.replit.app/api'
+          source = pathlib.Path('verification/rh-b126-multiscale-selberg/RHB126MultiscaleSelbergFinite.lean').read_text()
+
+          def get_json(request_or_url, attempts=12):
+              last = None
+              for attempt in range(1, attempts + 1):
+                  try:
+                      with urllib.request.urlopen(request_or_url, timeout=120) as response:
+                          return json.load(response)
+                  except (TimeoutError, urllib.error.URLError, urllib.error.HTTPError, OSError) as exc:
+                      last = exc
+                      time.sleep(min(3 * attempt, 30))
+              raise RuntimeError(last)
+
+          req = urllib.request.Request(
+              f'{API}/compile',
+              data=json.dumps({
+                  'name': 'rh-b126-multiscale-selberg-public',
+                  'lean_source': source,
+                  'lean_version': '4.30.0',
+              }).encode(),
+              headers={'Content-Type': 'application/json'},
+              method='POST')
+          result = get_json(req)
+          job_id = result['id']
+          print('job', job_id, flush=True)
+
+          for poll in range(150):
+              time.sleep(15)
+              result = get_json(f'{API}/jobs/{job_id}', attempts=4)
+              print('poll', poll, result.get('status'), result.get('verdict'), flush=True)
+              if result.get('status') in ('done', 'failed'):
+                  print(json.dumps(result, indent=2), flush=True)
+                  if result.get('verdict') != 'VERIFIED':
+                      raise SystemExit(1)
+                  if result.get('sorry_count', 0) != 0:
+                      raise SystemExit(1)
+                  if result.get('error') not in (None, ''):
+                      raise SystemExit(1)
+                  raise SystemExit(0)
+          raise SystemExit('AXLE did not return a verdict before timeout')
+          PY
