@@ -1,0 +1,67 @@
+name: RH interior certificate AXLE replay
+
+on:
+  push:
+    branches:
+      - verification/unified-millennium-braid-v2-axle-20260813-gpt56
+    paths:
+      - 'verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean'
+      - '.github/workflows/rh-interior-certificate-axle.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean'
+      - '.github/workflows/rh-interior-certificate-axle.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Trust preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re
+          t=pathlib.Path('verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean').read_text()
+          t=re.sub(r'/-.*?-/', '', t, flags=re.S); t=re.sub(r'--.*$', '', t, flags=re.M)
+          if re.search(r'^\s*(axiom|opaque|unsafe)\b',t,flags=re.M): raise SystemExit('trust escape')
+          if re.search(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx)([^A-Za-z0-9_]|$)',t): raise SystemExit('proof hole')
+          if 'native_decide' in t or 'Lean.ofReduceBool' in t: raise SystemExit('proof shortcut')
+          print('trust preflight clean')
+          PY
+      - name: Execute AXLE Lean 4.30
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verification/unified-millennium-braid-v2/evidence-rh-interior
+          python3 - <<'PY'
+          import json,pathlib,urllib.request
+          p=pathlib.Path('verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean')
+          payload=json.dumps({'content':p.read_text(),'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':1200}).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=1260) as r: result=json.load(r)
+          pathlib.Path('verification/unified-millennium-braid-v2/evidence-rh-interior/axle-response.json').write_text(json.dumps(result,indent=2,sort_keys=True))
+          summary={'okay':result.get('okay'),'failed_declarations':result.get('failed_declarations',[]),'lean_errors':result.get('lean_messages',{}).get('errors',[]),'lean_warnings':result.get('lean_messages',{}).get('warnings',[]),'tool_errors':result.get('tool_messages',{}).get('errors',[]),'tool_warnings':result.get('tool_messages',{}).get('warnings',[])}
+          print(json.dumps(summary,indent=2))
+          if not result.get('okay') or summary['failed_declarations'] or summary['lean_errors'] or summary['tool_errors']: raise SystemExit(1)
+          PY
+      - name: Record exact source identity
+        shell: bash
+        run: |
+          sha256sum verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean | tee verification/unified-millennium-braid-v2/evidence-rh-interior/source.sha256
+          git hash-object verification/unified-millennium-braid-v2/RHInteriorCertificateBridge.lean | tee verification/unified-millennium-braid-v2/evidence-rh-interior/source.git-blob
+          git rev-parse HEAD | tee verification/unified-millennium-braid-v2/evidence-rh-interior/commit.txt
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-interior-certificate-axle-evidence
+          path: verification/unified-millennium-braid-v2/evidence-rh-interior/
+          if-no-files-found: warn
