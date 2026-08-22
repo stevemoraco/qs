@@ -1,0 +1,95 @@
+name: RH Run42 Volterra reserve public verifier
+
+on:
+  push:
+    branches:
+      - agent/rh-run42-volterra-reserve-public-verifier-20260813
+  pull_request:
+    paths:
+      - 'verification/rh-run42-volterra-reserve-public/**'
+      - '.github/workflows/rh-run42-volterra-reserve-public-verify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-run42-volterra-reserve-public'
+          file1="$dir/RHVolterraReserveFinite.lean"
+          file2="$dir/RHCausalGapReserveFinite.lean"
+          blob1="$(git hash-object "$file1")"
+          blob2="$(git hash-object "$file2")"
+          test "$blob1" = '7f8fe89aa227de4c869d556fe25fcdd9146059f9'
+          test "$blob2" = '064766dc83c9f86813d4fedbe0e996df94471d88'
+          {
+            printf 'RHVolterraReserveFinite=%s\n' "$blob1"
+            printf 'RHCausalGapReserveFinite=%s\n' "$blob2"
+          } | tee "$dir/source-blobs.txt"
+          sha256sum "$file1" "$file2" | tee "$dir/source-sha256.txt"
+          for file in "$file1" "$file2"; do
+            if grep -En '(^|[^[:alnum:]_])(sorry|admit|sorryAx)([^[:alnum:]_]|$)' "$file"; then
+              echo 'Forbidden proof placeholder found.' >&2
+              exit 1
+            fi
+            if grep -En '^[[:space:]]*(axiom|opaque|unsafe)[[:space:]]' "$file"; then
+              echo 'Forbidden trust declaration found.' >&2
+              exit 1
+            fi
+            if grep -En '(native_decide|Lean\.ofReduceBool)' "$file"; then
+              echo 'Forbidden computational trust escape found.' >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned Lean and compile exact sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='verification/rh-run42-volterra-reserve-public'
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee "$dir/lean-version.txt"
+          lake --version | tee -a "$dir/lean-version.txt"
+          cd "$dir"
+          lake update
+          lake exe cache get
+          : > lean-output.log
+          for file in RHVolterraReserveFinite.lean RHCausalGapReserveFinite.lean; do
+            echo "===== $file =====" | tee -a lean-output.log
+            set +e
+            lake env lean "$file" >> lean-output.log 2>&1
+            status=$?
+            set -e
+            if [ "$status" -ne 0 ]; then
+              cat lean-output.log
+              echo "Lean compilation failed for $file with status $status" >&2
+              exit "$status"
+            fi
+          done
+          cat lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED Run42 RH Volterra/reserve and causal-gap finite algebra.'
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-run42-volterra-reserve-public-evidence
+          path: |
+            verification/rh-run42-volterra-reserve-public/source-blobs.txt
+            verification/rh-run42-volterra-reserve-public/source-sha256.txt
+            verification/rh-run42-volterra-reserve-public/lean-version.txt
+            verification/rh-run42-volterra-reserve-public/lean-output.log
