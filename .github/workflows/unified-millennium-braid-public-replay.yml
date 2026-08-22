@@ -1,0 +1,81 @@
+name: Unified Millennium braid public replay
+
+on:
+  push:
+    branches:
+      - agent/unified-bank-backed-braid-public-replay-20260813
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-public-replay.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-millennium-braid-public-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lean-firewall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/unified-millennium-braid/UnifiedMillenniumBraidStandalone.lean
+          if grep -En '^[[:space:]]*(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo "Forbidden Lean declaration or proof hole found." >&2
+            exit 1
+          fi
+          git hash-object "$file" | tee verification/unified-millennium-braid/lean-git-blob-sha.txt
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh             | sh -s -- -y --default-toolchain leanprover/lean4:v4.31.0
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee verification/unified-millennium-braid/lean-version.txt
+          lake --version | tee verification/unified-millennium-braid/lake-version.txt
+          cd verification/unified-millennium-braid
+          lake update
+          git -C .lake/packages/mathlib rev-parse HEAD | tee mathlib-commit.txt
+          lake exe cache get
+          lake build 2>&1 | tee lake-build.log
+          lake env lean UnifiedMillenniumBraidStandalone.lean 2>&1 | tee lean-output.log
+          lake exe unifiedMillenniumBraid 2>&1 | tee executable-output.log
+
+      - name: Audit trust and executable status
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd verification/unified-millennium-braid
+          if grep -Eq "declaration uses ['\"]sorry['\"]|sorryAx|admit|Lean.ofReduceBool"               lean-output.log lake-build.log; then
+            echo 'Forbidden placeholder or computational trust escape found.' >&2
+            exit 1
+          fi
+          grep -F 'unified_millennium_braid_executable' lean-output.log
+          grep -F 'UNIFIED MILLENNIUM BRAID: KERNEL-CHECKED FINITE BANK' executable-output.log
+          grep -F 'FIVE/SIX-ALARM STATUS: OFF' executable-output.log
+          echo 'UNIFIED MILLENNIUM BRAID: CLEAN PINNED PUBLIC REPLAY.'
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-millennium-braid-public-evidence
+          path: |
+            verification/unified-millennium-braid/lean-git-blob-sha.txt
+            verification/unified-millennium-braid/lean-version.txt
+            verification/unified-millennium-braid/lake-version.txt
+            verification/unified-millennium-braid/mathlib-commit.txt
+            verification/unified-millennium-braid/lake-build.log
+            verification/unified-millennium-braid/lean-output.log
+            verification/unified-millennium-braid/executable-output.log
+          if-no-files-found: warn
