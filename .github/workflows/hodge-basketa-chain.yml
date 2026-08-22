@@ -1,0 +1,73 @@
+name: Hodge basket-A finite core
+
+on:
+  push:
+    branches:
+      - agent/hodge-basketa-chain-public-verifier-20260814-gpt56pro
+    paths:
+      - verification/hodge-basketa-chain/**
+      - .github/workflows/hodge-basketa-chain.yml
+  pull_request:
+    paths:
+      - verification/hodge-basketa-chain/**
+      - .github/workflows/hodge-basketa-chain.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject holes and custom result carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          root = pathlib.Path('verification/hodge-basketa-chain')
+          forbidden = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*(axiom|opaque)\b',
+              r'\bunsafe\b',
+              r'\bnative_decide\b',
+              r'\bLean\.ofReduceBool\b',
+          ]
+          for p in sorted(root.glob('*.lean')):
+              text = p.read_text()
+              stripped = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              stripped = re.sub(r'--.*$', '', stripped, flags=re.M)
+              for pattern in forbidden:
+                  m = re.search(pattern, stripped, flags=re.M)
+                  if m:
+                      raise SystemExit(f'{p}: forbidden token {m.group(0)!r}')
+          PY
+
+      - name: Install pinned Lean and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          cd verification/hodge-basketa-chain
+          lake update
+          lake exe cache get
+          lake build HodgeBasketAChain 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            exit 1
+          fi
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hodge-basketa-chain-lean-evidence
+          path: verification/hodge-basketa-chain/lean-output.log
+          if-no-files-found: warn
