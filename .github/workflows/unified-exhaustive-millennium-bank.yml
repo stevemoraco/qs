@@ -1,0 +1,117 @@
+name: Unified exhaustive Millennium Lean bank
+
+on:
+  push:
+    branches:
+      - agent/unified-millennium-braid-core-replay-20260813-gpt56pro
+    paths:
+      - 'verification/unified-exhaustive-bank/**'
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-exhaustive-millennium-bank.yml'
+  pull_request:
+    paths:
+      - 'verification/unified-exhaustive-bank/**'
+      - 'verification/unified-millennium-braid/**'
+      - '.github/workflows/unified-exhaustive-millennium-bank.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Record exact public replay scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/legacy-rh"
+          mkdir -p verification/unified-exhaustive-bank/run/generated
+          {
+            printf 'qs_head=%s\n' "$(git rev-parse HEAD)"
+            printf 'legacy_rh_head=%s\n' '6147537c2359c3e3d83c3cacea3dba4c91809250'
+            printf 'legacy_rh_access=not_in_public_replay\n'
+            printf 'scope=current_qs_branch_only\n'
+          } | tee verification/unified-exhaustive-bank/input-commits.txt
+
+      - name: Install pinned Lean and Mathlib
+        shell: bash
+        working-directory: verification/unified-exhaustive-bank
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.txt
+          lake --version | tee lake-version.txt
+          lake update
+          lake exe cache get
+
+      - name: Generate and compile maximal compatible public bank
+        shell: bash
+        working-directory: verification/unified-exhaustive-bank
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export BANK_BASE_LEAN_PATH="$(lake env printenv LEAN_PATH)"
+          python3 -m py_compile generate_bank.py run_bank.py
+          python3 run_bank.py \
+            --current-root ../.. \
+            --legacy-root "$RUNNER_TEMP/legacy-rh" \
+            --out run \
+            --timeout-per-file 120 \
+            --timeout-aggregate 2400
+          cat run/generated/summary.env
+          source run/generated/summary.env
+          test "$jointly_imported_modules" -gt 0
+          test "$imported_bank_theorems" -gt 0
+          ! grep -Eq 'sorryAx|declaration uses .sorry.|error:' run/generated/unified-compile.log
+
+      - name: Preserve deterministic source and theorem manifests
+        if: always()
+        shell: bash
+        working-directory: verification/unified-exhaustive-bank
+        run: |
+          set -euo pipefail
+          mkdir -p run/generated
+          tar_inputs=()
+          [ -d run/Sources ] && tar_inputs+=(run/Sources)
+          for path in \
+            run/generated/UnifiedMillenniumPublicBank.lean \
+            run/generated/accepted-modules.json \
+            run/generated/rejected-sources.json \
+            run/generated/imported-theorem-names.txt \
+            run/generated/individual-summary.json; do
+            [ -e "$path" ] && tar_inputs+=("$path")
+          done
+          if [ "${#tar_inputs[@]}" -gt 0 ]; then
+            tar --sort=name --mtime='UTC 2026-08-13' \
+              --owner=0 --group=0 --numeric-owner \
+              -czf run/generated/canonical-sources.tar.gz \
+              "${tar_inputs[@]}"
+          fi
+          find run/generated -maxdepth 2 -type f ! -name SHA256SUMS -print0 2>/dev/null \
+            | sort -z \
+            | xargs -0 -r sha256sum \
+            | tee run/generated/SHA256SUMS
+
+      - name: Upload exact replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-exhaustive-millennium-bank-evidence
+          path: |
+            verification/unified-exhaustive-bank/input-commits.txt
+            verification/unified-exhaustive-bank/lean-version.txt
+            verification/unified-exhaustive-bank/lake-version.txt
+            verification/unified-exhaustive-bank/run/generated/**
+          if-no-files-found: warn
+          retention-days: 90
