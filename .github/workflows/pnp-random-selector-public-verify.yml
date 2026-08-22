@@ -1,0 +1,77 @@
+name: PNP random-selector incidence ledger Lean and exact regression
+
+on:
+  push:
+    branches:
+      - agent/pnp-random-selector-public-verifier-20260812
+    paths:
+      - 'verification/pnp-random-selector/**'
+      - '.github/workflows/pnp-random-selector-public-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-random-selector/**'
+      - '.github/workflows/pnp-random-selector-public-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit Lean placeholders and result carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/pnp-random-selector/PNPRandomSelectorIncidenceLedger.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or result carrier found.' >&2
+            exit 1
+          fi
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version
+          lake --version
+          cd verification/pnp-random-selector
+          lake update
+          lake exe cache get
+          lake env lean PNPRandomSelectorIncidenceLedger.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          test -s lean-output.log
+          echo 'VERIFIED finite PNP random-selector incidence ledger.'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile and run exact finite regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile verification/pnp-random-selector/verify.py
+          python -u verification/pnp-random-selector/verify.py \
+            > verification/pnp-random-selector/regression-output.log
+          test -s verification/pnp-random-selector/regression-output.log
+          cat verification/pnp-random-selector/regression-output.log
+
+      - name: Upload compiler and regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-random-selector-public-verification-evidence
+          path: |
+            verification/pnp-random-selector/lean-output.log
+            verification/pnp-random-selector/regression-output.log
+          if-no-files-found: error
