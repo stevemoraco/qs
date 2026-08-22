@@ -1,0 +1,113 @@
+name: RH Theta-Iteration Cocycle Finite Lean
+
+on:
+  push:
+    branches:
+      - verification/rh-theta-iteration-cocycle-20260813
+    paths:
+      - 'verification/rh-theta-iteration-cocycle/**'
+      - '.github/workflows/rh-theta-iteration-cocycle-lean.yml'
+  pull_request:
+    paths:
+      - 'verification/rh-theta-iteration-cocycle/**'
+      - '.github/workflows/rh-theta-iteration-cocycle-lean.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical source blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          declare -A expected
+          expected[RHThetaIterationCocycleFinite.lean]='e9a61f6d157267c0d72b5c2a4fccd3ac646edc39'
+          expected[RHThetaIterationPrimeIntervalFinite.lean]='6d22651b907d2b31452a63c2ab4b7c6930e65bce'
+          expected[RHThetaIterationTollLowerBoundFinite.lean]='3c42177cc52c14977699b37c9fe8dde7d9dc6913'
+          : > source-identity.log
+          for file in "${!expected[@]}"; do
+            path="verification/rh-theta-iteration-cocycle/$file"
+            actual="$(git hash-object "$path")"
+            test "$actual" = "${expected[$file]}"
+            printf '%s=%s\n' "$file" "$actual" | tee -a source-identity.log
+          done
+
+      - name: Reject explicit placeholders and custom trust declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          root = pathlib.Path('verification/rh-theta-iteration-cocycle')
+          paths = sorted(root.glob('*.lean'))
+          if len(paths) != 3:
+              raise SystemExit(f'expected three Lean sources, found {len(paths)}')
+          patterns = [
+              r'^\s*(sorry|admit)\b',
+              r'^\s*axiom\b',
+              r'^\s*opaque\b',
+              r'^\s*unsafe\b',
+              r'\bnative_decide\b',
+              r'Lean\.ofReduceBool',
+          ]
+          for path in paths:
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+              text = re.sub(r'--.*$', '', text, flags=re.M)
+              for pattern in patterns:
+                  match = re.search(pattern, text, flags=re.M)
+                  if match:
+                      raise SystemExit(
+                          f'{path}: forbidden declaration/token: '
+                          f'{match.group(0)!r}'
+                      )
+          PY
+
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          lean --version | tee lean-version.log
+          lake --version | tee lake-version.log
+          cd verification/rh-theta-iteration-cocycle
+          lake update
+          lake exe cache get
+          : > lean-output.log
+          for file in \
+            RHThetaIterationCocycleFinite.lean \
+            RHThetaIterationPrimeIntervalFinite.lean \
+            RHThetaIterationTollLowerBoundFinite.lean
+          do
+            echo "===== $file =====" | tee -a lean-output.log
+            lake env lean "$file" 2>&1 | tee -a lean-output.log
+          done
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|error:' lean-output.log; then
+            echo 'Forbidden placeholder axiom or compiler error found.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED all finite RH theta-iteration cores.'
+
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-theta-iteration-cocycle-lean-evidence
+          path: |
+            verification/rh-theta-iteration-cocycle/lean-output.log
+            lean-version.log
+            lake-version.log
+            source-identity.log
+          if-no-files-found: warn
