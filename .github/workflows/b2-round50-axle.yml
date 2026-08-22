@@ -1,0 +1,55 @@
+name: B2 round50 AXLE replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/b2_round50/B2Round50UniformityZeroDivisorFirewalls.lean'
+      - '.github/workflows/b2-round50-axle.yml'
+  push:
+    branches:
+      - automation/b2-round50-public-replay-20260813
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust preflight
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('verification/b2_round50/B2Round50UniformityZeroDivisorFirewalls.lean')
+          s = p.read_text()
+          forbidden = re.compile(r'(^|[^A-Za-z0-9_])(sorry|admit|sorryAx|axiom|opaque|unsafe)([^A-Za-z0-9_]|$)')
+          m = forbidden.search(s)
+          if m: raise SystemExit(m.group(2))
+          if 'native_decide' in s or 'Lean.ofReduceBool' in s: raise SystemExit('shortcut')
+          if s.count('#print axioms') != 8: raise SystemExit('expected 8 axiom reports')
+          PY
+      - name: AXLE Lean 4.30 replay
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, urllib.request
+          p = pathlib.Path('verification/b2_round50/B2Round50UniformityZeroDivisorFirewalls.lean')
+          payload = json.dumps({'content':p.read_text(),'environment':'lean-4.30.0','ignore_imports':True,'mathlib_options':False,'timeout_seconds':900}).encode()
+          req = urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req, timeout=960) as r:
+              result = json.load(r)
+          pathlib.Path('verification/b2_round50/axle-response.json').write_text(json.dumps(result,indent=2,sort_keys=True))
+          if not result.get('okay'): raise SystemExit('AXLE okay=false')
+          if result.get('failed_declarations'): raise SystemExit('failed declarations')
+          if result.get('lean_messages',{}).get('errors'): raise SystemExit('Lean errors')
+          if result.get('lean_messages',{}).get('warnings'): raise SystemExit('Lean warnings')
+          if result.get('tool_messages',{}).get('errors'): raise SystemExit('tool errors')
+          if result.get('request_exception'): raise SystemExit('request exception')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2-round50-axle-evidence
+          path: verification/b2_round50/axle-response.json
+          if-no-files-found: warn
