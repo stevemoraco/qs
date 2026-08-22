@@ -1,0 +1,111 @@
+name: RH Actual Cluster Selectors Exact Head Receipt
+
+on:
+  push:
+    branches:
+      - research/rh-actual-cluster-selectors-public-verifier-20260812
+    paths:
+      - 'verification/rh-actual-cluster-selectors/**'
+      - '.github/workflows/rh-actual-cluster-selectors-receipt.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/rh-actual-cluster-selectors-public-verifier-20260812
+
+      - name: Reject placeholders and record source hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=verification/rh-actual-cluster-selectors
+          file="$root/RHActualClusterSelectorsFinite.lean"
+          sha256sum "$file" | tee "$root/source-sha256.txt"
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit|axiom|opaque|unsafe)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder or custom trust declaration found.' >&2
+            exit 1
+          fi
+
+      - name: Clean pinned compile and axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          root=verification/rh-actual-cluster-selectors
+          lean --version | tee "$root/lean-version.txt"
+          lake --version | tee -a "$root/lean-version.txt"
+          cd "$root"
+          rm -rf .lake lake-manifest.json
+          lake update
+          lake exe cache get
+          set +e
+          lake env lean RHActualClusterSelectorsFinite.lean 2>&1 | tee lean-output.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit|Lean.ofReduceBool' lean-output.log; then
+            echo 'Forbidden dependency found in compiler report.' >&2
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+
+      - name: Commit exact-head verification receipt
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          SOURCE_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          root=verification/rh-actual-cluster-selectors
+          source_hash=$(cut -d' ' -f1 "$root/source-sha256.txt")
+          lean_version=$(head -n1 "$root/lean-version.txt")
+          axiom_lines=$(grep -A3 -E "depends on axioms|does not depend on any axioms" "$root/lean-output.log" || true)
+          cat > "$root/LEAN_RECEIPT_EXACT_HEAD.md" <<EOF
+          # RH actual-cluster selector finite-core receipt
+
+          **Honesty:** FORMALLY VERIFIED FINITE CORE — NOT RH AND NOT A MILLENNIUM RESULT.
+
+          - Source branch: \`research/rh-actual-cluster-selectors-public-verifier-20260812\`
+          - Source head replayed: \`${SOURCE_HEAD}\`
+          - Workflow run: \`${RUN_ID}\`
+          - Lean: \`${lean_version}\`
+          - Source SHA-256: \`${source_hash}\`
+          - Result: clean compile and explicit placeholder/hidden-hole scans succeeded.
+
+          ## Axiom report excerpt
+
+          \`\`\`text
+          ${axiom_lines}
+          \`\`\`
+
+          The verified file contains only scalar positivity, randomized-bound, and model-type firewalls. It does not formalize pseudohyperbolic geometry, Blaschke products, confluent interpolation, Hardy spaces, zeta zeros, or RH.
+          EOF
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$root/LEAN_RECEIPT_EXACT_HEAD.md" "$root/source-sha256.txt" "$root/lean-version.txt" "$root/lean-output.log"
+          git commit -m '✅ Seal RH actual-cluster selector exact-head receipt'
+          git push origin HEAD:research/rh-actual-cluster-selectors-public-verifier-20260812
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-actual-cluster-selectors-exact-head-evidence
+          path: |
+            verification/rh-actual-cluster-selectors/source-sha256.txt
+            verification/rh-actual-cluster-selectors/lean-version.txt
+            verification/rh-actual-cluster-selectors/lean-output.log
+            verification/rh-actual-cluster-selectors/LEAN_RECEIPT_EXACT_HEAD.md
+          if-no-files-found: warn
