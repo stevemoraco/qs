@@ -1,0 +1,77 @@
+name: YM Kirk v4 continuum coupling audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-continuum-coupling-audit-20260815-gpt56sol
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-continuum-coupling-audit-20260815-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable Kirk source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract continuum-coupling and marginal-source contexts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/continuum_coupling'); out.mkdir(parents=True,exist_ok=True)
+          phrases=[
+            'renormalized coupling','running coupling','effective coupling','background coupling','standard coupling',
+            'marginal coupling','coupling coordinate','step scaling','step-scaling','beta function','beta-function',
+            'Yang–Mills density','Yang-Mills density','dimension-four','dimension four','marginal block','marginal source',
+            'source renormalization','source-renormalization','u(r)','ur =','u_r','physical weak scale','weak scale r',
+            'finite normalized local source','normalized local source','local source family','curvature source',
+            'Theorem 8.24','Theorem 8.26','Theorem 8.45','Theorem 10.2'
+          ]
+          low=text.lower(); ledger=[]; counts={}; seen=[]
+          for phrase in phrases:
+            pos=0;n=0
+            while True:
+              i=low.find(phrase.lower(),pos)
+              if i<0: break
+              n+=1
+              if not any(abs(i-j)<900 for j in seen):
+                seen.append(i)
+                ledger.append(f'=== {phrase} hit {n} at {i} ===\n'+text[max(0,i-3500):min(len(text),i+10000)]+'\n')
+              pos=i+len(phrase)
+            counts[phrase]=n
+          theorem_pattern=re.compile(r'(?m)^.*(?:Lemma|Theorem|Proposition|Corollary).*?(?:coupling|marginal|dimension-four|dimension four|source).*$',re.I)
+          (out/'COUNTS.txt').write_text('\n'.join(f'{k}: {v}' for k,v in counts.items())+'\n',encoding='utf-8')
+          (out/'LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'THEOREM_LINES.txt').write_text('\n'.join(theorem_pattern.findall(text))+'\n',encoding='utf-8')
+          print('\n'.join(f'{k}: {v}' for k,v in counts.items()))
+          PY
+      - name: Preserve immutable coupling contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/continuum_coupling/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/continuum_coupling/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/continuum_coupling
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 continuum-coupling contexts'
+          git push origin HEAD:verification/ym-kirk-v4-continuum-coupling-audit-20260815-gpt56sol
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kirk-v4-continuum-coupling-audit
+          if-no-files-found: warn
+          retention-days: 30
+          path: source_audit/kirk_v4/continuum_coupling/

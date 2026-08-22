@@ -1,0 +1,84 @@
+name: YM Kirk v4 third-jet convergence audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-third-jet-convergence-audit-20260814-gpt56sol
+    paths:
+      - .github/workflows/ym-kirk-v4-third-jet-convergence-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-third-jet-convergence-audit-20260814-gpt56sol
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract third-jet convergence evidence
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/third_jet_convergence'); out.mkdir(parents=True,exist_ok=True)
+          targets=[
+            'Lemma 5.10','Lemma 5.11','Lemma 5.12','Lemma 5.13','Lemma 5.14','Lemma 5.15','Lemma 5.16',
+            'Lemma 5.3','Lemma 5.4','Lemma 5.5','Theorem 5.6','Theorem 5.27','Corollary 6.2','Theorem 6.4'
+          ]
+          summary=[]
+          for target in targets:
+            m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$', text)
+            if not m:
+              summary.append(target+': NOT FOUND'); continue
+            start=max(0,m.start()-1800); end=min(len(text),m.start()+18000)
+            slug=target.lower().replace(' ','_').replace('.','_')
+            (out/(slug+'.txt')).write_text(text[start:end],encoding='utf-8')
+            summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          phrases=[
+            'three coupling derivatives','three derivatives in u','0 ≤ k ≤ 3','0 <= k <= 3',
+            'third derivative','third-order','third order','cubic coefficient','cubic Taylor',
+            'two-loop','two loop','BPHZL packet','two-loop packet','marked packet','marked degree',
+            'thermodynamic','finite-volume','sum-integral','rooted support sum','coefficient identification',
+            'SI–7M','SI-7M','C 3','C3','unit tangent','unit-tangent'
+          ]
+          ledger=[]
+          low=text.lower()
+          for phrase in phrases:
+            pos=0
+            for hit in range(80):
+              i=low.find(phrase.lower(),pos)
+              if i<0: break
+              ledger.append(f'=== {phrase} hit {hit+1} at {i} ===\n'+text[max(0,i-2200):min(len(text),i+8500)]+'\n')
+              pos=i+len(phrase)
+          (out/'PHRASE_LEDGER.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit audit contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/third_jet_convergence/
+          sha256sum kirk_latest.pdf > source_audit/kirk_v4/third_jet_convergence/PDF_SHA256.txt
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/third_jet_convergence
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 third-jet convergence contexts'
+          git push origin HEAD:verification/ym-kirk-v4-third-jet-convergence-audit-20260814-gpt56sol
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-third-jet-convergence-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/third_jet_convergence/

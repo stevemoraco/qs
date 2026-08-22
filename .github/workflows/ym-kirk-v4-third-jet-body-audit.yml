@@ -1,0 +1,74 @@
+name: YM Kirk v4 third-jet body audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+    paths:
+      - .github/workflows/ym-kirk-v4-third-jet-body-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract exact third-jet interface
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/third_jet'); out.mkdir(parents=True,exist_ok=True)
+          targets=['Lemma 5.2','Lemma 5.3','Lemma 5.4','Lemma 5.5','Lemma 5.6','Theorem 5.27','Lemma 6.1','Theorem 6.4','Corollary 6.5']
+          summary=[]
+          for target in targets:
+            m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$', text)
+            if not m:
+              summary.append(target+': NOT FOUND'); continue
+            start=max(0,m.start()-2200); end=min(len(text),m.start()+15000)
+            slug=target.lower().replace(' ','_').replace('.','_')
+            (out/(slug+'.txt')).write_text(text[start:end],encoding='utf-8')
+            summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          phrases=['third derivative','third-order','third order','cubic coefficient','two-loop','two loop','C 3','C3','unit-tangent','conjugacy','O(u4)','O(u 4)','O(u^4)','beta1','β1']
+          ledger=[]
+          low=text.lower()
+          for phrase in phrases:
+            pos=0
+            for hit in range(30):
+              i=low.find(phrase.lower(),pos)
+              if i<0: break
+              ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-2600):min(len(text),i+8000)]+'\n')
+              pos=i+len(phrase)
+          (out/'phrase_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (out/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit audit contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/third_jet/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/third_jet
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 third-jet contexts'
+          git push origin HEAD:verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-third-jet-body-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/third_jet/

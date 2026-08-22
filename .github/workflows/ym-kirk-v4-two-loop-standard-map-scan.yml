@@ -1,0 +1,71 @@
+name: YM Kirk v4 standard-map two-loop scan
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+    paths:
+      - .github/workflows/ym-kirk-v4-two-loop-standard-map-scan.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Scan exact two-loop standard-map interface
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          out=Path('source_audit/kirk_v4/standard_two_loop'); out.mkdir(parents=True,exist_ok=True)
+          pats={
+            'two_loop': r'(?i)two[\s\-–—]*loop',
+            'beta1_ascii': r'(?i)beta\s*[_\-]?\s*1|b\s*[_\-]?\s*1',
+            'beta1_unicode': r'β\s*1|β₁',
+            'cubic': r'(?i)cubic',
+            'third_jet': r'(?i)third[\s\-–—]*(jet|order)|3[- ]jet',
+            'standard_map': r'Σ\s*(std|∞)|Sigma\s*(std|infty)|standard[- ]scheme map|standard map',
+            'background_coupling': r'(?i)background coupling|background coordinate|g_a',
+            'luscher_weisz': r'(?i)L[üu]scher|Weisz',
+            'msbar': r'(?i)MS.?bar|overline.?MS',
+          }
+          report=[]
+          for name,pat in pats.items():
+            ms=list(re.finditer(pat,text))
+            report.append(f'## {name}: {len(ms)} hits')
+            for j,m in enumerate(ms[:60],1):
+              report.append(f'\n=== {name} hit {j} @ {m.start()} ===\n')
+              report.append(text[max(0,m.start()-2600):min(len(text),m.end()+7000)])
+          (out/'SCAN.txt').write_text('\n'.join(report),encoding='utf-8')
+          print('\n'.join(x for x in report if x.startswith('## ')))
+          PY
+      - name: Commit scan
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/standard_two_loop/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/standard_two_loop
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve Kirk v4 standard-map two-loop scan'
+          git push origin HEAD:verification/ym-kirk-v4-third-jet-body-audit-20260814-gpt56
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-standard-two-loop-scan
+          if-no-files-found: error
+          retention-days: 30
+          path: source_audit/kirk_v4/standard_two_loop/

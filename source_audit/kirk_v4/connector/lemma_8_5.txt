@@ -1,0 +1,194 @@
+ and not σ. Spatial decay is carried by the exponential bond
+on the distinguished root-to-root tree path, rather than by an assertion that the conditional covariance
+has strict finite range.
+Lemma 8.4 (Weak-scale connector). Fix two physical source buffers A, B and let d = dist(A, B). The
+sum of connected scale-j histories whose coarsest nonlocal object occurs at a weak scale j ≥ jw is bounded,
+after Riemann source normalization, by
+
+                               C exp{− min{c0 | log σ|, mopt }(d − CR )+ /ℓj }.                        (113)
+
+The corresponding source kernel has uniformly bounded Riemann-weighted row and column sums.
+Proof. Absorb every family contained in one source buffer into its exact local conditional. A remaining
+connected family joining the buffers has a support tree with a distinguished path from A to B. Assign
+each Gaussian contraction the bond
+                                           Ke−mopt d(X,Y )/ℓj
+of Corollary 4.14, and report every fixed local connector word in the adjacent support. Along the
+distinguished path the triangle inequality gives
+                                 Y
+                                         e−mopt d(X,Y )/ℓj ≤ e−mopt (d−CR )+ /ℓj .
+                             (X,Y ) on path
+
+All vertex constants and the factors K are summed by the strict rooted margin of Lemma 8.3; unused
+branches are summed by the remaining KP reserve. Weakening the smaller of the covariance exponent
+and the rooted support exponent once gives (113), with c0 | log σ| there replaced, if necessary, by a smaller
+fixed positive constant. Passive source buffers are controlled by the exact full-fine two-buffer theorem,
+Corollary 7.4. Pulling the connector back to the fine source grid does not enlarge its Schur row or column
+norm because of Lemma 8.1.
+
+Lemma 8.5 (Matching-scale spacetime connector). For bounded matching-scale cylinders F, G supported
+in physical sets A, B,
+                           |Cov(F, G)| ≤ CF,G exp{−m0 dist1 (A, B)}                           (114)
+with m0 > 0 independent of spatial volume and microscopic cutoff.
+Proof. Use F and G as the two declared roots in Theorem 6.43. The matching forest is four-dimensional:
+its distinguished root path pays the same optical, Haar-carrier, and reported-support exponents in
+spatial and Euclidean-time directions. The weighted row and column estimate therefore gives (114) with
+m0 = mE ; fixed endpoint layers are absorbed into CF,G .
+
+
+                                                     74
+Exact finite-depth multiscale forest formula For a microscopic depth m, let Rj denote the exact
+normalized conditional-logarithm map that integrates the scale-j fluctuation field and returns the source-
+decorated effective interaction at scale j − 1. The maps include the regular/irregular partition of unity
+before the logarithm is taken, so no all-good denominator occurs. Write
+
+                                     Wm (J) = log Zm (J) − log Zm (0)
+
+for the normalized finite-volume source logarithm. Iterating the exact maps Rm , . . . , Rjw and then the
+finite macrobridge is an identity, not an asymptotic expansion.
+   A scale-labelled source forest is generated recursively as follows. A source derivative is a labelled leaf.
+At one conditional integration, connected cumulant differentiation joins a nonempty partition of the
+incoming leaves and decorated subtrees to one new vertex labelled by that integration scale. Terms
+transported without joining retain their existing components. At the terminal matching logarithm, the
+remaining components are joined by the matching-scale connected cumulants. The ordering of children is
+fixed by the least source label, so isomorphic terms are not counted more than once.
+Lemma 8.6 (Exact multiscale Faà di Bruno forest formula). For every finite depth m and every fixed
+derivative order n,                                        X
+                             Dn Wm (0)[J1 , . . . , Jn ] =   Am (τ ; J1 , . . . , Jn ),                 (115)
+                                                      τ ∈Tm,n
+
+where Tm,n is the finite family of recursively generated scale-labelled connected trees described above. Each
+analytic coefficient of each exact conditional logarithm occurs exactly once. After absolute values are
+taken, the sum is dominated uniformly in m by the rooted weak rows and the finite matching expansion.
+Hence (115) passes to the infinite weak-depth limit termwise for every fixed n.
+Proof. For one conditional integration, differentiation of the normalized logarithm is the joint-cumulant
+identity. The set-partition formula for a derivative of a composition is precisely the Banach-valued Faà di
+Bruno formula: every block of the partition is one incoming connected component and the outer cumulant
+joins those blocks at the current scale. Fixing the least-label order makes this representation unique.
+Induction over the finite sequence of exact conditional integrations proves (115); the terminal matching
+logarithm is the final induction step. The weak rooted margin pays every nonroot weak vertex by σ < 1,
+while the finite macrobridge and matching KP expansion pay the finitely many terminal vertices. The
+one/two-root bounds control a component while its source leaves remain external. These majorants are
+summable independently of m, so dominated convergence gives the last assertion.
+
+    For a tree carrying two distinguished source buffers, let v(A, B) be their unique lowest common ancestor.
+If v(A, B) belongs to the terminal matching logarithm, call the history a matching history. Otherwise its
+scale label j(v) is the unique weak coarsest-connection scale. Notice that this is a property of the exact
+recursively generated tree, not a choice made after absolute values or bounds have been applied.
+Corollary 8.7 (No omission and no double counting). The connected two-buffer part of D2 Wm (0) is
+the disjoint sum of the matching histories and the weak histories indexed by their unique label j ≥ jw .
+Contracting all strict descendants of v(A, B) produces a one/two-root decorated vertex whose norm is
+bounded uniformly by Theorem 7.2 and Corollary 7.4. The decomposition remains exact after regular and
+irregular sectors are recombined. Every connected tree has exactly one lowest common ancestor for the two
+source leaves, and the recursive least-label convention gives it exactly one representation in Lemma 8.6.
+Descendants have strictly finer labels or belong to the same finite conditional vertex and are summed by
+its connected cumulant. Exact regular/irregular recombination precedes the conditional logarithm at every
+scale, so the forest formula expands the full measure rather than a conditioned all-good measure.
+
+Unique-coarsest-scale allocation Differentiate the exact composition of normalized conditional
+logarithms with respect to source parameters. Every connected term has a finite collection of local objects
+carrying scale labels. Contract every maximal connected collection of finer-scale objects into a decorated
+root and declare the largest physical scale remaining to be the coarsest scale of the history. Ties are
+broken lexicographically.
+Lemma 8.8 (Canonical multiscale allocation). Every connected two-buffer source history is assigned
+exactly once either to the matching connector or to one weak scale j ≥ jw . Finer decorations attached to
+its coarsest skeleton have a uniformly summable one/two-root norm. Put
+
+                                             dw := CR + m−1
+                                                         w .
+
+
+
+                                                     75
+For d ≥ dw ,                   X
+                                      Ce−c0 | log σ|(d−CR )/ℓj ≤ C ′ e−mw (d−CR )/2 .                  (116)
+                               j≥jw
+
+For d < dw the complete history is retained in one fixed enlarged local cluster: it is uniformly bounded for
+bounded observables and controlled in the local source topology for renormalized fields.
+Proof. By Corollary 8.7, the lowest common ancestor of the two source buffers assigns every connected
+tree to exactly one terminal or weak-scale class. This is the first scale in the exact recursive conditional-
+logarithm formula at which the two source components are joined. The least-label convention removes
+automorphism multiplicities before estimates are applied. The fixed root algebra sums every finer
+decoration independently of the number of activePnonroot supports. Since ℓj = 2−(j−jw ) ℓjw , put
+x = mw (d − CR )+ . The scale sum is bounded by C r≥0 exp(−2r x). The condition d ≥ dw gives x ≥ 1,
+and then this is at most C1 exp(−x), proving (116). If d < dw the two buffers lie in one fixed enlarged
+physical neighborhood. Their ultraviolet contact subtrees are not summed as separate long connectors;
+they are contracted into the exact local atom described in the statement.
+Theorem 8.9 (Uniform physical two-source connector). There are dloc , A0 , m > 0, independent of
+resolution, microscopic cutoff, volume, and boundary conditions, with the following properties.
+ (a) For two centered bounded positive-scale observables supported in BR (z) and BR (z ′ ), the complete
+     connected majorant is bounded at every separation by
+                                                                                       ′
+                            Cm (BR (z), BR (z ′ )) ≤ Km (z, z ′ ) := A0 e−m(|z−z |1 −2R)+ ,            (117)
+
+     and                                 X                             X
+                               sup ℓ4m        Km (z, z ′ ) + sup ℓ4m       Km (z, z ′ ) ≤ K0 .         (118)
+                                z                              z′
+                                         z′                            z
+
+ (b) If either buffer carries a fixed finite renormalized local source, displacement mark, or rotation mark,
+     then for test sources with disjoint supports at distance d ≥ dloc the connected functional is bounded
+     by Cs,A,B e−md . At shorter distance it is controlled in the local Schwartz/source seminorm supplied
+     by the triangular finite-jet renormalization; no cutoff-uniform pointwise estimate on the diagonal is
+     claimed.
+The exponent m is common to both classes and to every fixed finite source family.
+Proof. Combine Lemma 8.5 with the exact forest allocation and the weak scale sum. For d ≥ dloc choose
+dloc so the variable x = mw (d − CR )+ in Lemma 8.8 is at least one. Weak histories then decay with
+rate at least mw /2, while matching histories decay with rate at least 12 min{mtr , msp }. Hence one may
+take the common exponent m = m∗ from (111); Lemma 8.2 shows explicitly that this exponent is not
+degraded by increasing the ultraviolet depth.
+   For bounded observables, the covariance and every short-distance connected local atom are bounded
+by their sup norms, so enlarging A0 extends the bound to all separations. Lemma 8.1 and integrability of
+the physical exponential kernel give (118). For a normalized local source, the short-distance cluster is
+not estimated pointwise. It is exactly the local source coefficient renormalized by the finite triangular
+counterterm matrix; the finite triangular source theorem printed in Part V bounds it in a finite Schwartz
+seminorm. Once two source supports are separated, the lowest-common-ancestor edge lies outside both
+local clusters and the same connector exponent applies. Thus the theorem derives a cutoff-independent
+physical rate without suppressing or hiding contact terms.
+
+All-order source trees Let
+
+                                κm,n (z1 , . . . , zn ) = Cum(Om,z1 , . . . , Om,zn ).
+
+Lemma 8.10 (Labelled-tree extraction). Every connected source-labelled history admits a deterministic
+allocation to a spanning tree on {1, . . . , n}. An edge joining bounded positive-scale roots is bounded by
+Theorem 8.9(a). For renormalized local sources, every contact subtree is first contracted into one local
+renormalized vertex; an edge joining two disjoint vertices is then bounded by Theorem 8.9(b). Only the
+two endpoint clusters of one edge are retained as roots, and all previously exposed variables are exterior
+data.
+
+
+
+                                                          76
+Proof. Start with the least label and expose the connected history until it first reaches the least unseen
+label. Draw that edge, absorb the exposed component into the parent cluster, and repeat. Every new
+label is attached once. When an edge is estimated, Theorem 6.44 treats the two endpoint clusters as the
+only distinguished roots and is uniform in all already exposed exterior variables.
+
+Theorem 8.11 (All-order physical source-tree bound). For every fixed finite family of centered bounded
+positive-scale source types there is Cs < ∞ such that
+                                                              X Y
+                            |κm,n (z1 , . . . , zn )| ≤ n!Csn     Km (zi , zj ),                  (119)
+                                                         T ∈Tn {i,j}∈E(T )
+
+
+uniformly in resolution, cutoff, volume, and boundary conditions. For every fixed finite family of
+renormalized local or marked sources, the corresponding smeared cumulants satisfy
+                                                                             n
+                                                                             Y
+                              |Cum(Φm (f1 ), . . . , Φm (fn ))| ≤ Cn               pN (fi )          (120)
+                                                                             i=1
+
+for one finite Schwartz seminorm pN depending on the source types. If the source labels split into two
+groups with mutually separated supports, the connected cumulant has the additional common factor e−md .
+Proof. Differentiate the connected source logarithm and first collect each maximal contact subtree into
+one local root. Apply Lemma 8.10; Theorem 6.44 shows that no matching-stage derivative of order
+n is required, because each tree edge sees only its two endpoint clusters as distinguished roots. For
+bounded roots, every edge has the pointwise connector (117); excess attachments are summed by the
+unused strict KP margin, and the deterministic allocation costs at most the displayed factorial. For
+renormalized local sources, first contract every contact subtree into its finite local source vertex. The
+remaining edges join disjoint clusters and carry the separated-support exponential from Theorem 8.9(b).
+The local vertices are bounded by the triangular source-renormalization seminorms. Repeated Schur
+summation of the remaining edges, with one Schwartz L1 norm at the tree root, gives (120) and the
+separated-group exponential.
+Corollary 8.12 (Uniform source analyticity and exponential clustering). On a fixed neighborhood 

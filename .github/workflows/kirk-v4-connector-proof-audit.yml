@@ -1,0 +1,96 @@
+name: Kirk v4 connector proof audit
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+    paths:
+      - .github/workflows/kirk-v4-connector-proof-audit.yml
+      - tools/probe_kirk_latest_source.py
+
+permissions:
+  contents: write
+
+jobs:
+  connector-proof-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+      - name: Ensure pdftotext
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update && sudo apt-get install -y poppler-utils
+          fi
+      - name: Pin immutable latest source
+        run: python3 tools/probe_kirk_latest_source.py >/tmp/probe.json
+      - name: Extract connector and prerequisite theorem contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('latest.txt').read_text(encoding='utf-8',errors='replace')
+          targets=[
+            ('corollary_4_14','Corollary 4.14'),('lemma_4_21','Lemma 4.21'),
+            ('lemma_4_22','Lemma 4.22'),('lemma_4_23','Lemma 4.23'),
+            ('lemma_4_24','Lemma 4.24'),('lemma_4_25','Lemma 4.25'),
+            ('lemma_4_26','Lemma 4.26'),('lemma_4_27','Lemma 4.27'),
+            ('lemma_4_28','Lemma 4.28'),('theorem_4_29','Theorem 4.29'),
+            ('theorem_4_30','Theorem 4.30'),('theorem_5_1','Theorem 5.1'),
+            ('lemma_5_20','Lemma 5.20'),('theorem_5_8','Theorem 5.8'),
+            ('lemma_6_12','Lemma 6.12'),('lemma_6_28','Lemma 6.28'),
+            ('lemma_6_29','Lemma 6.29'),('lemma_6_30','Lemma 6.30'),
+            ('lemma_6_31','Lemma 6.31'),('lemma_6_32','Lemma 6.32'),
+            ('lemma_6_34','Lemma 6.34'),('lemma_6_35','Lemma 6.35'),
+            ('lemma_6_36','Lemma 6.36'),('lemma_6_37','Lemma 6.37'),
+            ('lemma_6_38','Lemma 6.38'),('theorem_6_39','Theorem 6.39'),
+            ('theorem_6_43','Theorem 6.43'),('theorem_6_44','Theorem 6.44'),
+            ('lemma_8_2','Lemma 8.2'),('lemma_8_5','Lemma 8.5')]
+          outdir=Path('source_audit/kirk_v4/connector'); outdir.mkdir(parents=True,exist_ok=True)
+          summary=[]
+          for slug,target in targets:
+              m=re.search(r'(?m)^\s*'+re.escape(target)+r'\b.*$',text)
+              if not m:
+                  m=re.search(r'(?m)^\s*(?:Lemma|Theorem|Proposition|Corollary)\s+'+re.escape(target.split()[-1])+r'\b.*$',text)
+              if not m:
+                  summary.append(f'{target}: NOT FOUND')
+                  continue
+              start=max(0,m.start()-1800); end=min(len(text),m.start()+13000)
+              (outdir/f'{slug}.txt').write_text(text[start:end],encoding='utf-8')
+              summary.append(f'{target}: offset {m.start()}, chars {end-start}')
+          phrases=['equation (77)','(77)','coverage reserve','Fourier–Wiener','trace norm','Peter–Weyl cutoff',
+                   'condition (84)','(84)','condition (95)','(95)','condition (96)','(96)',
+                   'qsp','q_sp','nuclear cost','incidence reserve','covered-pivot','coverage word',
+                   'physical cycles','shared tails','multi-pivot']
+          ledger=[]; low=text.lower()
+          for phrase in phrases:
+              pos=0
+              for hit in range(16):
+                  i=low.find(phrase.lower(),pos)
+                  if i<0: break
+                  ledger.append(f'=== {phrase} hit {hit+1} ===\n'+text[max(0,i-2500):min(len(text),i+7000)]+'\n')
+                  pos=i+len(phrase)
+          (outdir/'compact_nuclear_ledger.txt').write_text('\n'.join(ledger),encoding='utf-8')
+          (outdir/'SUMMARY.txt').write_text('\n'.join(summary)+'\n',encoding='utf-8')
+          print('\n'.join(summary))
+          PY
+      - name: Commit connector proof contexts
+        run: |
+          cp kirk_latest_record.json source_audit/kirk_v4/
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): expose compact Fourier-Wiener coverage prerequisites'
+          git push origin HEAD:verification/ym-kirk-v4-connector-proof-audit-20260814-gpt56
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirk-v4-connector-proof-audit
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            kirk_latest_record.json
+            kirk_source_probe_report.json
+            source_audit/kirk_v4/connector/

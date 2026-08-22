@@ -1,0 +1,269 @@
+5.9 (Marked two-quantum-leg reduction in the actual stable fiber). Let H = X HX be the
+                                                                                           P
+tangent from Theorem 5.8. Choose 0 < a0 < κ and η = (κ − a0 )/2. Then
+                                         X
+                                     sup    e(a0 +η)τ (X) ∥HX ∥a;3,2 < ∞.
+                                        e
+                                            X∋e
+
+After the two background marks are taken, every finite-support background/quantum/ghost kernel of
+HX has zero complete local jet below engineering degree five. In the reflection-even physical background
+two-point sector, degree five is absent by signed-hypercubic reflection, so the first nonzero associated-graded
+component has degree at least six. The two-quantum-leg kernel is a sum of at most C|X|2 rooted edge-pair
+terms, with coefficients bounded by C(1 + diam X)q ∥HX ∥a;3,2 .
+
+Proof. The exponential row is the differentiated invariant-graph bound with an unused support reserve.
+Equation (19) removes, after the active marks, every local jet carried by Πext ; in particular it removes
+the marked B 2 A2 row that invalidates an unmarked centering argument. At first order in the tangent
+insertion, the one-loop identity L = I − V + 1 = 1 shows that every additional quantum vertex is
+a tree attachment to the unique loop; after those tree attachments are collected, the insertion enters
+the background two-point amplitude through one effective two-quantum-leg kernel. Two fluctuation
+derivatives choose an ordered pair of edges in X, producing at most C|X|2 terms. Rooted parallel
+transport and finite localization cost only a support polynomial. Reflection excludes an odd engineering
+degree in the physical scalar two-point sector.
+Lemma 5.10 (Mixed one-loop topology and subtraction ledger). Fix one rooted support X and expand
+the nonexceptional background two-point coefficient to first order in the invariant-graph tangent and to
+the finite Wilson order required at one loop. A forest renormalization part means a proper connected
+1PI subgraph with an internal line and the SI–6 subtraction degree; the effective two-quantum-leg HX
+kernel is one indivisible vertex. After tree attachments are collected, the reduced graph is unicyclic and
+every marked vertex lies on its unique cycle. Every complete BPHZL packet is exactly one of: (W) a
+pure-Wilson packet; (H1) one marked insertion, with only pure-Wilson contractions or one mixed cycle
+contraction; (H≥ 2) several marked insertions with the same alternatives; or (Hfar) a diam X > 1. A
+
+
+                                                             44
+mixed contraction is loop-free. A loop-bearing mixed quotient retains a marked kernel whose complete jet
+through degree four vanishes and whose physical even component begins in degree six. Hence only (W)
+can carry an unsuppressed P⋆ log a term; every row has polynomial support multiplicity, and (Hfar) is
+O(aN ) for every fixed N after the rooted sum.
+
+Proof. A connected one-loop graph has one simple cycle; every other internal edge is a bridge. A connected
+1PI subgraph cannot contain an internal bridge, so a nontrivial mixed renormalization part must contain
+the full unique cycle. Contracting it removes the sole loop. This also settles nested and overlapping
+forests: after one mixed contraction every outer quotient is loop-free, disjoint mixed parts are impossible,
+and a forest with no mixed member leaves one marked loop. Lemma 5.9 supplies its degree-six kernel;
+the unused support exponent absorbs the finite edge-pair and localization polynomials.
+
+Definition 5.11 (Lowenstein infrared dimension at the coefficient interface). Give a vector, background-
+vector, ghost, or antighost leg infrared dimension one, and give a lattice difference and the Lowenstein
+variable 1 − s infrared dimension one. For a periodic vertex symbol V let νIR (V ) be its lower Taylor order
+when all incident soft momenta and 1 − s are scaled together, and put
+
+                               ρ(V ) := νIR (V ) + nA (V ) + nc (V ) + nc̄ (V ),
+
+where background-vector legs are counted in nA . The SI–7M vertex condition used here is
+
+                                                   ρ(V ) ≥ 4                                           (20)
+
+for every elementary or reduced local vertex entering a Lowenstein forest. For a connected soft graph γ
+whose massless vector and ghost lines have order −2, incidence and Lγ = Iγ − |Vγ | + 1 give
+                                          X                        X
+                     ω(γ) = 4Lγ − 2Iγ +       νIR (Vv ) = 4 − Eγ +     ρ(Vv ) − 4 .                 (21)
+                                                                                 
+
+                                           v∈Vγ                         v∈Vγ
+
+
+Lemma 5.12 (Complete infrared vertex and forest admission). Fix X with a diam X ≤ 1, a graph in
+Lemma 5.10, q ∈ Q⋆ , and at most two background-amplitude marks. With Lowenstein parameter s, write
+                                                X
+                                  RGLZ
+                                       (q, s) =     TFLZ IG (q, s),                            (22)
+                                                   F ∈F(G)
+
+
+where TFLZ is the ordered SI–6B/SI–7M forest operator. At s = 1 only this complete packet is evaluated.
+  Every elementary vertex and every reduced vertex admitted by the forest satisfies (20). More explicitly,
+
+                       vertex family                 νIR       number of dimension-one legs    ρ
+             vector or ghost quadratic symbol         2                     2                  4
+           three-vector or ghost–vector vertex       ≥1                     3                 ≥4
+         four-vector, seagull, or tadpole vertex     ≥0                     4                 ≥4
+             pure-Wilson reduced local vertex       4−n                     n                  4
+           loop-bearing marked reduced vertex       ≥6−n                    n                 ≥ 6.
+
+The two background marks create external legs and do not differentiate external momentum, so they do
+not lower these orders. A mixed forest contraction is loop-free. A pure-Wilson contraction produces only
+a standard dimension-four background-field vertex, while every quotient that retains the stable insertion
+retains its degree-six marked vertex.
+   Consequently every subtraction-generated exceptional configuration is covered by the SI–7M forest
+theorem, not estimated as a separated Taylor piece. In particular, for the one-loop two-point classes the
+complete list of soft degrees is
+
+                                   ω vector bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                   ω ghost bubble = 4 − 2 · 2 + 1 + 1 = 2,
+                                  ω seagull/tadpole = 4 − 2 = 2.
+
+These values also cover the exceptional zero-momentum configurations created inside the Lowenstein
+operators. A loop-bearing marked quotient has at least two additional infrared degrees. Thus every complete
+packet has strictly positive lower infrared degree in every soft subspace.
+
+
+                                                      45
+   The pure-Wilson ultraviolet degrees are the SI–6 degrees. By the one-cycle ledger, a mixed contraction
+consumes the loop; otherwise the quotient retains a degree-six marked kernel and has ultraviolet excess at
+least two. Hence all overall and proper-quotient ultraviolet degrees required by SI–7 are admissible. After
+the finite SI–7M sector decomposition, uniformly in the periodic side M and through the two marks, the
+grouped packet obeys
+                                                       
+                                       X
+            RGLZ
+                 (q, 1; k) ≤ C PX 1 +     dT4 (k, ξ)−2  ,     PX ≤ C(1 + diam X)p ∥HX ∥a;3,2 ,       (23)
+                                      ξ∈SG
+
+with the evident omission of PX for a pure-Wilson packet and with a finite soft set SG . A radius-r shell
+contains O(M 4 r4 ) lattice momenta, so (23) contributes O(r2 ) after M −4 normalization. The dyadic shell
+sum is uniform in M ; deleting a grounded zero mode only decreases it. SI–7 and SI–7M therefore give the
+cutoff and s ↑ 1 limits of the complete packet, and the unused rooted support exponent absorbs PX before
+the thermodynamic sum.
+Proof. The quadratic, cubic, quartic, gauge-fixing, and ghost rows are the finite Taylor rows of the local
+Wilson background action and based Faddeev–Popov density. Their derivative and leg counts give the
+first four rows of the table. The marked row is Lemma 5.9; the one-cycle classification in Lemma 5.10
+shows that forest reduction either removes the loop or leaves that row intact. Equation (21) then proves
+the displayed infrared ledger, including the simultaneous two-line soft configuration at a subtraction point.
+This verifies the general vertex hypothesis of SI–7M for the original graph and all reduced vertices. The
+SI–7M complete-forest conclusion supplies the grouped sector majorant; the explicit degree two gives the
+exponent in (23). The shell count and the strict rooted reserve prove the stated uniform limits.
+Lemma 5.13 (Finite-support marked power-counting consequence). Let HX satisfy (19). For a diam X ≤
+1, the BPHZL-subtracted one-loop nonexceptional background packet has the form
+                    (2)
+                   IX (a, q⋆ ) = AX (q⋆ ) + O a2 | log a| C(1 + diam X)q1 ∥HX ∥a;3,2 ,         (24)
+                                                         
+
+                                       (2)
+where AX (q⋆ ) is finite and [log a] P⋆ IX = 0. Supports with a diam X > 1 have rooted total O(aN ) for
+every fixed N .
+Proof. Fix one support and q ∈ Q⋆ , keeping background, quantum, and ghost momenta separate. Apply
+the complete SI–6B/SI–7M packet and the graph classification of Lemma 5.10. Lemma 5.12 verifies, for
+every complete packet and through the two consumed background marks, lattice periodicity, denominator
+scaling, numerator smoothness, all overall and proper-subgraph degrees, the pure-Wilson/loop-free-
+local/loop-bearing marked trichotomy, support-polynomial control, and uniform rooted domination.
+SI–7M is therefore applicable to every complete loop-bearing post-contraction packet. Pure-Wilson
+proper divergent subgraphs are removed in the SI–6 scheme, while every quotient that still contains
+the distinguished stable insertion has irrelevant excess at least two. Lemma 5.9 gives a finite sum of
+two-quantum-leg symbols whose complete marked local Taylor jet starts at engineering degree d ≥ 6. The
+complete marked Taylor polynomial of the insertion through degree four is zero by (19). Subtractions
+may produce local power rows but cannot restore a marginal input exponent; the remaining symbol
+carries ad−4 .
+   On each fixed unit loop-momentum annulus, the verified SI–7/SI–7M hypotheses give the uniform
+marked bound used below. Write the ultraviolet annuli as |k| ≍ 2j with 0 ≤ j ≤ J(a) = O(| log a|). A
+marked component of engineering degree d contributes to P⋆ with an explicit ad−4 and an annulus row
+bounded by C2(d−4)j . If d > 4, the annulus sum is geometric:
+                                                   J(a)
+                                                   X
+                                         a   d−4
+                                                          2(d−4)j = O(1),
+                                                   j=0
+
+so it produces a finite local scheme row and no logarithm. A logarithm occurs only at the marginal
+exponent d − 4 = 0. Higher external-momentum Taylor coefficients can lower the annulus exponent to
+zero, but then they retain the explicit ad−4 ; for d ≥ 6 their logarithmic row is O(a2 | log a|). Hence an
+unsuppressed P⋆ log a term would require a nonzero marked degree-four input jet, which is absent. No
+assertion that a redundant dimension-four insertion is annihilated support by support is used: such rows
+have already been extracted and are not present in HX .
+   Finite-support multiplicity is polynomial in diam X; for a diam X > 1, the strict support reserve
+dominates every prescribed power of a.
+
+
+                                                           46
+Lemma 5.14 (Uniform quasi-local marked universality). For the actual stable graph tangent H, the
+one-loop nonexceptional background packet is an absolutely and uniformly convergent rooted sum of (24).
+For some finite q,
+                           (2)
+                         |IX (a)| ≤ C(1 + diam X)q e−(a0 +η)τ (X) (1 + a2 | log a|).
+The unsuppressed physical logarithm vanishes support by support:
+                                                   (2)
+                                     [log a] P⋆ IX = 0        for every X.                                (25)
+Thus the full centered invariant family differs from the canonically normalized Wilson family by one finite,
+scale-independent C 2 scheme map through the two consumed background marks.
+Proof. The support polynomial in Lemma 5.13 is absorbed by the strict exponent reserve. The finite-
+support amplitudes and their two background derivatives may therefore be summed before removing the
+cutoff. At the quadratic order in the marginal coordinate needed for the one-step coefficient, apply the
+complete SI–6B/SI–7M lattice BPHZL packet, the exhaustive ledger of Lemma 5.10, and the complete
+post-contraction admission check of Lemma 5.12 to every mixed Wilson/stable term. A marginal proper
+subgraph containing only Wilson vertices is exactly a standard background-field subgraph and is subtracted
+in the SI–6 scheme. After all such subgraphs are contracted, every remaining quotient graph contains at
+least one stable marked insertion and hence has positive irrelevant excess, at least two in the reflection-even
+physical sector. Its overall annulus sum is therefore a power row or an explicitly a2 | log a|-suppressed
+row, not an unsuppressed logarithm. Multiple stable insertions only increase that excess. The marked
+stable-fiber identity removes every degree-four input row before this forest analysis. Uniform convergence
+leaves one finite C 2 local scheme term and no new unsuppressed logarithmic coefficient.
+Lemma 5.15 (Scale-independent finite scheme map). Let gW be the local standard coupling on the
+canonically rescaled pure Wilson family and let g⋆ be the same local functional on the full centered
+invariant family. On the common weak interval there is one C 2 map
+                                  s(g) = g + cs g 2 + O(g 3 ),      s′ (0) = 1,
+independent of the dyadic lattice spacing, such that
+                                                    g⋆ = s(gW )
+at both ends of every factor-two step. Consequently
+                                            Σstd = s ◦ ΣW ◦ s−1 .
+The C 3 -flat irregular complement is included in s; no analyticity at g = 0 is claimed or needed.
+Proof. Evaluate the same canonically rescaled nonexceptional projector P⋆ on the two full weak families.
+Their tree Hessians coincide. Their first difference is the invariant-graph tangent uH1 , whose vacuum
+scalar and complete dimension-four retained projection vanish. Lemma 5.14 proves, rather than assumes,
+that the entire exponentially quasi-local insertion family contributes a finite scale-independent transverse
+scheme row and no new unsuppressed log a coefficient. SI–6 excludes an independent background
+dimension-four counterterm. The inner-chart difference is therefore a finite C 2 unit-tangent redefinition.
+U4 adds a C 3 -flat term through the two consumed background marks, which changes neither s′ (0) nor its
+quadratic coefficient. Canonical rescaling identifies the profile, gauge fermion, subtraction projector, and
+cutoff with the same unit-lattice template at every dyadic scale, so the same map s occurs before and
+after the step. The displayed conjugacy follows from the definitions.
+Theorem 5.16 (Thermodynamic standard-scheme coefficient and scheduled orbit row). The rooted-
+thermodynamic standard map satisfies
+                                                   11 CA (G) log 2 2
+                                 Σ∞ (v) = v +                     v + OG (v 3 ).                          (26)
+                                                       24π 2
+If vj = hj (uj ) lies on an admissible directed orbit, then
+                                                   11 CA (G) log 2 2
+                                 Σj (vj ) = vj +                  vj + OG (vj3 ),                         (27)
+                                                       24π 2
+uniformly along the orbit. No assertion is made that a fixed finite-volume map Σj (v) has exactly this
+second derivative at v = 0.
+
+
+                                                         47
+Proof. SI–8 gives b0 (G) = 11CA (G)/(48π 2 ) in the pure-G flow µ dg/dµ = −b0 (G)g 3 + OG (g 5 ). Hence
+µ du/dµ = −11CA (G)u2 /(24π 2 ) + OG (u3 ) for u = g 2 ; reversing to increasing physical length and
+integrating over one factor-two interval gives 11CA (G) log 2/(24π 2 ). SI–6, SI–6B, SI–7, and SI–7M
+identify this coefficient in the Wilson nonexceptional background scheme. Lemma 5.14 shows that the
+complete centered tangent family adds no unsuppressed logarithmic coefficient, while Lemma 5.15 gives a
+C 2 unit-tangent finite scheme change. This proves (26). The orbitwise comparison of Lemma 5.5 changes
+the finite-volume value by O(δG (Mj )vj2 + vj3 ) + O(vj−p e−c/vj ) = OG (vj3 ) and gives (27).
+Theorem 5.17 (Autonomous Karcher coefficient and directed first-crossing row). The autonomous
+rooted-thermodynamic reduced map satisfies
+
+                                               11 CA (G) log 2 2
+                                F∞ (u) = u +                  u + OG (u3 ).
+                                                   24π 2
+For every admissible directed orbit,
+                                                  11 CA (G) log 2 2
+                                Fj (uj ) = uj +                  uj + OG (u3j )                          (28)
+                                                      24π 2
+uniformly in j. This orbitwise row, rather than equality of all fixed finite-volume two-jets, is the input to
+the shooting and first-crossing theorems.
+Proof. The autonomous exact coordinate identity is h∞ ◦ F∞ = Σ∞ ◦ h∞ , with h∞ (u) = u + O(u2 ). A
+C 2 unit-tangent conjugacy preserves the quadratic coefficient, so Theorem 5.16 gives the boxed expansion.
+Equation (28) follows directly from Lemma 5.5. The exact nonautonomous identity (18) remains available
+at each finite step, but its wrapping row is used with the scheduled value uj and is not incorrectly
+differentiated at fixed Mj .
+
+5.3    Domain compactness and chart invariance
+Let Ba,N be the rooted activity space with norm
+                                               X
+                                 ∥F ∥a,N = sup   ea|X| ∥FX ∥C N (KX ) ,
+                                                  e
+                                                      X∋e
+
+where each KX is a compact finite-dimensional product chart and, for every m, only finitely many rooted
+connected support shapes of size at most m occur.
+Theorem 5.18 (Compact weakening). If a > 0, a′ > 0, and a′ < a, every bounded subset of Ba,N ,
+N ≥ 1, is relatively compact in Ba′ ,N −1 .
+Proof. Let F be bounded by M in Ba,N . For a cutoff L,
+                                 X      ′                        ′
+                            sup       ea |X| ∥FX ∥C N −1 ≤ e−(a−a )L M,
+                                  e
+                                        X∋e
+                                       |X|>L
+
+uniformly in F ∈ F.
+  For |X| ≤ L, only finitely many rooted support shapes occur. On each shape, the C N (KX ) bound is
+uniform
