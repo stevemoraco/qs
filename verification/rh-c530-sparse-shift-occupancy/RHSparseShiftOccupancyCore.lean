@@ -15,19 +15,18 @@ namespace RH
 namespace C530
 
 /-- Strict scalar shifted occupancy for a one-atom depth. -/
-def strictOcc (depth threshold : ℝ) : ℝ :=
+noncomputable def strictOcc (depth threshold : ℝ) : ℝ :=
   if threshold < depth then 1 else 0
 
-/-- If a query `lam` lies between adjacent geometric thresholds `lo` and
-`hi = r*lo`, and occupancy is nonincreasing, then its weighted occupancy is
-at most `r` times the lower-threshold weighted occupancy.  This is the finite
-scalar core of `Q_m ≤ r_m G_m`. -/
+/-- If a query `lam` lies below the next geometric threshold `hi = r*lo`, and
+its occupancy is at most the occupancy at the lower threshold `lo`, then its
+weighted occupancy is at most `r` times the lower-threshold weighted
+occupancy.  This is the finite scalar core of `Q_m ≤ r_m G_m`. -/
 theorem geometric_shift_bracket
     {lo lam hi r muLo muLam : ℝ}
     (hlo : 0 < lo)
     (hr : 0 ≤ r)
     (hgeom : hi = r * lo)
-    (hlolam : lo ≤ lam)
     (hlamhi : lam ≤ hi)
     (hmu : 0 ≤ muLam)
     (hmono : muLam ≤ muLo) :
