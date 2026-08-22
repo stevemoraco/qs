@@ -1,0 +1,89 @@
+name: PNP nonlinear axis code receipt
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-nonlinear-axis-code/**'
+      - '.github/workflows/pnp-nonlinear-axis-code-receipt.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-receipt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        run: |
+          set -euo pipefail
+          file=verification/pnp-nonlinear-axis-code/PNPNonlinearAxisCode.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then exit 1; fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then exit 1; fi
+
+      - name: Install Lean
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib
+        working-directory: verification/pnp-nonlinear-axis-code
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay
+        working-directory: verification/pnp-nonlinear-axis-code
+        run: |
+          set -euo pipefail
+          lake env lean PNPNonlinearAxisCode.lean 2>&1 | tee lean-replay.log
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
+
+      - name: Write and commit verified receipt
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          JOB: ${{ github.job }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          src=verification/pnp-nonlinear-axis-code/PNPNonlinearAxisCode.lean
+          log=verification/pnp-nonlinear-axis-code/lean-replay.log
+          source_sha=$(sha256sum "$src" | awk '{print $1}')
+          lean_version=$($HOME/.elan/bin/lean --version | head -1)
+          mathlib_commit=$(git -C verification/pnp-nonlinear-axis-code/.lake/packages/mathlib rev-parse HEAD)
+          mkdir -p /tmp/receipt
+          python3 - <<PY
+          import json
+          data = {
+            'status': 'VERIFIED',
+            'workflow_run': int('$RUN_ID'),
+            'job_name': '$JOB',
+            'merge_checkout': '$SHA',
+            'source_sha256': '$source_sha',
+            'lean_version': '$lean_version',
+            'mathlib_commit': '$mathlib_commit',
+            'trust_scan': 'PASS',
+            'axiom_policy': ['propext', 'Classical.choice', 'Quot.sound'],
+          }
+          open('/tmp/receipt/PNP_NONLINEAR_AXIS_CODE_VERIFIED.json','w').write(json.dumps(data,indent=2)+'\n')
+          PY
+          content=$(base64 -w 0 /tmp/receipt/PNP_NONLINEAR_AXIS_CODE_VERIFIED.json)
+          path=verification/pnp-nonlinear-axis-code/PNP_NONLINEAR_AXIS_CODE_VERIFIED.json
+          current=$(gh api "repos/$REPO/contents/$path?ref=$HEAD_REF" --jq .sha 2>/dev/null || true)
+          if [ -n "$current" ]; then
+            gh api --method PUT "repos/$REPO/contents/$path" \
+              -f message='Record verified nonlinear axis code replay' \
+              -f content="$content" -f branch="$HEAD_REF" -f sha="$current" >/dev/null
+          else
+            gh api --method PUT "repos/$REPO/contents/$path" \
+              -f message='Record verified nonlinear axis code replay' \
+              -f content="$content" -f branch="$HEAD_REF" >/dev/null
+          fi

@@ -1,0 +1,88 @@
+name: PNP nonlinear axis code replay
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/pnp-nonlinear-axis-code/**'
+      - '.github/workflows/pnp-nonlinear-axis-code.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject proof holes and trust escapes
+        run: |
+          set -euo pipefail
+          file=verification/pnp-nonlinear-axis-code/PNPNonlinearAxisCode.lean
+          if grep -nE '\b(sorry|admit|sorryAx)\b' "$file"; then exit 1; fi
+          if grep -nE '\b(axiom|opaque|unsafe|native_decide|Lean\.ofReduceBool)\b' "$file"; then exit 1; fi
+
+      - name: Install Lean
+        run: |
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve Mathlib
+        working-directory: verification/pnp-nonlinear-axis-code
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Kernel replay
+        id: lean
+        continue-on-error: true
+        working-directory: verification/pnp-nonlinear-axis-code
+        run: |
+          set +e
+          lake env lean PNPNonlinearAxisCode.lean > lean-replay.log 2>&1
+          status=$?
+          cat lean-replay.log
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Preserve log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnp-nonlinear-axis-code-log
+          path: verification/pnp-nonlinear-axis-code/lean-replay.log
+          if-no-files-found: warn
+
+      - name: Commit first error on failure
+        if: steps.lean.outputs.status != '0' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          src=verification/pnp-nonlinear-axis-code/lean-replay.log
+          first=$(grep -m1 -E 'error:' "$src" || true)
+          if [ -z "$first" ]; then first='no-error-line'; fi
+          printf '%s\n' "$first" > first-error.txt
+          content=$(base64 -w 0 first-error.txt)
+          path=verification/pnp-nonlinear-axis-code/first-error.txt
+          current=$(gh api "repos/$REPO/contents/$path?ref=$HEAD_REF" --jq .sha 2>/dev/null || true)
+          msg="LeanDiag: $(printf '%s' "$first" | cut -c1-180)"
+          if [ -n "$current" ]; then
+            gh api --method PUT "repos/$REPO/contents/$path" -f message="$msg" \
+              -f content="$content" -f branch="$HEAD_REF" -f sha="$current" >/dev/null
+          else
+            gh api --method PUT "repos/$REPO/contents/$path" -f message="$msg" \
+              -f content="$content" -f branch="$HEAD_REF" >/dev/null
+          fi
+
+      - name: Enforce success and axiom-warning audit
+        working-directory: verification/pnp-nonlinear-axis-code
+        run: |
+          set -euo pipefail
+          test "${{ steps.lean.outputs.status }}" = 0
+          test "$(grep -c '^warning: declaration uses' lean-replay.log || true)" -eq 0
