@@ -1,0 +1,68 @@
+name: Navier-Stokes source-dual axis-trace public verifier
+
+on:
+  push:
+    branches:
+      - agent/ns-source-dual-axis-trace-public-verifier-20260813
+    paths:
+      - 'formal/ns-source-dual-axis-trace/**'
+      - '.github/workflows/ns-source-dual-axis-trace-public-verifier.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'formal/ns-source-dual-axis-trace/**'
+      - '.github/workflows/ns-source-dual-axis-trace-public-verifier.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject explicit proof holes and custom trust carriers
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-source-dual-axis-trace/NSSourceDualAxisTraceCountermodel.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b' "$file"; then
+            echo 'Rejected: forbidden proof carrier found.'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.33.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/ns-source-dual-axis-trace/toolchain.txt
+
+      - name: Fresh foundation-only kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/ns-source-dual-axis-trace/NSSourceDualAxisTraceCountermodel.lean'
+          output='formal/ns-source-dual-axis-trace/lean-kernel-output.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ns-source-dual-axis-trace-${{ github.sha }}
+          path: |
+            formal/ns-source-dual-axis-trace/NSSourceDualAxisTraceCountermodel.lean
+            formal/ns-source-dual-axis-trace/toolchain.txt
+            formal/ns-source-dual-axis-trace/lean-kernel-output.txt
+          if-no-files-found: warn
