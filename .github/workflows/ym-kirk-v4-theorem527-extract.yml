@@ -1,0 +1,41 @@
+name: YM Kirk v4 theorem 5.27 extract
+
+on:
+  push:
+    branches:
+      - verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
+      - name: Extract theorem 5.27 context
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('source_audit/kirk_v4/local_root_source_radius/PART_V_HEADINGS.txt')
+          text=src.read_text(encoding='utf-8',errors='replace')
+          marker='=== Theorem 5.27 '
+          i=text.find(marker)
+          if i < 0:
+              raise SystemExit('Theorem 5.27 marker not found')
+          j=text.find('\n=== ', i+len(marker))
+          if j < 0: j=min(len(text), i+18000)
+          out=Path('source_audit/kirk_v4/local_root_source_radius/THEOREM_5_27.txt')
+          out.write_text(text[i:j],encoding='utf-8')
+          print(text[i:min(j,i+4000)])
+          PY
+      - name: Commit extraction
+        run: |
+          git config user.name 'millennium-braid-source-audit'
+          git config user.email 'actions@users.noreply.github.com'
+          git add source_audit/kirk_v4/local_root_source_radius/THEOREM_5_27.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'audit(ym): preserve theorem 5.27 source context'
+          git push origin HEAD:verification/ym-kirk-v4-local-root-source-radius-audit-20260822-gpt56sol
