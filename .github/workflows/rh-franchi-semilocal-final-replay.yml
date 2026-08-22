@@ -1,0 +1,84 @@
+name: RH Franchi final semilocal audit replay
+
+on:
+  push:
+    branches:
+      - verification/rh-franchi-semilocal-20260813
+    paths:
+      - 'formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.lean.b64'
+      - '.github/workflows/rh-franchi-semilocal-final-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decode and verify final immutable source
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload='formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.lean.b64'
+          decoded='formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.final.lean'
+          base64 -d "$payload" > "$decoded"
+          expected_sha256='7911463fce4bc2326bed990ad936a6233c43cb7dcf68426f4180284d95b2d4f3'
+          actual_sha256="$(sha256sum "$decoded" | awk '{print $1}')"
+          printf 'expected SHA-256: %s\nactual SHA-256:   %s\n' "$expected_sha256" "$actual_sha256"
+          test "$actual_sha256" = "$expected_sha256"
+          expected_blob='7cb32a85aeb9eab6693cd62a6785b061384ec51b'
+          actual_blob="$(git hash-object "$decoded")"
+          printf 'expected Git blob: %s\nactual Git blob:   %s\n' "$expected_blob" "$actual_blob"
+          test "$actual_blob" = "$expected_blob"
+
+      - name: Reject proof holes and trust escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.final.lean'
+          if grep -nE '\b(sorry|admit|axiom|opaque|unsafe|native_decide)\b|Lean\.ofReduceBool' "$file"; then
+            echo 'Rejected: proof hole or custom trust carrier found.'
+            exit 1
+          fi
+
+      - name: Install pinned official Lean release
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/lean" --version \
+            | tee formal/rh-franchi-semilocal/toolchain-final.txt
+
+      - name: Fresh foundation-only kernel replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          file='formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.final.lean'
+          output='formal/rh-franchi-semilocal/lean-kernel-output-final.txt'
+          "$HOME/.elan/bin/lean" -DwarningAsError=true "$file" 2>&1 | tee "$output"
+          if grep -q 'sorryAx' "$output"; then
+            echo 'Rejected: kernel output contains sorryAx.'
+            exit 1
+          fi
+          count="$(grep -c 'does not depend on any axioms' "$output")"
+          echo "foundation-only axiom reports: $count"
+          test "$count" -eq 9
+
+      - name: Preserve replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-franchi-semilocal-final-replay-${{ github.sha }}
+          path: |
+            formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.lean.b64
+            formal/rh-franchi-semilocal/RHFranchiSemilocalAudit.final.lean
+            formal/rh-franchi-semilocal/lean-toolchain
+            formal/rh-franchi-semilocal/toolchain-final.txt
+            formal/rh-franchi-semilocal/lean-kernel-output-final.txt
+          if-no-files-found: warn
