@@ -1,0 +1,72 @@
+name: RH log-Hardy covariance finite regression
+
+on:
+  push:
+    branches:
+      - agent/rh-log-hardy-covariance-regression-20260813-gpt56
+    paths:
+      - 'research/rh-log-hardy-covariance/**'
+      - '.github/workflows/rh-log-hardy-covariance-regression.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'research/rh-log-hardy-covariance/**'
+      - '.github/workflows/rh-log-hardy-covariance-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  finite-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical numerical blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='research/rh-log-hardy-covariance'
+          test "$(git hash-object "$root/audit_rh_log_hardy_covariance.py")" = '322ac155446c43a5d66d386329cb88ee26f08342'
+          test "$(git hash-object "$root/covariance_core.py")" = 'cb1cd17f65341e60a732b11baefac67edd5b1b04'
+          test "$(git hash-object "$root/rh_log_hardy_covariance_check.py")" = 'c19fa2ab0328b5ffd40391a663ce16bfbdeff7a9'
+          test "$(git hash-object "$root/rh_log_hardy_covariance_receipt.json")" = '745be434241d77f4f43268e84d78e541b85b514a'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install pinned numerical dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install 'numpy==2.3.5' 'scipy==1.17.0'
+
+      - name: Compile and replay the finite covariance audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='research/rh-log-hardy-covariance'
+          python -m py_compile \
+            "$root/audit_rh_log_hardy_covariance.py" \
+            "$root/covariance_core.py" \
+            "$root/rh_log_hardy_covariance_check.py"
+          python "$root/audit_rh_log_hardy_covariance.py" \
+            --checker "$root/rh_log_hardy_covariance_check.py" \
+            --receipt "$root/rh_log_hardy_covariance_receipt.json" \
+            --fresh /tmp/rh_log_hardy_covariance_fresh.json \
+            | tee /tmp/rh_log_hardy_covariance_stdout.txt
+
+      - name: Preserve fresh numerical evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-log-hardy-covariance-${{ github.sha }}
+          path: |
+            /tmp/rh_log_hardy_covariance_fresh.json
+            /tmp/rh_log_hardy_covariance_stdout.txt
+            research/rh-log-hardy-covariance/
+          if-no-files-found: warn
