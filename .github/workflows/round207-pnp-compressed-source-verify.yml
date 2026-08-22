@@ -1,0 +1,58 @@
+name: Round 207 P-vs-NP Compressed-Source Finite Cores
+
+on:
+  push:
+    branches:
+      - agent/round207-pnp-compressed-source-verify-20260811
+    paths:
+      - 'verification/round207-pnp-compressed-source/**'
+      - '.github/workflows/round207-pnp-compressed-source-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'verification/round207-pnp-compressed-source/**'
+      - '.github/workflows/round207-pnp-compressed-source-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject explicit placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=verification/round207-pnp-compressed-source/PNPCompressedSourceBudgetFinite.lean
+          if grep -En '(^|[^[:alnum:]_])(sorry|admit)([^[:alnum:]_]|$)' "$file"; then
+            echo 'Forbidden Lean placeholder found.' >&2
+            exit 1
+          fi
+      - name: Install pinned Lean, fetch pinned Mathlib cache, and compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain leanprover/lean4:v4.32.1
+          export PATH="$HOME/.elan/bin:$PATH"
+          cd verification/round207-pnp-compressed-source
+          lake update
+          lake exe cache get
+          lake env lean PNPCompressedSourceBudgetFinite.lean 2>&1 | tee lean-output.log
+          if grep -Eq 'declaration uses .sorry.|sorryAx|admit' lean-output.log; then
+            echo 'Forbidden placeholder axiom found in compiler output.' >&2
+            exit 1
+          fi
+          echo 'VERIFIED finite Round 207 P-vs-NP compressed-source cores.'
+      - name: Upload compiler evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: round207-pnp-compressed-source-lean-evidence
+          path: verification/round207-pnp-compressed-source/lean-output.log
+          if-no-files-found: warn
