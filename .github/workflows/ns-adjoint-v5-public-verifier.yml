@@ -1,0 +1,56 @@
+name: NS adjoint v5 public verifier
+
+on:
+  push:
+    branches: [agent/ns-adjoint-v5-public-verifier-20260823]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strict exact-source replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILES=(verification/NSAdjointCorrelationExactThreshold.lean verification/NSFixedConeLerayFirewall.lean)
+          for SRC in "${FILES[@]}"; do
+            if grep -nE '\b(sorry|admit|sorryAx|unsafe|native_decide|Lean\.ofReduceBool)\b' "$SRC"; then exit 1; fi
+            if grep -nE '^[[:space:]]*(axiom|opaque)[[:space:]]' "$SRC"; then exit 1; fi
+            SRC="$SRC" python3 - <<'PY'
+          import hashlib, json, os, pathlib, urllib.request
+          path=pathlib.Path(os.environ['SRC'])
+          source=path.read_text()
+          digest=hashlib.sha256(source.encode()).hexdigest()
+          print('source', path, 'sha256', digest)
+          payload=json.dumps({
+            'content':source,
+            'environment':'lean-4.30.0',
+            'ignore_imports':True,
+            'mathlib_options':False,
+            'timeout_seconds':900,
+          }).encode()
+          req=urllib.request.Request('https://axle.axiommath.ai/api/v1/check',data=payload,headers={'Content-Type':'application/json'},method='POST')
+          with urllib.request.urlopen(req,timeout=960) as response:
+            result=json.load(response)
+          pathlib.Path('axle-'+path.stem+'-'+digest+'.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps(result,indent=2))
+          lean=result.get('lean_messages',{})
+          tool=result.get('tool_messages',{})
+          encoded=json.dumps(result)
+          bad=(not result.get('okay') or bool(result.get('failed_declarations',[])) or bool(lean.get('errors',[])) or bool(lean.get('warnings',[])) or bool(tool.get('errors',[])) or bool(tool.get('warnings',[])) or 'sorryAx' in encoded)
+          if bad: raise SystemExit(1)
+          PY
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ns-adjoint-v5-public-verifier
+          path: |
+            verification/NS*.lean
+            axle-*.json
