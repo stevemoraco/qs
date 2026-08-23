@@ -1,0 +1,82 @@
+name: Verify RH C836 B46 radial core
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/rh_c836_b46_radial_core/**"
+      - ".github/workflows/verify-rh-c836-b46-radial-core.yml"
+  pull_request:
+    paths:
+      - "verification/rh_c836_b46_radial_core/**"
+      - ".github/workflows/verify-rh-c836-b46-radial-core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/rh_c836_b46_radial_core
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify exact source and trust gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=B46RadialWeakIndexCore.lean
+          test "$(git hash-object "$file")" = "5c935d7520b2713ac46781bc80c59b3ee1861f38"
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean B46RadialWeakIndexCore.lean 2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Reject compiler warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n '^warning:' lean-output.txt; then
+            echo "Lean compiler warning found"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rh-c836-b46-radial-core-replay
+          path: |
+            verification/rh_c836_b46_radial_core/B46RadialWeakIndexCore.lean
+            verification/rh_c836_b46_radial_core/lean-output.txt
+          if-no-files-found: warn
