@@ -1,0 +1,80 @@
+name: source-cut-cohomology-v15
+
+on:
+  pull_request:
+    paths:
+      - 'MillenniumFiniteHorizonCohomologyExactifier.lean'
+      - 'lakefile.toml'
+      - 'lean-toolchain'
+      - '.github/workflows/source-cut-cohomology-v15.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve pinned Mathlib and fetch cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Verify immutable source receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum MillenniumFiniteHorizonCohomologyExactifier.lean | awk '{print $1}')" = "7a503d36d9692ae7333a13db9ad6ebe8a261868cf8d56529dc0f4f87c52bb58f"
+          test "$(git hash-object MillenniumFiniteHorizonCohomologyExactifier.lean)" = "50d164ba458661e16dc347e9abbaa5c85da1ae28"
+
+      - name: Reject forbidden proof tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' MillenniumFiniteHorizonCohomologyExactifier.lean; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean MillenniumFiniteHorizonCohomologyExactifier.lean 2>&1 | tee lean.log
+          if grep -q 'sorryAx' lean.log; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Reject compiler warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n '^warning:' lean.log; then
+            echo "Lean compiler warning found"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-cut-cohomology-v15-replay
+          path: |
+            MillenniumFiniteHorizonCohomologyExactifier.lean
+            lean.log
+          if-no-files-found: warn
