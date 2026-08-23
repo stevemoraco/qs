@@ -24,7 +24,7 @@ theorem zero_add_shiftedPrefix (a : ℕ → ℚ) (n : ℕ) :
               ring
         _ = (∑ k ∈ Finset.range (n + 1), a k) + a (n + 1) := by rw [ih]
         _ = ∑ k ∈ Finset.range (n + 2), a k := by
-              rw [Finset.sum_range_succ]
+              simp [Finset.sum_range_succ, add_assoc]
 
 /-- Exact unnormalized telescope behind the finite-horizon cohomology
 exactifier. -/
