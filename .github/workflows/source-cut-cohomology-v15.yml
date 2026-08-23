@@ -38,8 +38,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(sha256sum MillenniumFiniteHorizonCohomologyExactifier.lean | awk '{print $1}')" = "6e105b167bd7a647ab2fbc5d1933f0c74f6680570f93f3ed7aa9e102441d7dd4"
-          test "$(git hash-object MillenniumFiniteHorizonCohomologyExactifier.lean)" = "c217914c9f81bbcf52a6496ae9a1f224f7495031"
+          test "$(sha256sum MillenniumFiniteHorizonCohomologyExactifier.lean | awk '{print $1}')" = "7bb40f52d8831eecc8f4e0dcd98f5cb50a873fae44d81dee507516b6efa6a324"
+          test "$(git hash-object MillenniumFiniteHorizonCohomologyExactifier.lean)" = "f8d254df0d9e66f4a94bafc88380e625c6b39545"
 
       - name: Reject forbidden proof tokens
         shell: bash
