@@ -2,6 +2,8 @@ import Mathlib
 
 namespace BSDSignedLogarithmicJetWindow
 
+open scoped BigOperators
+
 /-- Degree of the shifted `p^m`-cyclotomic factor in the weight-two tower. -/
 def layerDegree (p m : ℕ) : ℕ := p ^ (m - 1) * (p - 1)
 
@@ -20,7 +22,6 @@ theorem oddReach_zero (p : ℕ) : oddReach p 0 = p - 1 := by
 /-- Level two already sees the first `p(p-1)` sharp coefficients modulo `p`. -/
 theorem evenReach_one (p : ℕ) : evenReach p 1 = p * (p - 1) := by
   simp [evenReach]
-  ring
 
 /-- Adding one odd layer adds its full cyclotomic degree. -/
 theorem oddReach_succ (p a : ℕ) :
