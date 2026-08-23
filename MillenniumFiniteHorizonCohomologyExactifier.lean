@@ -17,8 +17,14 @@ theorem zero_add_shiftedPrefix (a : ℕ → ℚ) (n : ℕ) :
   induction n with
   | zero => simp
   | succ n ih =>
-      simp only [Finset.sum_range_succ]
-      rw [← add_assoc, ih]
+      calc
+        a 0 + ∑ k ∈ Finset.range (n + 1), a (k + 1) =
+            (a 0 + ∑ k ∈ Finset.range n, a (k + 1)) + a (n + 1) := by
+              rw [Finset.sum_range_succ]
+              ring
+        _ = (∑ k ∈ Finset.range (n + 1), a k) + a (n + 1) := by rw [ih]
+        _ = ∑ k ∈ Finset.range (n + 2), a k := by
+              rw [Finset.sum_range_succ]
 
 /-- Exact unnormalized telescope behind the finite-horizon cohomology
 exactifier. -/
@@ -28,8 +34,9 @@ theorem weightedPrefix_shift_identity (a : ℕ → ℚ) (n : ℕ) :
   induction n with
   | zero => simp [weightedPrefix]
   | succ n ih =>
-      simp only [weightedPrefix, Finset.sum_range_succ, Nat.cast_add, Nat.cast_one]
+      simp only [weightedPrefix, Nat.cast_add, Nat.cast_one]
       have hshift := zero_add_shiftedPrefix a n
+      rw [Finset.sum_range_succ] at hshift ⊢
       linarith
 
 /-- Normalized finite-horizon cohomology exactifier. A positive `n`-block
