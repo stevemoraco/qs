@@ -1,0 +1,41 @@
+name: source-cut-cohomology-v15
+
+on:
+  pull_request:
+    paths:
+      - 'MillenniumFiniteHorizonCohomologyExactifier.lean'
+      - 'lakefile.toml'
+      - 'lean-toolchain'
+      - '.github/workflows/source-cut-cohomology-v15.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          use-github-cache: true
+      - name: Verify immutable source receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum MillenniumFiniteHorizonCohomologyExactifier.lean | awk '{print $1}')" = "cd712eeceee7d3a04b26392f0b2a350352dc9057874d2be0f253f4b23ea8407a"
+          test "$(git hash-object MillenniumFiniteHorizonCohomologyExactifier.lean)" = "471f83d436c0ae99f3a4323e3566f0993d2f3a72"
+      - name: Reject forbidden proof tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -nE '\b(sorry|admit|axiom)\b' MillenniumFiniteHorizonCohomologyExactifier.lean
+      - name: Compile exact finite-horizon theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean MillenniumFiniteHorizonCohomologyExactifier.lean 2>&1 | tee lean.log
+          ! grep -F 'declaration uses sorry' lean.log
+          ! grep -F ': warning:' lean.log
