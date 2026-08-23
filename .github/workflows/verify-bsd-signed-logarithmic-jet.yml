@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=BSDSignedLogarithmicJetWindow.lean
-          echo "940ca7b6541f51db7cf6f2199c0c459bf02add03db395d778ece5a49636e2e75  $file" | sha256sum -c -
+          echo "075f1c738784f234c5b1ac544b3fcb0555f8b6b64048132ff9cc4462713c654d  $file" | sha256sum -c -
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
