@@ -9,11 +9,11 @@ def layerDegree (p m : ℕ) : ℕ := p ^ (m - 1) * (p - 1)
 
 /-- Cumulative odd-layer degree through the first `a+1` odd layers. -/
 def oddReach (p a : ℕ) : ℕ :=
-  ∑ i in Finset.range (a + 1), p ^ (2 * i) * (p - 1)
+  (Finset.range (a + 1)).sum (fun i => p ^ (2 * i) * (p - 1))
 
 /-- Cumulative even-layer degree through the first `a` even layers. -/
 def evenReach (p a : ℕ) : ℕ :=
-  ∑ i in Finset.range a, p ^ (2 * i + 1) * (p - 1)
+  (Finset.range a).sum (fun i => p ^ (2 * i + 1) * (p - 1))
 
 /-- Level one already sees the first `p-1` flat coefficients modulo `p`. -/
 theorem oddReach_zero (p : ℕ) : oddReach p 0 = p - 1 := by
