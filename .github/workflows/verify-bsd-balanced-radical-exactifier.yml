@@ -1,0 +1,83 @@
+name: Verify BSD balanced-radical exactifier
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "verification/bsd_balanced_radical_exactifier/**"
+      - ".github/workflows/verify-bsd-balanced-radical-exactifier.yml"
+  pull_request:
+    paths:
+      - "verification/bsd_balanced_radical_exactifier/**"
+      - ".github/workflows/verify-bsd-balanced-radical-exactifier.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: verification/bsd_balanced_radical_exactifier
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify exact source and trust gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=BSD_BalancedRadicalExactifier.lean
+          test "$(git hash-object "$file")" = "112a6db5a1e665709f16d711fd3c2b215f7f162d"
+          echo "8d0d718fa8802087c96883dad3c3c9bc4ab03038067a0ed0250d1301a50e1d06  $file" | sha256sum -c -
+          if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
+            echo "Forbidden token found"
+            exit 1
+          fi
+
+      - name: Install elan
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Kernel-check exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean BSD_BalancedRadicalExactifier.lean 2>&1 | tee lean-output.txt
+          if grep -q 'sorryAx' lean-output.txt; then
+            echo "sorryAx found in axiom report"
+            exit 1
+          fi
+
+      - name: Reject compiler warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n '^warning:' lean-output.txt; then
+            echo "Lean compiler warning found"
+            exit 1
+          fi
+
+      - name: Upload replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-balanced-radical-exactifier-replay
+          path: |
+            verification/bsd_balanced_radical_exactifier/BSD_BalancedRadicalExactifier.lean
+            verification/bsd_balanced_radical_exactifier/lean-output.txt
+          if-no-files-found: warn
