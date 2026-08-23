@@ -55,9 +55,8 @@ theorem tent_at_radius {h : ℝ} (hh : 0 ≤ h) : tent h h = 0 := by
 /-- The cap remains positive at the same boundary: its value is exactly `h`. -/
 theorem cap_at_radius {h : ℝ} (hh : 0 ≤ h) : cap h h = h := by
   have h2 : 0 ≤ h + h := add_nonneg hh hh
-  have hneg : h - (h + h) ≤ 0 := by linarith
   rw [cap]
-  simp [tent, abs_of_nonneg hh, abs_of_nonneg h2, hneg, hh]
+  simp [tent, abs_of_nonneg hh, abs_of_nonneg h2, hh]
 
 /-- The exact B46 radial value at the positive-cone hostile boundary. -/
 theorem radialRow_boundary_value
@@ -71,7 +70,8 @@ theorem radialRow_boundary_negative
     {h c : ℝ} (hh : 0 < h) (hc : 0 < c) :
     radialRow h c h < 0 := by
   rw [radialRow_boundary_value (le_of_lt hh)]
-  exact neg_neg_of_pos (mul_pos hc hh)
+  have hpos : 0 < c * h := mul_pos hc hh
+  nlinarith
 
 /-- Hence no finite pointwise domination `cap ≤ K * tent` can hold on the
 positive cone when `h>0`: it already fails at the boundary atom. -/
