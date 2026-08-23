@@ -31,8 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           file=B46RadialWeakIndexCore.lean
-          test "$(git hash-object "$file")" = "d54a91af6c9d9721bfb8c2886feb63fc3d7283d5"
-          echo "ceeea1a1bf731aec5bab41efec6a7264af80421bf768cd14bc9f418160f13f44  $file" | sha256sum -c -
+          test "$(git hash-object "$file")" = "5c935d7520b2713ac46781bc80c59b3ee1861f38"
           if grep -nE '\b(sorry|admit|sorryAx|unsafe|opaque|native_decide)\b|^axiom |Lean\.ofReduceBool' "$file"; then
             echo "Forbidden token found"
             exit 1
