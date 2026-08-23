@@ -7,6 +7,10 @@ on:
     paths:
       - 'verification/cegis-finite-survivors/**'
       - '.github/workflows/cegis-finite-survivors.yml'
+  pull_request:
+    paths:
+      - 'verification/cegis-finite-survivors/**'
+      - '.github/workflows/cegis-finite-survivors.yml'
   workflow_dispatch:
 
 permissions:
