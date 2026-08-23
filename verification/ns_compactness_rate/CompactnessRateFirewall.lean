@@ -22,11 +22,12 @@ def quarticDefect (x : ℝ) : ℝ := x ^ 4
 
 /-- The quartic defect is continuous. -/
 theorem quarticDefect_continuous : Continuous quarticDefect := by
-  fun_prop
+  simpa [quarticDefect] using (continuous_id.pow 4)
 
 /-- The quartic defect is nonnegative. -/
 theorem quarticDefect_nonneg (x : ℝ) : 0 ≤ quarticDefect x := by
-  positivity
+  unfold quarticDefect
+  nlinarith [sq_nonneg (x ^ 2)]
 
 /-- The zero set of the quartic defect is exactly `{0}`. -/
 theorem quarticDefect_zero_iff (x : ℝ) : quarticDefect x = 0 ↔ x = 0 := by
