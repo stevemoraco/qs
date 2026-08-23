@@ -32,7 +32,7 @@ theorem weightedPrefix_shift_identity (a : ℕ → ℚ) (n : ℕ) :
       have hshift := zero_add_shiftedPrefix a n
       linarith
 
-/-- Normalized finite-horizon cohomology exactifier.  A positive `n`-block
+/-- Normalized finite-horizon cohomology exactifier. A positive `n`-block
 average is exactly the one-step defect after adding the explicit weighted
 prefix coboundary. -/
 theorem finiteHorizon_coboundary_exactifier
