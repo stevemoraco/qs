@@ -1,0 +1,53 @@
+\\ E34,p=7 selected DMM L-field retry after RH #4984 diagnosed a PARI thread-stack overflow.
+\\ Exact arithmetic construction is unchanged from qs #1009 / head 3ad4c8ec17c5b9765bf186e9f2505d1587a81c8f.
+\\ Only the PARI resource contract is changed.  Fail closed unless bnfinit returns and bnfcertify=1.
+
+default(nbthreads,1);
+default(parisize,"256M");
+default(parisizemax,"6G");
+default(threadsize,"256M");
+default(threadsizemax,"6G");
+
+print("E34_P7_RESOURCE_NBTHREADS=",default(nbthreads));
+print("E34_P7_RESOURCE_PARISIZE=",default(parisize));
+print("E34_P7_RESOURCE_PARISIZEMAX=",default(parisizemax));
+print("E34_P7_RESOURCE_THREADSIZE=",default(threadsize));
+print("E34_P7_RESOURCE_THREADSIZEMAX=",default(threadsizemax));
+
+die(s)={print("E34_P7_ERROR=",s); quit(1);};
+x='x;
+g = x^12 - 308*x^11 - 20678*x^10 + 972748*x^9 - 12084233*x^8 + 197515864*x^7 - 1880972212*x^6 + 4961023032*x^5 + 12907389439*x^4 - 85065403556*x^3 + 52540396314*x^2 - 55365148804*x - 1977326743;
+if(poldegree(g) != 12, die("bad theta polynomial degree"));
+hD = 7^12 * subst(g, x, x^2/7);
+if(poldegree(hD) != 24, die("bad hD degree"));
+if(denominator(content(hD)) != 1, die("hD not integral"));
+if(polisirreducible(hD) != 1, die("hD is not irreducible"));
+hG = 238^24 * subst(hD, x, x^2/238);
+if(poldegree(hG) != 48, die("bad hG degree"));
+if(denominator(content(hG)) != 1, die("hG not integral"));
+irr = polisirreducible(hG);
+print("E34_P7_L_HG_DEGREE=", poldegree(hG));
+print("E34_P7_L_HG_IRREDUCIBLE=", irr);
+if(irr != 1, die("hG is not irreducible"));
+cv = polcompositum(hG, x^2+1);
+print("E34_P7_L_COMPOSITA=", #cv);
+if(#cv != 1, die("unexpected L compositum decomposition"));
+p = cv[1];
+print("E34_P7_L_RAW_DEGREE=", poldegree(p));
+if(poldegree(p) != 96, die("bad L degree"));
+p = polredbest(p);
+print("E34_P7_L_POLRED_DEGREE=", poldegree(p));
+print("E34_P7_L_POL=", p);
+
+bnf = bnfinit(p, 1);
+print("E34_P7_L_BNFINIT_DONE=1");
+cert = bnfcertify(bnf);
+print("E34_P7_L_BNFCERTIFY=", cert);
+if(cert != 1, die("L bnfcertify failed"));
+h = bnf.no;
+cyc = bnf.cyc;
+print("E34_P7_L_CLASSNO=", h);
+print("E34_P7_L_CLASSGROUP_CYC=", cyc);
+print("E34_P7_L_V7_CLASSNO=", valuation(h,7));
+print("E34_P7_L_CERTIFIED=1");
+quit(0);
