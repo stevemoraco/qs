@@ -23,13 +23,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pari-gp
           gp -f -q <<<'print(version()); print(default(nbthreads)); print(default(threadsizemax));'
-      - name: Add bounded swap headroom
+      - name: Record existing memory headroom
         run: |
-          sudo fallocate -l 6G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
+          # Hosted runner already supplies swap.  Do not overwrite its active /swapfile.
           free -h
+          swapon --show || true
       - name: Certify L fail-closed
         run: |
           set -o pipefail
