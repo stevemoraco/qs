@@ -1,0 +1,45 @@
+name: Verify BSD E34 p7 PARI thread-stack repair
+
+on:
+  pull_request:
+    paths:
+      - 'verification/bsd-e34-p7-pari-thread/**'
+      - '.github/workflows/verify-bsd-e34-p7-pari-threadstack.yml'
+  workflow_dispatch:
+
+jobs:
+  l_threadstack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - name: Environment
+        run: |
+          uname -a
+          free -h
+          df -h
+      - name: Install PARI/GP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pari-gp
+          gp -f -q <<<'print(version()); print(default(nbthreads)); print(default(threadsizemax));'
+      - name: Add bounded swap headroom
+        run: |
+          sudo fallocate -l 6G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+      - name: Certify L fail-closed
+        run: |
+          set -o pipefail
+          gp -f -q < verification/bsd-e34-p7-pari-thread/e34_p7_l_thread.gp | tee verification/bsd-e34-p7-pari-thread/L_THREAD_OUTPUT.txt
+          grep -q '^E34_P7_L_BNFCERTIFY=1$' verification/bsd-e34-p7-pari-thread/L_THREAD_OUTPUT.txt
+          grep -q '^E34_P7_L_CERTIFIED=1$' verification/bsd-e34-p7-pari-thread/L_THREAD_OUTPUT.txt
+      - name: Upload L receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsd-e34-p7-l-threadstack-receipt
+          path: verification/bsd-e34-p7-pari-thread/L_THREAD_OUTPUT.txt
+          if-no-files-found: warn
