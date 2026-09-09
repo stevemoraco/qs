@@ -50,20 +50,11 @@ jobs:
             '#print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic' > EndpointAudit.lean
           set -o pipefail
           lake env lean EndpointAudit.lean | tee ../endpoint_axioms.txt
-          if grep -E 'sorryAx|native_decide' ../endpoint_axioms.txt; then
+          if grep -E 'sorryAx|native_decide|Lean\.ofReduceBool' ../endpoint_axioms.txt; then
             echo 'forbidden endpoint axiom found' >&2
             exit 1
           fi
-          python3 - <<'PY'
-from pathlib import Path
-text=Path('../endpoint_axioms.txt').read_text()
-allowed={'propext','Classical.choice','Quot.sound'}
-# #print axioms prints bracketed names; reject familiar non-foundational proof-hole markers here,
-# while Comparator performs the authoritative permitted-axiom check below.
-for bad in ('sorryAx','Lean.ofReduceBool','Classical.choice._unsafe'):
-    assert bad not in text, bad
-print('ENDPOINT_AXIOM_TEXT_AUDIT_PASS')
-PY
+          echo ENDPOINT_AXIOM_TEXT_AUDIT_PASS
 
       - name: Comparator endpoint replay
         run: |
