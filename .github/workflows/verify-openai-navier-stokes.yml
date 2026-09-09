@@ -1,0 +1,88 @@
+name: Verify OpenAI Navier-Stokes Lean proof
+
+on:
+  push:
+    branches: [verify-openai-navier-stokes-20260908]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Clone exact OpenAI proof commit
+        run: |
+          git clone https://github.com/openai/NavierStokesAndEuler.git proof
+          cd proof
+          git checkout 8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538
+          test "$(git rev-parse HEAD)" = "8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538"
+
+      - name: Install elan and pinned toolchain
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          cd proof
+          cat lean-toolchain
+
+      - name: Source trust scan
+        run: |
+          cd proof
+          if rg -n '\bsorry\b|\badmit\b|\bsorryAx\b|\bnative_decide\b|^\s*(axiom|opaque|unsafe)\b' --glob '*.lean' .; then
+            echo 'Forbidden proof-hole/trust marker found' >&2
+            exit 1
+          fi
+
+      - name: Fetch mathlib cache
+        run: |
+          cd proof
+          lake exe cache get
+
+      - name: Build complete project
+        run: |
+          cd proof
+          lake build
+
+      - name: Print main theorem axioms
+        run: |
+          cd proof
+          cat > AuditMain.lean <<'EOF'
+          import NavierStokes.ComparatorSolution
+          #print axioms NavierStokes.Comparator.navier_stokes_breakdown_R3
+          #print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic
+          EOF
+          lake env lean AuditMain.lean | tee ../axioms.txt
+          grep -F 'propext' ../axioms.txt
+          grep -F 'Classical.choice' ../axioms.txt
+          grep -F 'Quot.sound' ../axioms.txt
+          if grep -E 'sorryAx|axiom[^s]|native_decide' ../axioms.txt; then exit 1; fi
+
+      - name: Run Comparator Navier-Stokes challenge
+        run: |
+          cd proof
+          lake exe comparator ComparatorChallenges/NavierStokes.json
+
+      - name: Run Comparator Euler challenge
+        run: |
+          cd proof
+          lake exe comparator ComparatorChallenges/Euler.json
+
+      - name: Record exact verification receipt
+        run: |
+          cd proof
+          {
+            echo "verified_commit=$(git rev-parse HEAD)"
+            echo "lean_toolchain=$(cat lean-toolchain)"
+            echo "mathlib_rev=$(python3 - <<'PY'"
+import json
+m=json.load(open('lake-manifest.json'))
+print(next(x['rev'] for x in m['packages'] if x['name']=='mathlib'))
+PY
+)"
+          } | tee ../verification_receipt.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openai-navier-stokes-independent-receipt
+          path: |
+            axioms.txt
+            verification_receipt.txt
