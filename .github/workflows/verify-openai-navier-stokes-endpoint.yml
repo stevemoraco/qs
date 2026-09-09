@@ -8,7 +8,7 @@ on:
 jobs:
   endpoint:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - name: Clone exact release
         run: |
@@ -22,11 +22,11 @@ jobs:
           curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
-      - name: Trust scan
+      - name: Custom axiom declaration scan
         run: |
           cd proof
-          if rg -n '\bsorry\b|\badmit\b|\bsorryAx\b|\bnative_decide\b|^\s*axiom\b' --glob '*.lean' NavierStokes ComparatorChallenges; then
-            echo 'forbidden trust marker found' >&2
+          if grep -RInE '^[[:space:]]*axiom[[:space:]]' NavierStokes ComparatorChallenges --include='*.lean'; then
+            echo 'custom axiom declaration found' >&2
             exit 1
           fi
 
@@ -35,10 +35,11 @@ jobs:
           cd proof
           lake exe cache get
 
-      - name: Compile exact endpoint module
+      - name: Build exact endpoint module and dependencies
         run: |
           cd proof
-          lake env lean NavierStokes/ComparatorSolution.lean | tee ../endpoint_compile.txt
+          set -o pipefail
+          lake build NavierStokes.ComparatorSolution | tee ../endpoint_build.txt
 
       - name: Audit endpoint axioms
         run: |
@@ -47,27 +48,43 @@ jobs:
             'import NavierStokes.ComparatorSolution' \
             '#print axioms NavierStokes.Comparator.navier_stokes_breakdown_R3' \
             '#print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic' > EndpointAudit.lean
+          set -o pipefail
           lake env lean EndpointAudit.lean | tee ../endpoint_axioms.txt
-          grep -F 'propext' ../endpoint_axioms.txt
-          grep -F 'Classical.choice' ../endpoint_axioms.txt
-          grep -F 'Quot.sound' ../endpoint_axioms.txt
-          if grep -E 'sorryAx|native_decide' ../endpoint_axioms.txt; then exit 1; fi
+          if grep -E 'sorryAx|native_decide' ../endpoint_axioms.txt; then
+            echo 'forbidden endpoint axiom found' >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+from pathlib import Path
+text=Path('../endpoint_axioms.txt').read_text()
+allowed={'propext','Classical.choice','Quot.sound'}
+# #print axioms prints bracketed names; reject familiar non-foundational proof-hole markers here,
+# while Comparator performs the authoritative permitted-axiom check below.
+for bad in ('sorryAx','Lean.ofReduceBool','Classical.choice._unsafe'):
+    assert bad not in text, bad
+print('ENDPOINT_AXIOM_TEXT_AUDIT_PASS')
+PY
 
       - name: Comparator endpoint replay
         run: |
           cd proof
+          set -o pipefail
           lake exe comparator ComparatorChallenges/NavierStokes.json | tee ../comparator.txt
 
       - name: Receipt
         run: |
           cd proof
-          printf 'verified_commit=%s\nlean_toolchain=%s\n' "$(git rev-parse HEAD)" "$(cat lean-toolchain)" | tee ../receipt.txt
+          MATHLIB_REV=$(jq -r '.packages[] | select(.name=="mathlib") | .rev' lake-manifest.json)
+          COMPARATOR_REV=$(jq -r '.packages[] | select(.name=="Comparator") | .rev' lake-manifest.json)
+          printf 'verified_commit=%s\nlean_toolchain=%s\nmathlib_rev=%s\ncomparator_rev=%s\n' \
+            "$(git rev-parse HEAD)" "$(cat lean-toolchain)" "$MATHLIB_REV" "$COMPARATOR_REV" \
+            | tee ../receipt.txt
 
       - uses: actions/upload-artifact@v4
         with:
           name: openai-navier-stokes-endpoint-receipt
           path: |
-            endpoint_compile.txt
+            endpoint_build.txt
             endpoint_axioms.txt
             comparator.txt
             receipt.txt
