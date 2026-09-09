@@ -1,0 +1,73 @@
+name: Verify OpenAI Navier-Stokes endpoint
+
+on:
+  push:
+    branches: [verify-openai-navier-stokes-20260908]
+  workflow_dispatch:
+
+jobs:
+  endpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Clone exact release
+        run: |
+          git clone --filter=blob:none https://github.com/openai/NavierStokesAndEuler.git proof
+          cd proof
+          git checkout 8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538
+          test "$(git rev-parse HEAD)" = "8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538"
+
+      - name: Install Lean
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Trust scan
+        run: |
+          cd proof
+          if rg -n '\bsorry\b|\badmit\b|\bsorryAx\b|\bnative_decide\b|^\s*axiom\b' --glob '*.lean' NavierStokes ComparatorChallenges; then
+            echo 'forbidden trust marker found' >&2
+            exit 1
+          fi
+
+      - name: Fetch cache
+        run: |
+          cd proof
+          lake exe cache get
+
+      - name: Compile exact endpoint module
+        run: |
+          cd proof
+          lake env lean NavierStokes/ComparatorSolution.lean | tee ../endpoint_compile.txt
+
+      - name: Audit endpoint axioms
+        run: |
+          cd proof
+          printf '%s\n' \
+            'import NavierStokes.ComparatorSolution' \
+            '#print axioms NavierStokes.Comparator.navier_stokes_breakdown_R3' \
+            '#print axioms NavierStokes.Comparator.navier_stokes_breakdown_periodic' > EndpointAudit.lean
+          lake env lean EndpointAudit.lean | tee ../endpoint_axioms.txt
+          grep -F 'propext' ../endpoint_axioms.txt
+          grep -F 'Classical.choice' ../endpoint_axioms.txt
+          grep -F 'Quot.sound' ../endpoint_axioms.txt
+          if grep -E 'sorryAx|native_decide' ../endpoint_axioms.txt; then exit 1; fi
+
+      - name: Comparator endpoint replay
+        run: |
+          cd proof
+          lake exe comparator ComparatorChallenges/NavierStokes.json | tee ../comparator.txt
+
+      - name: Receipt
+        run: |
+          cd proof
+          printf 'verified_commit=%s\nlean_toolchain=%s\n' "$(git rev-parse HEAD)" "$(cat lean-toolchain)" | tee ../receipt.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openai-navier-stokes-endpoint-receipt
+          path: |
+            endpoint_compile.txt
+            endpoint_axioms.txt
+            comparator.txt
+            receipt.txt
